@@ -1,5 +1,7 @@
 # Feuille de route
 
+> **Avertissement (8 octobre, soir).** Les décisions D17 à D26 changent plusieurs étapes : M4 (micro-tracé à 2 cm) et M5 (lumière en cache) sont remplacées par l'étude de rendu du fil Village (textures, lumière en temps réel, voxels plus gros, sans upscaling) ; M11 n'a plus de « retour » en bordure ; S5 ne fait plus vivre les PNJ avec le décideur à règles mais prépare la boucle qui donne chaque décision au Transformer ; une étape S0 « catalogue complet des variables et des actions » passe avant tout. Ordre de travail à jour : `CHANTIERS.md` à la racine.
+
 Principe : on avance dans l'ordre des risques, et chaque étape a un critère mesuré sur la machine de référence (Iris Xe + RTX série 3000 6 Go). Une étape n'est finie que lorsque son critère est mesuré, pas quand le code compile. Deux pistes avancent en parallèle : le **monde** (voxels, rendu) et la **société** (PNJ), parce qu'elles ne se touchent qu'au contrat décision / action et au bus d'opérations.
 
 ## Phase 0 : mise en place (avant tout prototype)

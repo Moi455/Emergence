@@ -1,221 +1,209 @@
-# L'architecture expliquée
+# L'architecture expliquée (révision 2)
 
-8 octobre 2026. Ce document explique **comment** l'architecture a été construite et **pourquoi** chaque choix a été fait, pour qu'on puisse la critiquer. Il ne remplace pas `02_architecture_cible.md`, qui fait foi pour le code ; il en donne le raisonnement, les limites et les chiffres.
+8 octobre 2026, soir. Cette révision applique les critiques de Monsieur du 8 octobre (messages de 14 h 45, 15 h 09, 15 h 18, 15 h 34 et 15 h 51) et ses images de référence (`docs/style/`). Elle remplace la version du matin. Elle explique **pourquoi** chaque choix est fait, ce qui le limite et ce qu'il coûte, pour que Monsieur puisse le critiquer.
 
-Statut des chiffres : **[Mesuré]** = obtenu par un test du projet ; **[Source]** = publié ailleurs (références dans `docs/reference/`) ; **[Calculé]** = arithmétique à partir d'hypothèses écrites ici ; tout le reste est une **estimation** à vérifier par prototype. Aucun moteur n'existe encore : la plupart des chiffres sont des calculs, pas des mesures.
+`02_architecture_cible.md` reste le document de référence pour le code. Là où il contredit ce document-ci, **ce document-ci fait foi** jusqu'à ce que 02 soit réécrit (voir l'avertissement en tête de 02).
+
+Statut des chiffres : **[Mesuré]** = obtenu par un test du projet (dans le conteneur, pas sur une vraie carte graphique) ; **[Source]** = écrit dans un autre document du projet ou publié ailleurs ; **[Calculé]** = arithmétique à partir d'hypothèses écrites ici ; tout le reste est une **estimation**. Rien n'a encore été mesuré sur un vrai GPU.
+
+---
+
+## 0. Ce qui a changé depuis la version du matin
+
+| Sujet | Version du matin | Décision de Monsieur (8 oct.) |
+|---|---|---|
+| But | Société émergente, PNJ lointains simplifiés | **Simulation réelle du monde, au maximum**, pour que tout émerge. Pas un moteur de règles qui produit des anecdotes (« Jeanne a menti ») |
+| Décision des PNJ | Décideur à règles (utilités + HTN) partout ; Transformer en option sur GPU dédié | **Chaque PNJ est piloté par le Transformer**, plusieurs fois par seconde, sans cache, par lots sur le GPU. Pas d'algorithme écrit à la main |
+| Sortie du modèle | Un choix d'option | **Une action + l'ajustement progressif des variables du PNJ** ; seule une émotion peut sauter d'un coup ; rien d'erratique |
+| PNJ loin du joueur | Exécution résolue par la durée | **Les 500 PNJ sont simulés à pleine puissance partout, tout le temps.** Seul le rendu est coupé hors de vue ; le moteur d'action tourne sans image |
+| Conséquences | Opérations matérialisées à l'arrivée | Renforcé : **toute action a une répercussion** dans le monde (un pont détruit l'est quand on arrive) |
+| Préparation | Variables des devs | **Avant de coder : définir toutes les variables et toutes les actions.** Les données d'entraînement viendront d'un modèle bien moins cher que Claude |
+| GPU | Rendu sur GPU intégré seul, IA sur GPU dédié | **Le GPU dédié est permis pour le rendu, au strict minimum** : il sert d'abord à l'IA. Le profil « GPU intégré seul » tombe |
+| Taille des voxels du monde | 2 cm | **Bien plus gros** (taille à fixer, § 6) |
+| Aspect | Couleurs seules | **Textures sur les voxels**, style des images de référence |
+| Lumière | Mise en cache dans le monde | **Calculée en temps réel** : heure, nuages, météo. On peut précalculer des données qu'on rééclaire, jamais la lumière elle-même |
+| Upscaling | 720p agrandi en 1080p | **Pas d'upscaling** : il rendrait le voxel lisse et fade |
+| Eau et feu | Champs grossiers liés aux voxels | **Au plus léger et au plus réaliste**, pas forcément en voxels. L'eau reste une quantité qu'on prélève et qui réagit (gravité, collisions) |
+| Personnages | Voxels stricts | **Un style voxel** : forme générale cubique, cubes de 1,8 à 2,2 cm, avec des angles et des facettes (voir le nez de `docs/style/pnj_type.png`) |
+| Frontières | Le joueur s'effondre et se réveille ramené au village | **Aucune limite visible, jamais de retour au village.** Le monde physique s'arrête à 50 km ; le joueur n'y arrive jamais parce que la difficulté le tue avant (loups, faim, froid). Des PNJ s'y perdent et nourrissent des légendes |
 
 ---
 
 ## 1. La méthode
 
-L'architecture n'est pas partie d'un moteur existant. Elle est partie des contraintes et a cherché, pour chacune, ce qui ferait échouer le jeu.
+Elle ne change pas : partir des contraintes, chercher pour chacune ce qui ferait échouer le jeu, retenir ce qui existe et marche, mesurer ou calculer son coût, et écrire un prototype avec un critère de réussite et un repli quand rien n'existe.
 
-**Les contraintes de départ** (vos décisions) :
-
-| Contrainte | Ce qu'elle impose |
-|---|---|
-| Voxels de 2 cm, tout destructible | 15 625 voxels par m² de surface, soit 10¹³ voxels de surface sur 400 km² [Calculé] : impossible à stocker ni même à générer en entier |
-| Rendu sur GPU intégré | Bande passante mémoire de 68 Go/s au mieux sur Iris Xe, partagée avec le CPU [Calculé] ; aucun jeu à voxels fins ne tourne dessus aujourd'hui |
-| GPU dédié réservé à l'IA | Le rendu ne peut pas « emprunter » le GPU dédié ; l'IA, elle, a une vraie puissance de calcul |
-| Monde déterministe, seuls les deltas sauvegardés | La génération doit donner le même résultat au bit près, sur toute machine, toujours |
-| 500 PNJ avec mémoire, société émergente | Pas de script : les événements doivent remonter du monde physique jusqu'à la mémoire des PNJ |
-| Performance d'abord | Ne jamais calculer au-delà de la précision nécessaire |
-
-**Le principe qui en sort** : *on ne paie que ce qui est perçu*. Le détail à 2 cm n'existe que là où quelqu'un regarde ou agit. Ailleurs, le monde est une formule (la seed), un journal d'événements et des résumés. C'est ce principe, appliqué système par système, qui donne toute l'architecture.
-
-**Comment chaque choix a été fait** : pour chaque système, on a cherché ce qui existe déjà et marche (Minecraft et ses mods, Teardown, Vintage Story, 7 Days to Die, Dwarf Fortress, publications de rendu et d'IA), on a mesuré ou calculé son coût sur la machine de référence, et on a gardé ce qui tient dans le budget. Quand rien n'existait (le 2 cm sur GPU intégré), on a combiné des techniques prouvées séparément et on a écrit un prototype avec un critère de réussite et un repli.
-
-**Puis la confrontation avec le travail des développeurs.** Leur code a été lu, testé (tous les tests passent [Mesuré]) et comparé point par point (`03_confrontation.md`). Plusieurs de leurs idées ont remplacé les nôtres ; c'est indiqué plus bas.
+**Le principe directeur** devient : *on simule tout, on ne rend que ce qui est vu*. La simulation (PNJ, actions, conséquences, économie, mémoire) tourne partout à pleine fidélité. Le rendu ne paie que ce qui est à l'écran, avec le moins de GPU possible, parce que le GPU sert d'abord au Transformer.
 
 ---
 
-## 2. Les dix choix, un par un
+## 2. Les PNJ : le Transformer dans la boucle de chaque personnage
 
-Chaque choix est présenté de la même façon : le problème, la solution, pourquoi celle-là, ce qu'on a écarté, et **ce qui la ferait tomber** (le point à critiquer).
+### 2.1 La boucle
 
-### Choix 1 — Une seule vérité, tout le reste est un cache
+```
+ toutes les 1/f secondes, pour les 500 PNJ à la fois :
 
-- **Problème** : un monde de 400 km² modifiable ne tient ni en mémoire ni dans une sauvegarde si on le stocke en voxels.
-- **Solution** : la vérité tient en quatre choses : la seed (et le plan du monde qu'elle produit), les chunks modifiés à la main, le journal d'opérations, les entités (PNJ, objets, institutions). Maillages, collisions, navigation, lumière, eau, feu sont des caches jetables, reconstruits là où une opération a touché.
-- **Pourquoi** : c'est la seule façon d'avoir à la fois un monde immense, une sauvegarde petite et aucune incohérence entre systèmes (un cache ne peut pas contredire la vérité, il est reconstruit depuis elle).
-- **Écarté** : stocker le monde en octree compressé (SVO/DAG) comme vérité. Excellent pour un monde statique, mais chaque modification coûte cher [Source : HashDAG, 1,5 à 2 fois plus lent au rendu].
-- **Ce qui le ferait tomber** : un système qui garde sa propre copie « pour aller plus vite ». C'est l'invariant I3, à surveiller en revue de code.
+  état du monde ──► entrée de chaque PNJ ─────────────────► un seul lot GPU ──► sorties
+  (moteur)          perception + identité + souvenirs        (Transformer)       │
+                    + action en cours + actions faisables                         │
+                                                                                  ▼
+                    ◄── moteur d'action (avec ou sans rendu) ◄── action + deltas de variables bornés
+```
 
-### Choix 2 — L'opération comme unité de changement (idée nouvelle, née de la confrontation)
+- **Entrée** : tout ce qui fait le personnage. Ce qu'il perçoit (personnes, objets, lieux, matières, eau, feu, bruits à sa portée), son identité (traits, valeurs, métier, titres, liens, foyer, village), ses souvenirs les plus pertinents à cet instant, son état (faim, fatigue, émotions, santé), l'action en cours, et les actions faisables proposées par le moteur.
+- **Sortie** : l'action à faire (ou continuer celle en cours), plus un **ajustement des variables**, borné par groupe. Une émotion peut sauter d'un coup ; besoins et relations bougent par petits pas ; traits et valeurs très lentement ou pas du tout (question 5).
+- **Pas de cache par PNJ** (correction de Monsieur, 15 h 51) : le modèle est rappelé à chaque pas. L'économie vient du **batching** : les 500 PNJ passent dans un seul lot, ce qui remplit le GPU efficacement.
+- **Rien d'erratique** : le tirage de l'action se fait avec une graine propre au PNJ, et les bornes empêchent les sauts absurdes. Les mêmes entrées donnent la même sortie.
 
-- **Problème** : trois besoins semblaient séparés. La sauvegarde veut des deltas compacts. Les chantiers des PNJ loin du joueur doivent avancer sans voxels. La mémoire des PNJ veut des événements perçus par des témoins.
-- **Solution** : un seul enregistrement, l'`Operation` (qui, quoi, forme, outil, matière, graine, bruit, visibilité). Il est appliqué aux voxels, ou mis en attente si la zone n'est pas chargée. Il prévient les témoins, qui en font un souvenir. Il est sauvegardé et écrit dans la chronique.
-- **Pourquoi** : c'est le pont entre la physique et la société. Un pont détruit hors de la vue du joueur existe comme opération ; les témoins s'en souviennent ; quand le joueur arrive, les voxels apparaissent depuis la même opération. Le cas 30 des devs (« événement → perception → mémoire → rumeur → réputation ») devient une propriété du moteur, pas un scénario.
-- **Écarté** : un système d'événements séparé pour l'IA. Il aurait créé deux vérités.
-- **Ce qui le ferait tomber** : une opération non déterministe (un effondrement physique calculé en flottants). **Règle** : tout ce qui n'est pas rejouable au bit près (débris physiques) est enregistré comme résultat, jamais rejoué.
+### 2.2 Ce qui reste du décideur à règles
 
-### Choix 3 — Le voxel : 16 bits, classe de matière + teinte (idée nouvelle, née de la confrontation)
+Il ne pilote plus aucun PNJ dans le jeu. Il garde deux rôles hors jeu : produire des étiquettes gratuites pour amorcer l'entraînement, et servir de **témoin** dans les tests (paires minimales). Le fil Transformer l'a dit : imiter la référence donne des PNJ uniformes ; l'élève doit apprendre de l'enseignant, puis de la boucle de simulation.
 
-- **Problème** : le convertisseur des devs garde une couleur par voxel ; leur propre benchmark montre que **la couleur coûte 10 fois plus que la forme** (4,5 à 5,6 bits par voxel contre 0,2 à 1,3) [Mesuré, `tools/voxelizer/docs/benchmark_encodages.md`]. Notre architecture prévoyait « matière seule », plus pauvre visuellement.
-- **Solution** : `VoxelId` = 9 bits de classe (512 matières : résistance, densité, inflammabilité, son) + 7 bits de teinte (128 nuances par matière). La physique, le feu et l'IA ne lisent que la classe. Le terrain généré écrit la teinte 0 et laisse la variation au shader. Le maillage fusionne sur la classe seule.
-- **Pourquoi** : on garde la richesse des textures converties sans payer 24 bits par voxel, et les briques de terrain restent uniformes (2 octets pour 512 voxels).
-- **Écarté** : couleur 24 bits par voxel (mémoire ×3 et briques jamais uniformes) ; matière seule (modules convertis trop pauvres).
-- **Ce qui le ferait tomber** : si 128 teintes par matière ne suffisent pas pour les modules convertis. À vérifier en reconvertissant le kit de 176 pièces.
+### 2.3 Tous les PNJ partout, sans rendu loin du joueur
 
-### Choix 4 — La hiérarchie de stockage : chunk 64³, brique 8³, micro-brique 4³
-
-- **Problème** : trouver la granularité qui compresse bien, se modifie vite et se dessine vite.
-- **Solution** : chunk de 64³ voxels (1,28 m) pour la génération, le maillage et la sauvegarde ; brique de stockage 8³ (16 cm) uniforme ou à palette locale ; micro-brique de rendu 4³ (8 cm) dont l'occupation tient exactement dans un entier de 64 bits.
-- **Pourquoi** : 64³ est la taille où le maillage greedy binaire est le plus rapide (masques de 64 bits, 74 µs par chunk en moyenne [Source]). Les briques 8³ sont celles qui donnent le meilleur compromis dans le benchmark des devs : 6,1 à 6,4 bits par voxel couleur comprise [Mesuré], contre 8,6 à 11,3 en 4³. Les deux choix tombent juste sans l'avoir cherché.
-- **Écarté** : chunks 32³ (plus de surcoût par chunk), 16³ en stockage (moins de briques uniformes).
-- **Ce qui le ferait tomber** : peu de chose ; c'est le choix le mieux étayé.
-
-### Choix 5 — Le rendu sur GPU intégré : la taille des voxels double avec la distance
-
-C'est **le point le plus risqué** du projet, et celui sur lequel vous aviez demandé une solution plutôt qu'un constat d'échec.
-
-- **Problème** : Teardown, la référence du voxel destructible, exige une GTX 1060 et ne supporte pas les GPU intégrés Intel [Source]. Son coût vient du lancer de rayons long et de l'éclairage recalculé à chaque image, pas de la taille des voxels.
-- **Solution, en cinq idées combinées** :
-  1. **Le 2 cm seulement là où il se voit.** En 720p, un voxel de 2 cm fait moins d'un pixel au-delà d'environ 10 m [Calculé]. Au-delà, on dessine des voxels plus gros.
-  2. **Des anneaux à coût constant.** Chaque fois que la distance double, la taille des voxels double. Chaque anneau contient alors environ 600 000 cellules de surface, quelle que soit sa distance [Calculé]. Le coût total croît comme le logarithme de la distance de vue, pas comme son carré.
-  3. **La géométrie par rastérisation, le détail par le pixel.** Près du joueur, le GPU dessine les faces des briques de 8 cm ; le détail à 2 cm à l'intérieur est tracé dans le pixel shader, sur une dizaine de pas au plus, en lisant 8 octets. Cela divise par 16 le nombre de faces de l'anneau le plus dense [Calculé].
-  4. **La lumière calculée une fois, dans le monde.** Elle est stockée sur les surfaces et recalculée seulement là où un coup de pioche a changé quelque chose : l'inverse exact de Teardown.
-  5. **Ce qui ne bouge pas n'est pas redessiné.** Au-delà de 640 m, le paysage est une image en cache (un cubemap avec profondeur), rafraîchie une face par image.
-- **Plus loin** : relief du plan du monde en geometry clipmap jusqu'au bord, puis décor de seed (128 m, puis 512 m) jusqu'à l'horizon, à 196 km depuis un sommet de 3 km [Calculé], avec courbure de la Terre dans le shader et atmosphère précalculée.
-- **Budget proposé à 30 images/s** : 22 ms de GPU sur 33, dont 6 ms de géométrie, 3 ms de micro-tracé, 3 ms de lumière, 3 ms de PNJ, 3 ms d'eau et transparences, 1 ms de lointain, 3 ms d'upscaling 720p → 1080p.
-- **Écarté** : lancer de rayons dans tout le volume (Teardown) ; octree compressé comme rendu principal (Aokana : statique, sans édition).
-- **Ce qui le ferait tomber** : les surfaces rugueuses laissées par la pioche. Le greedy meshing fusionne mal l'organique ; l'hypothèse d'une réduction par 4 des triangles n'est pas mesurée. **Repli** : réduire l'anneau 2 cm à 6 m et passer de niveau à 1,5 pixel ; on perd un peu de détail à mi-distance, le jeu reste jouable. Les prototypes M3, M4 et M5 de la feuille de route tranchent.
-
-### Choix 6 — La voxelisation des assets : du fichier 3D au module (votre question)
-
-**Oui, on a une solution, et elle est en grande partie déjà écrite par vos développeurs.**
-
-- **Ce qui existe et marche** [Mesuré, 50 tests verts] : voxelisation conservative depuis .obj/.gltf, remplissage de l'intérieur (un mur de pierre est plein de pierre, sinon la destruction révèle du vide), bouchage des murs ouverts, palette de couleurs en OKLab par k-means, format VXP en briques 8³ à accès aléatoire (17 µs par lecture en Python [Mesuré]), environ 7 fois plus compact que l'export JSON compressé.
-- **Ce qu'on y ajoute** :
-  1. **Projection sur les matières** : chaque couleur est rattachée à une classe de matière (chêne équarri, granit taillé, chaume), avec une proposition automatique que l'artiste corrige. C'est le choix 3.
-  2. **Modules partagés en copie à l'écriture** : chaque module (mur, fenêtre, maison entière) est stocké une fois. Le monde ne contient que des références (module, position, une des 24 orientations, graine), 16 à 32 octets chacune. Au premier coup de pioche, le chunk recopie les voxels et devient ordinaire.
-  3. **Usure par graine** : la graine de chaque copie pilote une usure procédurale (arêtes ébréchées, mousse). Trente maisons du même modèle ne se ressemblent pas, sans stocker trente copies.
-  4. **Connecteurs** : chaque module porte des points d'attache (mur-mur, mur-toit, porte-cadre) pour que les générateurs assemblent sans trous.
-  5. **Le même module sert au chantier des PNJ** : un blueprint est une liste d'instances de modules ; le travail restant est toujours « blueprint moins monde » (idée des devs, gardée telle quelle : elle ne peut pas se corrompre et guérit après vandalisme).
-- **Ce qui manque encore** : la table des matières, les niveaux de détail précalculés par module, les connecteurs, l'épaississement automatique des détails de moins de 2 cm (qui disparaissent à la voxelisation).
-- **Ce qui le ferait tomber** : le volume de production. À 2 cm, chaque objet compte des dizaines de milliers de voxels (un mur avec fenêtre : 31 914 [Mesuré]). D'où la priorité aux générateurs et à l'usure par graine plutôt qu'à la retouche manuelle.
-
-### Choix 7 — Physique, eau, feu, effondrements : des champs grossiers, pas des voxels
-
-- **Problème** : simuler l'eau et le feu au voxel de 2 cm coûterait des millions de cellules.
-- **Solution** : rien de dynamique dans le voxel. L'eau est une hauteur par colonne de 25 cm, plus des bassins abstraits. Le feu est un champ clairsemé de 25 à 50 cm (température, combustible, humidité, ouverture à l'air). Les effondrements passent par une stabilité en deux étages : connectivité bornée, puis graphe porteur grossier (approche 7 Days to Die). Les débris deviennent des corps rigides Jolt (boîtes de 4 à 8 cm, environ 200 corps actifs au plus).
-- **Pourquoi** : ces systèmes n'ont besoin que de la précision à laquelle l'œil juge le phénomène. Une flamme n'a pas besoin d'une cellule de 2 cm.
-- **Ce qui le ferait tomber** : les arches et les voûtes, mal gérées par le modèle 7 Days to Die ; l'eau sur plusieurs étages souterrains. Les deux sont notés dans `05_idees.md`.
-
-### Choix 8 — Les PNJ : une décision identique partout, seule l'exécution change
-
-- **Problème** : 500 PNJ avec mémoire, sans que le village « saute » quand le joueur arrive.
-- **Solution** : les 500 PNJ prennent tous de vraies décisions individuelles, avec les mêmes entrées, où qu'ils soient. Ce qui baisse avec la distance, c'est la fidélité de l'exécution. Au palier 0 (64 PNJ au plus, près du joueur), le plan s'exécute voxel par voxel. Au palier 1 (le reste du village du joueur), les actions sont résolues par leur durée. Au palier 2 (les quatre autres villages), la résolution est horaire et les opérations sont enregistrées, puis matérialisées à l'arrivée du joueur.
-- **Le contrat des devs** (gardé tel quel) : `DecisionRequest` → `Plan` de 1 à 6 étapes avec conditions d'arrêt et d'interruption → `PlanResult`. Un plan de 15 coups de pioche est une décision, pas quinze : le décideur n'est réveillé que quand un plan finit, échoue ou est interrompu.
-- **Deux décideurs, un contrat** : une référence lisible (utilités + HTN, quelques µs sur CPU) et un élève (Transformer de 5 à 30 M de paramètres, distillé depuis Gemini, sur le GPU dédié). Règle des devs : l'élève doit battre la référence sur les 30 cas de capacités, sinon il n'entre pas.
-- **Écarté** : des agrégats de population pour les villages lointains (prévus quand on parlait de milliers d'habitants ; inutiles à 500).
-- **Ce qui le ferait tomber** : la qualité des données d'entraînement. Aucune étiquette réelle n'existe encore. Voir la limite 5 plus bas.
-
-### Choix 9 — Le langage naturel n'entre jamais dans l'état
-
-- **Solution** : le texte du joueur devient un cadre structuré (acte, force, politesse, modalité, contenu), par l'analyseur des devs (anglais, 15 tests). La réponse d'un PNJ est produite par un petit LLM local à partir d'un cadre ; ce LLM n'a aucun accès en écriture à la simulation.
-- **Pourquoi** : c'est ce qui garde le jeu déterministe, sauvegardable et sûr. Un LLM qui écrirait dans l'état rendrait toute sauvegarde non rejouable.
-- **Vous avez tranché** : anglais seulement pour l'instant ; le cadre est indépendant de la langue.
-
-### Choix 10 — Le monde de 20 km et ses frontières
-
-- **Solution** : un cœur habité d'environ 14 × 12 km. Autour, des marches de 3 km (5 km côté montagne) où une hostilité H double tous les 300 m (500 m en montagne). H n'est pas une règle à part : il multiplie la soif, le froid, la houle, la densité des bêtes. Doubler son équipement fait gagner environ 300 m : on avance à chaque essai sans jamais passer. Il n'y a pas de mur : à la limite, le joueur s'effondre et se réveille ramené par les gens du village le plus proche. H s'applique aussi sous terre et à la repousse d'une forêt défrichée, pour qu'aucun contournement ne passe.
-- **Pourquoi 20 km** : avec 500 habitants, 50 km laissaient 2 500 km² presque vides ; 20 km gardent les villages à une demi-journée de marche du bourg (×6 : un jour de jeu = 4 h réelles).
-- **Ce qui le ferait tomber** : un joueur qui repère la règle. Le prototype M11 le teste avec des testeurs qui cherchent à passer.
-
----
-
-## 3. Estimations de puissance de calcul
-
-Machine de référence proposée : portable Intel Iris Xe (rendu), RTX série 3000 6 Go (IA), CPU 4 cœurs / 8 threads, 16 Go de RAM.
-
-### 3.1 Par image (30 images/s = 33 ms)
-
-| Poste | Budget | D'où vient le chiffre |
+| | Près du joueur (vu) | Loin du joueur (pas vu) |
 |---|---|---|
-| GPU intégré, rendu complet | 22 ms (11 ms de marge) | répartition du choix 5 ; à mesurer par M3 à M5 |
-| Bande passante GPU intégré | 68 Go/s théoriques, soit 2,3 Go par image au maximum, partagés avec le CPU [Calculé] | LPDDR4x-4266 sur 128 bits : 4 266 millions de transferts × 16 octets |
-| CPU, thread principal | 8 ms | logique et envoi des commandes de rendu |
-| CPU, société (500 PNJ) | ≤ 3 ms en moyenne, sur threads de travail | estimation, prototype S5 |
-| Un coup de pioche, toutes conséquences | ≤ 2 ms (maillage, collisions, navigation, lumière, stabilité, témoins) | remaillage 74 µs par chunk [Source] : environ 25 chunks par coup |
-| Génération d'un chunk de surface | < 1 ms | cible M2 |
-| Envoi vers le GPU | 4 Mo par image | file de priorité par distance et regard |
+| Décision | Transformer, même fréquence | Transformer, même fréquence |
+| Perception | complète | complète, calculée sur l'état du monde, sans image |
+| Exécution | animation, voxels, physique visible | moteur d'action sans rendu : déplacements sur la navigation, actions résolues avec leurs effets réels |
+| Conséquences | opérations appliquées aux voxels chargés | opérations appliquées aux deltas des chunks non chargés, sauvegardées, visibles de loin aux niveaux de détail grossiers |
 
-### 3.2 IA sur le GPU dédié (en jeu)
+C'est le bus d'opérations (§ 4) qui rend cela possible : chaque action produit une `Operation`, appliquée au monde même si personne ne regarde.
 
-| Poste | Estimation |
-|---|---|
-| Décisions par seconde réelle, 500 PNJ | 10 à 30 (un plan dure de quelques dizaines de secondes à quelques minutes de jeu) |
-| Coût d'une décision, élève de 10 M de paramètres et ~45 jetons | environ 1 milliard d'opérations [Calculé : 2 × paramètres × jetons] |
-| Total | moins de 30 milliards d'opérations par seconde, une petite fraction d'une RTX 3060 portable (environ 10 TFLOPS en FP32, estimés pour une fréquence voisine de 1,4 GHz) |
-| Verbaliseur (LLM ~2 milliards de paramètres, 4 bits) | ne parle que près du joueur ; débit à mesurer |
+### 2.4 Avant de coder : le catalogue unique
 
-### 3.3 Hors jeu
+Monsieur l'a demandé : définir **toutes** les variables et **toutes** les actions avant de coder. Le fil Simulation tient le catalogue unique ; le fil Transformer en a écrit la moitié « modèle » (`ai/CATALOGUE_modele.md`, avec une colonne « Écriture » qui donne la borne de variation de chaque variable). Le contrat d'action actuel compte 112 fonctions et 20 conditions (`ai/CONTRAT_PNJ.md`). Ce qui manque encore à l'entrée du modèle : **les jetons de perception** (espace, matières, eau, feu, objets), fournis par le moteur.
 
-| Poste | Estimation |
-|---|---|
-| Plan du monde (1,6 million de cellules à 16 m, relief, érosion, rivières) | < 30 s à la création de la partie, sur CPU, déterministe |
-| Simulateur sans rendu, avec le décideur de référence | 1 an de jeu = environ 158 millions de décisions [Calculé : 30 par s × 4 h × 365]. En 10 minutes, cela fait 263 000 décisions par seconde ; à 5 µs chacune, environ 1,3 cœur CPU [Calculé]. Tenable. |
-| Données du teacher (Gemini) | coût par appel et quota à mesurer au pilote de 100 étiquettes |
+### 2.5 D'où viennent les données
+
+1. Amorçage : 300 000 situations étiquetées par le décideur à règles (fait, hors dépôt).
+2. **Enseignant bon marché** : un modèle bien moins cher que Claude note des situations (Gemini Flash-Lite visé, ou un modèle local). Prêt, jamais lancé : il attend l'accord et le budget de Monsieur (question 6).
+3. Boucle avec la simulation : l'élève joue, on garde les états qu'il visite vraiment, l'enseignant les note, on réentraîne (principe DAgger).
 
 ---
 
-## 4. Estimations de stockage
+## 3. Le monde et ses frontières
 
-### 4.1 En mémoire pendant le jeu
+- **Monde physique de 50 × 50 km**, dont un **cœur habité d'environ 20 × 20 km** où vivent les 5 villages. Au-delà de 50 km, il n'y a pas de voxel, seulement le décor lointain non jouable, jusqu'à l'horizon.
+  - *Interprétation à confirmer (question 2)* : Monsieur a validé « le monde de 20 km » le matin, puis écrit « le monde fait 50 km au total » le soir. On lit : 20 km habités, 50 km au total. Le plan du monde du moteur est aujourd'hui figé à 20 km (version 1) ; le passer à 50 km est un changement de version (plan à 16 m : environ 10 millions de cellules, environ 50 Mo [Calculé]).
+- **Aucune limite visible, aucun retour magique.** Entre le cœur et le bord, une hostilité croît de façon exponentielle (elle double tous les quelques centaines de mètres) : froid, faim, soif, tempêtes, bêtes, terrain. Le joueur meurt de ce qui arrive, pas d'une règle. Il ne voit jamais le bord parce qu'il n'y arrive jamais. L'hostilité vaut aussi sous terre et pour une forêt défrichée, pour qu'aucun contournement ne passe.
+- **Les PNJ obéissent aux mêmes lois.** Ceux qui partent trop loin ne reviennent pas ; leur disparition devient une histoire que les villages se racontent.
+- Orientation (acceptée) : mer à l'ouest, montagne au nord, désert à l'est, forêt au sud.
 
-| Contenu | Taille | Calcul |
+---
+
+## 4. Une seule vérité et le bus d'opérations (inchangé, et plus important)
+
+- **La vérité** : la seed (et le plan du monde), les chunks modifiés, le journal d'opérations, les entités (PNJ, objets, institutions). Tout le reste est un cache reconstructible.
+- **L'opération** est l'unité de changement : creuser, poser, couper, brûler, bâtir, puiser de l'eau. Elle modifie les voxels (ou les deltas d'un chunk non chargé), prévient les témoins (perception → mémoire), est sauvegardée et écrite dans la chronique.
+- C'est elle qui garantit « toute action a une répercussion » : un pont détruit par un PNJ loin du joueur existe comme opération ; les témoins s'en souviennent ; le joueur le trouve détruit en arrivant, et le voit de loin.
+- **Ce qui manque dans le code** (`engine/ETAT.md`) : le bus (M6), l'application aux chunks non chargés, la sauvegarde des deltas, et la remontée des modifications vers les niveaux de détail grossiers. Aujourd'hui, une édition n'existe qu'au niveau 0, en mémoire.
+
+---
+
+## 5. Le rendu : léger, texturé, éclairé en temps réel
+
+Monsieur a jugé le premier rendu « très moche » et demandé une vraie réflexion. **Le fil Village mène l'étude détaillée** (ce qui existe, ce qui s'applique à un monde procédural et destructible, ce que ça coûte) ; son `ETAT.md` la résume. Voici le cadre de cette étude.
+
+**La cible visuelle** : les quatre images de `docs/style/`. On y voit des blocs lisibles mais pas minuscules, des textures de pierre, de bois et de tuile, de la mousse et du lierre, une lumière chaude de fin de journée, des rayons de soleil dans la brume, de la profondeur atmosphérique jusqu'aux montagnes, et des personnages en style voxel à facettes. Ce sont des images de concept : la cible est l'ambiance, pas l'égalité au pixel près.
+
+1. **Voxels plus gros.** Des voxels deux fois plus gros divisent par environ 4 le nombre de faces à surface égale [Calculé] : c'est le levier le plus puissant sur le coût GPU, et il rend le bloc lisible comme dans les images.
+2. **Textures dans le shader.** Chaque face lit une petite texture de sa matière (classe du voxel), avec une variante tirée de la position. Pas de mémoire par voxel en plus ; les bits libres du quad portent la variante [Source : `engine/ETAT.md`].
+3. **Lumière en temps réel.** Soleil, ciel, nuages, météo et cycle jour/nuit sont dynamiques. Ce qui ne dépend que de la géométrie peut être précalculé puis **rééclairé** en temps réel : occlusion ambiante aux sommets (déjà faite), visibilité du ciel, sondes d'irradiance mises à jour par morceaux, ombres proches recalculées seulement quand le soleil ou la géométrie bouge. On ne recalcule que ce qui change. Jusqu'à 1 Go de données précalculées est accepté si cela réduit fortement le calcul (accord de Monsieur).
+4. **Atmosphère.** Brume de hauteur, perspective aérienne et rayons de soleil font l'essentiel de l'ambiance des images ; ce sont des effets d'écran peu coûteux comparés à la géométrie.
+5. **Pas d'upscaling.** Rendu à la résolution native. La finesse vient de la géométrie et des textures, pas d'un agrandissement.
+6. **Résolution variable selon la distance.** Les anneaux de niveaux de détail sont gardés (6 anneaux emboîtés aujourd'hui) ; au loin, le paysage peut être une image en cache rafraîchie lentement.
+7. **Budget GPU minimal.** Le rendu partage le GPU dédié avec le Transformer : il doit laisser l'essentiel à l'IA (§ 8).
+8. **Personnages en style voxel**, pas en voxels stricts : maillages à facettes, forme cubique, cubes de 1,8 à 2,2 cm, avec des angles. Fil Villageois.
+
+---
+
+## 6. Voxels, matières, assets
+
+- **VoxelId de 16 bits** (9 bits de classe de matière, 7 bits de teinte) : inchangé. La classe porte la physique ; la teinte et la texture portent l'aspect.
+- **Taille du voxel** : une constante (`kVoxelMm` = 20 dans `engine/core/world/include/emergence/world/voxel_id.h`), partagée avec `worldgen`. La passer à 4 ou 5 cm est un petit chantier connu : changer la constante, la valeur codée en dur dans l'extension Godot, les empreintes de test et le contrat d'interfaces. **Défaut proposé : 5 cm**, à confirmer par Monsieur et par l'étude de rendu (question 1).
+- **Chaîne d'assets** : inchangée, jugée correcte par Monsieur. Fichier 3D → convertisseur (`tools/voxelizer`) → module en briques (format VXB3) → instances (VXI) → copie à l'écriture au premier coup. À refaire à la nouvelle taille de voxel.
+- **Hiérarchie de stockage** : chunks de 64³ voxels en briques de 8³ ; elle se garde à toutes les tailles de voxel.
+
+---
+
+## 7. Eau, feu, physique
+
+- **Eau** : hors des voxels, au plus léger. Un champ de hauteur d'eau (colonnes) avec écoulement simple, des bassins abstraits pour les lacs et la mer. Une quantité qu'on **prélève** (un seau retire du volume au champ) et qu'on utilise. Elle réagit quand on saute ou plonge, par la gravité et les collisions : vagues et éclaboussures en particules, sans simulation fluide coûteuse.
+- **Feu** : un champ de chaleur clairsemé (combustible, humidité, air) qui consomme les matières inflammables par opérations, et des particules pour l'image.
+- **Physique** : Jolt (intégré à Godot) pour les corps et les débris ; stabilité des structures en deux étages (connectivité, puis graphe porteur) pour les effondrements.
+
+---
+
+## 8. Estimations de calcul
+
+Machine de référence proposée : le portable de Monsieur, RTX série 3000 de 6 Go, CPU 4 cœurs / 8 threads, 16 Go de RAM. Le GPU intégré peut encore prendre le rendu quand il existe ; le jeu ne doit pas en dépendre.
+
+### 8.1 Le Transformer en jeu (le poste dominant)
+
+Élève `small` : 5,3 M de paramètres [Source : `ai/student/ENTRAINEMENT.md`]. Coût d'un appel ≈ 2 × paramètres × jetons [Calculé].
+
+| Jetons d'entrée | Coût par appel | 500 PNJ à 2 appels/s | à 4 appels/s | à 10 appels/s |
+|---|---|---|---|---|
+| 64 (format actuel) | 0,68 GFLOP | 0,68 TFLOPS | 1,4 TFLOPS | 3,4 TFLOPS |
+| 128 | 1,4 GFLOP | 1,4 TFLOPS | 2,7 TFLOPS | 6,8 TFLOPS |
+| 256 | 2,7 GFLOP | 2,7 TFLOPS | 5,4 TFLOPS | 13,6 TFLOPS |
+
+Une RTX 3060 portable donne environ 10 TFLOPS en FP32 (estimation), plusieurs fois plus en FP16 sur ses cœurs tensoriels, avec en pratique 30 à 50 % d'efficacité. **Lecture** : 64 à 128 jetons à 2 à 4 appels par seconde tiennent confortablement ; 256 jetons à 10 appels par seconde saturent la carte. La taille de l'entrée et la fréquence sont les deux réglages qui décident de tout. D'où l'idée de **choisir les souvenirs pertinents** à chaque pas plutôt que de tout envoyer.
+
+Mémoire du GPU dédié : élève < 100 Mo ; entrées et sorties d'un lot de 500 : quelques Mo [Calculé] ; verbaliseur de dialogue (petit LLM local, seulement près du joueur) 1,5 à 2,5 Go ; rendu : le reste, en visant moins de 1,5 Go.
+
+### 8.2 Le reste du jeu, par image (30 images/s, 33 ms)
+
+| Poste | Budget proposé |
+|---|---|
+| GPU, rendu complet | le moins possible ; cible fixée par l'étude de rendu, à mesurer sur la RTX (touche H du jeu) |
+| CPU, thread principal | 8 ms |
+| CPU, entrées du Transformer et moteur d'action des 500 PNJ | ≤ 4 ms en moyenne, sur threads de travail |
+| Un coup de pioche, toutes conséquences | ≤ 2 ms |
+| Génération d'un chunk | environ 0,75 ms sur 4 cœurs [Mesuré, conteneur] |
+| Plan du monde (20 km) | 4,2 s à la création [Mesuré, conteneur] |
+
+### 8.3 Simulation accélérée (tests, entraînement, temps qui passe vite)
+
+Avec le Transformer partout, **la simulation ne peut pas aller beaucoup plus vite que le temps réel** : c'est la carte graphique qui limite. Une année de jeu, à l'échelle actuelle (1 jour = 4 h réelles), dure 1 460 h réelles ; à 4 appels par seconde et 64 jetons, elle coûte environ 7 × 10¹⁸ opérations [Calculé], soit **environ deux semaines de RTX** à 5 TFLOPS efficaces. Voir la limite 2.
+
+---
+
+## 9. Estimations de stockage
+
+| Contenu | Taille | Calcul ou source |
 |---|---|---|
-| Voxels à 2 cm chargés autour du joueur (rayon 64 m) | environ 350 Mo pour du terrain, plus les bâtiments du village | 7 850 colonnes × 1,5 chunk de surface × ~29 Ko par chunk (une centaine de briques à palette de 2 à 4 bits + index) [Calculé] |
-| Caches dérivés (maillages, collisions, navigation, lumière) | ≤ 1 Go de RAM | budget |
-| Maillages et champs côté GPU intégré | ≤ 1 Go (maillages 300 Mo, lumière et eau 64 Mo, matières 100 Mo, images 80 Mo, ombres 32 Mo) | budget du document d'architecture |
-| Plan du monde | environ 8 Mo | 1,6 million de cellules à 16 m |
-| Résumé de région lu par la société | environ 3 Mo | 100 000 cellules de 64 m × ~32 octets [Calculé] |
-| Souvenirs des 500 PNJ | environ 11 Mo | 475 × 300 + 25 × 1 000 = 167 500 souvenirs × 64 octets [Calculé] |
-| État social complet (souvenirs, relations, croyances, institutions) | environ 32 Mo | ~64 Ko par PNJ |
-| GPU dédié : élève + verbaliseur | ≤ 4 Go sur 6 (élève < 100 Mo, verbaliseur 1,5 à 2,5 Go avec son cache) | estimation |
-| **RAM totale du jeu** | **≤ 4 Go** | budget |
-
-### 4.2 La sauvegarde après 100 heures
-
-| Contenu | Taille unitaire | Volume supposé | Total |
-|---|---|---|---|
-| Plan du monde (recalculable, gardé pour éviter 30 s au chargement) | — | 1 | ~8 Mo |
-| Chunks modifiés à la main | 2 à 8 Ko compressés | 5 000 à 50 000 | 20 à 400 Mo |
-| Opérations rejouables (fouilles, champs, routes, chantiers) | 32 à 64 octets | 500 000 | 16 à 32 Mo |
-| Instances de modules | 16 à 32 octets | 500 000 | 8 à 16 Mo |
-| PNJ, mémoire, relations | ~64 Ko | 500 | ~32 Mo |
-| Chronique, tuiles de surcharge du lointain | — | — | < 15 Mo |
-| **Total** | | | **80 à 500 Mo** ; cible ≤ 500 Mo |
-
-### 4.3 L'installation
-
-Estimation : environ 2 à 3 Go, dont le verbaliseur (~1,2 à 1,5 Go), la bibliothèque de modules voxel (quelques centaines de Mo au plus au rythme de 6 bits par voxel), l'élève (< 100 Mo) et le moteur.
+| Plan du monde 20 km / 50 km | 8 Mo / environ 50 Mo | 1,6 M / 10 M cellules à 16 m |
+| État social des 500 PNJ (souvenirs, relations, croyances, variables) | environ 32 Mo | ~64 Ko par PNJ |
+| Maillages autour du bourg, voxels de 2 cm | 52 Mo pour 6,85 M quads, dont 90 % de feuillages lointains | [Mesuré, conteneur] ; nettement moins avec des voxels plus gros |
+| Données précalculées pour l'éclairage | jusqu'à 1 Go | plafond accepté par Monsieur |
+| Sauvegarde après 100 h | 80 à 500 Mo, cible ≤ 500 Mo | deltas de chunks, opérations, entités |
+| Jeu de données d'entraînement actuel | 500 Mo (+ 120 Mo de paires et de trajectoires) | hors dépôt, régénérable |
+| Installation | environ 2 à 3 Go | verbaliseur, modules, élève, moteur |
 
 ---
 
-## 5. Les points limitants
+## 10. Points limitants
 
-Classés du plus grave au moins grave. Pour chacun, ce qu'on sait, ce qu'on ne sait pas, et ce qu'on fait si ça casse.
-
-1. **Le 2 cm éditable sur GPU intégré n'a aucun précédent.** Chaque morceau est prouvé séparément, pas leur combinaison. Le plus incertain : le nombre réel de triangles sur des surfaces creusées. Repli connu (anneau 2 cm à 6 m). **Premier prototype à faire.**
-2. **La bande passante partagée.** Sur un GPU intégré, le rendu et la simulation CPU se disputent la même mémoire. Le budget de 3 ms de société et de 22 ms de rendu ont été estimés séparément ; ensemble, ils peuvent se gêner. À mesurer en charge réelle (tranche verticale).
-3. **La transition abstrait → détaillé.** Quand le joueur arrive, les chantiers et les fouilles résolus « par leur durée » doivent apparaître en voxels sans incohérence. La parade est la décision identique à tous les paliers et les opérations déterministes ; le test est « revenir après 10 ans de jeu et trouver un village cohérent ».
-4. **L'élève ne peut pas tenir le rythme du simulateur accéléré, et n'en a pas besoin** (point vérifié avec le fil d'architecture). Le critère « 1 an en moins de 10 minutes » demande environ 263 000 décisions par seconde [Calculé]. C'est tenable avec le décideur de référence (environ 1,3 cœur), et c'est lui que le simulateur utilise pour tester la société sur des années. Avec l'élève, cela ferait environ 263 000 milliards d'opérations par seconde, hors de portée d'une RTX 3060 portable. Mais l'élève n'en a pas besoin : en jeu, il ne prend que 10 à 30 décisions par seconde. Pour son entraînement (boucle DAgger, S8), il tourne sur des déroulés courts, de quelques jours à quelques semaines de jeu, lancés depuis des états de la référence. Un élève plus petit reste une option si le prototype M12 montre que le temps réel coûte trop cher.
-5. **Les données d'entraînement n'existent pas.** Aucune étiquette réelle, aucun modèle entraîné. Le défaut le plus grave signalé par les devs : le teacher voit des valeurs trop grossières. L'ordre de travail est fixé (`02` § 9.2) ; le décideur de référence garantit que le jeu marche même si l'élève échoue.
-6. **Le volume de contenu.** À 2 cm, modéliser coûte cher, et 111 fonctions de plan demandent des animations. Parade : générateurs, usure par graine, et une tranche verticale limitée (travail, parole, avis, un vote) avant d'élargir.
-7. **La croissance de la sauvegarde.** 100 000 chunks modifiés à la main font déjà environ 500 Mo. Si les PNJ creusent beaucoup « à la main » au lieu d'opérations rejouables, la sauvegarde gonfle. Parade : compaction ; règle que les travaux des PNJ restent des opérations.
-8. **Les joueurs sans deux GPU.** Votre portable a deux GPU ; la plupart des PC de bureau Steam n'ont que le dédié. Le rendu, dimensionné pour un GPU intégré, n'en prend qu'une petite partie, et l'IA y tourne en calcul asynchrone basse priorité. Sur GPU intégré seul, le décideur de référence prend le relais. À tester (prototype M12).
-9. **Les règles Steam.** Vérifié le 8 octobre : la règle de juillet 2025 vise le contenu sexuel explicite ; une romance non explicite entre adultes (D15), même apparentés (D11), présente un risque faible si rien n'est sexuel ni montré, avec la norme de tabou forte par défaut et l'interrupteur `--no-adult-kin-romance` prêt. Reste à rédiger la déclaration du contenu IA généré en direct (le verbaliseur) et de ses garde-fous (O7).
+1. **Le GPU partagé entre rendu et IA.** Le Transformer pour 500 PNJ plusieurs fois par seconde et le rendu tiennent ensemble sur la RTX de Monsieur selon le calcul, mais rien n'est mesuré. **Premier test réel à faire sur sa machine** : la scène jouable avec un lot de 500 appels du Transformer à chaque pas.
+2. **Le temps qui passe.** « Revenir trois ans après » demande trois années de jeu. À l'échelle actuelle (1 jour = 4 h réelles), une année dure 1 460 h de partie ; et on ne peut pas faire défiler le temps beaucoup plus vite que le temps réel avec le Transformer partout (§ 8.3). Il faut choisir : une échelle de temps bien plus rapide (par exemple 1 jour = 20 minutes, comme Minecraft : une année dure alors environ 120 h de partie), une fréquence de décision qui baisse quand on accélère, ou les deux (question 4).
+3. **La perception à fournir au modèle.** Le modèle ne voit aujourd'hui que des situations sociales. Il faut définir ce qu'un PNJ perçoit et l'encoder en jetons, sans exploser la taille de l'entrée (§ 8.1).
+4. **Les étiquettes.** Aucune étiquette d'enseignant n'existe ; l'élève actuel imite des règles. Il faut lancer l'enseignant bon marché (accord et budget de Monsieur), puis la boucle avec la simulation.
+5. **Le rendu à refaire.** Textures, lumière en temps réel, voxels plus gros, pas d'upscaling : rien de cela n'est encore codé. L'étude du fil Village fixe le chemin ; aucun chiffre GPU réel n'existe.
+6. **Les conséquences hors de vue.** Le bus d'opérations, les deltas sur les chunks non chargés et la sauvegarde ne sont pas codés. Sans eux, « tout a une répercussion » n'est pas tenu.
+7. **Le monde de 50 km.** Le plan est figé à 20 km ; le passage à 50 km change sa version et les empreintes des tests.
+8. **Le volume de contenu** : générateurs, usure par graine et connecteurs restent la parade.
+9. **Steam** : romance non explicite entre adultes, risque faible (vérifié le 8 oct.) ; reste à déclarer le contenu généré en direct par le verbaliseur et ses garde-fous (O7).
 
 ---
 
-## 6. Où critiquer en priorité
+## 11. Questions pour Monsieur
 
-Si vous voulez concentrer vos critiques là où elles changent le plus le projet :
-
-1. **Le budget de rendu (choix 5)** : est-ce que vos prototypes ou idées de rendu passent par d'autres chemins que les anneaux et le micro-tracé ? Les sept prototypes du document de rendu servent de grille pour les comparer.
-2. **La règle « même décision à tous les paliers » (choix 8)** : c'est elle qui coûte le plus de CPU, et c'est elle qui garantit la cohérence.
-3. **L'opération comme unité universelle (choix 2)** : si un système du jeu ne s'exprime pas bien en opérations, c'est là que l'architecture plie.
-
-Les documents de référence (`docs/reference/`) gardent le détail des calculs et toutes les sources citées.
+1. **Taille des voxels du monde** : 5 cm par défaut ? (4 cm, 5 cm, autre)
+2. **Monde de 50 km au total avec un cœur habité de 20 km** : est-ce bien cela ?
+3. **Fréquence du Transformer** : combien d'appels par seconde et par PNJ ? Défaut proposé : 2 à 4.
+4. **Échelle de temps** : garder 1 jour = 4 h réelles, ou accélérer pour que trois années passent en une partie raisonnable ?
+5. **Traits et valeurs morales** : peuvent-ils bouger lentement, ou sont-ils figés à la naissance ?
+6. **Enseignant bon marché** : quel modèle (Gemini Flash-Lite, un modèle local) et quel budget ?

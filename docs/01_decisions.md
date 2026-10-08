@@ -22,6 +22,16 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | D14 | 2026-10-08 | Langue du joueur : anglais seulement pour l'instant ; architecture prête pour d'autres langues | Monsieur |
 | D15 | 2026-10-08 | Romance : composante naturelle de la vie sociale, jamais d'acte sexuel explicite ; le jeu ne porte pas dessus. D11 conservée, conformité Steam à vérifier avant la sortie | Monsieur |
 | D16 | 2026-10-08 | Clé Gemini du 6 octobre révoquée | Monsieur |
+| D17 | 2026-10-08 | But : simulation réelle du monde, au maximum ; tout doit émerger, aucun moteur de règles écrit à la main pour les PNJ | Monsieur |
+| D18 | 2026-10-08 | Chaque PNJ est piloté par le Transformer, plusieurs fois par seconde, sans cache, par lots sur le GPU. Entrée : perception, identité, souvenirs, état. Sortie : une action + des ajustements progressifs des variables (seule une émotion peut sauter d'un coup). Remplace P6, P7, P21 et la règle de décision par paliers | Monsieur |
+| D19 | 2026-10-08 | Les 500 PNJ sont simulés à pleine puissance partout et tout le temps ; seul le rendu est coupé hors de vue ; toute action a une répercussion persistante dans le monde | Monsieur |
+| D20 | 2026-10-08 | Avant de coder : catalogue complet des variables et des actions. Données d'entraînement produites par un modèle bien moins cher que Claude | Monsieur |
+| D21 | 2026-10-08 | GPU dédié permis pour le rendu, au strict minimum ; il sert d'abord à l'IA. Le profil « GPU intégré seul » tombe. Remplace D2 | Monsieur |
+| D22 | 2026-10-08 | Voxels du monde bien plus gros que 2 cm (taille à fixer, défaut proposé 5 cm) ; textures sur les voxels ; niveau visuel attendu = images de `docs/style/`, pas moins. Amende D3 | Monsieur |
+| D23 | 2026-10-08 | Lumière calculée en temps réel (heure, nuages, météo) ; seules des données rééclairables peuvent être précalculées, jusqu'à 1 Go ; pas d'upscaling | Monsieur |
+| D24 | 2026-10-08 | Eau et feu au plus léger et au plus réaliste, pas forcément en voxels ; l'eau est une quantité prélevable qui réagit (gravité, collisions) | Monsieur |
+| D25 | 2026-10-08 | Personnages en style voxel (maillage à facettes, cubes de 1,8 à 2,2 cm, avec des angles), pas en voxels stricts | Monsieur |
+| D26 | 2026-10-08 | Frontières : aucune limite visible, jamais d'évanouissement ni de retour au village ; la difficulté tue avant le bord. Monde physique de 50 km au total (interprétation : cœur habité de 20 km, voir O8). Remplace le « sauvetage narratif » de P9 | Monsieur |
 
 ## Proposé (à valider par Monsieur)
 
@@ -63,3 +73,9 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | O5 | Licence des modèles du kit médiéval utilisé pour tester le convertisseur | ne rien distribuer avant vérification |
 | O6 | ~~Clé Gemini exposée~~ révoquée, voir D16 | — |
 | O7 | Déclaration Steam du contenu IA « live-generated » (verbaliseur LLM local) et description des garde-fous contre le contenu illégal ; aucun contenu sexuel adulte généré en direct | à rédiger avant la sortie ; les règles dures I6 et I7 en sont la base |
+| O8 | Monde de 50 km au total avec un cœur habité de 20 km : interprétation à confirmer ; le plan du moteur est figé à 20 km (version 1) | 50 km au total, cœur de 20 km |
+| O9 | Taille des voxels du monde | 5 cm |
+| O10 | Fréquence du Transformer par PNJ | 2 à 4 appels par seconde |
+| O11 | Échelle de temps : garder 1 jour = 4 h réelles (une année = 1 460 h de partie) ou accélérer | à trancher ; voir `06` limite 2 |
+| O12 | Traits et valeurs morales : figés ou lentement modifiables | lentement modifiables, bornés |
+| O13 | Enseignant bon marché : quel modèle, quel budget | Gemini Flash-Lite, rien lancé sans accord |

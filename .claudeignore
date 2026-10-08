@@ -1,0 +1,35 @@
+# Fichiers que Claude n'a pas à lire (économie de tokens). Claude Code ne lit pas ce fichier
+# à ce jour : les mêmes motifs sont appliqués par .claude/settings.json (permissions.deny).
+archive/
+assets/
+**/data/*.jsonl
+**/*.jsonl
+**/*.glb
+**/*.gltf
+**/*.bin
+**/*.u8
+**/*.u16
+**/*.vxb
+**/*.vxb3
+**/*.vxi
+**/*.gz
+**/*.zip
+**/*.pt
+**/*.onnx
+**/*.so
+**/*.dll
+**/*.dylib
+**/__pycache__/
+**/.venv/
+**/node_modules/
+build/
+out/
+game/.godot/
+game/bin/
+prototypes/village-web/captures/
+characters/thumbs/
+docs/reference/schemas/
+**/captures/
+tools/voxelizer/testdata/
+ai/student/runs/
+docs/npc/audit/

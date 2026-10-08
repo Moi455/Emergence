@@ -1,5 +1,7 @@
 # Architecture cible unifiée
 
+> **Avertissement (8 octobre, soir).** Plusieurs parties de ce document sont dépassées par les décisions D17 à D26 de Monsieur (`01_decisions.md`). Là où ils divergent, **`06_architecture_expliquee.md` (révision 2) fait foi**. Principaux points dépassés : principe 5 et § 9.4 (rendu sur GPU intégré seul) ; principe 6, §§ 8.2 et 8.3 (décideur à règles, paliers) : chaque PNJ est piloté par le Transformer, partout, à pleine puissance ; § 2.2 (retour au village en bordure) : aucune limite visible, la difficulté tue avant ; § 3 et § 5 (voxels de 2 cm, couleurs seules, lumière en cache, upscaling) : voxels plus gros, textures, lumière en temps réel, pas d'upscaling ; § 3.3 et § 6 (eau et feu liés aux voxels) : au plus léger. La réécriture complète de ce document est un chantier ouvert (`CHANTIERS.md`).
+
 Version 1.0, 8 octobre 2026. Synthèse entre trois sources : les documents d'architecture du projet (`docs/reference/`), le travail des développeurs sur les PNJ (`ai/npc_pipeline/`, `docs/npc/`) et le convertisseur d'assets (`tools/voxelizer/`). Ce document fait foi pour le code ; les documents de référence gardent le détail des calculs et des sources.
 
 Statut des affirmations : **[Décidé]** = choix de Monsieur ; **[Proposé]** = recommandation de Claude, à valider ; **[Mesuré]** = chiffre obtenu par un test ; tout autre chiffre est une estimation à vérifier par prototype.

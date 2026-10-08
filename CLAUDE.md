@@ -1,62 +1,78 @@
 # CLAUDE.md — Emergence
 
-Tu travailles sur **Emergence**, un jeu médiéval-fantastique pour Steam : monde de voxels de 2 cm entièrement destructible (physique, eau, feu, effondrements), 500 PNJ en 5 villages avec une simulation sociale profonde, rendu sur GPU intégré, IA sur GPU dédié. Le porteur du projet est **Monsieur**. Il écrit en français : réponds-lui en français, simplement, en commençant par la réponse.
+Tu travailles sur **Emergence**, un jeu médiéval-fantastique pour Steam : un monde de voxels destructible et 500 PNJ en 5 villages, chacun piloté par un Transformer, dans une **simulation réelle du monde** où tout doit émerger. Le porteur du projet est **Monsieur**. Il écrit en français : réponds-lui en français, simplement, en commençant par la réponse.
 
-## À lire avant toute tâche
+Tu tournes maintenant **sur sa machine** (portable, RTX série 3000 de 6 Go, 16 Go de RAM), avec un vrai GPU. Les sessions précédentes tournaient dans le cloud, sans GPU : aucun chiffre de performance réel n'existe encore. Ton travail est de mesurer, d'entraîner et de brancher pour de vrai.
 
-1. `docs/02_architecture_cible.md` : l'architecture qui fait foi. Ses invariants (§ 1) ne se négocient pas.
-2. `docs/01_decisions.md` : ce qui est décidé, proposé, ouvert. Ne contredis jamais une décision « Décidé » ; ne présente jamais une « Proposé » comme acquise.
-3. `docs/04_feuille_de_route.md` : l'ordre des travaux et les critères de réussite.
-4. Le `CLAUDE.md` du dossier où tu travailles (`tools/voxelizer/`, `ai/npc_pipeline/`, `engine/`).
+## À lire avant toute tâche (dans cet ordre, et rien d'autre tant que ce n'est pas utile)
 
-Détail des calculs et des sources : `docs/reference/` (architecture v1, rendu sur GPU intégré, monde et horizon). Travail des développeurs sur les PNJ : `docs/npc/`. Confrontation des deux : `docs/03_confrontation.md`.
+1. `CHANTIERS.md` : ce qu'il faut faire, dans quel ordre, et les questions ouvertes.
+2. `docs/06_architecture_expliquee.md` (révision 2) : l'architecture voulue par Monsieur au 8 octobre au soir. **Il fait foi** là où `docs/02_architecture_cible.md` le contredit.
+3. `docs/01_decisions.md` : D1 à D26 sont décidés ; ne les contredis jamais. Les « Proposé » ne sont pas acquis.
+4. Le `ETAT.md` du dossier où tu travailles (`ETAT.md` à la racine, `engine/`, `ai/`, et les autres quand ils existent), puis son `README.md` ou `CLAUDE.md`.
+5. `docs/interfaces.md` : le contrat entre les parties (unités, voxels, matières, personnages, actions, identifiants).
 
-## Ce qui compte le plus
+## La barre visuelle
 
-1. **La performance est la priorité numéro 1.** Machine de référence proposée (P13) : Intel Iris Xe (rendu), RTX série 3000 6 Go (IA), 16 Go de RAM. Rien ne parcourt le monde entier ; tout est déclenché par un événement et borné par un budget par image (budgets : architecture § 13). Ne calcule jamais au-delà de la précision nécessaire.
-2. **Déterminisme.** La génération du monde est bit-exacte depuis la seed sur toutes les plateformes : hachages entiers, flottants stricts (pas de fusion multiplication-addition, pas de `-ffast-math`), fonctions mathématiques maison, aucune génération de vérité sur GPU, aucun `rand()` de la bibliothèque standard.
-3. **Une seule vérité.** Seed + plan du monde, chunks modifiés, journal d'opérations, entités. Tout le reste est un cache reconstructible. Toute écriture dans le monde passe par une `Operation`.
-4. **Le voxel ne porte que son VoxelId de 16 bits** (classe 9 bits + teinte 7 bits). Aucun état dynamique dans le voxel.
-5. **Le texte libre n'entre jamais dans l'état de simulation.** Le langage passe par des cadres d'actes de parole ; le LLM local ne fait que verbaliser.
-6. **Règles dures, jamais apprises** : aucun acte romantique ou sexuel impliquant un enfant ou un adolescent, comme acteur ou comme cible. Ne génère, n'étiquette et ne teste jamais de tels contenus, sauf les tests de refus déjà prévus.
-7. **Mesurer avant d'affirmer.** Un chiffre sans mesure est une estimation et doit être dit comme tel. Une étape de la feuille de route n'est finie que lorsque son critère est mesuré.
+Les images de `docs/style/` (`monde_type.png`, `maison_type.png`, `pnj_type.png`, `style_jeu.jpg`) sont **le niveau attendu, pas moins** (Monsieur, 8 oct.). Blocs lisibles et texturés, mousse et lierre, lumière chaude en temps réel, brume et rayons de soleil, profondeur jusqu'aux montagnes, personnages en style voxel à facettes. Tout travail de rendu, d'asset ou de personnage se juge contre ces images, capture à l'appui.
 
-## Sécurité
+## Ce que Monsieur veut (résumé de D17 à D26)
 
-- Aucun secret dans le dépôt. La clé Gemini se lit dans la variable d'environnement `GEMINI_API_KEY`, jamais dans un fichier, un log ou un message de commit.
-- Une clé a déjà fuité dans une conversation le 6 octobre 2026 ; si tu en vois une dans un fichier, arrête-toi et préviens Monsieur.
-- Le pipeline teacher consomme un quota payant : ne lance jamais `teacher_run.py pilot` ou `run` sans que Monsieur l'ait demandé.
+1. **Chaque PNJ est piloté par le Transformer**, plusieurs fois par seconde, sans cache, par lots sur le GPU. Il reçoit perception, identité, souvenirs, état ; il rend une action et des ajustements progressifs de ses variables (seule une émotion peut sauter d'un coup). Pas de moteur de règles écrit à la main pour décider à la place du modèle.
+2. **Les 500 PNJ sont simulés à pleine puissance partout**, même loin du joueur ; seul le rendu est coupé hors de vue. **Toute action a une répercussion persistante** (une `Operation` appliquée au monde, chargé ou non, et sauvegardée).
+3. **Avant de coder une action ou une variable**, elle doit être dans le catalogue unique (`ai/CATALOGUE_modele.md` et le catalogue de `sim/`).
+4. **GPU** : le rendu utilise le moins possible du GPU dédié ; l'essentiel reste au Transformer.
+5. **Rendu** : voxels du monde plus gros que 2 cm (taille ouverte, défaut 5 cm), textures, lumière en temps réel (heure, nuages, météo), pas d'upscaling.
+6. **Eau et feu** au plus léger, pas forcément en voxels ; l'eau est une quantité prélevable qui réagit.
+7. **Frontières** : aucune limite visible, jamais de retour au village ; la difficulté tue avant le bord.
+
+## Règles qui ne se négocient pas
+
+- **Mesurer avant d'affirmer.** Un chiffre sans mesure est une estimation et se dit comme tel. Donne les résultats réels, même rouges.
+- **Déterminisme de la génération du monde** : bit-exacte depuis la seed (entiers et virgule fixe, pas de `-ffast-math`, pas de `rand()`). Les empreintes épinglées dans les tests font foi.
+- **Une seule vérité** : seed + plan, chunks modifiés, journal d'opérations, entités. Tout le reste est un cache.
+- **Le texte libre n'entre jamais dans l'état de simulation.**
+- **Règles dures, jamais apprises** : aucun acte romantique ou sexuel impliquant un enfant ou un adolescent, comme acteur ou comme cible. Ne génère, n'étiquette et ne teste jamais de tels contenus, sauf les tests de refus déjà prévus.
+
+## Sécurité et coûts
+
+- Aucun secret dans le dépôt. La clé Gemini se lit dans `GEMINI_API_KEY`, jamais dans un fichier, un log ou un commit.
+- **Aucun appel payant** (Gemini, autre API, Meshy ou autre service) sans l'accord explicite de Monsieur pour cet appel. `teacher_run.py pilot|run` est concerné.
+
+## Économie de tokens
+
+Monsieur trouve la consommation trop élevée. `.claudeignore` et `.claude/settings.json` (règles `permissions.deny`) écartent les données, binaires, modèles 3D, captures et builds. Ne contourne pas ces règles ; lis un fichier par morceaux quand il est long, et ne relis pas ce que tu viens d'écrire.
+
+## Commandes
+
+```
+scripts/test_all.sh                       # pipeline PNJ, convertisseur (Python)
+cmake -S engine -B build && cmake --build build -j && ctest --test-dir build   # cœur C++
+godot --path game                         # scène jouable (touche H : temps GPU, images/s)
+python ai/student/train_student.py ...    # voir ai/student/ENTRAINEMENT.md
+```
 
 ## Organisation du dépôt
 
 ```
-docs/               vision, décisions, architecture, confrontation, feuille de route, idées, glossaire
-docs/reference/     documents d'architecture d'origine (exports Markdown)
-docs/npc/           conception PNJ des devs (architecture v0.4, mémoire v0.5, variables, audit)
-tools/voxelizer/    convertisseur 3D → voxels (Python, 50 tests)
-ai/npc_pipeline/    pipeline de données PNJ et modules de référence (Python, sans dépendance)
-engine/             cœur C++ (à créer, voir engine/README.md)
-game/               projet Godot 4 (à créer, voir game/README.md)
-scripts/            test_all.sh
-archive/            anciennes versions et sorties de travail, en lecture seule
+CHANTIERS.md      travaux ouverts, ordre, questions pour Monsieur
+ETAT.md           état du dépôt ; chaque dossier a le sien
+docs/             décisions, architecture (06 fait foi), interfaces, style/ (barre visuelle), reference/
+engine/           cœur C++20 (plan, chunks, maillage, terrain) + extension Godot
+worldgen/         génération déterministe du monde
+game/             projet Godot 4.6, scène play.tscn
+ai/               Transformer des PNJ : contrat, catalogue, jetons, données, entraînement (student/)
+sim/              simulation sociale provisoire (moteur à règles, à remplacer par la boucle Transformer)
+characters/       générateur des villageois (à refaire en style voxel)
+prototypes/       village jouable dans le navigateur
+tools/voxelizer/  convertisseur 3D → voxels
+archive/          anciennes versions, en lecture seule
 ```
 
 ## Conventions
 
-- Code et identifiants en anglais. Documents destinés à Monsieur en français. Commentaires : la langue du fichier existant ; anglais pour le nouveau code C++.
-- C++20, CMake, pas d'exceptions dans les boucles chaudes, pas d'allocation par voxel. Structures de données compactes, bit-packing assumé.
-- Python ≥ 3.9. `ai/npc_pipeline` reste sans dépendance externe ; `tools/voxelizer` dépend de numpy, scipy, Pillow.
-- Les modules Python de `ai/npc_pipeline` sont des **oracles** : un portage C++ doit reproduire leurs sorties sur un jeu de tests partagé. Ne les supprime pas après portage.
-- Formats versionnés (`schema_version`) dès le premier commit d'un format.
-- Données de contenu (matières, métiers, recettes, titres, blueprints) en fichiers de données, jamais codées en dur.
-
-## Tests
-
-`scripts/test_all.sh` lance tous les tests existants (pipeline PNJ, 30 cas, autotest sans clé, convertisseur). Lance-le avant de dire qu'un changement est fini, et donne le résultat réel, même rouge.
-
-## Comment travailler avec Monsieur
-
-- Il veut des solutions, pas des listes de blocages : quand quelque chose semble impossible, cherche ou invente une voie qui marche, avec un prototype et un critère de réussite.
-- Quand une question dépend d'un choix qu'il n'a pas fait, prends un défaut raisonnable, dis lequel, et continue ; ajoute la question dans `docs/01_decisions.md` (section Ouvert).
-- Les idées nouvelles vont dans `docs/05_idees.md` avec le gabarit ; elles n'entrent dans l'architecture qu'avec une mesure ou une décision.
-- Toute décision prise va dans `docs/01_decisions.md` avec sa date.
+- Code et identifiants en anglais ; documents pour Monsieur en français.
+- C++20, CMake ; pas d'allocation par voxel ; formats versionnés (`schema_version`).
+- Les modules Python de `ai/npc_pipeline` sont des **oracles** : un portage C++ doit reproduire leurs sorties.
+- Toute décision va dans `docs/01_decisions.md` avec sa date ; quand un choix manque, prends un défaut raisonnable, dis lequel, et ajoute la question dans la section « Ouvert ».
+- Monsieur veut des solutions, pas des listes de blocages.
