@@ -1,0 +1,369 @@
+<title>Chronique des Cinq Villages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a working chronicle. Map and live village at the top, then tabs (chronicle, villages, people and minds, crafts, legends, bonds). */
+:root{
+  --bg:#eceee9; --panel:#f8f9f6; --ink:#1d2421; --muted:#5d6862; --line:#cfd5cf;
+  --woad:#2f4f8f; --madder:#a3392b; --weld:#b88a12; --moss:#4c7a45; --ochre:#9a6a3a;
+  --sea:#bcd0de; --forest:#c2d4bb; --mountain:#d6d1cb; --desert:#eadcb8; --land:#e3e6dc;
+  --display:"Alegreya SC", "Palatino Linotype", Georgia, serif;
+  --body:"Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151a19; --panel:#1d2422; --ink:#e3e8e2; --muted:#9aa59e; --line:#334039;
+  --woad:#8fa9e6; --madder:#e07c6c; --weld:#e3b94a; --moss:#8fc184; --ochre:#d1a171;
+  --sea:#1f3445; --forest:#1f3324; --mountain:#34302c; --desert:#3f3722; --land:#232a26; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151a19; --panel:#1d2422; --ink:#e3e8e2; --muted:#9aa59e; --line:#334039;
+  --woad:#8fa9e6; --madder:#e07c6c; --weld:#e3b94a; --moss:#8fc184; --ochre:#d1a171;
+  --sea:#1f3445; --forest:#1f3324; --mountain:#34302c; --desert:#3f3722; --land:#232a26; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);margin:0;padding:24px 16px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);font-weight:700;text-wrap:balance;margin:0;letter-spacing:.01em}
+h1{font-size:clamp(28px,4vw,40px)}
+h2{font-size:22px}
+h3{font-size:17px}
+.sub{color:var(--muted);max-width:70ch}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
+.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.top{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.top{grid-template-columns:1fr}}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px}
+.facts div{display:flex;flex-direction:column}
+.facts b{font-family:var(--mono);font-size:20px;font-weight:500}
+svg text{fill:var(--ink)}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line)}
+.tabs button{font:500 15px var(--body);background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:8px 12px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--woad)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--woad);outline-offset:2px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input,select{font:15px var(--body);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:6px 8px;max-width:100%}
+.btn{font:500 14px var(--body);background:var(--woad);color:var(--panel);border:0;border-radius:4px;padding:6px 12px;cursor:pointer}
+.btn.ghost{background:none;color:var(--woad);border:1px solid var(--line)}
+.ev{display:grid;grid-template-columns:96px 1fr;gap:4px 12px;padding:6px 0;border-bottom:1px solid var(--line)}
+.ev .when{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:3px}
+.chip{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-right:6px}
+.k-life{color:var(--moss)}.k-death{color:var(--muted)}.k-conflict{color:var(--madder)}.k-power{color:var(--woad)}.k-lore{color:var(--weld)}.k-craft{color:var(--ochre)}
+a.p{color:var(--woad);cursor:pointer;text-decoration:none;border-bottom:1px dotted var(--woad)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.list{max-height:640px;overflow:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.num{text-align:right}
+.scroll{overflow-x:auto}
+.bar{height:8px;background:var(--woad);border-radius:2px;display:inline-block;vertical-align:middle}
+.bar.neg{background:var(--madder)}
+.dec{border-top:1px solid var(--line);padding:8px 0}
+.cand{display:grid;grid-template-columns:130px 60px 1fr;gap:8px;font-size:13px;align-items:center}
+.cand.win{font-weight:700}
+.fac{color:var(--muted);font-size:12px}
+.legend-sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.small{font-size:13px;color:var(--muted)}
+.pill{font-size:12px;padding:1px 8px;border-radius:10px;background:var(--bg);border:1px solid var(--line);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <span class="lbl" id="hdr-meta"></span>
+    <h1>Chronique des Cinq Villages</h1>
+    <p class="sub" id="hdr-sub"></p>
+  </header>
+
+  <section class="top">
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap">
+        <h2>Les villages, heure par heure</h2>
+        <span class="mono" id="clock"></span>
+      </div>
+      <svg id="map" viewBox="0 0 400 400" style="width:100%;max-width:100%;aspect-ratio:1/1" role="img" aria-label="Carte des cinq villages et de leurs habitants"></svg>
+      <div class="ctl">
+        <button class="btn" id="play">Lecture</button>
+        <input type="range" id="hour" min="0" max="0" value="0" style="flex:1;min-width:140px" aria-label="Heure">
+      </div>
+      <div class="small" id="map-legend"></div>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+      <h2>En bref</h2>
+      <div class="facts" id="facts"></div>
+      <div id="village-cards" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="view"></main>
+  <p class="small">Simulation déterministe sans rendu (palier 2) : le même seed redonne la même histoire. Les textes sont produits pour l'affichage ; l'état des PNJ ne contient que des nombres et des actes de parole.</p>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = s => document.querySelector(s);
+const P = D.people; const V = {}; D.villages.forEach(v => V[v.id] = v);
+const DPY = D.dpy, DPM = D.dpm;
+const MONTHS = ['mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre','janvier','février'];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function dateOf(t){ const d = Math.floor(t/24); const y = Math.floor(d/DPY)+1; const m = Math.floor((d%DPY)/DPM); return `an ${y}, ${d%DPM+1} ${MONTHS[m]}`; }
+function shortDate(t){ const d = Math.floor(t/24); return `${Math.floor(d/DPY)+1}·${String(Math.floor((d%DPY)/DPM)+1).padStart(2,'0')}·${String(d%DPM+1).padStart(2,'0')}`; }
+function age(p, day){ const end = p.d ?? day; return Math.floor((end - p.b)/DPY); }
+function link(id){ const p = P[id]; return p ? `<a class="p" data-p="${id}">${esc(p.n)}</a>` : '?'; }
+const KIND = {
+  life:['birth','wedding','engagement','elopement','adoption','orphaned','migration','festival','feud_peace','rescue'],
+  death:['death','vanished','starvation'],
+  conflict:['brawl','murder','theft_caught','robbery','feud','affair_exposed','separation','blackmail','lie_exposed','exile','outlaw_band','famine','epidemic','epidemic_end','collapse','accident'],
+  power:['election','decree','challenge','verdict','embezzlement_exposed','pardon','chief_died','famine_relief','guild_founded','cult_founded'],
+  lore:['legend_born','record_depth','expedition'],
+  craft:['apprenticeship','craft_lost','craft_lost_village','craft_rediscovered']
+};
+const KFR = {life:'vie',death:'mort',conflict:'conflit',power:'pouvoir',lore:'légende',craft:'savoir'};
+function family(k){ for (const f in KIND) if (KIND[f].includes(k)) return f; return 'life'; }
+const OUTFIT_COLOR = {work:'var(--ochre)',everyday:'var(--muted)',festive:'var(--weld)',mourning:'var(--ink)',cold:'var(--woad)',court:'var(--madder)',travel:'var(--moss)',night:'var(--line)'};
+
+// ---------- header and facts
+const last = D.monthly[D.monthly.length-1];
+const alive = P.filter(p => p.al).length;
+const years = (D.days/DPY).toFixed(1);
+$('#hdr-meta').textContent = `Seed ${D.seed} · ${years} an(s) simulé(s) · ${D.elapsed_s ?? '?'} s de calcul`;
+$('#hdr-sub').textContent = `${P.length} personnes ont vécu dans les cinq villages au cours de cette chronique. Chacune décide seule, heure par heure, entre au plus seize options ; tout ce qui suit a émergé de ces décisions.`;
+const cnt = k => D.counts[k] || 0;
+const facts = [['vivants', alive], ['naissances', cnt('birth')], ['décès', cnt('death') + cnt('vanished')], ['mariages', cnt('wedding') + cnt('elopement')], ['disparus aux frontières', cnt('vanished')], ['savoirs perdus', D.lost_world.length], ['légendes', D.legends.length], ['décisions', D.decisions.toLocaleString('fr-FR')]];
+$('#facts').innerHTML = facts.map(([l,v]) => `<div><b>${v}</b><span class="lbl">${l}</span></div>`).join('');
+$('#village-cards').innerHTML = D.villages.map(v => {
+  const m = last ? last.v[v.id] : null; const chief = v.chief != null ? link(v.chief) : '<i>personne</i>';
+  return `<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:6px">
+    <div style="min-width:0"><b style="font-family:var(--display)">${esc(v.name)}</b> <span class="small">${v.frontier_fr ? 'face à ' + esc(v.frontier_fr) : 'carrefour des routes'}</span><br><span class="small">${v.kind==='town'?'bailli':'chef'} : ${chief} · impôt ${v.decrees.tax_pct} %</span></div>
+    <div class="num" style="text-align:right">${m ? m.pop : '?'} hab.<br><span class="small">mécontentement ${v.unrest}</span></div></div>`;
+}).join('');
+
+// ---------- map with live hours
+const SITE_OFF = {home:[0,0],tavern:[6,-5],square:[0,-8],temple:[-7,-6],market:[8,3],sea:[-26,0],saltpans:[-18,14],shipyard:[-20,-10],forest:[0,26],mine:[0,-26],smithy:[10,-10],quarry:[-12,-18],workshop:[9,9],well:[-8,8],fields:[-12,14],bakery:[5,10],march:[0,0],wilds:[16,20]};
+const FR_DIR = {sea:[-1,0],forest:[0,1],mountain:[0,-1],desert:[1,0]};
+function hash(s){ let h = 2166136261; for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619);} return h>>>0; }
+function placeXY(loc, id){
+  if (!loc) return null;
+  const [vid, site, hh] = loc.split(':');
+  if (vid === 'road'){ const [a,b] = site.split('-'); const A = V[a].pos, B = V[b].pos; const f = (hash(String(id))%100)/100; return [(A[0]+(B[0]-A[0])*f)*20, (A[1]+(B[1]-A[1])*f)*20]; }
+  const v = V[vid]; if (!v) return null;
+  let [x,y] = [v.pos[0]*20, v.pos[1]*20];
+  let off = SITE_OFF[site] || [0,0];
+  if (site === 'march' && v.frontier){ const d = FR_DIR[v.frontier]; off = [d[0]*48, d[1]*48]; }
+  if (site === 'home'){ const h = hash(loc); off = [((h%23)-11), (((h>>8)%19)-9)]; }
+  const j = hash(String(id)); return [x + off[0] + ((j%7)-3)*0.8, y + off[1] + (((j>>4)%7)-3)*0.8];
+}
+function drawMap(){
+  const s = [];
+  s.push(`<rect x="0" y="0" width="400" height="400" fill="var(--land)"/>`);
+  s.push(`<rect x="0" y="0" width="60" height="400" fill="var(--sea)"/><rect x="0" y="0" width="400" height="60" fill="var(--mountain)" opacity=".9"/><rect x="340" y="0" width="60" height="400" fill="var(--desert)"/><rect x="0" y="340" width="400" height="60" fill="var(--forest)"/>`);
+  s.push(`<text x="10" y="200" font-size="11" transform="rotate(-90 14 200)" fill="var(--muted)">mer de l'Ouest</text><text x="200" y="20" font-size="11" text-anchor="middle">montagnes du Nord</text><text x="392" y="200" font-size="11" transform="rotate(90 388 200)" text-anchor="middle">désert de l'Est</text><text x="200" y="392" font-size="11" text-anchor="middle">forêt du Sud</text>`);
+  D.villages.forEach(v => { if (v.id!=='bourg'){ const a=v.pos, b=V.bourg.pos; s.push(`<line x1="${a[0]*20}" y1="${a[1]*20}" x2="${b[0]*20}" y2="${b[1]*20}" stroke="var(--line)" stroke-width="3"/>`);} });
+  D.villages.forEach(v => { const [x,y] = [v.pos[0]*20, v.pos[1]*20]; s.push(`<circle cx="${x}" cy="${y}" r="30" fill="var(--panel)" opacity=".55" stroke="var(--line)"/><text x="${x}" y="${y+44}" font-size="12" text-anchor="middle" font-family="var(--display)" font-weight="700">${esc(v.name)}</text>`); });
+  s.push(`<g id="dots"></g><text x="392" y="392" font-size="10" text-anchor="end" fill="var(--muted)">20 km</text>`);
+  $('#map').innerHTML = s.join('');
+}
+drawMap();
+const live = D.live || [];
+$('#hour').max = Math.max(0, live.length-1);
+function drawHour(i){
+  const fr = live[i]; if (!fr) return;
+  const out = [];
+  for (const [id, loc, kind, outfit] of fr.p){ const xy = placeXY(loc, id); if (!xy) continue; out.push(`<circle cx="${xy[0].toFixed(1)}" cy="${xy[1].toFixed(1)}" r="2.1" fill="${OUTFIT_COLOR[outfit]||'var(--muted)'}" data-p="${id}"><title>${esc(P[id].n)} : ${kind}, ${D.outfits[outfit]||outfit}</title></circle>`); }
+  $('#dots').innerHTML = out.join('');
+  const counts = {}; fr.p.forEach(r => counts[r[2]] = (counts[r[2]]||0)+1);
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,n])=>`${n} ${ACT_FR[k]||k}`).join(', ');
+  $('#clock').textContent = `${dateOf(fr.t)}, ${fr.t%24} h`;
+  $('#map-legend').innerHTML = `${top}<br>` + Object.entries(OUTFIT_COLOR).map(([k,c])=>`<span style="white-space:nowrap"><span class="legend-sw" style="background:${c}"></span>${esc(D.outfits[k]||k)}</span>`).join(' · ');
+}
+const ACT_FR = {sleep:'dorment',work:'travaillent',eat:'mangent',social:'causent',play:'jouent',learn:'apprennent',trade:'commercent',visit:'rendent visite',court:'courtisent',pray:'prient',mourn:'se recueillent',care:'soignent',explore:'explorent',attend:'assistent à une fête ou des obsèques',rest:'se reposent',govern:'gouvernent',steal:'volent',confront:'se querellent'};
+let timer = null;
+$('#hour').addEventListener('input', e => drawHour(+e.target.value));
+$('#play').addEventListener('click', () => {
+  if (timer){ clearInterval(timer); timer = null; $('#play').textContent = 'Lecture'; return; }
+  $('#play').textContent = 'Pause';
+  timer = setInterval(() => { const h = $('#hour'); h.value = (+h.value + 1) % live.length; drawHour(+h.value); }, 700);
+});
+drawHour(Math.min(live.length-1, 30));
+$('#hour').value = Math.min(live.length-1, 30);
+
+// ---------- tabs
+const TABS = [['chronique','Chronique'],['villages','Villages'],['habitants','Habitants'],['esprits','Esprits'],['savoirs','Savoirs'],['legendes','Légendes'],['liens','Liens']];
+let cur = 'chronique';
+function renderTabs(){ $('#tabs').innerHTML = TABS.map(([k,l]) => `<button role="tab" aria-selected="${k===cur}" data-tab="${k}">${l}</button>`).join(''); }
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = b.dataset.tab; renderTabs(); render(); try{ localStorage.setItem('tab', cur);}catch(_){} });
+document.addEventListener('click', e => { const a = e.target.closest('[data-p]'); if (a && (a.tagName==='A' || a.tagName==='circle')){ e.preventDefault(); openPerson(+a.dataset.p); } });
+try{ const t = localStorage.getItem('tab'); if (t && TABS.some(x=>x[0]===t)) cur = t; }catch(_){}
+const R = {};
+function render(){ $('#view').innerHTML = ''; R[cur](); }
+
+// chronicle
+let evFilter = {fam:'', v:'', q:'', n:250};
+R.chronique = () => {
+  const view = $('#view');
+  view.innerHTML = `<div class="panel" style="display:flex;flex-direction:column;gap:10px">
+    <div class="ctl"><select id="f-fam" aria-label="Type"><option value="">Tous les événements</option>${Object.entries(KFR).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select>
+    <select id="f-v" aria-label="Village"><option value="">Tous les villages</option>${D.villages.map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join('')}</select>
+    <input id="f-q" placeholder="Chercher un nom, un mot" style="flex:1;min-width:160px"></div>
+    <div id="evlist" class="list"></div><button class="btn ghost" id="more">Plus ancien</button></div>`;
+  $('#f-fam').value = evFilter.fam; $('#f-v').value = evFilter.v; $('#f-q').value = evFilter.q;
+  const upd = () => { evFilter.fam = $('#f-fam').value; evFilter.v = $('#f-v').value; evFilter.q = $('#f-q').value.toLowerCase(); drawEvents(); };
+  ['#f-fam','#f-v'].forEach(s => $(s).addEventListener('change', upd)); $('#f-q').addEventListener('input', upd);
+  $('#more').addEventListener('click', () => { evFilter.n += 250; drawEvents(); });
+  drawEvents();
+};
+function evText(e){
+  let x = esc(e.x);
+  for (const id of e.a || []){ const p = P[id]; if (p) x = x.split(esc(p.n)).join(link(id)); }
+  return x;
+}
+function drawEvents(){
+  const out = []; let n = 0;
+  for (let i = D.events.length-1; i >= 0 && n < evFilter.n; i--){
+    const e = D.events[i]; if (!e.x) continue;
+    const f = family(e.k);
+    if (evFilter.fam && f !== evFilter.fam) continue;
+    if (evFilter.v && e.v !== evFilter.v) continue;
+    if (evFilter.q && !e.x.toLowerCase().includes(evFilter.q)) continue;
+    out.push(`<div class="ev"><span class="when">${shortDate(e.t)}</span><div><span class="chip k-${f}">${KFR[f]}</span>${evText(e)}</div></div>`); n++;
+  }
+  $('#evlist').innerHTML = out.join('') || '<p class="small">Aucun événement ne correspond.</p>';
+}
+
+// villages: charts
+function lineChart(title, key, fmt){
+  const W = 520, H = 190, L = 40, B = 24;
+  const rows = D.monthly; if (rows.length < 2) return `<div class="panel"><h3>${title}</h3><p class="small">Pas encore assez de mois simulés.</p></div>`;
+  let max = 0; rows.forEach(r => D.villages.forEach(v => { const y = key(r.v[v.id]); if (y > max) max = y; }));
+  max = max || 1; const nice = Math.pow(10, Math.floor(Math.log10(max))); max = Math.ceil(max/nice)*nice;
+  const x = i => L + i*(W-L-10)/(rows.length-1), y = val => H-B - val*(H-B-10)/max;
+  const cols = {port:'var(--woad)',bois:'var(--moss)',mine:'var(--ochre)',oasis:'var(--weld)',bourg:'var(--madder)'};
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%"><g font-size="10" font-family="var(--mono)">`;
+  for (let k=0;k<=4;k++){ const val = max*k/4; s += `<line x1="${L}" x2="${W-10}" y1="${y(val)}" y2="${y(val)}" stroke="var(--line)"/><text x="${L-4}" y="${y(val)+3}" text-anchor="end">${fmt?fmt(val):Math.round(val)}</text>`; }
+  const step = Math.max(1, Math.round(rows.length/6));
+  rows.forEach((r,i) => { if (i%step===0) s += `<text x="${x(i)}" y="${H-6}" text-anchor="middle">${Math.floor(r.day/DPY)+1}·${Math.floor((r.day%DPY)/DPM)+1}</text>`; });
+  D.villages.forEach(v => { s += `<polyline fill="none" stroke="${cols[v.id]}" stroke-width="2" points="${rows.map((r,i)=>`${x(i).toFixed(1)},${y(key(r.v[v.id])).toFixed(1)}`).join(' ')}"/>`; const lr = rows[rows.length-1]; s += `<circle cx="${x(rows.length-1)}" cy="${y(key(lr.v[v.id]))}" r="3" fill="${cols[v.id]}"/>`; });
+  s += `</g></svg>`;
+  const leg = D.villages.map(v => `<span style="white-space:nowrap"><span class="legend-sw" style="background:${cols[v.id]}"></span>${esc(v.name)}</span>`).join(' ');
+  return `<div class="panel"><h3>${title}</h3>${s}<div class="small">${leg}</div></div>`;
+}
+R.villages = () => {
+  const charts = [
+    lineChart('Habitants', m => m.pop), lineChart('Prix du pain (sous)', m => m.prices.food),
+    lineChart('Faim moyenne (0 à 100)', m => m.hunger), lineChart('Mécontentement envers le chef', m => m.unrest),
+    lineChart('Croyance en l’au-delà des frontières', m => m.belief), lineChart('Liens d’amitié forts', m => m.friend_links),
+    lineChart('Rancunes fortes', m => m.enemy_links), lineChart('Savoirs maîtrisés', m => m.crafts)
+  ];
+  const groups = D.groups.map(g => `<tr><td>${esc(g.name)}${g.closed?' <span class="pill">fermée</span>':''}${g.alive?'':' <span class="pill">dissoute</span>'}</td><td>${g.v?esc(V[g.v].name):''}</td><td>${link(g.f)}</td><td class="num">${g.m.length}</td><td class="mono">${shortDate(g.day*24)}</td></tr>`).join('');
+  const chiefs = D.villages.map(v => `<tr><td>${esc(v.name)}</td><td>${v.chiefs.map(c => `${link(c.chief)} <span class="small">(${shortDate(c.day*24)})</span>`).join(' → ')}</td></tr>`).join('');
+  $('#view').innerHTML = `<div class="grid2">${charts.join('')}</div>
+   <div class="grid2" style="margin-top:16px"><div class="panel scroll"><h3>Chefs successifs</h3><table>${chiefs}</table></div>
+   <div class="panel scroll"><h3>Guildes, cercles et bandes</h3><table><tr><th>Nom</th><th>Village</th><th>Fondateur</th><th>Membres</th><th>Fondé</th></tr>${groups || '<tr><td colspan="5" class="small">Aucun groupe fondé pour l’instant.</td></tr>'}</table></div></div>`;
+};
+
+// people
+let personId = null;
+R.habitants = () => {
+  $('#view').innerHTML = `<div class="grid2"><div class="panel" style="display:flex;flex-direction:column;gap:8px"><div class="ctl"><input id="pq" placeholder="Nom, métier, village" style="flex:1"><select id="ps" aria-label="Filtre"><option value="all">tout le monde</option><option value="alive">vivants</option><option value="dead">disparus</option><option value="mind">esprits suivis</option></select></div><div id="plist" class="list"></div></div><div class="panel" id="pcard"><p class="small">Choisis une personne pour voir sa vie, sa famille, ses liens et ses souvenirs.</p></div></div>`;
+  const draw = () => {
+    const q = $('#pq').value.toLowerCase(), f = $('#ps').value;
+    const rows = P.filter(p => (f==='all'||(f==='alive'&&p.al)||(f==='dead'&&!p.al)||(f==='mind'&&p.mi)) && (!q || (p.n + ' ' + (D.job_names[p.j]||'') + ' ' + V[p.v].name).toLowerCase().includes(q)))
+      .sort((a,b) => (b.ev.length - a.ev.length)).slice(0, 300);
+    $('#plist').innerHTML = `<table>${rows.map(p => `<tr><td>${link(p.id)}${p.mi?' <span class="pill">esprit</span>':''}</td><td class="small">${esc(D.job_names[p.j]||(p.lr?'apprenti·e':''))}</td><td class="small">${esc(V[p.v].name)}</td><td class="num">${age(p, D.days)} ans${p.al?'':' †'}</td></tr>`).join('')}</table>`;
+  };
+  $('#pq').addEventListener('input', draw); $('#ps').addEventListener('change', draw); draw();
+  if (personId != null) showPerson(personId);
+};
+function openPerson(id){ personId = id; if (cur !== 'habitants' && cur !== 'esprits'){ cur = 'habitants'; renderTabs(); render(); } else showPerson(id); document.getElementById(cur==='esprits'?'mind':'pcard')?.scrollIntoView({behavior:'smooth', block:'start'}); }
+const REL = ['affection','confiance','respect','amour','familiarité','rancune'];
+const MEM_FR = {death_kin:'deuil d’un proche',death_friend:'mort d’un ami',wedding:'mariage',birth:'naissance',theft_victim:'volé par',saw_theft:'a vu voler',brawl:'bagarre',murder:'meurtre',affair_seen:'a surpris une liaison',affair_secret:'liaison secrète avec',betrayed:'trahi·e par',helped:'aidé·e par',kindness:'réconforté·e par',insulted:'insulté·e par',liar:'menteur',embezzle:'détournement',verdict_unjust:'verdict injuste',heartbreak:'chagrin d’amour',rejected:'éconduit·e par',recovered:'guéri·e',cowardice:'lâcheté',embezzle_secret:'secret de trésor',apprentice:'apprentissage'};
+function showPerson(id){
+  const p = P[id]; const el = $('#pcard'); if (!el) return;
+  const kin = (ids, label) => ids && ids.filter(x=>x!=null).length ? `<div><span class="lbl">${label}</span> ${ids.filter(x=>x!=null).map(link).join(', ')}</div>` : '';
+  const rels = p.r.map(r => `<tr><td>${link(r[0])}</td>${r.slice(1).map((v,i)=>`<td class="num" style="color:${i===5&&v>30?'var(--madder)':i===3&&v>30?'var(--weld)':'inherit'}">${v}</td>`).join('')}</tr>`).join('');
+  const mems = p.m.map(m => `<li>${MEM_FR[m[1]]||m[1]} ${m[2]!=null&&P[m[2]]?link(m[2]):''} <span class="small">(${shortDate(m[0]*24)}, intensité ${m[4]}${m[5]?', ouï-dire':''})</span></li>`).join('');
+  const evs = p.ev.slice().reverse().map(i => D.events[i]).filter(e=>e&&e.x).slice(0,30).map(e => `<li><span class="mono small">${shortDate(e.t)}</span> ${evText(e)}</li>`).join('');
+  const sk = Object.entries(p.sk).map(([c,s]) => `<span class="pill">${esc(D.craft_names[c]||c)} ${s}</span>`).join(' ');
+  const tr = Object.entries(p.tr).map(([k,v]) => `<tr><td class="small">${TR_FR[k]||k}</td><td><span class="bar ${v<0?'neg':''}" style="width:${Math.abs(v)/2}px"></span> <span class="num">${v}</span></td></tr>`).join('');
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
+   <div><h2>${esc(p.n)}</h2><div class="small">${p.s==='f'?'femme':'homme'}, ${age(p, D.days)} ans, ${esc(D.job_names[p.j]||(p.lr?'apprenti·e en '+(D.craft_names[p.lr]||p.lr):'sans métier'))}, ${esc(V[p.v].name)}${p.o!==p.v?' (né·e à '+esc(V[p.o].name)+')':''}${p.al?'':' · mort·e '+shortDate(p.d*24)+' ('+esc(p.c)+')'}${p.ex?' · banni·e':''}</div>
+   <div class="small">${p.ti.includes('chief')?'<span class="pill">chef</span> ':''}tenue : ${esc(D.outfits[p.ou]||p.ou)} · ${p.oc} changements de tenue · croyance en l’au-delà ${p.be}${p.xp?` · ${p.xp} expédition(s), jusqu’à ${p.md} m`:''}</div></div>
+   ${kin(p.p,'Parents')}${kin(p.sp,'Conjoint·e·s')}${kin(p.k,'Enfants')}${p.me!=null?kin([p.me],'Maître'):''}${kin(p.ap,'Apprenti·e·s')}
+   <div>${sk}</div>
+   ${p.mi?`<button class="btn ghost" id="seemind">Voir comment ${esc(p.n.split(' ')[0])} décide</button>`:''}
+   <div class="scroll"><h3>Liens les plus forts</h3><table><tr><th></th>${REL.map(r=>`<th>${r}</th>`).join('')}</tr>${rels}</table></div>
+   <div><h3>Souvenirs</h3><ul style="margin:4px 0;padding-left:18px">${mems||'<li class="small">aucun</li>'}</ul></div>
+   <div><h3>Vie</h3><ul style="margin:4px 0;padding-left:18px">${evs||'<li class="small">rien de notable</li>'}</ul></div>
+   <details><summary class="small">Personnalité</summary><table>${tr}</table></details></div>`;
+  const b = $('#seemind'); if (b) b.addEventListener('click', () => { mindId = id; cur = 'esprits'; renderTabs(); render(); });
+}
+const TR_FR = {aggression:'agressivité',courage:'courage',empathy:'empathie',sociability:'sociabilité',honesty:'honnêteté',impulsivity:'impulsivité',curiosity:'curiosité',tolerance:'tolérance',justice:'sens de la justice',grudge:'rancune'};
+
+// minds
+const FAC_FR = {fatigue:'fatigue',night:'nuit',day:'jour',hunger:'faim',mealtime:'heure du repas',costs_coin:'coûte',friend:'ami',property_respect:'respect du bien d’autrui',honesty:'honnêteté',childhood:'enfance',lonely:'solitude',apprenticeship:'apprentissage',achievement:'ambition d’ouvrage',needs_master:'besoin d’un maître',self_taught:'autodidacte',duty:'devoir',household_needs:'besoins du foyer',winter_fields:'champs en hiver',storm:'tempête',rest_day:'jour de repos',trade:'commerce',chief:'charge de chef',cases:'affaires à juger',sociability:'sociabilité',evening:'soirée',affection:'affection',libido:'désir',romance:'amour',fidelity:'fidélité',piety:'piété',grief:'deuil',stress:'stress',kin_protection:'protection des siens',severity:'gravité',curiosity:'curiosité',courage:'courage',belief:'croyance',legends:'légendes',young_children:'jeunes enfants',dread_of_the_frontier:'peur de la frontière',went_recently:'déjà parti',missing_kin:'proche disparu',hoarding:'cupidité',grudge:'rancune',anger:'colère',aggression:'agressivité',ambition:'ambition',election_soon:'élection proche',unrest:'mécontentement',dislike_chief:'hostilité au chef',peers:'pairs',dishonesty:'malhonnêteté',secret:'secret',rest:'repos'};
+let mindId = null;
+const OPT_FR = {sleep:'dormir',eat_home:'manger chez soi',eat_tavern:'manger à la taverne',ask_food:'demander à manger',steal_food:'voler à manger',steal_coin:'voler de l’argent',play:'jouer',learn:'apprendre auprès du maître',seek_master:'chercher un maître',practice:'s’exercer seul',work:'travailler',trade_trip:'partir commercer',govern:'tenir conseil',tavern:'aller à la taverne',square:'aller sur la place',visit:'rendre visite',court:'faire la cour',pray:'prier',mourn:'se recueillir',care:'soigner un proche',explore:'s’aventurer au-delà',search_missing:'chercher un disparu',confront:'affronter un rival',blackmail:'faire chanter',campaign:'faire campagne',challenge:'contester le chef',found_guild:'fonder une guilde',found_cult:'fonder un cercle',rest:'se reposer',attend_wedding:'aller au mariage',attend_funeral:'aller aux obsèques',attend_festival:'aller à la fête'};
+R.esprits = () => {
+  const ids = Object.keys(D.minds).map(Number);
+  if (mindId == null || !D.minds[mindId]) mindId = ids[0];
+  $('#view').innerHTML = `<div class="panel" style="display:flex;flex-direction:column;gap:10px" id="mind"><p class="sub">Pour quelques habitants suivis, voici chaque décision : les options proposées, leur utilité et ce qui la compose, puis l’option retenue et son plan d’actions du contrat PNJ.</p>
+   <div class="ctl"><select id="mq" aria-label="Habitant suivi">${ids.map(i=>`<option value="${i}">${esc(P[i].n)} (${esc(V[P[i].v].name)})</option>`).join('')}</select></div><div id="mlist"></div></div>`;
+  $('#mq').value = mindId; $('#mq').addEventListener('change', e => { mindId = +e.target.value; drawMind(); }); drawMind();
+};
+function drawMind(){
+  const m = D.minds[mindId] || []; const p = P[mindId];
+  const rows = m.slice(-60).reverse().map(d => {
+    const maxu = Math.max(1, ...d.c.map(c=>Math.abs(c[1])));
+    const cands = d.c.slice(0, 7).map(c => `<div class="cand ${c[0]===d.chosen?'win':''}"><span>${esc(OPT_FR[c[0]]||c[0])}</span><span class="num">${c[1]}</span><span><span class="bar ${c[1]<0?'neg':''}" style="width:${Math.round(Math.abs(c[1])/maxu*120)}px"></span> <span class="fac">${c[3].map(f=>`${esc(FAC_FR[f[0]]||f[0])} ${f[1]>0?'+':''}${f[1]}`).join(', ')}</span></span></div>`).join('');
+    const plan = d.plan ? d.plan.map(s => `${s.f}(${Object.entries(s.a||{}).map(([k,v])=>`${k}=${v}`).join(', ')})`).join(' → ') : '';
+    return `<div class="dec"><div class="small"><span class="mono">${dateOf(d.t)}, ${d.t%24} h</span> · faim ${d.st[0]}, fatigue ${d.st[1]}, solitude ${d.st[2]}, deuil ${d.st[6]}${d.why==='interrupted'?' · <b>plan interrompu</b>':''}</div>${cands}<div class="mono small" style="margin-top:4px;overflow-wrap:anywhere">${esc(plan)} <span>${d.out&&d.out.status==='failed'?'· échec : '+esc(d.out.reason):''}</span></div></div>`;
+  }).join('');
+  $('#mlist').innerHTML = `<h3>${link(mindId)} <span class="small">${p.al?'':'(mort·e)'}</span></h3>${rows || '<p class="small">Pas de décision enregistrée.</p>'}`;
+}
+
+// crafts
+R.savoirs = () => {
+  const lastc = D.crafts[D.crafts.length-1]; const first = D.crafts[0];
+  const crafts = Object.keys(D.craft_names).sort((a,b)=>D.craft_names[a].localeCompare(D.craft_names[b]));
+  const val = (snap, v, c) => snap ? (snap.c[`${v}|${c}`]||0) : 0;
+  const rows = crafts.map(c => `<tr><td>${esc(D.craft_names[c])}${D.lost_world.includes(c)?' <span class="pill" style="color:var(--madder)">perdu</span>':''}</td>${D.villages.map(v => { const a = val(first,v.id,c), b = val(lastc,v.id,c); const col = b===0&&a>0?'var(--madder)':b>a?'var(--moss)':'inherit'; return `<td class="num" style="color:${col}">${b}${a!==b?` <span class="small">(${a})</span>`:''}</td>`; }).join('')}</tr>`).join('');
+  const lostEv = D.events.filter(e => ['craft_lost','craft_lost_village','craft_rediscovered','apprenticeship'].includes(e.k)).slice(-80).reverse().map(e => `<div class="ev"><span class="when">${shortDate(e.t)}</span><div>${evText(e)}</div></div>`).join('');
+  $('#view').innerHTML = `<div class="grid2"><div class="panel scroll"><h3>Qui sait faire quoi</h3><p class="small">Nombre de personnes vivantes qui maîtrisent chaque savoir (niveau 20 et plus), aujourd’hui et, entre parenthèses, au premier mois. Un savoir ne passe que de maître à apprenti·e.</p><table><tr><th>Savoir</th>${D.villages.map(v=>`<th>${esc(v.name)}</th>`).join('')}</tr>${rows}</table></div><div class="panel"><h3>Transmissions et pertes</h3><div class="list">${lostEv||'<p class="small">Rien encore.</p>'}</div></div></div>`;
+};
+
+// legends
+R.legendes = () => {
+  const L = D.legends.slice().sort((a,b) => b.b - a.b);
+  $('#view').innerHTML = `<div class="panel scroll"><p class="sub">Les frontières se franchissent en apparence, jamais vraiment : le danger double tous les 300 m (500 m en montagne). Ceux qui vont trop loin disparaissent ; leurs histoires circulent de taverne en veillée et donnent envie à d’autres de partir.</p>
+  <table><tr><th>Légende</th><th>Origine</th><th>Héros</th><th>Y croient</th><th>Récits</th></tr>${L.map(l => `<tr><td>${esc(l.t)}</td><td class="small">${l.v?esc(V[l.v].name):''} · ${l.day>0?shortDate(l.day*24):'temps anciens'}</td><td>${l.h!=null?link(l.h):''}</td><td class="num">${l.b}</td><td class="num">${l.n}</td></tr>`).join('')}</table></div>`;
+};
+
+// bonds graph
+R.liens = () => {
+  $('#view').innerHTML = `<div class="panel" style="display:flex;flex-direction:column;gap:8px"><div class="ctl"><select id="gv" aria-label="Village">${D.villages.map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join('')}</select><span class="small"><span class="legend-sw" style="background:var(--moss)"></span>amitié forte <span class="legend-sw" style="background:var(--madder)"></span>rancune <span class="legend-sw" style="background:var(--weld)"></span>amour</span></div><canvas id="gc" style="width:100%;max-width:100%;aspect-ratio:4/3"></canvas><p class="small">Chaque point est un habitant vivant ; touche-le pour ouvrir sa fiche. Les grappes sont des familles et des bandes d’amis ; les traits rouges, les querelles.</p></div>`;
+  $('#gv').addEventListener('change', e => graph(e.target.value)); graph('bourg');
+};
+function graph(vid){
+  const cv = $('#gc'); const W = cv.clientWidth || 600, H = Math.round(W*3/4); const dpr = window.devicePixelRatio||1;
+  cv.width = W*dpr; cv.height = H*dpr; const g = cv.getContext('2d'); g.scale(dpr,dpr);
+  const edges = D.graph[vid] || []; const ids = [...new Set(P.filter(p=>p.al&&p.v===vid).map(p=>p.id))];
+  const idx = {}; const nodes = ids.map((id,i) => { idx[id]=i; const h = hash('n'+id); return {id, x: W/2 + ((h%1000)/1000-.5)*W*.8, y: H/2 + (((h>>10)%1000)/1000-.5)*H*.8, vx:0, vy:0}; });
+  const E = edges.filter(e => idx[e[0]]!=null && idx[e[1]]!=null);
+  for (let it=0; it<220; it++){
+    for (let i=0;i<nodes.length;i++) for (let j=i+1;j<nodes.length;j++){ const a=nodes[i], b=nodes[j]; let dx=a.x-b.x, dy=a.y-b.y, d2=dx*dx+dy*dy+0.01; const f = 900/d2; a.vx+=dx*f; a.vy+=dy*f; b.vx-=dx*f; b.vy-=dy*f; }
+    for (const e of E){ const a=nodes[idx[e[0]]], b=nodes[idx[e[1]]]; const want = e[3]>=45 ? 140 : 35; const dx=b.x-a.x, dy=b.y-a.y, d=Math.sqrt(dx*dx+dy*dy)+0.01; const f=(d-want)*0.01; a.vx+=dx/d*f*d*0.1; a.vy+=dy/d*f*d*0.1; b.vx-=dx/d*f*d*0.1; b.vy-=dy/d*f*d*0.1; }
+    for (const n of nodes){ n.vx += (W/2-n.x)*0.002; n.vy += (H/2-n.y)*0.002; n.x += Math.max(-8,Math.min(8,n.vx)); n.y += Math.max(-8,Math.min(8,n.vy)); n.vx*=0.6; n.vy*=0.6; n.x=Math.max(8,Math.min(W-8,n.x)); n.y=Math.max(8,Math.min(H-8,n.y)); }
+  }
+  const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+  g.fillStyle = css('--panel'); g.fillRect(0,0,W,H);
+  for (const e of E){ const a=nodes[idx[e[0]]], b=nodes[idx[e[1]]]; g.strokeStyle = e[3]>=45 ? css('--madder') : e[4]>=60 ? css('--weld') : css('--moss'); g.globalAlpha = .55; g.lineWidth = e[3]>=45 ? 1.5 : 1; g.beginPath(); g.moveTo(a.x,a.y); g.lineTo(b.x,b.y); g.stroke(); }
+  g.globalAlpha = 1;
+  for (const n of nodes){ const p = P[n.id]; g.fillStyle = p.ti.includes('chief') ? css('--woad') : css('--ink'); g.beginPath(); g.arc(n.x,n.y,p.ti.includes('chief')?5:3,0,7); g.fill(); }
+  cv.onclick = ev => { const r = cv.getBoundingClientRect(); const x = (ev.clientX-r.left)*W/r.width, y=(ev.clientY-r.top)*H/r.height; let best=null, bd=100; for (const n of nodes){ const d=(n.x-x)**2+(n.y-y)**2; if (d<bd){bd=d;best=n;} } if (best) openPerson(best.id); };
+}
+
+renderTabs(); render();
+</script>
