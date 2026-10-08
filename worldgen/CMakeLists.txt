@@ -11,6 +11,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 endif()
 
+enable_testing()
 if(NOT TARGET emergence_core)
   set(EMERGENCE_ENGINE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../engine" CACHE PATH "engine/ of the Emergence repository")
   add_subdirectory(${EMERGENCE_ENGINE_DIR} engine)
@@ -21,8 +22,12 @@ if(NOT TARGET emergence_core)
     list(TRANSFORM defs REPLACE "^EMERGENCE_DATA_DIR=.*$" "EMERGENCE_DATA_DIR=\"${EMERGENCE_ENGINE_DIR}/data\"")
     set_target_properties(emergence_core PROPERTIES ${prop} "${defs}")
   endforeach()
+  # The engine pulls worldgen/ in itself (engine/CMakeLists.txt): the targets
+  # below already exist in the engine/worldgen build folder.
+  if(TARGET emergence_worldgen)
+    return()
+  endif()
 endif()
-enable_testing()
 
 add_library(emergence_worldgen STATIC
   src/worldgen.cpp

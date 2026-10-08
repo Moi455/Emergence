@@ -35,7 +35,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y ninja-build
       - run: cmake -S worldgen -B build/worldgen -G Ninja -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build/worldgen
-      - run: cd build/worldgen && ./test_worldgen
+      - run: cd build/worldgen && ctest --output-on-failure -R "test_worldgen|test_terrain"
 
   sim:
     name: Simulation sociale
