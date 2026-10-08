@@ -13,7 +13,7 @@ Branche `claude/integration-5q5447`, PR #1 (brouillon, à fusionner par Monsieur
 | `characters/` | générateur des villageois (graine → personnage rigué, 8 tenues, 24 animations) | les .glb se régénèrent avec `characters/tools/export.mjs` et ne sont pas dans le dépôt |
 | `prototypes/village-web/` | village jouable dans le navigateur, avec les vrais villageois animés | `python3 -m http.server` à la racine, puis `/prototypes/village-web/jeu/index.html` |
 | `ai/` (bilan : `ai/ETAT.md`, catalogue : `ai/CATALOGUE_modele.md`) | données du Transformer (générateur 0.4, décideur de référence, jetons tok-1, `sim_adapter.py`), scripts d'entraînement (`ENTRAINEMENT.md`) | jeu de 300 000 exemples hors dépôt (`/mnt/project-files/donnees-transformer/`) ; le professeur Gemini n'a jamais été lancé |
-| `sim/` | simulation sociale sans affichage, 500 PNJ, moteur à règles | **provisoire** : sera remplacée par une boucle qui donne les décisions au Transformer ; elle n'est pas branchée sur les villageois |
+| `sim/` (bilan : `sim/ETAT.md`) | simulation sociale sans affichage, 500 PNJ ; boucle `brain.py` / `live.py` prête à recevoir le Transformer de `ai/student` (un lot par heure de jeu) et gouverneur des ajustements de variables | le cerveau par défaut est encore le décideur à règles ; le cerveau Transformer demande PyTorch ; pas encore branchée sur les villageois ; catalogue unique : `docs/npc/variables_v0.3_catalogue_unique.md` (à valider par le fil Données) |
 | `tools/voxelizer/` | convertisseur 3D → voxels | 50 tests |
 | `assets/` | Medieval Village MegaKit (Git LFS) | |
 

@@ -1,3 +1,5 @@
+> Remplacé par `docs/npc/variables_v0.3_catalogue_unique.md` (validé le 8 oct. 2026 par le fil Données du Transformer). Ce fichier reste comme trace de la moitié « modèle ».
+
 # Catalogue PNJ, moitié « modèle »
 
 Fil Données du Transformer, 8 oct. 2026. Généré depuis le code : `representation.py`, `plan_contract.py`, `generate_states.py` 0.4, `encode.py` tok-1, vocabulaire 9c6f1d8ef56c58ac. À fusionner dans le catalogue unique tenu par le fil Simulation, qui apporte la moitié « monde » (espace, voxels, matériaux, eau, feu, économie, frontières).

@@ -20,7 +20,7 @@ Chaque PNJ a un Transformer qui tourne plusieurs fois par seconde, avec un cache
   - 6 978 décisions vécues dans la simulation, converties par `sim_adapter.py` ;
   - 1 500 paires minimales sur 25 sondes.
 - **Enseignant** (`teacher_run.py`) : prêt, jamais lancé (Gemini Flash-Lite visé, environ 3 100 requêtes pour 50 000 situations).
-- **Catalogue, moitié « modèle »** : `CATALOGUE_modele.md`, envoyé au fil Simulation qui tient le catalogue unique.
+- **Catalogue unique** des variables et des actions : `docs/npc/variables_v0.3_catalogue_unique.md`, tenu par le fil Simulation et validé ici ; il remplace `CATALOGUE_modele.md`.
 
 ## Mesuré (CPU du conteneur, 4 cœurs)
 

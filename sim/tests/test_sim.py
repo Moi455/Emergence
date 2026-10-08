@@ -145,5 +145,89 @@ class Society(unittest.TestCase):
         self.assertGreater(changed, 300)
 
 
+def have_torch():
+    try:
+        import torch  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+class BrainSocket(unittest.TestCase):
+    """The loop that hosts the Transformer: engine options, live tokens, batched brain, bounded deltas."""
+
+    def test_options_respect_hard_rules(self):
+        from emergence_sim import options
+        sim = Sim(seed=3)
+        sim.run(5)
+        for n in sim.npcs:
+            if not n.alive:
+                continue
+            o = options.feasible(sim, n)
+            self.assertLessEqual(len(o), 16)
+            self.assertTrue(any(c.key == "sleep" for c in o))
+            for c in o:
+                if c.key == "court":
+                    self.assertTrue(romance_ok(sim, n, sim.npcs[c.target]))
+                    self.assertGreaterEqual(sim.age(n), 18)
+
+    def test_live_tokens(self):
+        if find_plan_contract() is None:
+            self.skipTest("ai/npc_pipeline not found (set EMERGENCE_AI)")
+        from emergence_sim import options, live
+        sim = Sim(seed=3)
+        sim.run(5)
+        enc, gs, sa, V = live.ai()
+        for n in sim.npcs:
+            if not n.alive:
+                continue
+            o = options.feasible(sim, n)
+            tk = live.tokens(sim, n, o)
+            self.assertEqual(tk["n_cands"], len(o))
+            self.assertLessEqual(len(tk["cat"]), enc.MAX_TOKENS)
+            for row in tk["cat"]:
+                self.assertNotIn(1, row[1:6], "a value outside the model vocabulary")
+            rec = live.record(sim, n, o)
+            for e in rec["state"]["entities"]:
+                if e["age_cat"] in ("child", "teen") or sim.age(n) < 18:
+                    self.assertEqual(e["rel"]["romance"], 0)
+
+    def test_transformer_brain_is_deterministic_and_valid(self):
+        if not have_torch() or find_plan_contract() is None:
+            self.skipTest("torch or ai/ not available")
+        from emergence_sim.brain import TransformerBrain
+        pc = find_plan_contract()
+        a = Sim(seed=3, brain=TransformerBrain(seed=1))
+        b = Sim(seed=3, brain=TransformerBrain(seed=1))
+        a.run(1)
+        b.run(1)
+        self.assertEqual(fingerprint(a), fingerprint(b))
+        self.assertGreater(a.decisions, 400)
+        self.assertGreater(a.brain.stats()["max_batch"], 400)            # the whole village in one forward pass
+        for n in a.npcs:
+            if n.alive and n.plan and n.plan.get("steps"):
+                self.assertFalse(pc.validate_plan(n.plan), n.plan)
+
+    def test_governor_bounds(self):
+        from emergence_sim.brain import Governor
+        sim = Sim(seed=3)
+        g = Governor()
+        adult = next(n for n in sim.npcs if n.alive and sim.age(n) >= 30 and n.rel)
+        o = sorted(adult.rel)[0]
+        a0, h0, c0 = adult.rel[o][0], adult.hunger, adult.tr["courage"]
+        g.apply(sim, adult, {"state.anger": 60, f"rel.E{o}.affection": 40, "state.hunger": -50, "trait.courage": 9})
+        self.assertEqual(adult.anger, min(100, 60))                      # an emotion may jump
+        self.assertEqual(adult.rel[o][0], max(-100, min(100, a0 + 5)))   # a relation moves by 5 at most
+        self.assertEqual(adult.hunger, h0)                               # the body is the engine's
+        self.assertEqual(adult.tr["courage"], min(100, c0 + 1))          # a trait moves by 1 per day at most
+        g.apply(sim, adult, {"trait.courage": 1})
+        self.assertEqual(adult.tr["courage"], min(100, c0 + 1))
+        child = next(n for n in sim.npcs if n.alive and sim.age(n) < 12 and n.rel)
+        k = sorted(child.rel)[0]
+        r0 = child.rel[k][3]
+        g.apply(sim, child, {f"rel.E{k}.romance": 5})
+        self.assertEqual(child.rel[k][3], r0)                             # hard rule, whatever the model says
+
+
 if __name__ == "__main__":
     unittest.main()

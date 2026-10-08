@@ -1,4 +1,7 @@
-"""Reference decider: Utility AI over <=16 candidate options, then an HTN expansion of
+"""Decision loop (decide_batch) and the frozen reference decider (candidates).
+
+decide_batch is the socket: the brain (brain.py) chooses, this module executes.
+candidates() below is the old reference decider: Utility AI over <=16 candidate options, then an HTN expansion of
 the chosen option into a plan of 1..6 contract steps (ai/CONTRAT_PNJ.md), then an
 abstract (tier-2) execution that resolves the plan by its duration and outcome.
 
@@ -9,6 +12,7 @@ from .model import AFF, TRUST, RESPECT, ROMANCE, FAM, GRUDGE, DEBT, clamp
 from . import actions
 from .export import traj_begin, traj_end
 from .rules import romance_ok
+from .options import still_valid, REST
 
 MAX_CAND = 16
 
@@ -48,37 +52,50 @@ def advance(sim, n):
     n.last_t = sim.t
 
 
+def decide_batch(sim, npcs):
+    """Every NPC that must decide at this tick, in id order: list the options, ask the brain once for
+    all of them (one batch, so a Transformer runs one forward pass), then execute in id order."""
+    brain = sim.brain
+    batch, reasons = [], []
+    for n in npcs:
+        reason = "plan_done"
+        if n.plan is not None:
+            if n.plan.get("fate") == "vanish":
+                actions.vanish(sim, n)
+                continue
+            if n.plan.get("interrupted"):
+                reason = "interrupted"
+        advance(sim, n)
+        if n.pending_traj is not None:
+            traj_end(sim, n)
+        batch.append((n, brain.options(sim, n)))
+        reasons.append(reason)
+    if not batch:
+        return
+    choices = brain.choose(sim, batch)
+    for (n, cands), reason, ch in zip(batch, reasons, choices):
+        if not n.alive:
+            continue                      # died earlier in this tick (a fight, a verdict)
+        best = cands[ch.index]
+        if not still_valid(sim, n, best):
+            best = REST
+            sim.fallbacks += 1
+        if ch.deltas:
+            sim.governor.apply(sim, n, ch.deltas)
+        sim.decisions += 1
+        plan, hours, outcome = actions.execute(sim, n, best)
+        n.plan = plan
+        n.plan_kind = best.kind
+        actions.dress(sim, n, best, plan)
+        if n.tracked:
+            trace_mind(sim, n, cands, ch.scores, best, plan, outcome, reason)
+        traj_begin(sim, n, reason, cands, ch.scores, best, plan, outcome)
+        sim.schedule(n, sim.t + max(1, hours))
+
+
 def decide(sim, n):
-    reason = "plan_done"
-    if n.plan is not None:
-        if n.plan.get("fate") == "vanish":
-            actions.vanish(sim, n)
-            return
-        if n.plan.get("interrupted"):
-            reason = "interrupted"
-    advance(sim, n)
-    if n.pending_traj is not None:
-        traj_end(sim, n)
-    cands = candidates(sim, n)
-    cands.sort(key=lambda c: (-c.u, c.key))
-    cands = cands[:MAX_CAND]
-    noise = 20 + (n.tr["impulsivity"] + 100) // 4
-    best, bs = None, None
-    scores = []
-    for c in cands:
-        s = c.u + sim.rng.below(noise)
-        scores.append(s)
-        if bs is None or s > bs:
-            best, bs = c, s
-    sim.decisions += 1
-    plan, hours, outcome = actions.execute(sim, n, best)
-    n.plan = plan
-    n.plan_kind = best.kind
-    actions.dress(sim, n, best, plan)
-    if n.tracked:
-        trace_mind(sim, n, cands, scores, best, plan, outcome, reason)
-    traj_begin(sim, n, reason, cands, scores, best, plan, outcome)
-    sim.schedule(n, sim.t + max(1, hours))
+    """One NPC alone (tests, tools)."""
+    decide_batch(sim, [n])
 
 
 def trace_mind(sim, n, cands, scores, best, plan, outcome, reason):

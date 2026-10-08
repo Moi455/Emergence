@@ -35,11 +35,21 @@ def main(argv=None):
     ap.add_argument("--traj-ppm", type=int, default=0, help="decisions exported per million (0 = none)")
     ap.add_argument("--tracked", type=int, default=12)
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--brain", choices=("reference", "transformer"), default="reference",
+                    help="who decides: the frozen utility rules, or the Transformer of ai/student")
+    ap.add_argument("--model", default=None, help="checkpoint .pt of ai/student/train_student.py (none = untrained weights)")
+    ap.add_argument("--config", default="tiny", help="model size when no checkpoint: tiny, small, base, large")
+    ap.add_argument("--device", default="cpu", help="cpu or cuda")
+    ap.add_argument("--temperature", type=float, default=0.0, help="0 = best option; > 0 = deterministic sampling")
     a = ap.parse_args(argv)
     os.makedirs(a.out, exist_ok=True)
     traj = os.path.join(a.out, f"trajectories_seed{a.seed}.jsonl") if a.traj_ppm else None
     t0 = time.time()
-    sim = Sim(seed=a.seed, traj_ppm=a.traj_ppm, traj_path=traj, tracked=a.tracked)
+    brain = None
+    if a.brain == "transformer":
+        from .brain import TransformerBrain
+        brain = TransformerBrain(checkpoint=a.model, config=a.config, device=a.device, temperature=a.temperature, seed=a.seed)
+    sim = Sim(seed=a.seed, traj_ppm=a.traj_ppm, traj_path=traj, tracked=a.tracked, brain=brain)
     days = a.days if a.days is not None else int(a.years * sim.DPY)
 
     def progress(s):
@@ -59,6 +69,7 @@ def main(argv=None):
     print(json.dumps({"seed": a.seed, "days": days, "seconds": round(el, 1), "alive": alive, "ever": len(sim.npcs),
                       "decisions": sim.decisions, "interactions": sim.interactions, "events": len(sim.events),
                       "trajectories": sim.traj_count, "fingerprint": data["fingerprint"],
+                      "brain": sim.brain.name, "brain_stats": sim.brain.stats(), "fallbacks": sim.fallbacks,
                       "viewer_data": p, "viewer_mb": round(os.path.getsize(p) / 1e6, 2)}, ensure_ascii=False))
     return sim
 
