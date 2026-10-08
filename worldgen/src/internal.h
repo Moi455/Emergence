@@ -177,10 +177,13 @@ struct RasterStyle {
   const Lattice3* noise = nullptr;
   uint64_t hole_seed = 0;        // when non-zero, holes on a 4-voxel grid
   int32_t hole_pct = 0;
+  int64_t block_mm = 0;          // when non-zero (ellipsoids only), tested on blocks of this size
 };
 
 // Returns the number of voxels written.
 int64_t raster_ellipsoid(const WorldGen::Impl& g, const ChunkBox& b, const Ellipsoid& e, const RasterStyle& s, VoxelId* out);
+int64_t raster_blocky_ellipsoid(const WorldGen::Impl& g, const ChunkBox& b, const Ellipsoid& e, const RasterStyle& s,
+                                VoxelId* out);
 int64_t raster_capsule(const WorldGen::Impl& g, const ChunkBox& b, const Capsule& c, const RasterStyle& s, VoxelId* out);
 bool replace_ok(const Mats& m, VoxelId cur, uint8_t mask);
 

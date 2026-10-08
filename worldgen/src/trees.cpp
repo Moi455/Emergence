@@ -8,6 +8,19 @@
 
 namespace em::wg {
 
+// Crowns are porous (holes, rough rim, separate leaf masses) up to this level
+// of detail (8 cm voxels) and full volumes beyond.
+constexpr int kPorousCrownMaxLod = 2;
+
+// Block size of a full crown, a whole number of voxels: a third of its
+// smallest radius at level 3, a half at 4, the whole radius beyond (a crown is
+// then a box of 2 blocks per axis, a few pixels on screen at that distance).
+// At most 8 voxels, so giant crowns keep a rounded outline.
+inline int64_t crown_block(int64_t radius, int lod, int64_t v) {
+  const int64_t per_radius = std::max(1, 6 - lod);
+  return std::clamp<int64_t>(radius / (per_radius * v), 1, 8) * v;
+}
+
 const char* tree_species_name(TreeSpecies s) {
   static const char* names[] = {"oak", "birch", "pine", "willow"};
   return s < TreeSpecies::kCount ? names[static_cast<int>(s)] : "?";
@@ -152,7 +165,7 @@ void WorldGen::Impl::plant_trees(const ChunkBox& b, VoxelId* out) const {
     int64_t ext = (cr * 13) / 10;
     if (t.x_mm + ext <= b.ox || t.x_mm - ext >= x1 || t.z_mm + ext <= b.oz || t.z_mm - ext >= z1) continue;
     if (t.y_mm + (H * 11) / 10 <= b.oy || t.y_mm - 2 * M >= y1) continue;
-    if (noise.empty() && b.v <= 160) noise.build(leaf_seed, 9, b.ox, b.oy, b.oz, x1, y1, z1);
+    if (noise.empty() && b.lod <= kPorousCrownMaxLod) noise.build(leaf_seed, 9, b.ox, b.oy, b.oz, x1, y1, z1);
     const Lattice3* nz = noise.empty() ? nullptr : &noise;
 
     const uint64_t h = t.id;
@@ -171,7 +184,7 @@ void WorldGen::Impl::plant_trees(const ChunkBox& b, VoxelId* out) const {
     leaves.replace = kRepAir;
     leaves.noise = nz;
     leaves.noise_q16 = kOne * 3 / 10;
-    if (b.lod <= 2) {
+    if (b.lod <= kPorousCrownMaxLod) {
       leaves.hole_seed = rehash(leaf_seed, h);
       leaves.hole_pct = 22;
     }
@@ -203,22 +216,29 @@ void WorldGen::Impl::plant_trees(const ChunkBox& b, VoxelId* out) const {
       const int64_t whorls = range(rehash(h, 13), 5, 8);
       int ylo = static_cast<int>(clamp64(floor_div(base - b.oy, b.v), 0, kChunkSize));
       int yhi = static_cast<int>(clamp64(floor_div(top - b.oy, b.v), -1, kChunkSize - 1));
+      const bool solid = b.lod > kPorousCrownMaxLod;
+      const int64_t q = solid ? crown_block(cr, b.lod, b.v) : b.v;
+      const int64_t ay = floor_div(t.y_mm, b.v) * b.v, ax = floor_div(t.x_mm, b.v) * b.v, az = floor_div(t.z_mm, b.v) * b.v;
+      auto snap = [&](int64_t c, int64_t anchor) { return solid ? anchor + floor_div(c - anchor, q) * q + q / 2 : c; };
       for (int y = ylo; y <= yhi; ++y) {
-        int64_t yc = b.c(b.oy, y);
+        int64_t yc = snap(b.c(b.oy, y), ay);
+        if (yc < base || yc > top) continue;
         int64_t u = ((yc - base) * kOne) / span;
         int64_t saw = (u * whorls) & 0xFFFF;
-        int64_t R = (((cr * (kOne - u)) >> 16) * (kOne * 55 / 100 + ((saw * 45) / 100))) >> 16;
+        // Far away the whorls become one smooth cone of the same mean radius.
+        int64_t R = b.lod <= kPorousCrownMaxLod ? (((cr * (kOne - u)) >> 16) * (kOne * 55 / 100 + ((saw * 45) / 100))) >> 16
+                                                : (((cr * (kOne - u)) >> 16) * 78) / 100;
         if (R < b.v / 2) continue;
         int64_t cx, cz;
         at_height(yc - t.y_mm, &cx, &cz);
         const RasterStyle& st = leaves;
         // One voxel thick slice of the cone; the noise roughens its rim.
         for (int z = 0; z < kChunkSize; ++z) {
-          int64_t zc = b.c(b.oz, z), dz = zc - cz;
+          int64_t zc = b.c(b.oz, z), dz = snap(zc, az) - cz;
           if (abs64(dz) > R + (R * 3) / 10) continue;
           VoxelId* row = out + voxel_index(0, y, z);
           for (int x = 0; x < kChunkSize; ++x) {
-            int64_t xc = b.c(b.ox, x), dx = xc - cx;
+            int64_t xc = b.c(b.ox, x), dx = snap(xc, ax) - cx;
             int64_t Rn = R;
             if (nz) Rn += (R * ((nz->at(xc, yc, zc) * st.noise_q16) >> 16)) >> 16;
             if (dx * dx + dz * dz >= Rn * Rn || row[x] != kAir) continue;
@@ -234,6 +254,13 @@ void WorldGen::Impl::plant_trees(const ChunkBox& b, VoxelId* out) const {
 
     // Broadleaf: boughs from the upper trunk, a leaf mass at each end and on top.
     const int boughs = static_cast<int>(range(rehash(h, 14), 4, 7));
+    const bool solid = b.lod > kPorousCrownMaxLod;
+    int64_t bx0 = INT64_MAX, by0 = INT64_MAX, bz0 = INT64_MAX, bx1 = INT64_MIN, by1 = INT64_MIN, bz1 = INT64_MIN;
+    auto add_mass = [&](const Ellipsoid& e) {
+      bx0 = std::min(bx0, e.cx - e.rx), bx1 = std::max(bx1, e.cx + e.rx);
+      by0 = std::min(by0, e.cy - e.ry), by1 = std::max(by1, e.cy + e.ry);
+      bz0 = std::min(bz0, e.cz - e.rz), bz1 = std::max(bz1, e.cz + e.rz);
+    };
     for (int i = 0; i < boughs; ++i) {
       uint64_t hb = rehash(h, 100 + static_cast<uint64_t>(i));
       int64_t sy = (H * range(rehash(hb, 1), 45, 70)) / 100;
@@ -245,16 +272,31 @@ void WorldGen::Impl::plant_trees(const ChunkBox& b, VoxelId* out) const {
       int64_t reach = (cr * range(rehash(hb, 4), 50, 80)) / 100;
       int64_t ex = sx + (dx * reach) / len, ez = sz + (dz * reach) / len;
       int64_t ey = t.y_mm + sy + (H * range(rehash(hb, 5), 8, 28)) / 100;
-      raster_capsule(*this, b, {sx, t.y_mm + sy, sz, ex, ey, ez, (r0 * 45) / 100, std::max<int64_t>((r0 * 15) / 100, 30)}, wood, out);
+      if (!solid)
+        raster_capsule(*this, b, {sx, t.y_mm + sy, sz, ex, ey, ez, (r0 * 45) / 100, std::max<int64_t>((r0 * 15) / 100, 30)}, wood, out);
       int64_t br = (cr * range(rehash(hb, 6), 45, 65)) / 100;
       int64_t by = t.species == TreeSpecies::Willow ? ey - H / 10 : ey;
       int64_t bry = t.species == TreeSpecies::Willow ? (br * 9) / 10 : (br * 7) / 10;
-      raster_ellipsoid(*this, b, {ex, by, ez, br, bry, br}, leaves, out);
+      const Ellipsoid mass{ex, by, ez, br, bry, br};
+      if (solid) add_mass(mass);
+      else raster_ellipsoid(*this, b, mass, leaves, out);
     }
     int64_t topx, topz;
     at_height(trunk_h, &topx, &topz);
     int64_t tr = (cr * 6) / 10;
-    raster_ellipsoid(*this, b, {topx, t.y_mm + trunk_h + H / 10, topz, tr, (tr * 8) / 10, tr}, leaves, out);
+    const Ellipsoid top{topx, t.y_mm + trunk_h + H / 10, topz, tr, (tr * 8) / 10, tr};
+    if (!solid) {
+      raster_ellipsoid(*this, b, top, leaves, out);
+      continue;
+    }
+    // Far away (engine M3 request): the leaf masses become one full ellipsoid
+    // with the same bounds, ~0.9 of the box so the volume stays close, which
+    // the greedy mesher merges into large quads instead of a porous cloud.
+    add_mass(top);
+    const Ellipsoid crown{(bx0 + bx1) / 2, (by0 + by1) / 2, (bz0 + bz1) / 2, ((bx1 - bx0) * 9) / 20, ((by1 - by0) * 9) / 20,
+                          ((bz1 - bz0) * 9) / 20};
+    leaves.block_mm = crown_block(std::min({crown.rx, crown.ry, crown.rz}), b.lod, b.v);
+    raster_ellipsoid(*this, b, crown, leaves, out);
   }
 }
 

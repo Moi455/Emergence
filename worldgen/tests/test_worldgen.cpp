@@ -63,6 +63,11 @@ std::vector<ChunkKey> reference_keys(const WorldGen& g) {
       keys.push_back({static_cast<int32_t>(floor_div(trees[i].x_mm, chunk_mm(0))),
                       static_cast<int32_t>(floor_div(trees[i].y_mm + 600, chunk_mm(0))) + dy,
                       static_cast<int32_t>(floor_div(trees[i].z_mm, chunk_mm(0))), 0});
+  for (size_t i = 0; i < trees.size() && i < 4; ++i)  // full crowns far away
+    for (uint8_t lod : {3, 5})
+      keys.push_back({static_cast<int32_t>(floor_div(trees[i].x_mm, chunk_mm(lod))),
+                      static_cast<int32_t>(floor_div(trees[i].y_mm + trees[i].height_mm * 3 / 4, chunk_mm(lod))),
+                      static_cast<int32_t>(floor_div(trees[i].z_mm, chunk_mm(lod))), lod});
   for (const auto& c : g.cave_segments()) {  // inside a cave
     keys.push_back({static_cast<int32_t>(c.ax / chunk_mm(0)), static_cast<int32_t>(floor_div(c.ay, chunk_mm(0))),
                     static_cast<int32_t>(c.az / chunk_mm(0)), 0});

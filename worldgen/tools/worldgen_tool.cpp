@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <string>
@@ -471,6 +472,7 @@ void export_hslice(const WorldGen& g, int64_t x0, int64_t z0, int64_t len_m, int
 
 int cmd_export(const Args& a) {
   Timer total;
+  std::filesystem::create_directories(a.out);
   WorldPlan plan = generate_world_plan(params_of(a));
   WorldGen g(plan);
   std::string json = "{";

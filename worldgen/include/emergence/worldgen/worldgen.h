@@ -26,7 +26,7 @@
 
 namespace em::wg {
 
-constexpr uint32_t kChunkGenVersion = 1;
+constexpr uint32_t kChunkGenVersion = 2;  // 2: species tints, full crowns beyond lod 2
 constexpr int kChunkVoxels = kChunkSize * kChunkSize * kChunkSize;  // 262 144
 
 // Chunk address (docs/interfaces.md § 1): x east, y up, z north, origin at

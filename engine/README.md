@@ -11,11 +11,11 @@ Bibliothèque `emergence_core` (C++20, CMake, sans dépendance), liée plus tard
 | 0.4 Godot 4.6.1 charge la GDExtension | `engine/gdext/` (classe `EmergenceWorld`), projet `game/` ; godot-cpp au commit `272e7f4a5fde342ea20983371fffafdccea07f20`, API 4.6 | la scène s'ouvre sans écran et retrouve la même empreinte (`6a24a0d52057c0df`) que l'exécutable C++ ; rendu testé en OpenGL logiciel (xvfb) |
 | M2 Chunks 64³ en briques 8³, VoxelId 16 bits | génération locale, briques uniformes ou à palette 1/2/4/8/16 bits, chunks d'air et de roche implicites | chunk de surface : 0,42 ms en moyenne, 0,62 ms au 95ᵉ centile (critère < 1 ms) ; 9,5 Ko par chunk de surface ; 17 chunks à générer par colonne de 121, le reste implicite |
 
-| M3 Maillage glouton binaire + LOD (en cours) | `core/mesh/` : faces par masques 64 bits, fusion sur la classe seule, quad de 8 octets, bords lus chez les voisins, réduction 2×2×2 pour les niveaux de détail | maillage d'un chunk de surface 0,64 ms (LOD 0), 1 346 quads, fusion ×3,7 ; anneaux jusqu'à 640 m estimés à 2,5 M quads, 19 Mo (critère < 1 Go de VRAM). Le temps GPU (critère < 6 ms) ne se mesure pas ici : il faut l'Iris Xe |
+| M3 Maillage glouton binaire + LOD (en cours) | `core/mesh/` : faces par masques 64 bits, quad de 8 octets avec occlusion ambiante aux coins ; `terrain_streamer` : 6 anneaux emboîtés (2 cm à 64 cm, carré de 1,4 km), murs de couture, régions de 8³ chunks ; `terrain/` branche le générateur `worldgen/` ; shader Godot à extraction de sommets (`game/shaders/terrain_quads.gdshader`) | chargement complet autour du bourg 12,9 s sur 4 cœurs, 6,85 M quads (52 Mo), 164 régions dessinées ; marche : 0,8 s de calcul par pas de 2,56 m, en tâche de fond ; creuser un trou de 30 cm : 43 ms. Mesure GPU sur l'Iris Xe : à faire par Monsieur (touche H dans le jeu) |
 
 Ce qui manque à M1 : grottes (réseau dans le plan), gisements, mesure sur la machine de référence et sur une deuxième machine (Windows/MSVC, ARM). Ce qui manque à M2 : lit des rivières creusé au voxel, routes et villages dans les voxels, strates rocheuses fines.
 
-Ce qui manque à M3 : génération directe d'un chunk à un niveau de détail donné (aujourd'hui on réduit 8 chunks fins, 69 s pour l'anneau 1 de la capture ; à demander au fil de génération), coutures entre anneaux, occlusion ambiante par sommet, shader à extraction de sommets (aujourd'hui les quads sont dépliés en triangles pour Godot), mesure GPU sur la machine de référence.
+Ce qui manque à M3 : mesure du temps GPU sur la machine de référence ; feuillages pleins aux niveaux grossiers (demandé au fil de génération, ils font 90 % des quads lointains en forêt) ; les éditions ne se voient qu'au niveau 0 (44 m autour du joueur) ; micro-tracé du champ proche (choix 5 de l'architecture).
 
 ## Construire et tester
 
@@ -27,14 +27,15 @@ cd build && ctest                       # EMERGENCE_SKIP_SLOW=1 saute la carte c
 ./sim/emergence_sim plan --seed 1 --out cartes/      # plan, temps, empreinte, cartes PNG
 ./sim/emergence_sim chunks --at town --out cartes/   # 20 × 20 m de voxels de 2 cm, vue de dessus et coupe
 engine/scripts/check_determinism.sh 1   # même empreinte avec gcc/clang, -O0/-O3, 1/4 threads
-./core/bench_mesh                       # mesures M3
+./core/bench_mesh                       # mesures M3 (maillage)
+./terrain/bench_terrain market_town     # mesures M3 (anneaux, marche, creusage) sur le générateur worldgen
 ./sim/emergence_sim geo --out geography_seed1.json        # villages, ressources, routes (docs/interfaces.md § 2 bis)
 ./sim/emergence_sim zone --at sea_village --out zones/   # champ de hauteur 128 m au pas de 8 cm autour d'un village
 
 # Godot : GDExtension puis scène
 git clone https://github.com/godotengine/godot-cpp && git -C godot-cpp checkout 272e7f4a5fde342ea20983371fffafdccea07f20
 cmake -S engine -B build-gd -G Ninja -DGODOT_CPP_DIR=$PWD/godot-cpp && cmake --build build-gd --target emergence_gdext
-godot --path game                                     # scène principale : plan + empreinte dans la console
+godot --path game                                     # jeu : marcher, voler (F), creuser (clic gauche), poser (clic droit)
 godot --path game res://scenes/terrain_view.tscn -- --site miners --shot capture.png   # terrain 2 cm maillé
 ```
 

@@ -6,7 +6,7 @@ shader_type spatial;
 render_mode cull_back;
 
 uniform sampler2D quads : filter_nearest, repeat_disable;
-uniform sampler2D palette : source_color, filter_nearest, repeat_disable;
+uniform sampler2D palette : filter_nearest, repeat_disable;  // sRGB bytes, decoded below (texelFetch skips the hint on some drivers)
 uniform int quad_count = 0;
 uniform int quad_offset = 0;
 uniform float cell = 0.02;  // voxel edge in metres at this level of detail
@@ -65,7 +65,8 @@ void vertex() {
 		NORMAL = ng;
 		int ci = uv.x + 2 * uv.y;
 		v_ao = float((ao >> uint(2 * ci)) & 3u);
-		COLOR = texelFetch(palette, ivec2(cls % 64, cls / 64), 0);
+		vec3 srgb = texelFetch(palette, ivec2(cls % 64, cls / 64), 0).rgb;
+		COLOR = vec4(mix(srgb / 12.92, pow((srgb + 0.055) / 1.055, vec3(2.4)), step(0.04045, srgb)), 1.0);
 	}
 }
 

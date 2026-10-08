@@ -38,9 +38,42 @@ inline bool hole(const RasterStyle& s, int64_t x, int64_t y, int64_t z, int64_t 
 
 }  // namespace
 
+// The ellipsoid tested at the centres of blocks of s.block_mm (a multiple of
+// the voxel, anchored on the voxel boundary next to the centre): a few large
+// flat faces, which a greedy mesher merges, instead of a round staircase.
+int64_t raster_blocky_ellipsoid(const WorldGen::Impl& g, const ChunkBox& b, const Ellipsoid& e, const RasterStyle& s,
+                                VoxelId* out) {
+  const int64_t q = s.block_mm;
+  const int64_t ax = floor_div(e.cx, b.v) * b.v, ay = floor_div(e.cy, b.v) * b.v, az = floor_div(e.cz, b.v) * b.v;
+  auto snap = [&](int64_t c, int64_t anchor) { return anchor + floor_div(c - anchor, q) * q + q / 2; };
+  Range rx = clip(b.ox, b.v, e.cx - e.rx - q, e.cx + e.rx + q), ry = clip(b.oy, b.v, e.cy - e.ry - q, e.cy + e.ry + q),
+        rz = clip(b.oz, b.v, e.cz - e.rz - q, e.cz + e.rz + q);
+  if (rx.lo > rx.hi || ry.lo > ry.hi || rz.lo > rz.hi) return 0;
+  constexpr int64_t kUnit = int64_t{1} << 40;
+  const int64_t kx = kUnit / (e.rx * e.rx), ky = kUnit / (e.ry * e.ry), kz = kUnit / (e.rz * e.rz);
+  int64_t written = 0;
+  for (int y = ry.lo; y <= ry.hi; ++y) {
+    int64_t dy = snap(b.c(b.oy, y), ay) - e.cy, ty = dy * dy * ky;
+    if (ty >= kUnit) continue;
+    for (int z = rz.lo; z <= rz.hi; ++z) {
+      int64_t dz = snap(b.c(b.oz, z), az) - e.cz, tyz = ty + dz * dz * kz;
+      if (tyz >= kUnit) continue;
+      VoxelId* row = out + voxel_index(0, y, z);
+      for (int x = rx.lo; x <= rx.hi; ++x) {
+        int64_t dx = snap(b.c(b.ox, x), ax) - e.cx;
+        if (tyz + dx * dx * kx >= kUnit || !replace_ok(g.m, row[x], s.replace)) continue;
+        row[x] = s.voxel;
+        ++written;
+      }
+    }
+  }
+  return written;
+}
+
 int64_t raster_ellipsoid(const WorldGen::Impl& g, const ChunkBox& b, const Ellipsoid& e, const RasterStyle& s,
                          VoxelId* out) {
   if (e.rx <= 0 || e.ry <= 0 || e.rz <= 0) return 0;
+  if (s.block_mm > b.v) return raster_blocky_ellipsoid(g, b, e, s, out);
   const bool use_noise = s.noise && s.noise_q16 > 0;
   const int64_t grow = use_noise ? s.noise_q16 : 0;
   int64_t ex = e.rx + ((e.rx * grow) >> 16), ey = e.ry + ((e.ry * grow) >> 16), ez = e.rz + ((e.rz * grow) >> 16);
