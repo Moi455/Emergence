@@ -24,5 +24,16 @@ else
   echo "!! numpy/scipy/Pillow absents : pip install -r tools/voxelizer/requirements.txt"; fail=1
 fi
 
+cd "$ROOT"
+if command -v cmake >/dev/null; then
+  BUILD="${EMERGENCE_BUILD_DIR:-$ROOT/build/engine}"
+  run cmake -S engine -B "$BUILD" -DCMAKE_BUILD_TYPE=Release
+  run cmake --build "$BUILD" -j
+  if [[ "${1:-}" == "--quick" ]]; then export EMERGENCE_SKIP_SLOW=1; fi
+  run ctest --test-dir "$BUILD" --output-on-failure
+else
+  echo "!! cmake absent : tests du moteur C++ sautés"; fail=1
+fi
+
 if [[ $fail -eq 0 ]]; then echo "TOUS LES TESTS PASSENT"; else echo "DES TESTS ÉCHOUENT"; fi
 exit $fail

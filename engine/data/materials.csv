@@ -24,3 +24,16 @@ id,name,category,density_kg_m3,hardness,flammability,color
 18,roof_tile,building,1900,35,0,a8553c
 19,thatch,building,200,3,95,c2a65a
 20,cut_stone,building,2500,60,0,b5aea0
+21,wood_trim,building,700,25,75,7a5a3a
+22,wood_trim_worn,building,650,22,75,6e5a46
+23,rock_trim,building,2500,60,0,9a958c
+24,brick,building,1900,45,0,a0705a
+25,red_brick,building,1900,45,0,9c3f2e
+26,rubble_masonry,building,2300,50,0,8f877a
+27,iron,metal,7800,90,0,4a4a4e
+28,glass,building,2500,15,0,a8c8d0
+29,vine,plant,400,2,60,4f7a30
+30,leaves,plant,300,1,70,4c7a2c
+31,bark,wood,600,30,65,5a4632
+32,cobblestone,building,2400,60,0,8a857c
+33,cloth,textile,300,2,90,b8a88a

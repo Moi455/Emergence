@@ -43,6 +43,9 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | P14 | Échelle de temps : 1 jour de jeu = 4 h réelles (×6) | architecture § 2.4 |
 | P15 | Résumé de région en cellules de 64 m lu par la société | architecture § 2.5 |
 | P16 | (acceptée, D13) Orientation des frontières : mer à l'ouest, montagne au nord, désert à l'est, forêt au sud, tirée de la seed ; cohérente avec un vent dominant venu de la mer | architecture § 2.2 |
+| P17 | Génération du monde en entiers et virgule fixe Q16 seulement (bruit, érosion, plan, chunks), plutôt qu'en flottants stricts ; empreintes de référence épinglées dans les tests | `engine/README.md` ; empreinte identique sur 12 compilations gcc/clang le 8 oct. [Mesuré] |
+| P18 | Profil des colonnes de terrain échantillonné toutes les 8 cm et interpolé ; granit à 40 m sous la surface ; l'eau hors des voxels | `engine/README.md` ; chunk de surface 0,42 ms en moyenne [Mesuré, conteneur] |
+| P19 | Table des matières en données (`engine/data/materials.csv`), numéros de classe figés, cible du convertisseur | `engine/data/materials.csv` |
 
 ## Ouvert
 

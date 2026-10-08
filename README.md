@@ -23,7 +23,7 @@ Ce dépôt réunit, au 8 octobre 2026, tout le travail fait jusqu'ici : l'archit
 | Architecture | v1 consolidée ; plusieurs choix encore « proposés » | — |
 | Pipeline PNJ (`ai/npc_pipeline`) | générateur, mémoire, règles sociales, dialogue, chantier, analyseur, pipeline teacher : faits ; aucun modèle entraîné, teacher jamais lancé en vrai | 30 cas (22 OK, 7 LEARN, 1 SPEC), autotests sans clé verts |
 | Convertisseur (`tools/voxelizer`) | voxelisation, remplissage, palette, format VXP : faits ; table de matières, LOD, connecteurs : à faire | 50 tests verts |
-| Moteur C++ (`engine`) | à créer | — |
+| Moteur C++ (`engine`) | squelette CMake, plan du monde (M1) et chunks (M2) faits ; voir `engine/README.md` | 20 tests C++ verts |
 | Jeu Godot (`game`) | à créer | — |
 
 ## Lancer les tests

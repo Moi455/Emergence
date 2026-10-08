@@ -37,8 +37,9 @@ FrontierSample Relief::frontier(int64_t x, int64_t z) const {
     // with bays and headlands down to a few hundred metres.
     uint64_t seed = hash_combine(layer_seed(p_.seed, Layer::Frontier), static_cast<uint64_t>(s));
     int64_t wander = fbm2(seed, to_noise(along, L(5000 * M)), to_noise(dist_to_edge, L(5000 * M)), 5);
-    int64_t width = L(int64_t{p_.march_width_m[static_cast<size_t>(s)]} * M);
-    fs.depth_mm[static_cast<size_t>(s)] = width + ((wander * L(1300 * M)) >> 16) - dist_to_edge;
+    int64_t width = int64_t{p_.march_width_m[static_cast<size_t>(s)]} * M;
+    wander = (wander * kOne) / (kOne + abs64(wander));  // soft clamp: never more than 2 km
+    fs.depth_mm[static_cast<size_t>(s)] = width + ((wander * L(2000 * M)) >> 16) - dist_to_edge;
     FrontierKind kind = p_.frontier[static_cast<size_t>(s)];
     int64_t lo = kind == FrontierKind::Sea ? L(-300 * M) : L(-1200 * M);
     int64_t hi = kind == FrontierKind::Sea ? L(400 * M) : L(600 * M);
@@ -57,7 +58,10 @@ int64_t Relief::side_height(FrontierKind kind, int64_t base, int64_t d, int64_t 
       uint64_t s = layer_seed(p_.seed, Layer::Sea);
       floor += (fbm2(s, to_noise(x, L(2500 * M)), to_noise(z, L(2500 * M)), octaves_for(L(2500 * M), min_wl, 4)) * 15 * M) >> 16;
       // Distant islands and coasts, only past the map edge (backdrop).
-      int64_t beyond = d - L(int64_t{p_.march_width_m[0]} * M);
+      int64_t sea_width = 0;
+      for (int s2 = 0; s2 < 4; ++s2)
+        if (p_.frontier[static_cast<size_t>(s2)] == FrontierKind::Sea) sea_width = int64_t{p_.march_width_m[static_cast<size_t>(s2)]} * M;
+      int64_t beyond = d - sea_width;
       if (beyond > 0) {
         int64_t isl = ridged2(hash_combine(s, 7), to_noise(x, L(9000 * M)), to_noise(z, L(9000 * M)),
                               octaves_for(L(9000 * M), min_wl, 5));
@@ -134,7 +138,7 @@ int64_t Relief::height_mm(int64_t x, int64_t z, int64_t min_wl, FrontierSample* 
   // (2.5 km inside the core) to 3 km at the map edge and 6 km far beyond.
   for (int s = 0; s < 4; ++s) {
     if (p_.frontier[static_cast<size_t>(s)] != FrontierKind::Mountain) continue;
-    int64_t width = L(int64_t{p_.march_width_m[static_cast<size_t>(s)]} * M);
+    int64_t width = int64_t{p_.march_width_m[static_cast<size_t>(s)]} * M;
     int64_t m = fs.depth_mm[static_cast<size_t>(s)] + L(2500 * M);
     if (m <= 0) continue;
     int64_t edge = width + L(2500 * M);

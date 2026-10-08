@@ -128,10 +128,10 @@ void place_settlements(WorldPlan& p) {
         } else {
           if (side == Side::None) continue;
           int64_t along = along_mm(p, side, i, j);
-          if (along < size_mm / 4 || along > size_mm * 3 / 4) continue;
+          if (along < size_mm * 3 / 10 || along > size_mm * 7 / 10) continue;
           int64_t edge_dist = side == Side::West ? x : side == Side::East ? size_mm - x
                               : side == Side::North ? size_mm - z : z;
-          int64_t width = L(int64_t{wp.march_width_m[static_cast<size_t>(side)]} * M);
+          int64_t width = int64_t{wp.march_width_m[static_cast<size_t>(side)]} * M;
           if (width - edge_dist < w.depth_lo - max_wander || width - edge_dist > w.depth_hi + max_wander) continue;
           FrontierSample fs = relief.frontier(x, z);
           int64_t depth = fs.depth_mm[static_cast<size_t>(side)];
