@@ -12,7 +12,7 @@ Les mesures viennent du conteneur (4 cœurs x86, rendu logiciel), pas de la mach
 | M1 Plan du monde 20 km | 4,2 s ; empreinte graine 1 = `6a24a0d52057c0df`, identique sur 12 compilations gcc/clang ; plan figé en version 1 |
 | 0.4 Godot 4.6.1 + GDExtension | godot-cpp `272e7f4a`, classe `EmergenceWorld` |
 | M2 Chunks 64³ en briques 8³ | 0,42 ms par chunk (générateur du moteur) ; le jeu utilise désormais `worldgen/` (fil Génération), environ 0,75 ms par chunk sur 4 cœurs |
-| M3 Maillage et niveaux de détail | quads de 8 octets avec occlusion aux coins (niveaux 0 à 2) ; 6 anneaux emboîtés (carré de 1,4 km), murs de couture ; chargement complet 12,9 s ; 6,85 M quads autour du bourg (52 Mo), dont 90 % de feuillages lointains ; en marchant, 0,8 s de calcul par pas de 2,56 m, en tâche de fond ; un trou de 30 cm : 43 ms |
+| M3 Maillage et niveaux de détail | quads de 8 octets avec occlusion aux coins (niveaux 0 à 2) ; 6 anneaux emboîtés (carré de 1,4 km), murs de couture ; chargement complet 12,9 s ; 1,95 M quads autour du bourg depuis les couronnes pleines du fil Génération aux niveaux 3 à 5 (6,85 M avant, ×3,5) ; en marchant, 0,8 s de calcul par pas de 2,56 m, en tâche de fond ; un trou de 30 cm : 43 ms |
 | Scène jouable `game/scenes/play.tscn` | marcher, courir, sauter, voler, creuser, poser ; collision Jolt autour du joueur ; shader à extraction de sommets ; `--autotest` creuse 2,6 m (OK) ; captures dans `/mnt/project-files/moteur/captures/jeu_*.png` |
 | Contrat `docs/interfaces.md` v0.2 | VXB3 et VXI, pose de liaison, tenues, identifiants de village, événements de la simulation |
 | Exports | `emergence_sim geo` et `zone` ; sorties dans `/mnt/project-files/moteur/exports/` |
@@ -20,7 +20,6 @@ Les mesures viennent du conteneur (4 cœurs x86, rendu logiciel), pas de la mach
 ## Pas fait
 
 - Temps GPU et images par seconde sur l'Iris Xe : la touche H du jeu les affiche.
-- Feuillages pleins aux niveaux grossiers : noté par le fil Génération pour la suite sur Claude Code, pas implémenté.
 - Éditions visibles seulement au niveau 0 (44 m autour du joueur) ; elles restent en mémoire, sans sauvegarde.
 - Bus d'opérations (M6), physique d'effondrement, eau et feu, sauvegarde par deltas.
 - Micro-tracé du champ proche.

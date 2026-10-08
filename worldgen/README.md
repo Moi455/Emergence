@@ -16,7 +16,7 @@ gen.trees_in(x0, z0, x1, z1, &trees);             // arbres avec id stable (delt
 gen.settlement_pads(); gen.cave_segments();
 ```
 
-Repère de `docs/interfaces.md` : x est, y haut, z nord, origine au coin sud-ouest, y = 0 au niveau de la mer. Chunk (x, y, z) au niveau `lod` : origine (x, y, z) × 1,28 m << lod. **Un chunk grossier se génère directement**, sans réduire les chunks fins : les octaves plus fines que 4 voxels et les arbres plus petits qu'un voxel sont sautés. Teinte 0 partout, sauf écorce et feuillage qui portent l’essence (interfaces.md § 2 bis : 0 chêne, 1 saule, 2 pin, 3 bouleau). L'eau n'est pas en voxels (`water_mm()` donne le niveau du plan).
+Repère de `docs/interfaces.md` : x est, y haut, z nord, origine au coin sud-ouest, y = 0 au niveau de la mer. Chunk (x, y, z) au niveau `lod` : origine (x, y, z) × 1,28 m << lod. **Un chunk grossier se génère directement**, sans réduire les chunks fins : les octaves plus fines que 4 voxels et les arbres plus petits qu'un voxel sont sautés. Au-delà de lod 2 (voxels de 16 cm et plus), les couronnes deviennent des volumes pleins faits de blocs (un tiers du rayon à lod 3, la moitié à lod 4, le rayon entier ensuite, 8 voxels au plus), que la fusion gloutonne du moteur réunit : 6,85 M → 1,95 M quads au chargement complet autour du bourg (`bench_terrain market_town`). `kChunkGenVersion` = 2. Teinte 0 partout, sauf écorce et feuillage qui portent l’essence (interfaces.md § 2 bis : 0 chêne, 1 saule, 2 pin, 3 bouleau). L'eau n'est pas en voxels (`water_mm()` donne le niveau du plan).
 
 ## Mesures (graine 42, 20 km, 1 fil, machine du conteneur)
 

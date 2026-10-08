@@ -13,6 +13,7 @@ for cfg in "g++ Release" "g++ Debug" "clang++ Release" "clang++ Debug"; do
   dir="$out/$1-$2"
   cmake -S "$here" -B "$dir" -DCMAKE_CXX_COMPILER="$1" -DCMAKE_BUILD_TYPE="$2" -DEMERGENCE_ENGINE_DIR="$engine" >/dev/null
   cmake --build "$dir" --target test_worldgen -j >/dev/null
-  if "$dir/test_worldgen" golden | grep -q "0 failed"; then echo "ok   $1 $2"; else echo "FAIL $1 $2"; status=1; fi
+  exe="$dir/test_worldgen"; [ -x "$exe" ] || exe="$dir/engine/worldgen/test_worldgen"
+  if "$exe" golden | grep -q "0 failed"; then echo "ok   $1 $2"; else echo "FAIL $1 $2"; status=1; fi
 done
 exit $status
