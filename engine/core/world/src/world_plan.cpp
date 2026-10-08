@@ -33,6 +33,16 @@ const char* settlement_name(SettlementKind k) {
   return names[static_cast<int>(k)];
 }
 
+const char* settlement_id(SettlementKind k) {
+  static const char* ids[] = {"sea_village", "forest_village", "mountain_village", "desert_village", "market_town"};
+  return ids[static_cast<int>(k)];
+}
+
+const char* settlement_frontier(SettlementKind k) {
+  static const char* sides[] = {"west", "south", "north", "east", "center"};
+  return sides[static_cast<int>(k)];
+}
+
 WorldParams WorldParams::scaled(uint64_t seed, int32_t size_m) {
   WorldParams p;
   p.seed = seed;

@@ -46,6 +46,11 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | P17 | Génération du monde en entiers et virgule fixe Q16 seulement (bruit, érosion, plan, chunks), plutôt qu'en flottants stricts ; empreintes de référence épinglées dans les tests | `engine/README.md` ; empreinte identique sur 12 compilations gcc/clang le 8 oct. [Mesuré] |
 | P18 | Profil des colonnes de terrain échantillonné toutes les 8 cm et interpolé ; granit à 40 m sous la surface ; l'eau hors des voxels | `engine/README.md` ; chunk de surface 0,42 ms en moyenne [Mesuré, conteneur] |
 | P19 | Table des matières en données (`engine/data/materials.csv`), numéros de classe figés, cible du convertisseur | `engine/data/materials.csv` |
+| P20 | Le professeur lit une vue en entiers (−10..+10 ou 0..10, zéros omis) ; l'élève lit les mêmes entiers divisés par 10 | `ai/npc_pipeline/representation.py`, `generate_states.py` 0.4 |
+| P21 | Un décideur à utilités lisibles (`reference_decider.py`, ref-0.4) donne les étiquettes gratuites de départ et sert de repli ; l'élève doit le battre grâce au professeur et à la simulation | paires minimales : référence 98,6 % sur 1 000 paires [Mesuré] |
+| P22 | Format de jetons `tok-1` (64 jetons, 16 options, pointeurs entre jetons) ; `encode.py` est l'oracle du futur encodeur C++ | `ai/npc_pipeline/encode.py`, `token_layout.json` |
+| P23 | Générateur 0.4 : couche village (5 villages, problème commun, frontières, commerce), foyer, contenu des souvenirs, garde-robe et `dress(outfit)` en fin de contrat | `ai/CONTRAT_PNJ.md` ; `docs/npc/audit/report_v04.md` |
+| P24 | Élève `small` (5,3 M paramètres) par défaut pour la RTX de Monsieur ; `tiny` (0,8 M) en repli | `ai/student/ENTRAINEMENT.md` |
 
 ## Ouvert
 

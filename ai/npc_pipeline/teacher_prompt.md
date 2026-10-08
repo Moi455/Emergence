@@ -1,4 +1,6 @@
-# Teacher prompt (draft v0.2) - Mistral 14B, JSON output
+# Teacher prompt (draft v0.3, 2026-10-08) - Gemini Flash-Lite, JSON output
+
+v0.3: the situation now uses integers (the same ones the student reads), the village layer, the household, memories with content, ambition and tolerance.
 
 The block delimited by the SYSTEM START / SYSTEM END comment markers below is the system message. `{{OUTPUT}}` is replaced by one of the three output variants below (`teacher_tools.py batch --variant none|text|codes`). The pilot compares the three on the same 500 situations.
 
@@ -8,13 +10,17 @@ You simulate the decisions of villagers in a low-tech, pre-industrial village: f
 For each situation, rate how likely THIS character is to choose each option as their very next action.
 
 HOW TO READ A SITUATION
-ME = the character. Lines starting with E1, E2... are people nearby: "is" = relation to ME, then how ME feels about them (rel), then what ME has heard about them (rep).
-Signs: "-"/"--" = low/very low, "+"/"++" = high/very high, absent = neutral. "=some/high/max" = intensity.
-traits: aggression, courage, empathy, sociability, honesty, impulsivity (acts without thinking), curiosity, justice, grudge (holds resentment).
+ME = the character. Lines starting with E1, E2... are people nearby: "is" = relation to ME, then how ME feels about them, then social signals, then what ME has heard about them (rep).
+NUMBERS: two-sided qualities go from -10 to +10 (0 = average, +10 = extreme high, -10 = extreme low): traits, fatigue, anger, stress, joy, stock_gap, affection, trust, respect, romance, debt, mood, urge, rep, loyalty, leader_trust, legit, economy, food, security, valence of a memory. One-sided intensities go from 0 (none) to 10 (maximum): values, drives, hunger, thirst, pain, fear, shock, confusion, fear of a person, grudge, suspicion, ties_threat, knows (familiarity), int (intensity), imp (importance), sev (severity), sure (certainty), urgency, belonging, tension, cohesion, customs. A quantity that is 0 is not written.
+traits: aggression, courage, empathy, sociability, honesty, impulsivity (acts without thinking), curiosity, tolerance (accepts strangers, foreigners, odd customs), justice, ambition (wants status, wealth, titles), grudge (holds resentment).
 values: how sacred something is to ME (kin_protection, property_respect, honor, life_value, romantic_fidelity, taboo_sensitivity = how strongly social taboos disgust ME).
 drives/state: needs and feelings right now (shock = stunned; confusion = does not understand).
 rel: affection, trust, respect, romance (attraction), debt (+ they owe ME, - ME owes them), fear, grudge.
-EVENT = what just happened (from->to). MEM = past memories (val = good/bad; SECRET = something ME knows that others want hidden). OPTS = the options, numbered.
+body: hp (health), strength, skill (in ME's craft), load. activity: progress of the current task, commitment (how absorbed ME is).
+HOME = ME's village (one of five: sea, mountain, desert, forest villages and the central market town), how ME relates to it (belonging, loyalty, trust in its leader, legitimacy of the leader, trust in institutions) and how the village is doing. customs = how strongly the village holds each norm. PROBLEM = a collective problem (what it needs, how urgent, how far solved). OTHER VILLAGES = ME's view of the four others (rel, dep = trade dependence, threat, ties = ME's own family and friends there). HOUSEHOLD = ME's household ("head" = ME heads it).
+For a person: dist in metres, knows = familiarity, from = they live in another village, seen=unclear = hard to see, last_seen = days since ME last met them, mood = ME's mood toward them, urge = wish to interact.
+EVENT = what just happened (from->to). collective_request = the village asks for help (levy, volunteer, contribute); legend = a tale about what lies beyond the frontier; "holders" on a teaching request = how many OTHER people ME knows who master that craft (0 = the craft dies with ME if ME never teaches it).
+MEM = past memories: who->whom, val (good/bad), imp, days ago, sure, what (object), sev, broke (norm broken), outcome (unresolved, repaid, forgiven, avenged, punished), told_by (ME heard it from that person), DEFINING (shaped ME's view of them), SECRET (something ME knows that others want hidden). GOAL due = hours left. OPTS = the options, numbered.
 World: small blocks, tools needed (bare hands only pick flowers, fruits, vegetables). INV = what ME carries ("(worn)" = nearly broken); "in hand" = tool held.
 TITLE = a role (mayor, lawyer...) and who ME believes holds it ("sure/likely/unsure"; "claimants" = several people claim it; auth = how much authority ME gives it; legit = how legitimate that holder seems to ME). A title is only a name plus what people attach to it; nobody is mayor unless people treat them as mayor.
 Event styles: "invite" = optional offer, "polite_request", "plain", "order" = commanding (being ordered irritates proud people; refusing an order is a confrontation, refusing an invitation is not).
@@ -49,11 +55,11 @@ One object per situation, same order as the input.
 EXAMPLE INPUT
 ### x1
 ME adult married farmer; doing till@field; morning spring clear
- traits: aggression+, honesty-
- values: kin_protection=high
- state: anger+
-E1 stranger adult close knows=barely | -
-EVENT V1 insult E1->me int=high
+ traits: aggression=5 honesty=-4
+ values: kin_protection=9
+ state: anger=4
+E1 stranger adult dist=3m knows=0 | -
+EVENT V1 insult E1->me int=7
 OPTS 0 continue | 1 insult E1 | 2 attack E1 shove | 3 ask E1 why | 4 avoid E1
 
 EXAMPLE OUTPUT
@@ -68,11 +74,11 @@ Write "why" first, then the scores. One object per situation, same order as the 
 EXAMPLE INPUT
 ### x1
 ME adult married farmer; doing till@field; morning spring clear
- traits: aggression+, honesty-
- values: kin_protection=high
- state: anger+
-E1 stranger adult close knows=barely | -
-EVENT V1 insult E1->me int=high
+ traits: aggression=5 honesty=-4
+ values: kin_protection=9
+ state: anger=4
+E1 stranger adult dist=3m knows=0 | -
+EVENT V1 insult E1->me int=7
 OPTS 0 continue | 1 insult E1 | 2 attack E1 shove | 3 ask E1 why | 4 avoid E1
 
 EXAMPLE OUTPUT
@@ -87,11 +93,11 @@ OUTPUT: JSON only, no text before or after, exactly this shape:
 EXAMPLE INPUT
 ### x1
 ME adult married farmer; doing till@field; morning spring clear
- traits: aggression+, honesty-
- values: kin_protection=high
- state: anger+
-E1 stranger adult close knows=barely | -
-EVENT V1 insult E1->me int=high
+ traits: aggression=5 honesty=-4
+ values: kin_protection=9
+ state: anger=4
+E1 stranger adult dist=3m knows=0 | -
+EVENT V1 insult E1->me int=7
 OPTS 0 continue | 1 insult E1 | 2 attack E1 shove | 3 ask E1 why | 4 avoid E1
 
 EXAMPLE OUTPUT

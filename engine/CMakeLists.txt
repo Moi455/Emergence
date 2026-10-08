@@ -14,5 +14,16 @@ include(cmake/StrictFloat.cmake)
 
 enable_testing()
 
+set(GODOT_CPP_DIR "" CACHE PATH "Path to godot-cpp; enables the GDExtension")
+set(EMERGENCE_GAME_BIN_DIR "${CMAKE_SOURCE_DIR}/../game/bin" CACHE PATH "Where the GDExtension library is written")
+if(GODOT_CPP_DIR)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # the core is linked into a shared library
+endif()
+
 add_subdirectory(core)
 add_subdirectory(sim)
+
+# Godot binding (roadmap 0.4): only when godot-cpp is provided.
+if(GODOT_CPP_DIR)
+  add_subdirectory(gdext)
+endif()

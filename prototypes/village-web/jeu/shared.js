@@ -352,10 +352,22 @@ var VX = {};
       if (d < q.blend) { const w = 1 - smooth(0, q.blend, d); if (w > bw) { bw = w; best = q.h; } }
     }
     if (bw > 0) h = h * (1 - bw) + best * bw;
+    const ponds = this.p.ponds || [];
+    for (let i = 0; i < ponds.length; i++) {
+      const q = ponds[i], d = Math.hypot(x - q.x, z - q.z);
+      if (d < q.r * 1.4) {
+        // bowl under the water line, plus a lip so the water never spills on a slope
+        if (d < q.r) h = Math.min(h, q.level + 6 - (q.depth + 6) * (1 - smooth(q.r * 0.2, q.r, d)));
+        const w = d < q.r ? smooth(q.r * 0.9, q.r, d) : 1 - smooth(q.r, q.r * 1.4, d);
+        h = Math.max(h, h * (1 - w) + (q.level + 5) * w);
+      }
+    }
     return Math.floor(h);
   };
   // class of the top layer at (x,z)
   VX.Terrain.prototype.topClass = function (x, z) {
+    const ponds = this.p.ponds || [];
+    for (let i = 0; i < ponds.length; i++) { const q = ponds[i], d = Math.hypot(x - q.x, z - q.z); if (d < q.r * 0.8) return 17; if (d < q.r + 30 + (hash2(x >> 3, z >> 3, 98) - 0.5) * 20) return 20; }
     const st = this.p.streets;
     let best = 1e9;
     const jitter = (hash2(x >> 3, z >> 3, 99) - 0.5) * 14;

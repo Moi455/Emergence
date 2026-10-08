@@ -56,6 +56,9 @@ def levels_of(st):
             lv.add("institution")
         if t == "border_incident":
             lv.add("inter_village")
+        home = (st.get("village") or {}).get("id")
+        if home and any(w and w.get("village") not in (None, home) for w in who):          # 0.4: a person from another village
+            lv.add("inter_village")
         if t in ("poll_open", "claim_title", "notice_seen") and st.get("groups"):
             lv.add("group")
     v = st.get("village")

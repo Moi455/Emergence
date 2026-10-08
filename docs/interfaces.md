@@ -1,6 +1,6 @@
-# Contrat d'interfaces : un seul jeu, quatre chantiers
+# Contrat d'interfaces : un seul jeu, six chantiers
 
-Version 0.1, 8 octobre 2026. Propriétaire : le fil « Construction du moteur ». Ce document fixe ce qui passe d'un chantier à l'autre, pour que le village jouable, les villageois, le moteur et les données d'entraînement s'assemblent **sans conversion manuelle**.
+Version 0.2, 8 octobre 2026. Propriétaire : le fil « Construction du moteur ». Ce document fixe ce qui passe d'un chantier à l'autre, pour que le village jouable, les villageois, le moteur et les données d'entraînement s'assemblent **sans conversion manuelle**.
 
 Comment le faire évoluer : un fil qui a besoin d'un changement l'envoie au fil du moteur, qui tranche, met à jour ce fichier (numéro de version, ligne dans le journal en bas) et renvoie la version aux autres fils. On ajoute, on ne renumérote jamais un identifiant déjà publié. Le fil d'architecture relit en cas de doute.
 
@@ -10,6 +10,8 @@ Comment le faire évoluer : un fil qui a besoin d'un changement l'envoie au fil 
 | Village jouable | Village voxelisé jouable | `/mnt/project-files/prototype-village/` | rendu voxel dans le navigateur, format des modules (VXB), mesures sur GPU intégré |
 | Villageois | Skins des villageois | `/mnt/project-files/personnages/` | générateur à graine, squelette, vêtements, animations |
 | Données d'entraînement | Données d'entraînement du Transformer | `emergence/ai/`, `/mnt/project-files/donnees-transformer/` | contrat PNJ, encodeur de jetons, jeux de données |
+| Génération du monde | Génération du monde par graine | `emergence/worldgen/` | chunks générés depuis le plan (strates, grottes, minerais, arbres, routes, plateformes des villages), niveaux de détail |
+| Société | Simulation sociale des villages | `emergence/sim/` | simulation sans rendu des 500 PNJ, flux d'événements sociaux |
 
 ---
 
@@ -18,9 +20,9 @@ Comment le faire évoluer : un fil qui a besoin d'un changement l'envoie au fil 
 | Grandeur | Règle |
 |---|---|
 | Longueur | mètre dans tous les fichiers échangés ; 1 voxel = 2 cm = 0,02 m |
-| Repère du monde (cœur C++, plan, voxels) | x vers l'est, y vers le haut, z vers le nord ; entiers en voxels, origine au coin sud-ouest de la carte, y = 0 au niveau de la mer |
+| Repère du monde (cœur C++, plan, voxels) | x vers l'est, y vers le haut, z vers le nord ; entiers en voxels, origine au coin sud-ouest de la carte, y = 0 au niveau de la mer. Le chunk (cx, cy, cz) couvre les voxels [64·c, 64·c + 64) sur chaque axe ; au niveau de détail `lod`, un voxel mesure 2 cm << lod sur la même grille 64³ |
 | Repère Godot et glTF | y vers le haut, droitier : `godot.x = x`, `godot.y = y`, `godot.z = -z` (le nord est −Z, l'avant par défaut de Godot) |
-| Personnages (glTF) | 1 unité = 1 m, y en haut, le personnage regarde vers +Z (convention glTF), pieds à y = 0 |
+| Personnages (glTF) | 1 unité = 1 m, y en haut, le personnage regarde vers +Z (convention glTF), pieds à y = 0 entre les deux pieds |
 | Temps | secondes de jeu ; 1 jour de jeu = 4 h réelles (P14, proposé) |
 | Angles | radians dans les fichiers, degrés seulement dans les documents |
 
@@ -50,10 +52,20 @@ Comment le faire évoluer : un fil qui a besoin d'un changement l'envoie au fil 
 | cobble | 32 cobblestone |
 | gravel | 5 gravel |
 
-- **Teinte** : index 0..127 dans une rampe de 128 couleurs propre à la classe. Le terrain généré écrit la teinte 0 ; seuls les modules et les éditions portent une teinte. Les rampes viendront d'un fichier par classe (`engine/data/tints/`, à créer) ; en attendant, le prototype garde ses rampes k-means.
+- **Teinte** : index 0..127 dans une rampe de 128 couleurs propre à la classe. Le terrain généré écrit la teinte 0, sauf la végétation générée (`vine` 29, `leaves` 30, `bark` 31) qui porte l'essence en teinte 0..3 (0 chêne, 1 hêtre, 2 pin, 3 bouleau ; ordre de `worldgen`) ; les modules et les éditions portent une teinte libre. Les rampes viendront d'un fichier par classe (`engine/data/tints/`, à créer) ; en attendant, le prototype garde ses rampes k-means.
 - **Chunk** 64³ voxels (1,28 m), découpé en 8 × 8 × 8 **briques** de 8³ (16 cm). Une brique est uniforme (une seule valeur) ou une palette locale + 1, 2, 4, 8 ou 16 bits par voxel. Index dense : x le plus rapide, puis z, puis y. Référence : `engine/core/world/include/emergence/world/chunk.h`.
-- **Modules** (pièces de bâtiment, arbres, objets voxelisés) : fichier de briques 8³ à palette locale, celui du prototype (VXB2) sert de base. Changements demandés pour la version commune (VXB3) : classes de `materials.csv`, champ `schema_version`, origine du module en voxels dans le repère du monde ci-dessus, et une palette locale qui peut dépasser 15 teintes au lieu d'arrondir à la plus proche. Le fil du village propose la mise en page octet par octet ; le moteur écrit le lecteur C++.
+- **Modules** (pièces de bâtiment, arbres, objets voxelisés) : format **VXB3**, adopté tel que proposé par le fil du village (`/mnt/project-files/prototype-village/VXB3_proposition.md`, qui fait foi octet par octet). Résumé : fichier gzip, petit-boutiste ; en-tête `"VXB3"`, `schema_version` 1, version de `materials.csv`, drapeaux (bit 0 : section de rampes provisoire), nombre de modules ; par module : nom, origine i32×3 en voxels par rapport au pivot (repère du monde), dimensions u16×3, nombre de briques, puis les briques 8³ dans l'ordre bx, bz, by ; tag 0 vide, 1 uniforme (u16), 2 palette de k ≤ 255 valeurs non vides avec index de 1, 2, 4 ou 8 bits (index 0 = air), 3 brut u16 ×512 ; voxels **x, puis z, puis y** comme `chunk.h` ; crc32 du contenu non compressé à la fin. Le lecteur C++ copie une brique telle quelle dans un chunk.
+- **Placement des modules** : fichier d'instances **VXI**, séparé de VXB3. Gzip, petit-boutiste : `"VXI1"`, u16 `schema_version` = 1, u32 nombre d'instances, puis par instance : u8 longueur du nom, nom du module (§ 8), i32×3 position du pivot en voxels du monde, u8 rotation en quarts de tour autour de +y (sens trigonométrique vu de dessus), u8 réservé = 0 ; crc32 à la fin. Une instance éditée reçoit sa propre copie de briques (copie à l'écriture) ; l'édition est un delta du monde, pas une modification du module.
 - **Écriture dans le monde** : toujours par une `Operation` (invariant 4). Une animation ou une action ne modifie jamais un voxel directement (voir § 6).
+
+## 2 bis. Génération du monde
+
+- **Plan du monde** : `engine/core/world/` (fil du moteur). `kWorldGeneratorVersion` = 1 est **figé** depuis le 8 octobre, empreinte de la graine 1 = `6a24a0d52057c0df`. Tout changement de sortie du plan passe à la version 2 et est annoncé au fil de génération, qui refait alors ses empreintes.
+- **Chunks du jeu** : `em::wg::WorldGen` (`emergence/worldgen/`, fil de génération), qui lit `WorldPlan` sans le modifier et écrit dans `em::Chunk` par `Chunk::set_brick`. API : `generate(ChunkCoord, Chunk&)`, classement Air / Solid / Mixed / OutOfWorld, niveau de détail, `ground_mm()` et `trees_in()` pour le placement. `ChunkGenerator` du moteur reste comme repli minimal et référence de test.
+- Le fil de génération propose ses changements au plan (relief, érosion, sites) au fil du moteur, qui les applique.
+- **Exports pour les autres fils** (commande `emergence_sim`, sortie dans `/mnt/project-files/moteur/exports/`) :
+  - `geo` → `geography_seed<N>.json` (`schema_version` `"geo-1"`) : graine, version et empreinte du plan, villages (`id` du § 8, `frontier`, `pos_m` = [x est, z nord] en mètres, `height_m`, `resources` indicatives 0..10 dans un rayon de 3 km), `road_km` = [[a, b, km]…].
+  - `zone --at <village>` → `zones/zone_<village>.json` (`"zone-1"`) + `_height.u16`, `_top.u8`, `_water.u16` : champ de hauteur de 128 m de côté au pas de 8 cm autour d'un village, hauteurs en voxels au-dessus de `base_voxel_y`, classe de matière du voxel du dessus, niveau d'eau. Le format est décrit dans le JSON. Quand `WorldGen` sera branché, les zones seront refaites avec les plateformes des villages.
 
 ## 3. Squelette des personnages
 
@@ -61,12 +73,12 @@ Un seul squelette pour tous les humains, du nourrisson au vieillard : les propor
 
 - **Noms et hiérarchie** : ceux du profil humanoïde de Godot (`SkeletonProfileHumanoid`), pour que le reciblage des animations soit automatique dans Godot : `Root` > `Hips` > `Spine` > `Chest` > `UpperChest` > `Neck` > `Head` (+ `LeftEye`, `RightEye`, `Jaw`) ; `LeftShoulder` > `LeftUpperArm` > `LeftLowerArm` > `LeftHand` > doigts (`LeftThumbMetacarpal`, `LeftThumbProximal`, `LeftThumbDistal`, `LeftIndexProximal`…`LeftLittleDistal`) ; `LeftUpperLeg` > `LeftLowerLeg` > `LeftFoot` > `LeftToes` ; même chose à droite.
 - **Points d'attache** (os supplémentaires, sans poids) : `RightHandProp` et `LeftHandProp` (outil tenu, paume vers l'intérieur, axe du manche sur +Y local), `BackProp` (sac, hotte), `HipProp` (bourse, couteau), `HeadProp` (chapeau rigide). Les outils sont des modules voxel attachés là.
-- **Pose de repos** : T-pose, bras à l'horizontale, face à +Z, pieds à y = 0.
+- **Pose de liaison** : bras le long du corps (proposée par le fil des villageois : c'est la pose la plus vue et les voxels y restent alignés aux membres), face à +Z, pieds à y = 0. Le reciblage de Godot passe par les poses de repos, donc une animation faite sur une autre pose se recible sans retouche.
 - **Âge** : chaque personnage porte une catégorie d'âge `child`, `teen`, `adult`, `elder` dans sa fiche (§ 5). Le moteur s'en sert pour les règles dures (aucun acte romantique ou sexuel impliquant un enfant ou un adolescent, invariant I7) ; elle n'est jamais déduite de la taille.
 
 ## 4. Vêtements
 
-Les vêtements sont des maillages séparés, skinnés sur le même squelette, que le moteur combine à l'exécution. Un PNJ change de tenue sans changer de modèle (la fonction `dress` du contrat PNJ en dépend).
+Style tranché (I-2) : **pseudo-voxels** plus fins que le monde (1,25 à 1,5 cm, paramètre du générateur), avec un index de palette et un os par voxel. La source de vérité est une pile de couches de voxels : le corps, puis chaque vêtement ajusté à ce corps. Un vêtement est une **recette de données** (emplacement, type, matière, couleurs, motif, usure, graine) portée par le PNJ ; sa géométrie est recalculée pour le corps qui le porte. Le cœur C++ compose les couches et remaille à la volée (quelques ms), ce qui permet les vêtements déchirés ou brûlés et des niveaux de détail par sous-échantillonnage. Un PNJ change de tenue sans changer de modèle (la fonction `dress` du contrat PNJ en dépend).
 
 | Emplacement | Exemples | Couche |
 |---|---|---|
@@ -82,14 +94,13 @@ Les vêtements sont des maillages séparés, skinnés sur le même squelette, qu
 | `belt` | ceinture | 4 |
 | `back` | hotte, sac (rigide, sur `BackProp`) | 5 |
 
-- Chaque vêtement déclare les **zones du corps qu'il couvre** (masque de 16 bits : tête, cou, torse haut, torse bas, bras haut G/D, avant-bras G/D, mains G/D, bassin, cuisses G/D, mollets G/D, pieds) ; le moteur cache ces zones du corps pour éviter que la peau traverse le tissu.
-- Les vêtements portent **les mêmes formes de corps** (blend shapes) que le corps de base, avec les mêmes noms, pour suivre la corpulence.
+- Chaque vêtement déclare les **zones du corps qu'il couvre** (masque de 16 bits : tête, cou, torse haut, torse bas, bras haut G/D, avant-bras G/D, mains G/D, bassin, cuisses G/D, mollets G/D, pieds) ; la composition supprime les voxels de corps cachés sous ces zones.
 - **Couleur** : le vêtement indique jusqu'à 3 zones teignables ; la fiche du personnage donne la teinture. La matière simulée est la classe `cloth` (33) ; une matière plus fine (laine, lin, cuir) s'ajoutera à `materials.csv` sur demande.
-- Une tenue nommée (travail, fête, deuil, froid, cour) est une liste de vêtements ; le vocabulaire des tenues est partagé avec le fil des données (jeton de garde-robe).
+- **Tenues** (I-4, tranchée) : une tenue nommée est une liste de recettes de vêtements. Vocabulaire figé, ajout en fin seulement : `everyday`, `work`, `travel`, `festive`, `mourning`, `cold`, `court`, `night`. La simulation choisit la tenue selon l'occasion ; c'est l'argument de `dress(outfit)` et le jeton de garde-robe du fil des données.
 
 ## 5. Export des personnages
 
-- **Format** : glTF 2.0 binaire (`.glb`), un fichier par corps de base, un par vêtement, une bibliothèque d'animations sur le squelette canonique. Pas de FBX dans les échanges.
+- **Format** : glTF 2.0 binaire (`.glb`) **par PNJ** : squelette, un maillage par tenue déjà composée (faces cachées supprimées, fusion gloutonne, atlas de couleurs de 128 à 256 px en filtrage au plus proche, un appel de dessin), animations au moins `idle` et `walk`. Dans Godot, changer de tenue = basculer la visibilité d'un `MeshInstance3D` sous le même `Skeleton3D`. Une bibliothèque d'animations commune sur le squelette canonique complète les clips du § 7. Pas de FBX dans les échanges.
 - **Fiche de personnage** (JSON, `schema_version` 1), produite par le générateur à graine et lue telle quelle par le moteur et par le fil des données :
 
 ```json
@@ -105,11 +116,16 @@ Les vêtements sont des maillages séparés, skinnés sur le même squelette, qu
   "skin_tone": 0.55,
   "hair": {"style": "braid_long", "color": [0.35, 0.22, 0.12]},
   "face": {"shapes": {"jaw_wide": 0.3}},
-  "outfit": [{"garment": "tunic_wool_v1", "dye": [[0.4, 0.3, 0.2]]}, {"garment": "shoes_leather_v1"}]
+  "village": "forest_village",
+  "outfits": {
+    "everyday": [{"slot": "torso", "type": "tunic", "material": "wool", "colors": [[0.4, 0.3, 0.2]], "pattern": "plain", "wear": 0.2, "seed": 77},
+                 {"slot": "feet", "type": "shoes", "material": "leather", "seed": 78}],
+    "work": [{"slot": "over", "type": "apron", "material": "leather", "seed": 79}]
+  }
 }
 ```
 
-- **Budgets** (à mesurer avec le prototype, sur GPU intégré, jusqu'à 100 PNJ visibles) : 6 000 triangles par personnage habillé au LOD 0, 2 000 au LOD 1, 600 au LOD 2, imposteur au-delà de 60 m ; 4 os d'influence par sommet ; textures en palette ou atlas d'au plus 256 × 256 par personnage. Le style visuel (voxelisé ou lisse) est le choix du fil des villageois ; il reste dans ces budgets.
+- **Budgets** (à mesurer avec le prototype, sur GPU intégré, jusqu'à 100 PNJ visibles) : 6 000 triangles par personnage habillé au LOD 0, 2 000 au LOD 1, 600 au LOD 2, imposteur au-delà de 60 m ; 4 os d'influence par sommet ; textures en palette ou atlas d'au plus 256 × 256 par personnage. Une tenue absente de `outfits` se replie sur `everyday`.
 
 ## 6. Contrat PNJ : état, décision, action
 
@@ -155,18 +171,36 @@ Chaque fonction du contrat se joue par une ou plusieurs animations de cette list
 | Vêtement, coiffure, corps de base | chaîne `snake_case` suffixée de sa version (`tunic_wool_v1`) |
 | Animation | nom de clip du § 7 |
 | Module voxel | chaîne `snake_case` (nom de la pièce dans le kit ou du générateur) |
+| Village | `market_town` (centre), `sea_village` (ouest), `mountain_village` (nord), `desert_village` (est), `forest_village` (sud). Anciens noms : `bourg`, `port`, `mine`, `oasis`, `bois` (simulation) ; `town`, `port`, `miners`, `oasis`, `foresters` (`emergence_sim`, accepté en entrée) |
+| Lieu abstrait (palier 2) | `village:site`, site ∈ `home:<foyer>`, `tavern`, `square`, `temple`, `market`, `sea`, `saltpans`, `shipyard`, `forest`, `mine`, `smithy`, `quarry`, `workshop`, `well`, `fields`, `bakery`, `march`, `wilds` (ajout en fin). Le moteur rattache chaque site à un bâtiment ou une zone du village |
+| Tenue | une des huit clés du § 4 |
 
-## 9. Questions ouvertes
+## 9. Événements sociaux : simulation → jeu
+
+Flux JSONL, une ligne par événement, `schema_version` `"sim-events-0.1"` (proposé par le fil de la simulation, adopté) :
+
+```json
+{"schema_version": "sim-events-0.1", "t_s": 86400, "kind": "wedding", "actors": [1234, 1301], "village": "forest_village", "place": "forest_village:temple", "text_fr": "…", "data": {}}
+```
+
+- `t_s` en secondes de jeu ; `actors` = identifiants d'entité (§ 8) ; `village` et `place` = identifiants du § 8.
+- `kind` parmi : birth, death, wedding, engagement, elopement, separation, apprenticeship, craft_lost, craft_lost_village, craft_rediscovered, theft_caught, brawl, murder, verdict, exile, election, decree, challenge, embezzlement_exposed, expedition, vanished, record_depth, legend_born, epidemic, epidemic_end, accident, collapse, adoption, orphaned, guild_founded, cult_founded, feud, feud_peace, affair_exposed, festival, robbery, outlaw_band, pardon, famine, famine_relief, migration, blackmail, lie_exposed, rescue. Ajout en fin seulement.
+- `text_fr` sert au débogage et n'entre jamais dans l'état. Le texte montré au joueur est produit par le jeu à partir de `kind` et `data`, dans sa langue (anglais pour l'instant).
+- Les règles dures valent aussi ici : aucun événement de la famille Tendresse (engagement, wedding, elopement, affair_exposed) avec un acteur `child` ou `teen`.
+
+## 10. Questions ouvertes
 
 | N° | Question | Défaut en attendant | À qui |
 |---|---|---|---|
-| I-1 | Mise en page octet par octet de VXB3 | VXB2 du prototype + les quatre changements du § 2 | fil du village |
-| I-2 | Style des personnages : voxelisés à 2 cm ou maillages lisses | libre, dans les budgets du § 5 | fil des villageois |
-| I-3 | Rampes de teintes par classe en fichiers de données | rampes k-means du prototype | moteur |
-| I-4 | Vocabulaire des tenues (travail, fête, deuil, froid, cour…) | les cinq ci-contre | villageois + données |
+| I-1 | ~~Mise en page de VXB3~~ | tranchée en 0.2 (§ 2) | — |
+| I-2 | ~~Style des personnages~~ | tranchée en 0.2 : pseudo-voxels de 1,25 à 1,5 cm (§ 4) | — |
+| I-3 | Rampes de teintes par classe en fichiers de données | section de rampes de VXB3 en attendant | moteur |
+| I-4 | ~~Vocabulaire des tenues~~ | tranchée en 0.2 : huit clés (§ 4) | — |
+| I-5 | Lien entre sites abstraits et bâtiments réels du village | le moteur rattache par type de module | moteur + village + simulation |
 
 ## Journal
 
 | Version | Date | Changement |
 |---|---|---|
 | 0.1 | 2026-10-08 | Première version : repères, voxels et matières (classes 21 à 33 ajoutées pour le kit et les vêtements), squelette humanoïde Godot, emplacements de vêtements, export glTF et fiche JSON, contrat PNJ 0.4 adopté, liste des animations |
+| 0.2 | 2026-10-08 | VXB3 adopté (ordre x, z, y ; palette ≤ 255) et fichier d'instances VXI ; génération des chunks confiée à `worldgen`, plan figé en version 1 ; teinte d'essence pour la végétation générée ; pose de liaison bras le long du corps ; personnages en pseudo-voxels composés par couches, un `.glb` par PNJ ; huit tenues ; identifiants de village et lieux abstraits ; flux d'événements sociaux ; exports géographie et zones |

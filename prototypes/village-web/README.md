@@ -9,6 +9,10 @@ Page jouable : https://claude.ai/artifact/7a6jR7fZHyJAh3shh4uToq (WebGL2, s'ouvr
 - Un terrain procédural 327 × 327 m. Sa couleur vient du bruit, sans aucun stockage, et seuls les voxels creusés sont stockés.
 - Le déplacement à pied : collisions au voxel près, marches franchies jusqu'à 40 cm, saut, course. Un mode vol existe aussi.
 - La destruction : sphère de 8 à 48 cm, modulée par la dureté (pierre et métal résistent, terre et torchis cèdent), avec des débris. Copie à l'écriture au niveau de la brique 8³ : seule l'instance touchée reçoit ses propres briques.
+- L'effondrement (tour 2) : après chaque coup, un remplissage depuis le sol et le bord d'une zone de ±48 cm autour du trou détecte la matière qui ne tient plus à rien. Elle tombe en gros débris et le compteur « effondrés » du panneau l'affiche. Test : un anneau creusé autour d'une porte fait tomber 294 voxels détachés.
+- Un étang (tour 2) : cuvette creusée dans le terrain, berge de gravier, niveau d'eau calculé sur le point le plus bas du bord pour ne jamais déborder sur une pente. L'eau est animée (vagues, reflet du ciel selon l'angle, reflet du soleil).
+
+- Des villageois (apportés par le fil d'intégration) : 60 PNJ animés, chargés depuis un `.glb` skinné au format de `interfaces.md` § 3 à 7 par `jeu/villagers.js`. Ils se branchent sur les crochets d'`engine.js` (`window.__game.addDrawHook` et `addUpdate`). Sans `villagers.js`, la page tourne comme avant.
 
 ## Architecture appliquée (06_architecture_expliquee.md)
 - VoxelId sur 16 bits = classe (9) | teinte (7). Briques 8³ uniformes ou à palette locale de 15 couleurs (index 4 bits). Voxels enfouis ramenés à une teinte par classe.
@@ -34,16 +38,17 @@ Page jouable : https://claude.ai/artifact/7a6jR7fZHyJAh3shh4uToq (WebGL2, s'ouvr
 Les vraies images/s se mesurent avec la touche **B** (tour du village de 20 s : moyenne, 95e et 99e centiles, temps GPU si le navigateur le permet, nom du GPU utilisé). La page demande le GPU basse consommation (`powerPreference: 'low-power'`), donc normalement l'iGPU.
 
 ## Fichiers
-- `jeu/` : la page (`index.html`, `engine.js`, `shared.js`) et les données (`world.bin` en binaire gzip, `world.b64.txt` pour l'hébergement). En local : `python3 -m http.server` dans `jeu/`, puis ouvrir `index.html`.
+- `jeu/` : la page (`index.html`, `engine.js`, `shared.js`) et les données (`world.bin` en binaire gzip, `world.b64.txt` pour l'hébergement). En local : `python3 -m http.server` dans `jeu/`, puis ouvrir `index.html`. Si `world.b64.txt` manque (dépôt GitHub), la page lit `world.bin`. De même, `villager_test.glb` a une copie en base64 (`.glb.b64.txt`) pour l'hébergement.
 - `outils/vox_one.py` : voxélise une pièce avec le convertisseur des devs. `outils/pack_world.py` : packer VXB2 (remplissage des murs, palettes, briques). `outils/world_stats.json` : statistiques par pièce. `shots.js` : captures automatiques.
-- `captures/` : vues aérienne, de rue, mur au micro-tracé et destruction.
+- `captures/` : vues aérienne, de rue, mur au micro-tracé, destruction, effondrement et étang. `outils/vues_tour2.json` rejoue les tests du tour 2 avec `shots.js`.
 
 ## À faire remonter dans le projet unifié
 - Le format VXB2 (briques 8³ et palette locale 4 bits) et le remplissage des murs ouverts, à porter dans `tools/voxelizer` et dans le décodeur C++.
 - La mesure du micro-tracé, qui confirme le choix 5.
 
 ## Limites connues
-- Pas encore d'effondrement : un morceau détaché reste en l'air. Pas d'eau ni de feu.
+- L'effondrement ne voit qu'une zone de ±48 cm autour du coup : un pan de mur entier détaché par plusieurs coups éloignés reste tenu par le bord de la zone. Le moteur cible devra faire ce calcul par îlots sur tout le bâtiment, en tâche de fond.
+- L'eau est une surface posée sans écoulement : creuser la berge ne vide pas l'étang. Pas de feu.
 - Les ombres sont calculées sur les faces de 8 cm : contour un peu épais.
 - Les intérieurs des maisons sont vides, sans escaliers ni meubles.
 - Hors de l'anneau proche, les parties creusées des instances lointaines restent dessinées au micro-tracé (correct, mais plus coûteux).

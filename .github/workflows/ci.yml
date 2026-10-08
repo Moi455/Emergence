@@ -26,3 +26,13 @@ jobs:
       - run: cmake -S engine -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build/engine
       - run: ctest --test-dir build/engine --output-on-failure
+
+  worldgen:
+    name: Génération du monde
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake -S worldgen -B build/worldgen -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build/worldgen
+      - run: cd build/worldgen && ./test_worldgen

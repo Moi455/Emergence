@@ -14,6 +14,7 @@
 #include <tuple>
 
 #include "emergence/base/fixed.h"
+#include "emergence/base/hash.h"
 #include "emergence/base/image.h"
 #include "emergence/base/timer.h"
 #include "emergence/world/chunk_gen.h"
@@ -29,7 +30,11 @@ void usage() {
       "usage: emergence_sim plan [--seed N] [--size M] [--threads T] [--out DIR] [--no-backdrop]\n"
       "  Generates the world plan, prints timings and fingerprint, writes debug maps to DIR.\n"
       "usage: emergence_sim chunks [--seed N] [--at town|port|miners|oasis|foresters] [--out DIR]\n"
-      "  Generates 2 cm voxel chunks over 20 x 20 m and writes a top view and a vertical section.\n");
+      "  Generates 2 cm voxel chunks over 20 x 20 m and writes a top view and a vertical section.\n"
+      "usage: emergence_sim geo [--seed N] [--out FILE]\n"
+      "  Writes the geography JSON (villages, frontiers, resources, road lengths) for the sim and data threads.\n"
+      "usage: emergence_sim zone [--seed N] [--at VILLAGE] [--size M] [--out DIR]\n"
+      "  Exports an M x M metre heightfield at 8 cm around a village (heights, top material, water).\n");
 }
 
 int cmd_plan(int argc, char** argv) {
@@ -192,6 +197,257 @@ int cmd_chunks(int argc, char** argv) {
   return 0;
 }
 
+const Settlement* find_site(const WorldPlan& plan, const std::string& at) {
+  for (const auto& s : plan.settlements)
+    if (at == settlement_name(s.kind) || at == settlement_id(s.kind)) return &s;
+  return nullptr;
+}
+
+// Indicative resources around a village, 0..10, from plan cells within 3 km
+// (villages sit 0.2 to 2.6 km before their march, the resources are in it).
+// The sim and data threads use them for trade dependence; worldgen owns the
+// real deposits (ore bodies, salt lenses) and may refine these later.
+std::string village_resources(const WorldPlan& plan, const Settlement& s) {
+  const int32_t r = static_cast<int32_t>(3'000'000 / plan.cell_mm);
+  int64_t total = 0, sea = 0, fresh = 0, wood = 0, deep = 0, farm = 0, stone = 0, hard = 0, sand = 0, salt = 0;
+  for (int32_t dj = -r; dj <= r; ++dj)
+    for (int32_t di = -r; di <= r; ++di) {
+      if (int64_t{di} * di + int64_t{dj} * dj > int64_t{r} * r) continue;
+      int32_t i = s.i + di, j = s.j + dj;
+      if (!plan.in_map(i, j)) continue;
+      size_t c = plan.idx(i, j);
+      ++total;
+      uint8_t f = plan.flags[c];
+      auto b = static_cast<Biome>(plan.biome[c]);
+      auto rock = static_cast<RockType>(plan.rock[c]);
+      if (f & kFlagSea) ++sea;
+      if (f & (kFlagLake | kFlagRiver)) ++fresh;
+      if (b == Biome::Woodland || b == Biome::DeepForest) ++wood;
+      if (b == Biome::DeepForest) ++deep;
+      if (b == Biome::Meadow || b == Biome::Steppe) ++farm;
+      if (b == Biome::Rock || b == Biome::Alpine || b == Biome::Foothills || plan.soil_mm[c] < 300) ++stone;
+      if ((rock == RockType::Granite || rock == RockType::Basalt || rock == RockType::Slate) &&
+          (b == Biome::Rock || b == Biome::Alpine || b == Biome::Foothills))
+        ++hard;
+      if (b == Biome::Desert || b == Biome::Beach) ++sand;
+      if ((b == Biome::Desert && (f & kFlagLake)) || b == Biome::Beach || b == Biome::Marsh) ++salt;
+    }
+  auto score = [&](int64_t n, int64_t full_per_mille) {
+    // 10 when the share reaches full_per_mille.
+    if (total == 0) return int64_t{0};
+    return std::min<int64_t>(10, (n * 1000 * 10 + total * full_per_mille / 2) / (total * full_per_mille));
+  };
+  char buf[512];
+  std::snprintf(buf, sizeof buf,
+                "{\"fish\": %lld, \"fresh_water\": %lld, \"timber\": %lld, \"old_growth\": %lld, \"farmland\": %lld, "
+                "\"stone\": %lld, \"iron_ore\": %lld, \"sand\": %lld, \"salt\": %lld}",
+                static_cast<long long>(score(sea, 300)), static_cast<long long>(score(fresh, 30)),
+                static_cast<long long>(score(wood, 500)), static_cast<long long>(score(deep, 300)),
+                static_cast<long long>(score(farm, 500)), static_cast<long long>(score(stone, 300)),
+                static_cast<long long>(score(hard, 200)), static_cast<long long>(score(sand, 400)),
+                static_cast<long long>(score(salt, 50)));
+  return buf;
+}
+
+int cmd_geo(int argc, char** argv) {
+  WorldParams p;
+  std::string out = "geography.json";
+  for (int a = 2; a < argc; ++a) {
+    std::string k = argv[a];
+    auto next = [&]() -> const char* { return a + 1 < argc ? argv[++a] : ""; };
+    if (k == "--seed") p.seed = std::strtoull(next(), nullptr, 10);
+    else if (k == "--out") out = next();
+    else {
+      usage();
+      return 2;
+    }
+  }
+  WorldPlan plan = generate_world_plan(p);  // with backdrop, so the fingerprint matches `plan`
+  FILE* f = std::fopen(out.c_str(), "w");
+  if (!f) {
+    std::fprintf(stderr, "cannot write %s\n", out.c_str());
+    return 1;
+  }
+  std::fprintf(f, "{\n  \"schema_version\": \"geo-1\",\n  \"seed\": %llu,\n  \"world_generator_version\": %u,\n",
+               static_cast<unsigned long long>(p.seed), plan.generator_version);
+  std::fprintf(f, "  \"plan_fingerprint\": \"%016llx\",\n  \"map_size_m\": %d,\n",
+               static_cast<unsigned long long>(plan.fingerprint()), p.size_m);
+  std::fprintf(f, "  \"axes\": \"pos_m = [x east, z north] in metres from the south-west corner; height_m above sea level\",\n");
+  std::fprintf(f, "  \"villages\": [\n");
+  for (size_t k = 0; k < plan.settlements.size(); ++k) {
+    const Settlement& s = plan.settlements[k];
+    double x = static_cast<double>(s.i * plan.cell_mm) / 1000.0, z = static_cast<double>(s.j * plan.cell_mm) / 1000.0;
+    std::fprintf(f,
+                 "    {\"id\": \"%s\", \"frontier\": \"%s\", \"pos_m\": [%.0f, %.0f], \"height_m\": %.1f, "
+                 "\"resources\": %s}%s\n",
+                 settlement_id(s.kind), settlement_frontier(s.kind), x, z, s.height_mm / 1000.0,
+                 village_resources(plan, s).c_str(), k + 1 < plan.settlements.size() ? "," : "");
+  }
+  std::fprintf(f, "  ],\n  \"road_km\": [\n");
+  for (size_t k = 0; k < plan.roads.size(); ++k) {
+    const Road& r = plan.roads[k];
+    std::fprintf(f, "    [\"%s\", \"%s\", %.1f]%s\n", settlement_id(plan.settlements[r.from].kind),
+                 settlement_id(plan.settlements[r.to].kind), static_cast<double>(r.length_m) / 1000.0,
+                 k + 1 < plan.roads.size() ? "," : "");
+  }
+  std::fprintf(f, "  ]\n}\n");
+  std::fclose(f);
+  std::printf("wrote %s (%zu villages, %zu roads, plan %016llx)\n", out.c_str(), plan.settlements.size(),
+              plan.roads.size(), static_cast<unsigned long long>(plan.fingerprint()));
+  return 0;
+}
+
+// Heightfield of a square zone around a village, sampled every 4 voxels (8 cm,
+// the column-profile step of P18). Raw little-endian files plus a JSON header:
+//   height.u16  surface in voxels (2 cm) above base_voxel_y; voxels below are solid
+//   top.u8      material class of the top voxel (data/materials.csv)
+//   water.u16   water surface in voxels above base_voxel_y, 65535 = dry
+// Row-major, x east fastest, then z north; row 0 is the south edge.
+int cmd_zone(int argc, char** argv) {
+  WorldParams p;
+  std::string out = ".", at = "market_town";
+  int32_t size_m = 128;
+  for (int a = 2; a < argc; ++a) {
+    std::string k = argv[a];
+    auto next = [&]() -> const char* { return a + 1 < argc ? argv[++a] : ""; };
+    if (k == "--seed") p.seed = std::strtoull(next(), nullptr, 10);
+    else if (k == "--at") at = next();
+    else if (k == "--size") size_m = std::atoi(next());
+    else if (k == "--out") out = next();
+    else {
+      usage();
+      return 2;
+    }
+  }
+  WorldPlan plan = generate_world_plan(p);
+  const Settlement* site = find_site(plan, at);
+  if (!site || size_m <= 0) {
+    std::fprintf(stderr, "no settlement named %s\n", at.c_str());
+    return 2;
+  }
+  const MaterialTable& mats = MaterialTable::builtin();
+  ChunkGenerator gen(plan, mats);
+  const int step = 4;  // voxels per sample
+  const int32_t chunks = (size_m * 1000 / kVoxelMm + kChunkSize - 1) / kChunkSize;
+  const int32_t n = chunks * kChunkSize / step;
+  const int64_t cx0 = site->i * plan.cell_mm / kVoxelMm / kChunkSize - chunks / 2;
+  const int64_t cz0 = site->j * plan.cell_mm / kVoxelMm / kChunkSize - chunks / 2;
+  const int64_t vx0 = cx0 * kChunkSize, vz0 = cz0 * kChunkSize;
+  Timer t;
+  std::vector<int32_t> top(static_cast<size_t>(n) * n);
+  std::vector<uint8_t> cls(top.size());
+  std::vector<int32_t> water(top.size(), INT32_MIN);
+  int generated = 0;
+  for (int32_t crz = 0; crz < chunks; ++crz) {
+    std::map<std::tuple<int, int, int>, Chunk> cache;  // one row of chunk columns at a time
+    for (int32_t zz = 0; zz < kChunkSize / step; ++zz)
+      for (int32_t x = 0; x < n; ++x) {
+        int32_t z = crz * (kChunkSize / step) + zz;
+        int64_t vx = vx0 + int64_t{x} * step, vz = vz0 + int64_t{z} * step;
+        int32_t s = gen.surface_voxel_y(vx, vz);
+        int32_t y = s - 1;
+        auto key = std::make_tuple(static_cast<int>(cx0 + x * step / kChunkSize), static_cast<int>(floor_div(y, kChunkSize)),
+                                   static_cast<int>(cz0 + crz));
+        auto it = cache.find(key);
+        if (it == cache.end()) {
+          it = cache.emplace(key, Chunk{}).first;
+          gen.generate({std::get<0>(key), std::get<1>(key), std::get<2>(key)}, it->second);
+          ++generated;
+        }
+        VoxelId v = it->second.get((x * step) % kChunkSize, static_cast<int>(y - floor_div(y, kChunkSize) * kChunkSize),
+                                   (zz * step) % kChunkSize);
+        size_t o = static_cast<size_t>(z) * n + x;
+        top[o] = s;
+        cls[o] = static_cast<uint8_t>(voxel_class(v));
+        int32_t ci = static_cast<int32_t>(std::clamp<int64_t>((vx * kVoxelMm + plan.cell_mm / 2) / plan.cell_mm, 0, plan.n - 1));
+        int32_t cj = static_cast<int32_t>(std::clamp<int64_t>((vz * kVoxelMm + plan.cell_mm / 2) / plan.cell_mm, 0, plan.n - 1));
+        int32_t w = plan.water_mm[plan.idx(ci, cj)];
+        if (w != WorldPlan::kNoWater && static_cast<int64_t>(w) > int64_t{s} * kVoxelMm)
+          water[o] = static_cast<int32_t>(floor_div(w, kVoxelMm));
+      }
+  }
+  int32_t base = *std::min_element(top.begin(), top.end()) - 64;
+  int32_t hi = *std::max_element(top.begin(), top.end());
+  if (hi - base >= 65535) {
+    std::fprintf(stderr, "zone relief too tall for u16 voxels\n");
+    return 1;
+  }
+  std::vector<uint8_t> hbytes(top.size() * 2), wbytes(top.size() * 2);
+  for (size_t o = 0; o < top.size(); ++o) {
+    uint16_t h = static_cast<uint16_t>(top[o] - base);
+    uint16_t w = water[o] == INT32_MIN ? 65535 : static_cast<uint16_t>(std::clamp(water[o] - base, 0, 65534));
+    hbytes[2 * o] = static_cast<uint8_t>(h & 255);
+    hbytes[2 * o + 1] = static_cast<uint8_t>(h >> 8);
+    wbytes[2 * o] = static_cast<uint8_t>(w & 255);
+    wbytes[2 * o + 1] = static_cast<uint8_t>(w >> 8);
+  }
+  auto write_bin = [&](const std::string& path, const std::vector<uint8_t>& b) {
+    FILE* f = std::fopen(path.c_str(), "wb");
+    if (!f) return false;
+    bool ok = std::fwrite(b.data(), 1, b.size(), f) == b.size();
+    return std::fclose(f) == 0 && ok;
+  };
+  std::string stem = out + "/zone_" + settlement_id(site->kind);
+  if (!write_bin(stem + "_height.u16", hbytes) || !write_bin(stem + "_top.u8", cls) || !write_bin(stem + "_water.u16", wbytes)) {
+    std::fprintf(stderr, "cannot write into %s\n", out.c_str());
+    return 1;
+  }
+  std::vector<uint64_t> words;
+  words.reserve(top.size());
+  for (size_t o = 0; o < top.size(); ++o)
+    words.push_back((uint64_t(uint32_t(top[o])) << 16) ^ (uint64_t(cls[o]) << 8) ^ uint64_t(uint32_t(water[o])) << 40);
+  uint64_t fp = 0x9e3779b97f4a7c15ULL;
+  for (uint64_t w : words) fp = hash_combine(fp, w);
+  FILE* f = std::fopen((stem + ".json").c_str(), "w");
+  if (!f) return 1;
+  std::fprintf(f,
+               "{\n  \"schema_version\": \"zone-1\",\n  \"seed\": %llu,\n  \"world_generator_version\": %u,\n"
+               "  \"plan_fingerprint\": \"%016llx\",\n  \"zone_fingerprint\": \"%016llx\",\n"
+               "  \"village\": \"%s\",\n  \"n\": %d,\n  \"step_voxels\": %d,\n  \"cell_m\": %.2f,\n"
+               "  \"origin_voxel\": [%lld, %lld],\n  \"origin_m\": [%.2f, %.2f],\n  \"base_voxel_y\": %d,\n"
+               "  \"base_m\": %.2f,\n  \"village_center_m\": [%.2f, %.2f],\n"
+               "  \"files\": {\"height\": \"%s_height.u16\", \"top\": \"%s_top.u8\", \"water\": \"%s_water.u16\"},\n"
+               "  \"layout\": \"little-endian, row-major, x east fastest then z north, row 0 = south edge; "
+               "height and water in voxels (2 cm) above base_voxel_y, voxels below height are solid; water 65535 = dry; "
+               "top = material class of the top voxel (engine/data/materials.csv)\",\n"
+               "  \"note\": \"origin is the south-west corner in world voxels (x east, z north, y up, y=0 at sea level); "
+               "Godot z = -z\"\n}\n",
+               static_cast<unsigned long long>(p.seed), plan.generator_version,
+               static_cast<unsigned long long>(plan.fingerprint()), static_cast<unsigned long long>(fp),
+               settlement_id(site->kind), n, step, step * kVoxelMm / 1000.0, static_cast<long long>(vx0),
+               static_cast<long long>(vz0), vx0 * kVoxelMm / 1000.0, vz0 * kVoxelMm / 1000.0, base,
+               base * kVoxelMm / 1000.0, site->i * plan.cell_mm / 1000.0, site->j * plan.cell_mm / 1000.0,
+               std::string("zone_").append(settlement_id(site->kind)).c_str(),
+               std::string("zone_").append(settlement_id(site->kind)).c_str(),
+               std::string("zone_").append(settlement_id(site->kind)).c_str());
+  std::fclose(f);
+
+  // Shaded preview for humans, one pixel per 32 cm.
+  const int pv = n / 4;
+  std::vector<uint8_t> img(static_cast<size_t>(pv) * pv * 3);
+  for (int pz = 0; pz < pv; ++pz)
+    for (int px = 0; px < pv; ++px) {
+      int x = px * 4, z = pz * 4;
+      auto T = [&](int a, int b) {
+        a = std::clamp(a, 0, n - 1);
+        b = std::clamp(b, 0, n - 1);
+        return static_cast<float>(top[static_cast<size_t>(b) * n + a]);
+      };
+      float shade = std::clamp(1.0f + 0.03f * (-(T(x + 4, z) - T(x - 4, z)) + (T(x, z + 4) - T(x, z - 4))), 0.4f, 1.4f);
+      size_t o = static_cast<size_t>(z) * n + x;
+      uint32_t c = water[o] != INT32_MIN ? 0x3a6ea5u : mats.get(cls[o]).color;
+      size_t q = (static_cast<size_t>(pv - 1 - pz) * pv + px) * 3;
+      img[q] = static_cast<uint8_t>(std::clamp(((c >> 16) & 255) * shade, 0.0f, 255.0f));
+      img[q + 1] = static_cast<uint8_t>(std::clamp(((c >> 8) & 255) * shade, 0.0f, 255.0f));
+      img[q + 2] = static_cast<uint8_t>(std::clamp((c & 255) * shade, 0.0f, 255.0f));
+    }
+  write_png_rgb(stem + "_preview.png", pv, pv, img);
+  std::printf("%s: %d x %d samples at 8 cm, %d chunks generated in %.0f ms, relief %.1f m, zone %016llx\n",
+              settlement_id(site->kind), n, n, generated, t.ms(), (hi - base - 64) * kVoxelMm / 1000.0,
+              static_cast<unsigned long long>(fp));
+  return 0;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -201,6 +457,8 @@ int main(int argc, char** argv) {
   }
   if (std::strcmp(argv[1], "plan") == 0) return cmd_plan(argc, argv);
   if (std::strcmp(argv[1], "chunks") == 0) return cmd_chunks(argc, argv);
+  if (std::strcmp(argv[1], "geo") == 0) return cmd_geo(argc, argv);
+  if (std::strcmp(argv[1], "zone") == 0) return cmd_zone(argc, argv);
   usage();
   return 2;
 }

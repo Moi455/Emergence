@@ -12,6 +12,9 @@ run python3 build_site.py
 run python3 representation.py
 run python3 scenario_tests.py
 run python3 generate_states.py --n 500 --check
+run python3 reference_decider.py
+run python3 encode.py
+run python3 minimal_pairs.py
 if [[ "${1:-}" != "--quick" ]]; then
   run python3 selftest_pipeline.py
   run python3 selftest_quota_stress.py

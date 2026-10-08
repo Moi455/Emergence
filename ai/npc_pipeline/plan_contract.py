@@ -130,6 +130,8 @@ F("eavesdrop", "attention", "entity:E", False); F("investigate", "attention", "p
 F("leisure", "leisure", "activity:C,entity:E?"); F("pray", "leisure", "", False); F("mourn", "leisure", "", False)
 # commitment
 F("accompany", "commit", "entity:E"); F("break_commitment", "commit", "commitment:O"); F("continue", "commit")
+# 0.4 (2026-10-08), appended last so earlier function ids stay frozen (interfaces.md section 6)
+F("dress", "body", "outfit:X", True, "change into one of the NPC's outfits: everyday, work, festival, cold, night, mourning")
 
 # --------------------------------------------------------------------------
 # Conditions.  name -> number of args

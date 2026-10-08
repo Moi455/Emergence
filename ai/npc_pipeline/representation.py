@@ -40,6 +40,7 @@ _reg("self.stock", "food fuel tools", "B100")
 _reg("self.body", "hp strength job_skill", "U100")
 _reg("self.body", "load_ratio", "U1")
 _reg("self.activity", "progress", "U1")
+_reg("self.wardrobe", "wear", "U100")          # 0.4: wear of the outfit ME has on
 _reg("self.activity", "commitment", "U100")
 _reg("self.activity", "secs_since_decision", "QLOG", 3600)
 _reg("entity.rel", "affection trust respect romance debt", "B100")
@@ -58,6 +59,7 @@ _reg("event", "understanding", "ORD")
 _reg("event", "reliability intent", "U1")
 _reg("event", "delay", "QLOG", 300)
 _reg("event", "out_of_world", "BOOL")
+_reg("event", "holders", "QLOG", 20)          # 0.4: other known holders of a skill (0 = ME is the last one)
 _reg("event.norm", "kin property honor life fidelity truth fairness taboo", "U100")
 _reg("memory", "importance severity", "U100")
 _reg("memory", "certainty", "U1")
@@ -191,12 +193,12 @@ def model_features(state):
 # --------------------------------------------------------------------------- the classification table
 CATEGORICAL = {
     "self": "age_cat love_status job current_action weather place_type tool_in_hand",
-    "entity": "link age_cat love_status visible_action",
+    "entity": "link age_cat love_status visible_action village",
     "event": "type role source speech_act style",
-    "memory": "kind source what norm focus_knows",
+    "memory": "type source what broke outcome focus_knows",
     "goal": "type",
     "title": "title my_role",
-    "village": "problem.kind other.id",
+    "village": "id frontier problem.kind problem.need other.id",
     "group": "kind",
 }
 

@@ -34,6 +34,11 @@ enum CellFlag : uint8_t {
 
 enum class SettlementKind : uint8_t { Port, Foresters, Miners, Oasis, Town };
 const char* settlement_name(SettlementKind k);
+// Shared village id (docs/interfaces.md § 8): sea_village, forest_village,
+// mountain_village, desert_village, market_town.
+const char* settlement_id(SettlementKind k);
+// Frontier the settlement belongs to: west, north, east, south or center.
+const char* settlement_frontier(SettlementKind k);
 
 constexpr uint8_t kNoReceiver = 8;
 // Neighbour order used everywhere (receiver codes 0..7): E, NE, N, NW, W, SW, S, SE.

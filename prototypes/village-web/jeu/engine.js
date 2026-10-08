@@ -230,6 +230,31 @@ void main(){
   o = vec4(c * c * (3.0 - 2.0 * c) * 0.35 + c * 0.65, 1.0);
 }`;
 
+const WATER_VERT = `#version 300 es
+precision highp float; layout(location=0) in vec2 a_xz; uniform mat4 u_vp; uniform vec3 u_cam; uniform vec4 u_pond; out vec3 v_w; out vec2 v_q;
+void main(){ vec3 w = vec3(u_pond.x + a_xz.x * u_pond.z, u_pond.y, u_pond.w + a_xz.y * u_pond.z); v_w = w; v_q = a_xz; gl_Position = u_vp * vec4(w - u_cam, 1.0); }`;
+const WATER_FRAG = `#version 300 es
+precision highp float; in vec3 v_w; in vec2 v_q; uniform vec3 u_cam; uniform vec3 u_sun; uniform float u_time; uniform float u_fog; out vec4 o;
+vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
+void main(){
+  if (dot(v_q, v_q) > 1.0) discard;
+  vec2 p = v_w.xz; float t = u_time;
+  vec2 g = vec2(0.0);
+  g += vec2(0.8, 0.3) * cos(dot(p, vec2(0.8, 0.3)) * 3.1 + t * 1.3) * 0.05;
+  g += vec2(-0.4, 0.9) * cos(dot(p, vec2(-0.4, 0.9)) * 5.3 + t * 1.9) * 0.03;
+  g += vec2(0.6, -0.7) * cos(dot(p, vec2(0.6, -0.7)) * 11.0 + t * 2.7) * 0.015;
+  vec3 n = normalize(vec3(-g.x, 1.0, -g.y));
+  vec3 rel = v_w - u_cam; float dist = length(rel); vec3 v = rel / dist;
+  vec3 r = reflect(v, n);
+  float fres = 0.02 + 0.98 * pow(1.0 - max(dot(-v, n), 0.0), 5.0);
+  vec3 sky = mix(vec3(0.52, 0.62, 0.76), vec3(0.16, 0.34, 0.70), pow(max(r.y, 0.0), 0.5));
+  vec3 deep = vec3(0.03, 0.10, 0.10);
+  vec3 col = mix(deep, sky, fres) + vec3(1.0, 0.85, 0.6) * pow(max(dot(r, u_sun), 0.0), 400.0) * 4.0;
+  vec3 fogc = vec3(0.52, 0.62, 0.76);
+  col = mix(col, fogc, 1.0 - exp(-max(dist - 25.0, 0.0) * u_fog));
+  col = pow(aces(col * 0.9), vec3(1.0 / 2.2));
+  o = vec4(col, mix(0.72, 0.96, fres));
+}`;
 const PART_VERT = `#version 300 es
 precision highp float;
 layout(location=0) in vec3 a_c; layout(location=1) in vec4 a_p; layout(location=2) in vec4 a_col;
@@ -239,15 +264,21 @@ void main(){ vec3 w = a_p.xyz + (a_c - 0.5) * a_p.w - u_cam; vec3 n = normalize(
 const PART_FRAG = `#version 300 es
 precision mediump float; in vec3 v_c; out vec4 o; void main(){ o = vec4(pow(v_c, vec3(1.0/2.2)), 1.0); }`;
 
-const P_RASTER = prog(VERT, FRAG), PT = prog(VERT, FRAG_TRACE), PS = prog(VERT, SHADOW_FRAG), PK = prog(SKY_VERT, SKY_FRAG), PP = prog(PART_VERT, PART_FRAG);
+const PW = prog(WATER_VERT, WATER_FRAG), P_RASTER = prog(VERT, FRAG), PT = prog(VERT, FRAG_TRACE), PS = prog(VERT, SHADOW_FRAG), PK = prog(SKY_VERT, SKY_FRAG), PP = prog(PART_VERT, PART_FRAG);
 
 // ======================= load data =======================
 status('Téléchargement du village voxélisé…');
 // data ships as base64 text (artifact hosting serves text, not arbitrary binaries); same bytes as world.bin
-const resp = await fetch('world.b64.txt');
-const b64 = (await resp.text()).trim();
-const DOWNLOAD = Number(resp.headers.get('content-length')) || b64.length;
-let buf = (() => { const s = atob(b64), a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a.buffer; })();
+// falls back to world.bin when the text copy is absent (the GitHub repository keeps only the binary)
+let resp = await fetch('world.b64.txt'), buf, DOWNLOAD;
+if (resp.ok) {
+  const b64 = (await resp.text()).trim();
+  DOWNLOAD = Number(resp.headers.get('content-length')) || b64.length;
+  buf = (() => { const s = atob(b64), a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a.buffer; })();
+} else {
+  resp = await fetch('world.bin'); if (!resp.ok) throw new Error('world.b64.txt et world.bin introuvables');
+  buf = await resp.arrayBuffer(); DOWNLOAD = buf.byteLength;
+}
 const u8h = new Uint8Array(buf, 0, 2);
 let GZ_BYTES = buf.byteLength;
 if (u8h[0] === 0x1f && u8h[1] === 0x8b) {
@@ -374,7 +405,9 @@ place('Prop_Wagon', CX - 5 * M, groundAt(CX - 5 * M, CZ + 2 * M), CZ + 2 * M, 1)
 for (let k = 0; k < 6; k++) { const a = rng() * 6.28, r = (4 + rng() * 3) * M; const x = CX + Math.cos(a) * r, z = CZ + Math.sin(a) * r; place(pick(['Prop_Crate', 'Prop_Brick1', 'Prop_Brick2']), x, groundAt(x, z), z, Math.floor(rng() * 4)); }
 for (let k = -3; k <= 3; k++) { if (k === 0) continue; const x = CX + k * 2 * M; place('Prop_ExteriorBorder_Straight1', x, groundAt(x, CZ - 9.5 * M), CZ - 9.5 * M, 2); }
 
-const TER = { seed: SEED, cx: CX, cz: CZ, pads, streets };
+const ponds = [{ x: CX - 22 * M, z: CZ + 29 * M, r: 8 * M, depth: 65 }];
+for (const q of ponds) { let lo = 1e9; for (let k = 0; k < 64; k++) { const a = k / 64 * Math.PI * 2; lo = Math.min(lo, tmpTerrain.natural(q.x + Math.cos(a) * q.r, q.z + Math.sin(a) * q.r) / VS); } q.level = Math.round(lo) - 6; }
+const TER = { seed: SEED, cx: CX, cz: CZ, pads, streets, ponds };
 const terrain = new VX.Terrain(TER);
 // trees: procedural modules scattered around the village (deterministic)
 {
@@ -383,6 +416,7 @@ const terrain = new VX.Terrain(TER);
     const a = rng() * 6.283, r = (12 + Math.pow(rng(), 0.7) * 75) * M;
     const x = Math.round(CX + Math.cos(a) * r), z = Math.round(CZ + Math.sin(a) * r);
     if (terrain.topClass(x, z) !== 16) continue;
+    if (ponds.some((q) => Math.hypot(x - q.x, z - q.z) < q.r + 3 * M)) continue;
     if (pads.some((q) => x > q.x0 - 3 * M && x < q.x1 + 3 * M && z > q.z0 - 3 * M && z < q.z1 + 3 * M)) continue;
     if (instances.some((i) => i.mod.name.startsWith('Tree') && Math.hypot(i.x - x, i.z - z) < 6 * M)) continue;
     place('Tree_' + (placed % 4), x, terrain.height(x, z) - 3, z, Math.floor(rng() * 4)); placed++;
@@ -638,6 +672,8 @@ function meshNode(nd) {
 }
 const tdraw = [];
 let camX = 0, camY = 0, camZ = 0;
+// extension points for other modules (villagers.js): draw hooks get camera-relative matrices like ours
+const HOOKS = [], UPDATES = [];
 function nodeHasEdits(x0, z0, S) {
   for (const k of editedTiles) { const tx = Math.floor(k / 4096) * 128, tz = (k % 4096) * 128; if (tx >= x0 && tx < x0 + S && tz >= z0 && tz < z0 + S) return true; }
   return false;
@@ -752,6 +788,78 @@ function raycast(ox, oy, oz, dx, dy, dz, maxD) {   // voxel units
   return null;
 }
 const parts = []; const PMAX = 3000;
+function removeInstVoxel(inst, l) {
+  ensureEdited(inst);
+  setLocal(inst, l[0], l[1], l[2]);
+  let s = dirtyInst.get(inst); if (!s) dirtyInst.set(inst, s = new Set());
+  const m = inst.mod, ncx = Math.ceil(m.dx / 32), ncy = Math.ceil(m.dy / 32), ncz = Math.ceil(m.dz / 32);
+  const lx = l[0] - m.ox, ly = l[1] - m.oy, lz = l[2] - m.oz;
+  // the chunk and its neighbours when near a border (8 cm faces change across chunk borders)
+  for (const [ax, ay, az] of [[0, 0, 0], [-4, 0, 0], [4, 0, 0], [0, -4, 0], [0, 4, 0], [0, 0, -4], [0, 0, 4]]) {
+    const cx = (lx + ax) >> 5, cy = (ly + ay) >> 5, cz = (lz + az) >> 5;
+    if (cx < 0 || cy < 0 || cz < 0 || cx >= ncx || cy >= ncy || cz >= ncz) continue;
+    s.add(cx + ncx * (cy + ncy * cz));
+  }
+}
+// Flood fill from the ground and from the border of the box: solid voxels not reached are floating and fall.
+let collapsedTotal = 0;
+function collapse(x0, y0, z0, x1, y1, z1) {
+  const nx = x1 - x0 + 1, ny = y1 - y0 + 1, nz = z1 - z0 + 1, N = nx * ny * nz;
+  const occ = new Uint8Array(N);   // 0 air, 1 building, 2 terrain/anchored, 3 reached
+  const insts = new Set();
+  for (let gx = x0 >> 6; gx <= x1 >> 6; gx++) for (let gz = z0 >> 6; gz <= z1 >> 6; gz++) { const g = GRID.get(gx * 65536 + gz); if (g) g.forEach((i) => insts.add(i)); }
+  const list = [...insts].filter((i) => !(x1 < i.x0 || x0 >= i.x1 || y1 < i.y0 || y0 >= i.y1 || z1 < i.z0 || z0 >= i.z1));
+  for (const inst of list) {
+    const bk = inst.bricks || inst.mod.bricks;
+    for (let z = Math.max(z0, inst.z0); z <= Math.min(z1, inst.z1 - 1); z++)
+      for (let y = Math.max(y0, inst.y0); y <= Math.min(y1, inst.y1 - 1); y++)
+        for (let x = Math.max(x0, inst.x0); x <= Math.min(x1, inst.x1 - 1); x++) {
+          const i = (x - x0) + nx * ((y - y0) + ny * (z - z0));
+          if (occ[i]) continue;
+          const l = toLocal(inst, x, y, z);
+          if (VX.getLocal(inst.mod, bk, pool, l[0], l[1], l[2])) occ[i] = 1;
+        }
+  }
+  const q = new Int32Array(N); let qh = 0, qt = 0;
+  for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
+    const h = heightAt(x0 + x, z0 + z);
+    for (let y = 0; y < ny; y++) {
+      const i = x + nx * (y + ny * z);
+      const wy = y0 + y;
+      if (wy < h && !terrainRemoved(x0 + x, wy, z0 + z)) { occ[i] = 3; q[qt++] = i; continue; }
+      if (occ[i] === 1 && (x === 0 || z === 0 || y === 0 || x === nx - 1 || y === ny - 1 || z === nz - 1)) { occ[i] = 3; q[qt++] = i; }
+    }
+  }
+  const sx = 1, sy = nx, sz = nx * ny;
+  while (qh < qt) {
+    const i = q[qh++], x = i % nx, y = ((i / nx) | 0) % ny, z = (i / sz) | 0;
+    if (x > 0 && occ[i - sx] === 1) { occ[i - sx] = 3; q[qt++] = i - sx; }
+    if (x < nx - 1 && occ[i + sx] === 1) { occ[i + sx] = 3; q[qt++] = i + sx; }
+    if (y > 0 && occ[i - sy] === 1) { occ[i - sy] = 3; q[qt++] = i - sy; }
+    if (y < ny - 1 && occ[i + sy] === 1) { occ[i + sy] = 3; q[qt++] = i + sy; }
+    if (z > 0 && occ[i - sz] === 1) { occ[i - sz] = 3; q[qt++] = i - sz; }
+    if (z < nz - 1 && occ[i + sz] === 1) { occ[i + sz] = 3; q[qt++] = i + sz; }
+  }
+  const floating = [];
+  for (let i = 0; i < N; i++) if (occ[i] === 1) floating.push(i);
+  const res = { n: 0, debris: [] };
+  if (!floating.length) return res;
+  const every = Math.max(1, Math.ceil(floating.length / 1200));
+  for (let k = 0; k < floating.length; k++) {
+    const i = floating[k], x = x0 + i % nx, y = y0 + ((i / nx) | 0) % ny, z = z0 + ((i / sz) | 0);
+    for (const inst of list) {
+      if (x < inst.x0 || x >= inst.x1 || y < inst.y0 || y >= inst.y1 || z < inst.z0 || z >= inst.z1) continue;
+      const l = toLocal(inst, x, y, z);
+      const id = VX.getLocal(inst.mod, inst.bricks || inst.mod.bricks, pool, l[0], l[1], l[2]);
+      if (!id) continue;
+      removeInstVoxel(inst, l); res.n++;
+      if (k % every === 0) res.debris.push(x, y, z, id | (every > 1 ? 1 << 20 : 0) | (Math.min(7, Math.round(Math.cbrt(every))) << 21));
+      break;
+    }
+  }
+  collapsedTotal += res.n;
+  return res;
+}
 function carve(hx, hy, hz) {
   const id0 = voxelAt(hx, hy, hz); const cls = id0 >> 7;
   const R = Math.max(2, Math.round(TOOLS[tool] * (HARD[cls] || 1))), R2 = R * R;
@@ -769,21 +877,14 @@ function carve(hx, hy, hz) {
           const l = toLocal(inst, x, y, z);
           const id = VX.getLocal(inst.mod, inst.bricks || inst.mod.bricks, pool, l[0], l[1], l[2]);
           if (!id) continue;
-          if (!touched) { ensureEdited(inst); touched = true; }
-          setLocal(inst, l[0], l[1], l[2]); removed++;
+          removeInstVoxel(inst, l); removed++;
           if ((removed & 15) === 0 || removed < 40) debris.push(x, y, z, id);
-          let s = dirtyInst.get(inst); if (!s) dirtyInst.set(inst, s = new Set());
-          const m = inst.mod, ncx = Math.ceil(m.dx / 32), ncy = Math.ceil(m.dy / 32);
-          const lx = l[0] - m.ox, ly = l[1] - m.oy, lz = l[2] - m.oz;
-          // the chunk and its neighbours if on a border (faces change across chunk borders)
-          const ncz = Math.ceil(m.dz / 32);
-          for (const [ax, ay, az] of [[0, 0, 0], [-4, 0, 0], [4, 0, 0], [0, -4, 0], [0, 4, 0], [0, 0, -4], [0, 0, 4]]) {
-            const cx = (lx + ax) >> 5, cy = (ly + ay) >> 5, cz = (lz + az) >> 5;
-            if (cx < 0 || cy < 0 || cz < 0 || cx >= ncx || cy >= ncy || cz >= ncz) continue;
-            s.add(cx + ncx * (cy + ncy * cz));
-          }
         }
   }
+  // structural check: anything no longer connected to the ground or to the outside of the work zone falls
+  const fell = collapse(x0 - 24, y0 - 24, z0 - 24, x1 + 24, y1 + 24, z1 + 24);
+  removed += fell.n;
+  for (let i = 0; i < fell.debris.length; i += 4) debris.push(fell.debris[i], fell.debris[i + 1], fell.debris[i + 2], fell.debris[i + 3]);
   // terrain
   const tilesTouched = new Set();
   for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) {
@@ -804,10 +905,12 @@ function carve(hx, hy, hz) {
   for (const tk of tilesTouched) { const nd = TNODES.get(tkey(Math.floor(tk / 4096) * 128, (tk % 4096) * 128, 128)); if (nd) meshNode(nd); }
   // debris particles
   for (let i = 0; i < debris.length && parts.length < PMAX; i += 4) {
-    const c = palRGB(debris[i + 3]); const j = VX.hash2(debris[i], debris[i + 2], debris[i + 1]);
+    const raw = debris[i + 3], big = (raw >> 20) & 1, sc = (raw >> 21) & 7;
+    const c = palRGB(raw & 0xffff); const j = VX.hash2(debris[i], debris[i + 2], debris[i + 1]);
     const lin = c.map((v) => Math.pow(v, 2.2) * (0.85 + 0.3 * j));
     parts.push({ x: (debris[i] + 0.5) * VS, y: (debris[i + 1] + 0.5) * VS, z: (debris[i + 2] + 0.5) * VS,
-      vx: (Math.random() - 0.5) * 2.5, vy: Math.random() * 3, vz: (Math.random() - 0.5) * 2.5, s: VS * (1 + Math.random() * 1.5), c: lin, life: 2.5 + Math.random() * 2 });
+      vx: (Math.random() - 0.5) * (big ? 0.6 : 2.5), vy: big ? 0 : Math.random() * 3, vz: (Math.random() - 0.5) * (big ? 0.6 : 2.5),
+      s: VS * (big ? Math.max(1, sc) * (1 + Math.random() * 0.3) : 1 + Math.random() * 1.5), c: lin, life: (big ? 5 : 2.5) + Math.random() * 2 });
   }
   flushEdits();
 }
@@ -918,6 +1021,14 @@ const cubeBuf = gl.createBuffer(); {
   gl.bindBuffer(gl.ARRAY_BUFFER, cubeBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
 }
 const partBuf = gl.createBuffer();
+const waterBuf = gl.createBuffer(); {
+  const v = []; const n = 32;
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    const a = [-1 + 2 * i / n, -1 + 2 * j / n], b = [-1 + 2 * (i + 1) / n, -1 + 2 * (j + 1) / n];
+    v.push(a[0], a[1], a[0], b[1], b[0], b[1], a[0], a[1], b[0], b[1], b[0], a[1]);
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, waterBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
+}
 const vao = gl.createVertexArray();
 
 const SUN = (() => { const v = [0.45, 0.62, 0.38]; const l = Math.hypot(...v); return v.map((x) => x / l); })();
@@ -1016,6 +1127,7 @@ function drawScene(shadowPass, vp, lvp, P) {
     bindMesh(inst.mesh); gl.drawElements(gl.TRIANGLES, inst.mesh.quads * 6, gl.UNSIGNED_INT, 0);
     stats.draws++; stats.tris += inst.mesh.quads * 2;
   }
+  for (const h of HOOKS) { try { h(gl, shadowPass, vp, lvp, [camX, camY, camZ], SUN); } catch (err) { console.error('draw hook', err); } }
 }
 
 // ======================= HUD =======================
@@ -1036,7 +1148,7 @@ function hud() {
     `${(stats.tris / 1e6).toFixed(2)} M triangles · ${stats.draws} appels · ${stats.traced} modules micro-tracés · ${canvas.width}×${canvas.height}<br>` +
     `<b>Mémoire GPU :</b> ${fmtB(mem)} (atlas ${fmtB(MEM.atlas)}, maillages ${fmtB(MEM.vbo)}, ombre ${fmtB(MEM.shadow)})<br>` +
     `<b>Mémoire voxels CPU :</b> ${fmtB(cpuNow)} · briques mixtes ${pool.n}<br>` +
-    `<b>Destruction :</b> ${(voxelsRemoved / 1000).toFixed(1)} k voxels retirés · ${editedCount} modules copiés à l'écriture` +
+    `<b>Destruction :</b> ${(voxelsRemoved / 1000).toFixed(1)} k voxels retirés (dont ${(collapsedTotal / 1000).toFixed(1)} k effondrés) · ${editedCount} modules copiés à l'écriture` +
     (player.fly ? '<br><i>Mode vol (F)</i>' : '');
 }
 
@@ -1091,6 +1203,7 @@ function frame(now) {
   player.ground = false;
   moveAxis(0, player.vx * dt); moveAxis(2, player.vz * dt); moveAxis(1, player.vy * dt);
   player.eyeSmooth *= Math.pow(0.0005, dt);
+  for (const u of UPDATES) { try { u(dt, now); } catch (err) { console.error('update hook', err); } }
   camX = player.x * VS; camY = (player.y + EYE + player.eyeSmooth) * VS; camZ = player.z * VS;
   const fwd = [-Math.sin(player.yaw) * Math.cos(player.pitch), Math.sin(player.pitch), -Math.cos(player.yaw) * Math.cos(player.pitch)];
   // --- dig
@@ -1147,6 +1260,14 @@ function frame(now) {
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, shadowTex);
   gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, bpal);
   drawScene(false, vp, lvp, Pc);
+  // water (blended, after opaque geometry)
+  gl.useProgram(PW.p); gl.uniformMatrix4fv(PW.u.u_vp, false, vp); gl.uniform3f(PW.u.u_cam, camX, camY, camZ);
+  gl.uniform3fv(PW.u.u_sun, SUN); gl.uniform1f(PW.u.u_time, now / 1000); gl.uniform1f(PW.u.u_fog, 0.0022);
+  gl.bindBuffer(gl.ARRAY_BUFFER, waterBuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0); gl.vertexAttribDivisor(0, 0);
+  gl.disableVertexAttribArray(1); gl.disableVertexAttribArray(2);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.disable(gl.CULL_FACE);
+  for (const q of ponds) { gl.uniform4f(PW.u.u_pond, q.x * VS, (q.level + 0.0) * VS, q.r * VS * 1.0, q.z * VS); gl.drawArrays(gl.TRIANGLES, 0, 32 * 32 * 6); }
+  gl.disable(gl.BLEND); gl.depthMask(true); gl.enable(gl.CULL_FACE);
   // particles
   if (parts.length) {
     const pd = new Float32Array(parts.length * 8);
@@ -1171,10 +1292,11 @@ function frame(now) {
   cpuMs = cpuMs * 0.9 + 0.1 * (performance.now() - t0);
   fpsN++; if (now - fpsT > 500) { fps = fpsN * 1000 / (now - fpsT); fpsN = 0; fpsT = now; hud(); }
   let tv = 0; for (const nd of TNODES.values()) if (nd.mesh) tv += nd.mesh.bytes;
-  window.__stats = { st: stats, tnodes: TNODES.size, tdraw: tdraw.length, tvbo: tv, fps, cpuMs, gpuMs, tris: stats.tris, draws: stats.draws, mem: MEM, terrainPending, parts: parts.length, removed: voxelsRemoved };
+  window.__stats = { st: stats, tnodes: TNODES.size, tdraw: tdraw.length, tvbo: tv, fps, cpuMs, gpuMs, tris: stats.tris, draws: stats.draws, mem: MEM, terrainPending, parts: parts.length, removed: voxelsRemoved, collapsed: collapsedTotal };
   requestAnimationFrame(frame);
 }
 // test hooks (used by automated screenshots)
-window.__game = { startBench, player, carve, raycast, keys, Q, setTool: (t) => { tool = t; updTool(); }, get cam() { return [camX, camY, camZ]; }, M, CX, CZ, heightAt, instances };
+window.__game = { startBench, player, carve, raycast, keys, Q, setTool: (t) => { tool = t; updTool(); }, get cam() { return [camX, camY, camZ]; }, M, CX, CZ, heightAt, instances, gl, VS, solid, voxelAt, addDrawHook: (f) => HOOKS.push(f), addUpdate: (f) => UPDATES.push(f) };
+window.dispatchEvent(new Event('village-ready'));
 requestAnimationFrame(frame);
 })().catch((e) => { console.error(e); document.getElementById('loadmsg').textContent = 'Erreur : ' + e.message; });

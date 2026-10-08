@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""generate_states.py (schema 0.3)
+"""generate_states.py (schema 0.4)
 
 Generates synthetic NPC decision situations (state + candidate actions) for
 teacher labelling and for student pre-training.
@@ -22,13 +22,13 @@ Usage (fish or bash):
 import argparse, hashlib, json, math, random, sys
 from collections import Counter
 
-VERSION = "0.3"
+VERSION = "0.4"
 
 # --------------------------------------------------------------------------
 # Schema
 # --------------------------------------------------------------------------
 TRAITS = ["aggression", "courage", "empathy", "sociability", "honesty",
-          "impulsivity", "curiosity", "justice", "grudge"]            # [-100,100]
+          "impulsivity", "curiosity", "tolerance", "justice", "ambition", "grudge"]  # [-100,100]
 TEMPERAMENT = ["reactivity", "resilience"]                             # [0,100]
 VALUES = ["kin_protection", "property_respect", "honor", "life_value",
           "romantic_fidelity", "taboo_sensitivity"]                    # [0,100]
@@ -90,6 +90,7 @@ try:
     import social_rules as sr
     import dialogue_protocols as dp
     from plan_contract import FUNCTIONS, CONDITIONS, TOOLS, TOOL_TABLE, DIRS, validate_plan, resolve_preconditions
+    import representation as rp
 except ModuleNotFoundError as _e:
     sys.exit(f"Missing project file: {_e.name}.py. Your folder is incomplete. Unzip the complete archive again: "
              "python3 -m zipfile -e npc_pipeline.zip ~/")
@@ -210,6 +211,9 @@ def gen_self(rng, fam, world_seed):
         "curiosity": sc(.8 * z["O"] + .1 * z["X"] + .5 * g()),
         "justice": sc(.3 * z["A"] + .4 * z["C"] + .2 * z["O"] + .8 * g()),
         "grudge": sc(-.4 * z["A"] + .4 * z["H"] + .7 * g()),
+        # 0.4: tolerance (acceptance of strangers, other villages, odd customs) and ambition (wants status, wealth, titles)
+        "tolerance": sc(.5 * z["O"] + .35 * z["A"] - .2 * z["H"] + .6 * g()),
+        "ambition": sc(.4 * z["X"] + .35 * z["C"] - .3 * z["A"] + .25 * z["H"] + .6 * g()),
     }
     flips = []
     for k in TRAITS:           # deliberate "out of character" traits
@@ -276,7 +280,7 @@ def gen_self(rng, fam, world_seed):
         "drives": {
             "libido": 0 if ac == "child" else ci(rng.uniform(10, 80) * (.5 if ac == "elder" else 1), 0, 100),
             "social_need": ci(25 + .2 * traits["sociability"] + 18 * g(), 0, 100),
-            "achievement": ci(45 + 18 * g() - (12 if job == "none" else 0), 0, 100),
+            "achievement": ci(45 + .15 * traits["ambition"] + 16 * g() - (12 if job == "none" else 0), 0, 100),
             "hoarding": ci(25 + 14 * g(), 0, 100)},
         "states": {"hunger": hunger, "thirst": thirst, "pain": pain, "fear": clamp(abs(rng.gauss(0, 6)), 0, 100),
                    "shock": 0.0, "confusion": 0.0, "fatigue": fatigue,
@@ -305,7 +309,31 @@ def gen_self(rng, fam, world_seed):
     me["inventory"] = inv
     tools_here = [i["type"] for i in inv if i["type"] in TOOLS]
     me["tool_in_hand"] = rng.choice(tools_here) if tools_here and rng.random() < .5 else "hands"
+    me["wardrobe"] = gen_wardrobe(rng, me)
     return me
+
+
+OUTFITS = ["everyday", "work", "festival", "cold", "night", "mourning"]   # outfit slots of the Skins thread (+ mourning)
+
+
+def gen_wardrobe(rng, me):
+    """Which outfits ME owns and wears (garments themselves live in personnages/data/villagers.json)."""
+    has = ["everyday"]
+    if me["job"] != "none":
+        has.append("work")
+    for o, p_ in (("festival", .75), ("cold", .8), ("night", .55), ("mourning", .35 if me["age_cat"] in ("adult", "elder") else .05)):
+        if rng.random() < p_:
+            has.append(o)
+    doing = me["current_action"]
+    if doing == "sleep" and "night" in has and rng.random() < .8:
+        worn = "night"
+    elif doing in JOB_ACTION.get(me["job"], []) and "work" in has and rng.random() < .7:
+        worn = "work"
+    elif me["season"] == "winter" and "cold" in has and rng.random() < .6:
+        worn = "cold"
+    else:
+        worn = "everyday" if rng.random() < .85 else rng.choice(has)
+    return {"has": has, "worn": worn, "wear": rng.randint(0, 90)}
 
 
 # --------------------------------------------------------------------------
@@ -414,6 +442,7 @@ def make_entity(rng, me, eid, link, world_seed, flip_ok=True):
         "visible_action": rng.choice(["none", "none", "till", "chat", "rest", "craft", "dig", "leisure", "go_to"]),
         "explain": explain,
         "suspicion": ci((rng.uniform(20, 70) if rel["trust"] < -30 else rng.uniform(0, 15)) + (20 if "flip_trust" in explain else 0), 0, 100),
+        "worn": rng.choices(OUTFITS, weights=[10, 4, 1, 2, .3, .3])[0],
         "indirect_threat": 0, "threat_via": None,
     }
     if link in ("spouse", "partner", "child", "parent", "sibling") or ent["rel"]["familiarity"] > 60:
@@ -468,6 +497,8 @@ def norm_vec(ev, me, ents):
         v["life"] = {"kill": 90, "beat": 50, "lock_up": 40}.get(act, 20)
         v["property"] = 60 if act == "steal_from" else 0
         v["fairness"] = 50
+    elif t == "proposal" and ev["content"].get("kind") == "accompany" and str(ev["content"].get("dest", "")).startswith("beyond"):
+        v["life"] = 25                       # the marches: crossing is (believed) deadly
     if t == "interrogate" and ev["content"].get("pressure") != "polite":
         v["honor"], v["fairness"] = max(v["honor"], 30), max(v["fairness"], 40)
     agent_ent = next((e for e in ents if e["id"] == ev.get("agent")), None)
@@ -532,6 +563,82 @@ def gen_titles(rng, me, ents):
     return out
 
 
+# --------------------------------------------------------------------------
+# Village and household layer (0.4). Five villages (decision D8), one per frontier plus a central market town
+# (proposal P8). Everything here is what ME believes or feels, not a global truth.
+# --------------------------------------------------------------------------
+VILLAGES = {   # id: (frontier side, economy, customs bias on the 8 norms)
+    "sea_village":      ("west",   "fishing salt boats",     {"kin": 5, "life": 5, "fairness": 5}),
+    "mountain_village": ("north",  "mining stone metal",     {"honor": 10, "property": 5}),
+    "desert_village":   ("east",   "herding dyes glass",     {"kin": 15, "taboo": 10, "honor": 5}),
+    "forest_village":   ("south",  "wood hunting charcoal",  {"life": -5, "fidelity": 5}),
+    "market_town":      ("center", "grain crafts market",    {"property": 15, "fairness": 10, "truth": 5}),
+}
+VILLAGE_IDS = list(VILLAGES)
+PROBLEMS = ["grain_shortage", "raid_threat", "flood", "sickness", "field_dispute", "well_dry", "bridge_broken", "wolf_attacks"]
+PROBLEM_NEED = {"grain_shortage": "food", "raid_threat": "defense", "flood": "labor", "sickness": "care", "field_dispute": "judgment",
+                "well_dry": "labor", "bridge_broken": "labor", "wolf_attacks": "defense"}
+FRONTIERS = {"west": "beyond_the_sea", "north": "beyond_the_peaks", "east": "beyond_the_dunes", "south": "beyond_the_deep_forest"}
+
+
+def gen_village(rng, me, ents, titles, fam):
+    """What ME perceives of its village, its household and the four other villages."""
+    home = choose_w(rng, [(v, 1.4 if v == "market_town" else 1) for v in VILLAGE_IDS])
+    g = lambda: rng.gauss(0, 1)
+    winter = me["season"] == "winter"
+    food = ci(-.45 * me["stock_gap"]["food"] + 20 * g() - (15 if winter else 0), -100, 100)
+    tension = ci(30 + 18 * g(), 0, 100)
+    problem = {"kind": "none", "need": "none", "urgency": 0, "progress": 0}
+    if fam == "village_problem" or rng.random() < .3:
+        kind = rng.choice(PROBLEMS)
+        if food < -30 and rng.random() < .5:
+            kind = "grain_shortage"
+        problem = {"kind": kind, "need": PROBLEM_NEED[kind], "urgency": ci(rng.uniform(30, 95), 0, 100),
+                   "progress": ci(rng.uniform(0, 60), 0, 100)}
+        tension = ci(tension + .3 * problem["urgency"], 0, 100)
+    else:
+        pass
+    security = ci(30 + 25 * g() - (.6 * problem["urgency"] if problem["need"] == "defense" else 0), -100, 100)
+    mayor = next((t_ for t_ in titles if t_["title"] in ("mayor", "elder") and t_["holder"]), None)
+    leader_legit = ci(mayor["legit"] if mayor else 15 + 30 * g(), -100, 100)
+    age_bonus = min(30, max(0, me["age"] - 15) * .6)
+    belonging = ci(45 + age_bonus + 15 * g() - .1 * me["traits"]["tolerance"], 0, 100)
+    loyalty = ci(.7 * (belonging - 45) + .2 * me["values"]["honor"] - 10 + 18 * g(), -100, 100)
+    leader_trust = ci(.6 * leader_legit + 20 * g() - .2 * tension, -100, 100)
+    customs = {}
+    bias = VILLAGES[home][2]
+    for k in NORMS:
+        customs[k] = ci(55 + bias.get(k, 0) + 12 * g(), 0, 100)
+    others = []
+    for vid in VILLAGE_IDS:
+        if vid == home:
+            continue
+        rel_ = 10 + 30 * g() + (.15 * me["traits"]["tolerance"])
+        others.append({"id": vid, "relation": ci(rel_, -100, 100), "trade_dep": ci(rng.uniform(5, 80), 0, 100),
+                       "threat": ci(max(0, -rel_) * .8 + rng.uniform(0, 25), 0, 100), "my_ties": ci(rng.expovariate(1 / 15), 0, 100)})
+    village = {"id": home, "frontier": VILLAGES[home][0], "economy": ci(10 + 30 * g() + .3 * food, -100, 100),
+               "food": food, "security": security, "rep": ci(10 + 30 * g(), -100, 100),
+               "tension": tension, "cohesion": ci(65 - .5 * tension + 15 * g(), 0, 100),
+               "belonging": belonging, "loyalty": loyalty, "leader_trust": leader_trust, "leader_legit": leader_legit,
+               "institution_trust": ci(.5 * leader_trust + 20 * g(), -100, 100),
+               "norms": customs, "problem": problem, "others": others}
+    hh_kin = [e for e in ents if e["link"] in ("spouse", "partner", "child", "parent", "sibling")]
+    head = is_adult(me["age_cat"]) and (me["love_status"] in ("married", "widowed") or me["age"] >= 35) and \
+        not any(e["link"] == "parent" and e["age"] < 80 for e in hh_kin) and rng.random() < .8
+    household = {"size": max(1, len(hh_kin) + 1 + rng.randint(0, 3)), "head": head,
+                 "cohesion": ci(60 + 20 * g() - .2 * tension, 0, 100),
+                 "wealth": ci(-.5 * (me["stock_gap"]["food"] + me["stock_gap"]["tools"]) / 2 + 25 * g(), -100, 100),
+                 "honor": ci(15 + 30 * g(), -100, 100)}
+    for e in ents:   # where each person lives, as ME believes it
+        if e["link"] in KIN or e["link"] in ("partner",):
+            e["village"] = home
+        elif e["link"] == "stranger":
+            e["village"] = rng.choice([o["id"] for o in others]) if rng.random() < .6 else home
+        else:
+            e["village"] = home if rng.random() < .88 else rng.choice([o["id"] for o in others])
+    return village, household
+
+
 def upsert_title(rng, titles, name, holder, conf, claimants=None):
     t_ = next((x for x in titles if x["title"] == name), None)
     if t_ is None:
@@ -543,7 +650,7 @@ def upsert_title(rng, titles, name, holder, conf, claimants=None):
     return t_
 
 
-def build_events(rng, fam, me, ents, items, titles=None):
+def build_events(rng, fam, me, ents, items, titles=None, village=None):
     titles = titles if titles is not None else []
     ev = []
     others = ents
@@ -665,8 +772,53 @@ def build_events(rng, fam, me, ents, items, titles=None):
             + (15 if asker["rel"]["familiarity"] < 20 else 0)
         ev.append(mk_event(rng, "question", asker["id"], "me", intensity=30,
                            content={"attr": attr, "subject": subj["id"], "know": know, "sens": int(clamp(sens, 0, 100))}))
-    elif fam == "negotiation" and ents:
+    elif fam == "village_problem" and ents and village and village["problem"]["kind"] != "none":
+        pb = village["problem"]
+        holders = [e for e in ents if is_adult(e["age_cat"]) and any(t_["holder"] == e["id"] for t_ in titles)]
+        caller = holders[0] if holders else (pick_agent(rng, ents, pred=lambda e: is_adult(e["age_cat"])) or ents[0])
+        ask = {"food": "levy", "defense": "volunteer", "labor": "volunteer", "care": "contribute", "judgment": "contribute"}[pb["need"]]
+        content = {"kind": pb["kind"], "need": pb["need"], "ask": rng.choice([ask, ask, "contribute"])}
+        if pb["need"] == "food":
+            content["item"] = rng.choice(["bread", "apple", "meat", "seeds"])
+        ev.append(mk_event(rng, "collective_request", caller["id"], None, role="witness", source=rng.choice(["heard", "seen", "read"]),
+                           intensity=ci(pb["urgency"], 20, 100), content=content))
+    elif fam == "apprenticeship" and ents:
+        young = sorted([e for e in ents if e["age_cat"] != "child"], key=lambda e: e["age"]) or ents
+        if me["job"] not in ("none", "apprentice") and me["body"]["job_skill"] >= 40:
+            a2 = young[0] if rng.random() < .7 else rng.choice(young)
+            e_ = mk_event(rng, "request", a2["id"], "me", intensity=rng.randint(30, 60),
+                          content={"kind": "teach", "skill": me["job"], "pay": rng.choice(["none", "labor", "coins", "goods"])})
+        else:
+            olds = sorted([e for e in ents if is_adult(e["age_cat"])], key=lambda e: -e["age"]) or ents
+            a2 = olds[0]
+            e_ = mk_event(rng, "proposal", a2["id"], "me", intensity=rng.randint(30, 60),
+                          content={"kind": "apprenticeship", "skill": choose_w(rng, JOBS_ADULT),
+                                   "terms": rng.choice(["free", "labor_for_years", "coins"])})
+        e_["holders"] = rng.choice([0, 0, 1, 1, 2, 3, 5, 8])          # OTHER holders of this skill ME knows of (0 = last holder)
+        ev.append(e_)
+    elif fam == "frontier" and ents and village:
+        side = village["frontier"] if village["frontier"] != "center" else rng.choice(list(FRONTIERS))
+        if rng.random() < .55 and a:
+            ev.append(mk_event(rng, "proposal", a["id"], "me", intensity=rng.randint(35, 70),
+                               content={"kind": "accompany", "dest": FRONTIERS[side], "for": rng.choice(["a day", "a week"]),
+                                        "why": rng.choice(["treasure", "lost_person", "trade_route", "curiosity", "flee_debt"])}))
+        else:
+            teller = a or rng.choice(ents)
+            ev.append(mk_event(rng, "legend", teller["id"], "me", source="told", intensity=rng.randint(20, 60),
+                               content={"place": FRONTIERS[side], "claim": rng.choice(["treasure", "monsters", "lost_village",
+                                                                                         "no_return", "other_people", "gods"])}))
+    elif fam == "festival" and ents:
+        kind = rng.choice(["wedding", "harvest_feast", "funeral", "market_day", "saint_day"])
+        who = rng.choice(ents)
+        content = {"kind": kind, "when": rng.choice(["now", "soon", "tonight"])}
+        if kind in ("wedding", "funeral"):
+            content["for"] = who["id"]
+        ev.append(mk_event(rng, "celebration", who["id"] if kind == "wedding" else None, None, role="witness",
+                           source=rng.choice(["heard", "seen"]), intensity=rng.randint(30, 70), content=content))
+    elif fam in ("negotiation", "intervillage_trade") and ents:
         o = ents[0]
+        if fam == "intervillage_trade" and village:
+            o = next((e for e in ents if e.get("village") not in (None, village["id"])), ents[0])
         good = rng.choice(["bread", "meat", "firewood", "coal", "axe", "cloth", "stone", "apple"])
         qty = rng.randint(1, 5)
         npc = {"hunger": me["states"]["hunger"], "fuel_gap": me["stock_gap"]["fuel"], "tools_gap": me["stock_gap"]["tools"]}
@@ -679,6 +831,8 @@ def build_events(rng, fam, me, ents, items, titles=None):
             "side": side, "good": good, "qty": qty, "price": price, "round": rng.randint(0, 4),
             "gain": int(clamp(100 * gain / max(1, market), -100, 100)),
             "fair": "cheap" if price < .85 * market else "expensive" if price > 1.15 * market else "fair"}))
+        if village and o.get("village") not in (None, village["id"]):
+            ev[-1]["content"]["from"] = o["village"]
     elif fam == "commitment" and a:
         ev.append(mk_event(rng, rng.choice(["request", "noise_danger", "greeting"]), a["id"], "me", intensity=40,
                            content={"kind": "help_task", "item": "axe"}))
@@ -736,6 +890,10 @@ def apply_event_effects(rng, me, ents, events):
                 s["anger"] += 30 * sev
             if pr == "threat":
                 s["fear"] += 40 * sev * (1 - t["courage"] / 200)
+        elif ty == "collective_request":
+            s["stress"] += 20 * sev
+        elif ty == "legend":
+            s["joy"] += 5 if t["curiosity"] > 0 else -5
         elif ty == "injury":
             tg = next((x for x in ents if x["id"] == e["target"]), None)
             if tg and (tg["link"] in KIN or tg["rel"]["affection"] > 40):
@@ -758,13 +916,31 @@ def apply_event_effects(rng, me, ents, events):
 # --------------------------------------------------------------------------
 # Memories and goals
 # --------------------------------------------------------------------------
+MEM_BROKE = {"theft": "property", "strike": "life", "threat": "life", "insult": "honor", "lie_revealed": "truth",
+             "promise_broken": "truth", "accusation": "fairness", "kiss": "fidelity"}
+MEM_OBJECT = {"theft", "gift", "help_given"}
+
+
 def gen_memories(rng, me, ents, fam, events=()):
+    """0.4: a memory has CONTENT (what, severity, broken norm, third party, outcome), so 'E2 stole my bread, E3 told me,
+    nothing was ever repaid' is representable (point 4 of the devs' revision)."""
     mems = []
 
     def add(t, agent, target, val, imp, age, defining=False, why="", secret=False, payload=None):
-        mems.append({"type": t, "agent": agent, "target": target, "valence": val, "importance": imp,
-                     "age_days": age, "certainty": round(rng.uniform(.7, 1), 2), "defining": defining,
-                     "source": "seen", "why": why, "secret": secret, "payload": payload or {}})
+        m_ = {"type": t, "agent": agent, "target": target, "valence": val, "importance": imp,
+              "age_days": age, "certainty": round(rng.uniform(.7, 1), 2), "defining": defining,
+              "source": "seen", "why": why, "secret": secret, "payload": payload or {},
+              "what": rng.choice(list(ITEMS)) if t in MEM_OBJECT else "", "broke": "", "third": None, "outcome": "none",
+              "severity": 0}
+        if val <= -20:
+            m_["broke"] = MEM_BROKE.get(t, "")
+            m_["severity"] = ci(abs(val) + rng.gauss(0, 12), 5, 100)
+            m_["outcome"] = choose_w(rng, [("unresolved", 5), ("repaid", 1), ("forgiven", 1.5), ("avenged", 1), ("punished", 1)])
+        others_ = [e for e in ents if e["id"] not in (agent, target)]
+        if others_ and why not in ("knowledge", "ties") and rng.random() < .25:     # learnt from someone else
+            m_["source"], m_["third"] = "told", rng.choice(others_)["id"]
+            m_["certainty"] = round(rng.uniform(.4, .85), 2)
+        mems.append(m_)
     for e in ents:
         if e.get("threat_via"):                     # the engine derives indirect threat from beliefs about ties
             add("link_belief", e["id"], e["threat_via"], 20, 40, rng.randint(2, 40), False, "ties",
@@ -850,14 +1026,17 @@ def can_romance(me, e):
     return e["link"] not in BLOOD or ALLOW_ADULT_KIN_ROMANCE
 
 
-def build_candidates(rng, me, ents, events, items, include_ext=False, mems=(), titles=(), goals=()):
+SOCIETY_EXT = {"teach", "contribute", "supply"}   # extension functions the village layer needs even without --ext
+
+
+def build_candidates(rng, me, ents, events, items, include_ext=False, mems=(), titles=(), goals=(), village=None):
     C, seen = [], set()
 
     def add(act, /, **args):
         key = (act, tuple(sorted(args.items())))
         if key in seen:
             return
-        if not include_ext and not next(x for x in ACTIONS if x["id"] == act)["core"]:
+        if not include_ext and act not in SOCIETY_EXT and not next(x for x in ACTIONS if x["id"] == act)["core"]:
             return
         seen.add(key)
         C.append({"a": act, "args": args})
@@ -880,6 +1059,23 @@ def build_candidates(rng, me, ents, events, items, include_ext=False, mems=(), t
         add("go_to", l="well")
     if s["fatigue"] >= 60:
         add("sleep", l="home"); add("rest")
+    wd = me.get("wardrobe")
+    if wd:                                       # an outfit fitting the moment, when ME owns it and is not wearing it
+        occ = []
+        if 5 <= me["hour"] < 9 and me["job"] != "none":
+            occ.append("work")
+        if me["weather"] in ("snow", "wind", "storm") or me["season"] == "winter":
+            occ.append("cold")
+        if me["hour"] >= 21 or me["hour"] < 5:
+            occ.append("night")
+        if wd["worn"] != "everyday" and rng.random() < .5:
+            occ.append("everyday")
+        for ev in events:
+            if ev["type"] == "celebration":
+                occ.append("mourning" if ev["content"]["kind"] == "funeral" else "festival")
+        for o in dict.fromkeys(occ):
+            if o in wd["has"] and o != wd["worn"]:
+                add("dress", outfit=o)
     crisis = False
     for ev in events:
         t, ag, tg = ev["type"], ev["agent"], ev["target"]
@@ -899,6 +1095,11 @@ def build_candidates(rng, me, ents, events, items, include_ext=False, mems=(), t
                     add("expel", e=ag, l="home"); add("insult", e=ag); add("avoid", e=ag)
                 if ev["content"].get("kind") == "accompany":
                     add("accompany", e=ag)
+                    if str(ev["content"].get("dest", "")).startswith("beyond"):
+                        add("warn", e=ag, f="danger"); add("inform", e=next((x for x in eids if x != ag), ag), f=f"{ag}:goes_beyond")
+        elif t == "request" and ev["content"].get("kind") == "teach":
+            add("teach", e=ag, skill=ev["content"]["skill"]); add("accept", p=ev["id"]); add("refuse", p=ev["id"])
+            add("ask", e=ag, f="why"); add("negotiate", e=ag, move="raise"); add("propose", e=ag, p=f"counter:{ev['id']}")
         elif t == "request":
             add("accept", p=ev["id"]); add("refuse", p=ev["id"]); add("ask", e=ag, f="why"); add("assist", e=ag, task="their_task")
         elif t in ("greeting", "chat_overture"):
@@ -989,6 +1190,38 @@ def build_candidates(rng, me, ents, events, items, include_ext=False, mems=(), t
             crisis = crisis or ev["content"].get("pressure") == "threat"
         elif t == "utterance":
             add("ask", e=ag, f="what_do_you_mean"); add("observe", e=ag); add("avoid", e=ag); add("chat", e=ag)
+        elif t == "collective_request":
+            c_ = ev["content"]
+            add("contribute", site=ev["id"]); add("refuse", p=ev["id"]); add("ask", e=ag, topic=c_["kind"])
+            add("accuse", e=ag, f="mismanagement"); add("go_to", l="home")
+            gift = {"food": ("bread", "apple", "meat", "seeds"), "defense": ("axe", "knife", "pickaxe"), "labor": ("shovel", "pickaxe", "stone"),
+                    "care": ("cloth", "bread", "water_jug"), "judgment": ()}[c_["need"]]
+            mine_ = [x for x in own if x in gift]
+            if mine_:
+                add("supply", site=ev["id"], i=mine_[0])
+                if c_["need"] == "food":
+                    add("store", i=mine_[0], l="home")                                   # hoarding
+            other_ = next((x for x in eids if x != ag), None)
+            if other_:
+                add("inform", e=other_, f=f"problem:{c_['kind']}")
+            if rng.random() < .5:
+                add("post_notice", content=f"plan:{c_['kind']}")
+            if rng.random() < .3 and is_adult(me["age_cat"]):
+                add("claim_title", title="mayor")
+        elif t == "legend":
+            add("ask", e=ag, f="proof"); add("chat", e=ag); add("observe", e=ag)
+            add("propose", e=ag, p=f"expedition:{ev['content']['place']}")
+            other_ = next((x for x in eids if x != ag), None)
+            if other_:
+                add("inform", e=other_, f=f"legend:{ev['content']['claim']}")
+        elif t == "celebration":
+            k_ = ev["content"]["kind"]
+            add("go_to", l="square"); add("leisure", a="dancing" if k_ != "funeral" else "storytelling")
+            for_ = ev["content"].get("for")
+            if for_ in eids:
+                add("comfort" if k_ == "funeral" else "compliment", e=for_)
+                if k_ == "wedding":
+                    add("give", e=for_, i=next((x for x in own if ITEMS.get(x) in ("food", "material")), "bread"))
         elif t == "found_item":
             it = ev["content"]["item"]
             add("pick_up", i=it); add("claim", i=it); add("inform", e=next(iter(eids), "all"), f=f"found:{it}")
@@ -1073,98 +1306,134 @@ def sparse(d, f):
     return {k: f(v) for k, v in d.items() if f(v)}
 
 
-def view_of(me, ents, events, mems, goals, cands, items, titles=()):
-    v = {"me": {"age": me["age_cat"], "love": me["love_status"], "job": me["job"], "doing": me["current_action"],
-                "place": me["place_type"], "time": tod(me["hour"]), "season": me["season"], "weather": me["weather"]}}
-    m = v["me"]
-    m["traits"] = sparse(me["traits"], bs)
-    vals = {k: ("high" if x >= 80 else "low" if x <= 30 else "") for k, x in me["values"].items()}
-    m["values"] = {k: x for k, x in vals.items() if x}
-    m["drives"] = sparse(me["drives"], bu)
-    st = {}
-    for k in STATES_U:
-        if bu(me["states"][k]):
-            st[k] = bu(me["states"][k])
-    for k in STATES_S:
-        if bs(me["states"][k]):
-            st[k] = bs(me["states"][k])
-    m["state"] = st
-    if me["body"]["hp"] < 60:
-        m["hp"] = "low"
-    gap = sparse(me["stock_gap"], bs)
-    if gap:
-        m["stock_gap"] = gap
-    if me["activity"]["commitment"] >= 60:
-        m["busy"] = "high"
+def _i(value, kind, vmax=None):
+    return rp.to10(value, kind, vmax)
+
+
+def _nz(d, kind):
+    """Integers on the teacher/model scale, zeros omitted."""
+    out = {}
+    for k, x in d.items():
+        q = _i(x, kind)
+        if q:
+            out[k] = q
+    return out
+
+
+def view_of_state(st, cands):
+    """0.4 view: the teacher reads the SAME integers as the model (-10..+10 bipolar, 0..10 unipolar, zeros omitted),
+    produced by representation.to10. Replaces the 5-level symbols of 0.3 (point 1 of the devs' revision)."""
+    me, ents, events, mems, goals = st["me"], st["entities"], st["events"], st["memories"], st["goals"]
+    items, titles, vil, hh = st.get("items", []), st.get("titles", []), st.get("village"), st.get("household")
+    m = {"age": me["age_cat"], "love": me["love_status"], "job": me["job"], "doing": me["current_action"],
+         "place": me["place_type"], "time": tod(me["hour"]), "season": me["season"], "weather": me["weather"],
+         "traits": _nz(me["traits"], "B100"), "values": _nz(me["values"], "U100"), "drives": _nz(me["drives"], "U100")}
+    stt = _nz({k: me["states"][k] for k in STATES_U}, "U100")
+    stt.update(_nz({k: me["states"][k] for k in STATES_S}, "B100"))
+    m["state"] = stt
+    m["stock_gap"] = _nz(me["stock_gap"], "B100")
+    b = me["body"]
+    m["body"] = {k: x for k, x in (("hp", _i(b["hp"], "U100")), ("strength", _i(b["strength"], "U100")),
+                                   ("skill", _i(b["job_skill"], "U100")), ("load", _i(b["load_ratio"], "U1"))) if x}
+    m["activity"] = {k: x for k, x in (("progress", _i(me["activity"]["progress"], "U1")),
+                                       ("commitment", _i(me["activity"]["commitment"], "U100"))) if x}
     if me.get("tool_in_hand", "hands") != "hands":
         m["tool"] = me["tool_in_hand"]
+    if me.get("wardrobe"):
+        m["wearing"] = {"worn": me["wardrobe"]["worn"], "wear": _i(me["wardrobe"]["wear"], "U100"), "owns": me["wardrobe"]["has"]}
+    v = {"me": m}
+    home = vil["id"] if vil else None
+    if vil:
+        v["village"] = {"id": vil["id"], "side": vil["frontier"],
+                        "me": {k: _i(vil[k], "U100" if k == "belonging" else "B100") for k in
+                               ("belonging", "loyalty", "leader_trust", "leader_legit", "institution_trust")},
+                        "all": {k: _i(vil[k], "U100" if k in ("tension", "cohesion") else "B100") for k in
+                                ("economy", "food", "security", "rep", "tension", "cohesion")},
+                        "customs": {k: _i(x, "U100") for k, x in vil["norms"].items()},
+                        "others": [{"id": o["id"], "rel": _i(o["relation"], "B100"), "dep": _i(o["trade_dep"], "U100"),
+                                    "threat": _i(o["threat"], "U100"), "ties": _i(o["my_ties"], "U100")} for o in vil["others"]]}
+        pb = vil["problem"]
+        if pb["kind"] != "none":
+            v["village"]["problem"] = {"kind": pb["kind"], "need": pb["need"], "urgency": _i(pb["urgency"], "U100"),
+                                       "progress": _i(pb["progress"], "U100")}
+    if hh:
+        v["household"] = {"size": hh["size"], "head": bool(hh["head"]), "cohesion": _i(hh["cohesion"], "U100"),
+                          "wealth": _i(hh["wealth"], "B100"), "honor": _i(hh["honor"], "B100")}
     v["others"] = {}
     for e in ents:
         r = e["rel"]
-        rel = {}
-        for k in ("affection", "trust", "respect", "romance", "debt"):
-            if bs(r[k]):
-                rel[k] = bs(r[k])
-        for k in ("fear", "grudge"):
-            if bu(r[k]):
-                rel[k] = bu(r[k])
-        if bu(e.get("suspicion", 0)):
-            rel["suspicion"] = bu(e["suspicion"])
-        if bu(e.get("indirect_threat", 0)):
-            rel["ties_threat"] = bu(e["indirect_threat"])
-        o = {"is": LINK_LABEL[e["link"]], "age": e["age_cat"], "rel": rel}
-        if e["rel"]["familiarity"] >= 70:
-            o["knows"] = "well"
-        elif e["rel"]["familiarity"] < 10:
-            o["knows"] = "barely"
-        rp = {}
-        if bs(e["rep_trust"]):
-            rp["trust"] = bs(e["rep_trust"])
-        if bs(e["rep_danger"]):
-            rp["danger"] = bs(e["rep_danger"])
-        if rp:
-            o["rep"] = rp
+        rel = _nz({k: r[k] for k in REL_S}, "B100")
+        rel.update(_nz({k: r[k] for k in ("fear", "grudge")}, "U100"))
+        soc = {k: x for k, x in (("mood", _i(e["mood_toward"], "B100")), ("urge", _i(e["urge_to_interact"], "B100")),
+                                 ("suspicion", _i(e.get("suspicion", 0), "U100")),
+                                 ("ties_threat", _i(e.get("indirect_threat", 0), "U100"))) if x}
+        o = {"is": LINK_LABEL[e["link"]], "age": e["age_cat"], "dist": int(round(e["distance"])),
+             "knows": _i(r["familiarity"], "U100"), "rel": rel, "soc": soc, "beauty": _i(e["beauty"], "U100"),
+             "last_seen": e["days_since_contact"]}
+        if e.get("village") and e["village"] != home:
+            o["from"] = e["village"]
+        if e["perceived"] < .65:
+            o["seen"] = "unclear"
+        rp_ = _nz({"trust": e["rep_trust"], "danger": e["rep_danger"]}, "B100")
+        if rp_:
+            o["rep"] = rp_
         if e["visible_action"] != "none":
             o["doing"] = e["visible_action"]
-        o["near"] = "close" if e["distance"] < 6 else "far"
+        if e.get("worn", "everyday") != "everyday":
+            o["wears"] = e["worn"]
         v["others"][e["id"]] = o
     v["events"] = []
     for ev in events:
         d = {"id": ev["id"], "type": ev["type"], "from": ev["agent"] or "-", "to": ev["target"] or "-",
-             "int": bu(ev["intensity"]) or "low"}
+             "int": _i(ev["intensity"], "U100")}
         if ev["role"] != "target":
             d["role"] = ev["role"]
         if ev["source"] != "seen":
             d["src"] = ev["source"]
-        if ev["reliability"] < .8:
-            d["reliable"] = "doubtful"
+        if ev["reliability"] < .95:
+            d["reliable"] = _i(ev["reliability"], "U1")
         if ev["content"]:
             d["what"] = dict(ev["content"])
             if ev["type"] == "question":
-                d["what"]["sens"] = bu(ev["content"]["sens"]) or "low"
+                d["what"]["sens"] = _i(ev["content"]["sens"], "U100")
             if ev["type"] == "offer":
-                d["what"]["gain"] = bs(ev["content"]["gain"]) or "0"
+                d["what"]["gain"] = _i(ev["content"]["gain"], "B100")
+        if "holders" in ev:
+            d["holders"] = ev["holders"]
         if "intent" in ev:
-            d["intent"] = "accident?" if ev["intent"] < .35 else "unclear" if ev["intent"] <= .65 else "deliberate?"
+            d["intent"] = _i(ev["intent"], "U1")
         if ev["out_of_world"]:
             d["note"] = "concept does not exist in this world"
         v["events"].append(d)
-    v["mem"] = [{"id": x["id"], "type": x["type"], "who": x["agent"], "val": bs(x["valence"]) or "0",
-                 "imp": bu(x["importance"]) or "low", "ago_d": x["age_days"], "secret": bool(x.get("secret")),
-                 "focus": {"yes": "yes", "no": "no", "unknown": "?"}.get(x.get("focus_knows"))} for x in mems]
+    v["mem"] = []
+    for x in mems:
+        d = {"id": x["id"], "type": x["type"], "who": x["agent"], "to": x["target"], "val": _i(x["valence"], "B100"),
+             "imp": _i(x["importance"], "U100"), "ago_d": x["age_days"], "sure": _i(x["certainty"], "U1"),
+             "secret": bool(x.get("secret")), "focus": {"yes": "yes", "no": "no", "unknown": "?"}.get(x.get("focus_knows"))}
+        for k in ("what", "broke"):
+            if x.get(k):
+                d[k] = x[k]
+        if x.get("severity"):
+            d["sev"] = _i(x["severity"], "U100")
+        if x.get("outcome", "none") != "none":
+            d["outcome"] = x["outcome"]
+        if x.get("third"):
+            d["told_by"] = x["third"]
+        if x.get("defining"):
+            d["defining"] = True
+        v["mem"].append(d)
     v["inv"] = [{"type": i_["type"], "qty": i_["qty"], "worn": i_["wear"] >= 60 and i_["type"] in TOOLS} for i_ in me.get("inventory", [])]
     v["titles"] = []
     for t_ in titles:
-        d_ = {"title": t_["title"], "authority": bu(t_["authority"]) or "low"}
+        d_ = {"title": t_["title"], "authority": _i(t_["authority"], "U100")}
         if t_["claimants"]:
             d_["claimants"] = t_["claimants"]
         if t_["holder"]:
             d_["holder"] = t_["holder"]
-            d_["sure"] = "sure" if t_["conf"] >= .8 else "likely" if t_["conf"] >= .5 else "unsure"
-            if bs(t_["legit"]):
-                d_["legit"] = bs(t_["legit"])
+            d_["sure"] = _i(t_["conf"], "U1")
+            d_["legit"] = _i(t_["legit"], "B100")
         v["titles"].append(d_)
-    v["goals"] = [dict({"type": g_["type"], "target": g_["target"], "prio": bu(g_["priority"]) or "low"},
+    v["goals"] = [dict({"type": g_["type"], "target": g_["target"], "prio": _i(g_["priority"], "U100"), "due_h": g_["deadline_h"]},
                        **({"with": g_["partner"]} if g_.get("partner") else {})) for g_ in goals]
     if items:
         v["items"] = [{"type": i["type"], "owner": i["owner"]} for i in items]
@@ -1172,56 +1441,83 @@ def view_of(me, ents, events, mems, goals, cands, items, titles=()):
     return v
 
 
+def view_of(me, ents, events, mems, goals, cands, items, titles=()):
+    """Compatibility wrapper (0.3 signature)."""
+    return view_of_state({"me": me, "entities": ents, "events": events, "memories": mems, "goals": goals, "items": items,
+                          "titles": titles}, cands)
+
+
 def view_text(v):
-    """Line-based DSL of the view. Much cheaper in tokens than JSON."""
+    """Line-based DSL of the view, with integers (0.4). Much cheaper in tokens than JSON."""
     def kv(d):
-        out = []
-        for k, x in d.items():
-            out.append(f"{k}{x}" if x in ("-", "--", "+", "++") else f"{k}={x}")
-        return ", ".join(out)
+        return " ".join(f"{k}={x}" for k, x in d.items())
     m = v["me"]
     L = [f"ME {m['age']} {m['love']} {m['job']}; doing {m['doing']}@{m['place']}; {m['time']} {m['season']} {m['weather']}"]
-    for key in ("traits", "values", "drives", "state", "stock_gap"):
+    for key in ("traits", "values", "drives", "state", "stock_gap", "body", "activity"):
         if m.get(key):
             L.append(f" {key}: {kv(m[key])}")
-    if m.get("hp"):
-        L.append(" hp: low")
-    if m.get("busy"):
-        L.append(" busy: high")
     if m.get("tool"):
         L.append(f" in hand: {m['tool']}")
+    if m.get("wearing"):
+        w_ = m["wearing"]
+        L.append(f" wearing: {w_['worn']} outfit (wear={w_['wear']}); owns: {' '.join(w_['owns'])}")
+    vl = v.get("village")
+    if vl:
+        L.append(f"HOME {vl['id']} ({vl['side']}) | me: {kv(vl['me'])} | village: {kv(vl['all'])}")
+        L.append(f" customs: {kv(vl['customs'])}")
+        if vl.get("problem"):
+            p_ = vl["problem"]
+            L.append(f" PROBLEM {p_['kind']} need={p_['need']} urgency={p_['urgency']} progress={p_['progress']}")
+        L.append(" OTHER VILLAGES " + "; ".join(f"{o['id']} rel={o['rel']} dep={o['dep']} threat={o['threat']} ties={o['ties']}"
+                                                for o in vl["others"]))
+    hh = v.get("household")
+    if hh:
+        L.append(f"HOUSEHOLD size={hh['size']}" + (" head" if hh["head"] else "") +
+                 f" cohesion={hh['cohesion']} wealth={hh['wealth']} honor={hh['honor']}")
     if v.get("inv"):
         L.append("INV " + ", ".join(f"{i_['type']}" + (f" x{i_['qty']}" if i_["qty"] > 1 else "") + ("(worn)" if i_["worn"] else "") for i_ in v["inv"]))
     for t_ in v.get("titles", []):
         bits = [f"TITLE {t_['title']}"]
         if t_.get("holder"):
-            bits.append(f"holder={t_['holder']} {t_['sure']}" + (f" legit{t_['legit']}" if t_.get("legit") else ""))
+            bits.append(f"holder={t_['holder']} sure={t_['sure']} legit={t_['legit']}")
         if t_.get("claimants"):
             bits.append("claimants=" + ",".join(t_["claimants"]))
         bits.append(f"auth={t_['authority']}")
         L.append(" ".join(bits))
     for eid, o in v["others"].items():
-        bits = [f"{eid} {o['is']} {o['age']} {o['near']}"]
-        if o.get("knows"):
-            bits.append(f"knows={o['knows']}")
-        if o.get("doing"):
-            bits.append(f"doing={o['doing']}")
-        s_ = " ".join(bits)
-        rel = kv(o["rel"]) if o["rel"] else "-"
-        rep_ = (" | rep " + kv(o["rep"])) if o.get("rep") else ""
-        L.append(f"{s_} | {rel}{rep_}")
+        bits = [f"{eid} {o['is']} {o['age']} dist={o['dist']}m knows={o['knows']}"]
+        for k in ("from", "seen", "doing", "wears"):
+            if o.get(k):
+                bits.append(f"{k}={o[k]}")
+        bits.append(f"beauty={o['beauty']} last_seen={o['last_seen']}d")
+        line = " ".join(bits) + " | " + (kv(o["rel"]) if o["rel"] else "-")
+        if o.get("soc"):
+            line += " | " + kv(o["soc"])
+        if o.get("rep"):
+            line += " | rep " + kv(o["rep"])
+        L.append(line)
     for ev in v["events"]:
         extra = ""
         if ev.get("what"):
             extra += " " + json.dumps(ev["what"], separators=(",", ":"), ensure_ascii=False)
-        for k in ("role", "src", "reliable", "note", "intent"):
-            if ev.get(k):
+        for k in ("role", "src", "reliable", "intent", "holders", "note"):
+            if ev.get(k) is not None and ev.get(k) != "":
                 extra += f" {k}={ev[k]}"
         L.append(f"EVENT {ev['id']} {ev['type']} {ev['from']}->{ev['to']} int={ev['int']}{extra}")
     for x in v["mem"]:
-        L.append(f"MEM {x['id']} {x['type']} {x['who']} val{x['val']} imp={x['imp']} {x['ago_d']}d" + (" SECRET" if x.get("secret") else "") + (f" focus:{x['focus']}" if x.get("focus") else ""))
+        bits = [f"MEM {x['id']} {x['type']} {x['who']}->{x['to'] or '-'} val={x['val']} imp={x['imp']} {x['ago_d']}d sure={x['sure']}"]
+        for k, lab in (("what", "what"), ("sev", "sev"), ("broke", "broke"), ("outcome", "outcome"), ("told_by", "told_by")):
+            if x.get(k):
+                bits.append(f"{lab}={x[k]}")
+        if x.get("defining"):
+            bits.append("DEFINING")
+        if x.get("secret"):
+            bits.append("SECRET")
+        if x.get("focus"):
+            bits.append(f"focus:{x['focus']}")
+        L.append(" ".join(bits))
     for g_ in v["goals"]:
-        L.append(f"GOAL {g_['type']} {g_['target']} prio={g_['prio']}" + (f" with={g_['with']}" if g_.get("with") else ""))
+        L.append(f"GOAL {g_['type']} {g_['target']} prio={g_['prio']} due={g_['due_h']}h" + (f" with={g_['with']}" if g_.get("with") else ""))
     if v.get("items"):
         L.append("ITEMS " + ", ".join(f"{i['type']}({i['owner']})" for i in v["items"]))
     L.append("OPTS " + " | ".join(" ".join(str(y) for y in o) for o in v["opts"]))
@@ -1234,11 +1530,12 @@ def view_text(v):
 FAMILIES = {"routine": 3, "urgent_need": 2, "greeting": 2, "proposal": 4, "harmful_proposal": 3,
             "request": 2, "provocation": 3, "wrongdoing_witnessed": 3, "kindness": 2, "romance": 3,
             "betrayal": 3, "danger": 2, "out_of_world": 1, "opportunity": 2, "rumor": 2, "commitment": 2,
-            "kin_advance": 0.8, "info_request": 2.5, "negotiation": 2.5, "notice_read": 2, "title_dispute": 2, "election": 2, "extortion": 2, "legal_need": 1.5}
+            "kin_advance": 0.8, "info_request": 2.5, "negotiation": 2.5, "notice_read": 2, "title_dispute": 2, "election": 2, "extortion": 2, "legal_need": 1.5,
+            "village_problem": 3, "apprenticeship": 2, "intervillage_trade": 1.5, "frontier": 1.2, "festival": 1.5}
 NEEDS_ENTS = {"greeting": 1, "proposal": 1, "harmful_proposal": 2, "request": 1, "provocation": 1,
               "wrongdoing_witnessed": 2, "kindness": 1, "romance": 2, "betrayal": 1, "rumor": 2, "commitment": 1,
               "out_of_world": 1, "kin_advance": 1, "info_request": 2, "negotiation": 1, "notice_read": 1, "title_dispute": 2, "election": 2,
-              "extortion": 2, "legal_need": 2}
+              "extortion": 2, "legal_need": 2, "village_problem": 1, "apprenticeship": 1, "intervillage_trade": 1, "frontier": 1, "festival": 1}
 
 
 def gen_situation(rng, idx, fam, world_seed, max_ent, max_ev, include_ext):
@@ -1250,7 +1547,7 @@ def gen_situation(rng, idx, fam, world_seed, max_ent, max_ev, include_ext):
         force = ["stranger" if not is_adult(me["age_cat"]) else "friend", rng.choice(["spouse", "sibling", "parent", "friend"])]
     if fam == "romance" and me["love_status"] in ("married", "partnered"):
         force = [("spouse" if me["love_status"] == "married" else "partner")]
-    if fam == "commitment":
+    if fam in ("commitment", "intervillage_trade"):
         force = ["stranger"]
     if fam == "kin_advance":
         force = [rng.choice(["sibling", "sibling", "parent", "child"])]
@@ -1277,15 +1574,19 @@ def gen_situation(rng, idx, fam, world_seed, max_ent, max_ev, include_ext):
         items.append({"type": rng.choice(list(ITEMS)), "qty": rng.randint(1, 3),
                       "owner": rng.choice(["me", "none"] + [e["id"] for e in ents])})
     titles = gen_titles(rng, me, ents)
-    events = build_events(rng, fam, me, ents, items, titles)[:max_ev]
+    village, household = gen_village(rng, me, ents, titles, fam)
+    if fam == "intervillage_trade" and ents[0]["link"] == "stranger":
+        ents[0]["village"] = rng.choice([o["id"] for o in village["others"]])
+    events = build_events(rng, fam, me, ents, items, titles, village)[:max_ev]
     apply_event_effects(rng, me, ents, events)
     mems = gen_memories(rng, me, ents, fam, events)
     goals = gen_goals(rng, me, ents, events, fam)
-    cands = build_candidates(rng, me, ents, events, items, include_ext, mems, titles, goals)
+    cands = build_candidates(rng, me, ents, events, items, include_ext, mems, titles, goals, village)
     rec = {"id": f"s{idx:06d}", "schema": VERSION, "family": fam,
-           "state": {"me": me, "entities": ents, "events": events, "memories": mems, "goals": goals, "items": items, "titles": titles},
-           "cands": cands,
-           "view": view_of(me, ents, events, mems, goals, cands, items, titles)}
+           "state": {"me": me, "entities": ents, "events": events, "memories": mems, "goals": goals, "items": items, "titles": titles,
+                     "village": village, "household": household},
+           "cands": cands}
+    rec["view"] = view_of_state(rec["state"], cands)
     rec["text"] = view_text(rec["view"])
     return rec
 
@@ -1402,6 +1703,45 @@ def validate(rec):
             bad.append("title_holder_ref")
         if any(x not in ids for x in t_["claimants"]):
             bad.append("title_claimant_ref")
+    vil, hh = st.get("village"), st.get("household")
+    if vil is not None:                                         # 0.4 village layer
+        if vil["id"] not in VILLAGES or len(vil["others"]) != len(VILLAGES) - 1 or vil["id"] in {o["id"] for o in vil["others"]}:
+            bad.append("village_ids")
+        for k in ("belonging", "tension", "cohesion"):
+            if not 0 <= vil[k] <= 100:
+                bad.append("village_range")
+        for k in ("loyalty", "leader_trust", "leader_legit", "institution_trust", "economy", "food", "security", "rep"):
+            if not -100 <= vil[k] <= 100:
+                bad.append("village_range")
+        if vil["problem"]["kind"] != "none" and vil["problem"]["kind"] not in PROBLEMS:
+            bad.append("village_problem_kind")
+        for e in ents:
+            if e.get("village") not in VILLAGES:
+                bad.append("entity_village")
+            elif e["link"] in KIN and e["village"] != vil["id"]:
+                bad.append("kin_in_other_village")
+        if rec["family"] == "village_problem" and not any(ev["type"] == "collective_request" for ev in evs):
+            bad.append("village_problem_without_request")
+    if hh is not None and (hh["size"] < 1 or not 0 <= hh["cohesion"] <= 100):
+        bad.append("household_range")
+    for m_ in mems:
+        if m_.get("third") is not None and m_["third"] not in ids:
+            bad.append("memory_third_ref")
+        if m_.get("third") is not None and m_["third"] in (m_["agent"], m_["target"]):
+            bad.append("memory_third_is_party")
+        if m_.get("valence", 0) >= 0 and m_.get("broke"):
+            bad.append("memory_broke_on_positive")
+    for c in cs:
+        if c["a"] == "teach":
+            ev_ = next((x for x in evs if x["type"] == "request" and x["content"].get("kind") == "teach"), None)
+            if ev_ is None or me["job"] in ("none", "apprentice") or c["args"].get("skill") != me["job"]:
+                bad.append("teach_without_skill")
+        if c["a"] == "dress":
+            wd = me.get("wardrobe") or {}
+            if c["args"].get("outfit") not in wd.get("has", []) or c["args"].get("outfit") == wd.get("worn"):
+                bad.append("dress_outfit_not_owned_or_worn")
+        if c["a"] in ("contribute", "supply") and c["args"].get("site") not in evids:
+            bad.append("cand_site_ref")
     blob = json.dumps(rec["view"]) + rec["text"]
     for banned in ("is_player", "chemistry", "uid", "hidden", "norm"):
         if banned in blob:

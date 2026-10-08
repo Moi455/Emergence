@@ -1,0 +1,2140 @@
+{
+ "schema_version": 1,
+ "comment": "Villager garment catalog. Ranges [a,b] are drawn per garment instance; lists of strings are choices. Heights (hem, brim...) are fractions of the wearer's height. Rules: 'a|b' choice, '@f'/'@m' sex filter, ':p' probability the slot is worn.",
+ "dyes": {
+  "undyed": [
+   "#cdbf9f",
+   0
+  ],
+  "bleached": [
+   "#ebe4d2",
+   1
+  ],
+  "oatmeal": [
+   "#b9a988",
+   0
+  ],
+  "brown": [
+   "#6e4c2f",
+   0
+  ],
+  "darkbrown": [
+   "#4a3324",
+   0
+  ],
+  "grey": [
+   "#7a776f",
+   0
+  ],
+  "charcoal": [
+   "#3d3a37",
+   1
+  ],
+  "russet": [
+   "#8c4a28",
+   1
+  ],
+  "madder": [
+   "#9e302b",
+   2
+  ],
+  "rose": [
+   "#c86f68",
+   2
+  ],
+  "woad": [
+   "#3f618c",
+   1
+  ],
+  "indigo": [
+   "#283c6a",
+   2
+  ],
+  "sky": [
+   "#86a9c8",
+   2
+  ],
+  "weld": [
+   "#c9a63c",
+   1
+  ],
+  "saffron": [
+   "#dd8f22",
+   3
+  ],
+  "green": [
+   "#4f6c36",
+   1
+  ],
+  "moss": [
+   "#6c7442",
+   0
+  ],
+  "teal": [
+   "#2e6f6b",
+   2
+  ],
+  "violet": [
+   "#62407c",
+   3
+  ],
+  "black": [
+   "#26221f",
+   2
+  ],
+  "ochre": [
+   "#b37c36",
+   1
+  ],
+  "oilskin": [
+   "#b8902f",
+   1
+  ],
+  "sand": [
+   "#d9c59b",
+   0
+  ],
+  "terracotta": [
+   "#b65c3a",
+   1
+  ],
+  "plum": [
+   "#6e2f48",
+   3
+  ],
+  "leather": [
+   "#7a4e2d",
+   0
+  ],
+  "darkleather": [
+   "#4c3020",
+   0
+  ],
+  "tan": [
+   "#a8774a",
+   0
+  ],
+  "straw": [
+   "#d8b866",
+   0
+  ],
+  "iron": [
+   "#8d9196",
+   0
+  ],
+  "brass": [
+   "#c2a04e",
+   0
+  ],
+  "silver": [
+   "#c9ccd0",
+   0
+  ],
+  "gold": [
+   "#e0b84a",
+   0
+  ],
+  "fur_light": [
+   "#d9ccb0",
+   0
+  ],
+  "fur_dark": [
+   "#6a5340",
+   0
+  ]
+ },
+ "villages": {
+  "mer": {
+   "name": "Port-aux-Brumes",
+   "palette": [
+    "woad",
+    "indigo",
+    "grey",
+    "sky",
+    "undyed",
+    "oilskin",
+    "teal",
+    "charcoal"
+   ],
+   "jobs": {
+    "fisher": 45,
+    "netmaker": 15,
+    "boatwright": 10,
+    "fishmonger": 12,
+    "innkeeper": 4,
+    "healer": 3,
+    "farmer": 6,
+    "priest": 2
+   }
+  },
+  "foret": {
+   "name": "Bois-Fendu",
+   "palette": [
+    "green",
+    "moss",
+    "brown",
+    "russet",
+    "darkbrown",
+    "madder",
+    "undyed",
+    "ochre"
+   ],
+   "jobs": {
+    "woodcutter": 40,
+    "hunter": 15,
+    "charcoal": 10,
+    "carpenter": 12,
+    "herbalist": 6,
+    "farmer": 10,
+    "shepherd": 5
+   }
+  },
+  "montagne": {
+   "name": "Roche-Haute",
+   "palette": [
+    "grey",
+    "charcoal",
+    "darkbrown",
+    "russet",
+    "oatmeal",
+    "madder",
+    "woad",
+    "brown"
+   ],
+   "jobs": {
+    "miner": 45,
+    "stonecutter": 15,
+    "smith": 8,
+    "shepherd": 12,
+    "innkeeper": 4,
+    "healer": 4,
+    "farmer": 8
+   }
+  },
+  "desert": {
+   "name": "Salines-d'Ocre",
+   "palette": [
+    "sand",
+    "bleached",
+    "saffron",
+    "terracotta",
+    "teal",
+    "ochre",
+    "weld",
+    "undyed"
+   ],
+   "jobs": {
+    "saltworker": 45,
+    "caravaner": 15,
+    "potter": 10,
+    "weaver": 10,
+    "healer": 4,
+    "farmer": 10,
+    "priest": 3
+   }
+  },
+  "bourg": {
+   "name": "Grand-Marché",
+   "palette": [
+    "madder",
+    "woad",
+    "green",
+    "weld",
+    "violet",
+    "plum",
+    "russet",
+    "rose",
+    "black",
+    "sky"
+   ],
+   "jobs": {
+    "merchant": 16,
+    "smith": 8,
+    "baker": 8,
+    "weaver": 8,
+    "innkeeper": 6,
+    "healer": 4,
+    "priest": 4,
+    "guard": 10,
+    "farmer": 14,
+    "potter": 5,
+    "tanner": 5,
+    "scribe": 4,
+    "carpenter": 6
+   }
+  }
+ },
+ "garments": {
+  "chemise": {
+   "slot": "shirt",
+   "builder": "top",
+   "material": "linen",
+   "dyes": [
+    "bleached",
+    "undyed"
+   ],
+   "params": {
+    "hem": [
+     0.06,
+     0.1
+    ],
+    "sleeve": 1.0,
+    "neck": "round",
+    "neckW": 0.05,
+    "neckD": 0.032,
+    "off": 0.6,
+    "flare": 0.2
+   }
+  },
+  "shirt": {
+   "slot": "shirt",
+   "builder": "top",
+   "material": "linen",
+   "dyes": [
+    "bleached",
+    "undyed",
+    "oatmeal",
+    "sky"
+   ],
+   "params": {
+    "hem": [
+     0.34,
+     0.38
+    ],
+    "sleeve": 1.0,
+    "neck": [
+     "v",
+     "round"
+    ],
+    "neckW": 0.04,
+    "neckD": 0.05,
+    "off": 0.7,
+    "flare": 0.18
+   }
+  },
+  "plaid_shirt": {
+   "slot": "shirt",
+   "builder": "top",
+   "material": "wool",
+   "dyes": [
+    "madder",
+    "russet",
+    "green",
+    "woad"
+   ],
+   "pattern": {
+    "kind": "plaid",
+    "period": [
+     2,
+     3
+    ],
+    "c2dye": [
+     "black",
+     "darkbrown",
+     "charcoal"
+    ],
+    "c3dye": [
+     "weld",
+     "undyed"
+    ]
+   },
+   "params": {
+    "hem": [
+     0.38,
+     0.41
+    ],
+    "sleeve": 1.0,
+    "neck": "v",
+    "neckW": 0.035,
+    "neckD": 0.045,
+    "off": 1.0,
+    "collar": "fold",
+    "flare": 0.15
+   }
+  },
+  "nightshirt": {
+   "slot": "shirt",
+   "builder": "top",
+   "material": "linen",
+   "dyes": [
+    "bleached",
+    "undyed"
+   ],
+   "params": {
+    "hem": [
+     0.16,
+     0.22
+    ],
+    "sleeve": 0.9,
+    "neck": "round",
+    "neckW": 0.045,
+    "neckD": 0.035,
+    "off": 0.9,
+    "flare": 0.28
+   }
+  },
+  "tunic": {
+   "slot": "over",
+   "builder": "top",
+   "material": "wool",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "pattern": {
+    "kind": [
+     "plain",
+     "plain",
+     "plain",
+     "stripes_h",
+     "check"
+    ],
+    "period": [
+     2,
+     4
+    ],
+    "c2dye": "palette"
+   },
+   "params": {
+    "hem": [
+     0.28,
+     0.37
+    ],
+    "sleeve": [
+     0.55,
+     1.0
+    ],
+    "neck": [
+     "round",
+     "v",
+     "square"
+    ],
+    "neckW": 0.045,
+    "neckD": 0.04,
+    "off": 1.3,
+    "flare": [
+     0.2,
+     0.32
+    ],
+    "hemBand": [
+     true,
+     false
+    ],
+    "collarTrim": [
+     true,
+     false
+    ],
+    "cuff": [
+     true,
+     false
+    ]
+   }
+  },
+  "short_tunic": {
+   "slot": "over",
+   "builder": "top",
+   "material": "wool",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "params": {
+    "hem": [
+     0.38,
+     0.42
+    ],
+    "sleeve": [
+     0.5,
+     0.95
+    ],
+    "neck": [
+     "round",
+     "v"
+    ],
+    "neckW": 0.04,
+    "neckD": 0.04,
+    "off": 1.2,
+    "flare": 0.2,
+    "cuff": [
+     true,
+     false
+    ]
+   }
+  },
+  "kirtle": {
+   "slot": "over",
+   "builder": "top",
+   "material": "wool",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "params": {
+    "hem": [
+     0.045,
+     0.085
+    ],
+    "sleeve": [
+     0.75,
+     1.0
+    ],
+    "neck": [
+     "square",
+     "round",
+     "v"
+    ],
+    "neckW": 0.052,
+    "neckD": 0.05,
+    "off": 1.2,
+    "flare": [
+     0.3,
+     0.42
+    ],
+    "lacing": [
+     true,
+     true,
+     false
+    ],
+    "hemBand": [
+     true,
+     false
+    ],
+    "cuff": [
+     true,
+     false
+    ]
+   }
+  },
+  "gown": {
+   "slot": "over",
+   "builder": "top",
+   "material": "velvet",
+   "dyes": [
+    "madder",
+    "woad",
+    "violet",
+    "green",
+    "plum",
+    "teal",
+    "saffron",
+    "rose",
+    "sky"
+   ],
+   "trimDyes": [
+    "gold",
+    "weld",
+    "bleached",
+    "brass"
+   ],
+   "embroider": [
+    "zigzag",
+    "diamond",
+    "dots"
+   ],
+   "params": {
+    "hem": [
+     0.03,
+     0.05
+    ],
+    "sleeve": 1.0,
+    "wideSleeve": [
+     0.02,
+     0.045
+    ],
+    "neck": [
+     "square",
+     "round"
+    ],
+    "neckW": 0.055,
+    "neckD": 0.045,
+    "off": 1.3,
+    "flare": [
+     0.38,
+     0.5
+    ],
+    "hemBand": true,
+    "cuff": true,
+    "collarTrim": true,
+    "lacing": [
+     true,
+     false
+    ]
+   }
+  },
+  "festive_tunic": {
+   "slot": "over",
+   "builder": "top",
+   "material": "velvet",
+   "dyes": [
+    "madder",
+    "woad",
+    "violet",
+    "green",
+    "plum",
+    "teal",
+    "saffron",
+    "sky"
+   ],
+   "trimDyes": [
+    "gold",
+    "weld",
+    "bleached",
+    "brass"
+   ],
+   "embroider": [
+    "zigzag",
+    "diamond",
+    "dots"
+   ],
+   "params": {
+    "hem": [
+     0.3,
+     0.36
+    ],
+    "sleeve": 1.0,
+    "neck": [
+     "round",
+     "v"
+    ],
+    "neckW": 0.045,
+    "neckD": 0.04,
+    "off": 1.4,
+    "flare": [
+     0.24,
+     0.34
+    ],
+    "hemBand": true,
+    "cuff": true,
+    "collarTrim": true,
+    "puff": [
+     true,
+     false
+    ]
+   }
+  },
+  "doublet": {
+   "slot": "over",
+   "builder": "top",
+   "material": "wool",
+   "dyes": [
+    "madder",
+    "woad",
+    "black",
+    "green",
+    "plum",
+    "russet",
+    "violet"
+   ],
+   "trimDyes": [
+    "gold",
+    "brass",
+    "black",
+    "bleached"
+   ],
+   "params": {
+    "hem": [
+     0.4,
+     0.43
+    ],
+    "sleeve": 1.0,
+    "neck": "high",
+    "off": 1.6,
+    "flare": 0.12,
+    "buttons": true,
+    "puff": [
+     true,
+     false
+    ],
+    "cuff": true,
+    "collar": "stand"
+   }
+  },
+  "gambeson": {
+   "slot": "over",
+   "builder": "top",
+   "material": "linen",
+   "dyes": [
+    "undyed",
+    "oatmeal",
+    "sand",
+    "ochre"
+   ],
+   "pattern": {
+    "kind": "quilt",
+    "period": [
+     2,
+     3
+    ]
+   },
+   "params": {
+    "hem": [
+     0.34,
+     0.37
+    ],
+    "sleeve": 1.0,
+    "neck": "high",
+    "off": 2.2,
+    "flare": 0.14,
+    "collar": "stand"
+   }
+  },
+  "smock": {
+   "slot": "over",
+   "builder": "top",
+   "material": "linen",
+   "dyes": [
+    "undyed",
+    "oatmeal",
+    "sand",
+    "moss",
+    "sky"
+   ],
+   "pattern": {
+    "kind": [
+     "plain",
+     "stripes_v"
+    ],
+    "period": [
+     1,
+     2
+    ],
+    "c2dye": [
+     "undyed",
+     "oatmeal"
+    ]
+   },
+   "params": {
+    "hem": [
+     0.27,
+     0.33
+    ],
+    "sleeve": [
+     0.85,
+     1.0
+    ],
+    "neck": "round",
+    "neckW": 0.04,
+    "neckD": 0.03,
+    "off": 1.6,
+    "flare": [
+     0.35,
+     0.45
+    ],
+    "cuff": true
+   }
+  },
+  "robe": {
+   "slot": "over",
+   "builder": "top",
+   "material": "wool",
+   "dyes": [
+    "black",
+    "darkbrown",
+    "grey",
+    "bleached",
+    "indigo",
+    "plum"
+   ],
+   "trimDyes": [
+    "gold",
+    "madder",
+    "bleached",
+    "violet"
+   ],
+   "params": {
+    "hem": [
+     0.03,
+     0.05
+    ],
+    "sleeve": 1.0,
+    "wideSleeve": [
+     0.03,
+     0.05
+    ],
+    "neck": "round",
+    "neckW": 0.04,
+    "neckD": 0.03,
+    "off": 1.5,
+    "flare": [
+     0.16,
+     0.22
+    ],
+    "hemBand": [
+     true,
+     false
+    ],
+    "cuff": true,
+    "collarTrim": true
+   }
+  },
+  "oilskin_coat": {
+   "slot": "over",
+   "builder": "top",
+   "material": "oilskin",
+   "dyes": [
+    "oilskin",
+    "ochre"
+   ],
+   "trimDyes": [
+    "darkbrown",
+    "charcoal"
+   ],
+   "params": {
+    "hem": [
+     0.26,
+     0.32
+    ],
+    "sleeve": 1.0,
+    "neck": "high",
+    "off": 2.0,
+    "flare": 0.18,
+    "open": 0.022,
+    "frontTrim": true,
+    "buttons": true,
+    "cuff": true,
+    "collar": "fold"
+   }
+  },
+  "work_coat": {
+   "slot": "over",
+   "builder": "top",
+   "material": "wool",
+   "dyes": [
+    "brown",
+    "darkbrown",
+    "grey",
+    "charcoal",
+    "moss",
+    "russet"
+   ],
+   "trimDyes": [
+    "darkleather",
+    "leather",
+    "charcoal"
+   ],
+   "params": {
+    "hem": [
+     0.3,
+     0.38
+    ],
+    "sleeve": 1.0,
+    "neck": "v",
+    "neckW": 0.03,
+    "neckD": 0.06,
+    "off": 1.8,
+    "flare": 0.2,
+    "open": 0.018,
+    "frontTrim": true,
+    "cuff": true,
+    "collar": [
+     "fold",
+     "fur",
+     "none"
+    ]
+   }
+  },
+  "jerkin": {
+   "slot": "vest",
+   "builder": "top",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "darkleather",
+    "tan"
+   ],
+   "params": {
+    "hem": [
+     0.38,
+     0.42
+    ],
+    "sleeve": -1,
+    "neck": "v",
+    "neckW": 0.035,
+    "neckD": 0.06,
+    "off": 2.0,
+    "flare": 0.12,
+    "lacing": true
+   }
+  },
+  "bodice": {
+   "slot": "vest",
+   "builder": "top",
+   "material": "wool",
+   "dyes": "palette",
+   "params": {
+    "hem": [
+     0.44,
+     0.46
+    ],
+    "sleeve": -1,
+    "neck": "square",
+    "neckW": 0.055,
+    "neckD": 0.06,
+    "off": 1.7,
+    "lacing": true
+   }
+  },
+  "tabard": {
+   "slot": "vest",
+   "builder": "top",
+   "material": "wool",
+   "dyes": [
+    "madder",
+    "woad",
+    "weld"
+   ],
+   "pattern": {
+    "kind": "miparti",
+    "c2dye": [
+     "bleached",
+     "black",
+     "weld"
+    ]
+   },
+   "params": {
+    "hem": [
+     0.3,
+     0.34
+    ],
+    "sleeve": -1,
+    "neck": "round",
+    "neckW": 0.04,
+    "neckD": 0.02,
+    "off": 2.6,
+    "flare": 0.16,
+    "hemBand": true
+   },
+   "trimDyes": [
+    "bleached",
+    "black",
+    "gold"
+   ]
+  },
+  "skirt": {
+   "slot": "over",
+   "builder": "skirt",
+   "material": "wool",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "params": {
+    "hem": [
+     0.05,
+     0.09
+    ],
+    "off": 1.4,
+    "flare": [
+     0.3,
+     0.42
+    ],
+    "hemBand": [
+     true,
+     false
+    ]
+   }
+  },
+  "braies": {
+   "slot": "legs",
+   "builder": "legs",
+   "material": "linen",
+   "dyes": [
+    "undyed",
+    "oatmeal",
+    "brown",
+    "grey",
+    "sand"
+   ],
+   "trimDyes": [
+    "darkleather",
+    "leather",
+    "undyed"
+   ],
+   "params": {
+    "len": [
+     0.85,
+     1.0
+    ],
+    "loose": [
+     0.6,
+     1.2
+    ],
+    "off": 1.0,
+    "wraps": [
+     true,
+     false,
+     false
+    ]
+   }
+  },
+  "hose": {
+   "slot": "legs",
+   "builder": "legs",
+   "material": "wool",
+   "dyes": "palette",
+   "pattern": {
+    "kind": [
+     "plain",
+     "plain",
+     "plain",
+     "miparti"
+    ],
+    "c2dye": "palette"
+   },
+   "params": {
+    "len": 1.0,
+    "off": 0.55
+   }
+  },
+  "trousers": {
+   "slot": "legs",
+   "builder": "legs",
+   "material": "wool",
+   "dyes": [
+    "brown",
+    "darkbrown",
+    "grey",
+    "charcoal",
+    "russet",
+    "moss",
+    "indigo"
+   ],
+   "trimDyes": [
+    "darkbrown",
+    "charcoal"
+   ],
+   "params": {
+    "len": [
+     0.9,
+     1.0
+    ],
+    "loose": [
+     0.2,
+     0.6
+    ],
+    "off": 0.9,
+    "cuff": [
+     true,
+     false
+    ]
+   }
+  },
+  "shorts": {
+   "slot": "legs",
+   "builder": "legs",
+   "material": "linen",
+   "dyes": [
+    "undyed",
+    "oatmeal",
+    "brown",
+    "sand"
+   ],
+   "params": {
+    "len": [
+     0.1,
+     0.3
+    ],
+    "loose": 0.5,
+    "off": 0.9
+   }
+  },
+  "turnshoes": {
+   "slot": "feet",
+   "builder": "feet",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "darkleather",
+    "tan"
+   ],
+   "params": {
+    "height": [
+     0.06,
+     0.14
+    ],
+    "off": 1.0,
+    "pointed": [
+     false,
+     false,
+     true
+    ]
+   }
+  },
+  "ankle_boots": {
+   "slot": "feet",
+   "builder": "feet",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "darkleather",
+    "tan"
+   ],
+   "trimDyes": [
+    "darkleather",
+    "fur_dark"
+   ],
+   "params": {
+    "height": [
+     0.22,
+     0.32
+    ],
+    "off": 1.2,
+    "cuff": [
+     true,
+     false
+    ],
+    "laces": [
+     true,
+     false
+    ]
+   }
+  },
+  "tall_boots": {
+   "slot": "feet",
+   "builder": "feet",
+   "material": "leather",
+   "dyes": [
+    "darkleather",
+    "leather",
+    "black"
+   ],
+   "trimDyes": [
+    "darkleather",
+    "tan"
+   ],
+   "params": {
+    "height": [
+     0.6,
+     0.8
+    ],
+    "off": 1.3,
+    "cuff": [
+     true,
+     false
+    ]
+   }
+  },
+  "waders": {
+   "slot": "feet",
+   "builder": "feet",
+   "material": "oilskin",
+   "dyes": [
+    "darkleather",
+    "oilskin",
+    "charcoal"
+   ],
+   "trimDyes": [
+    "darkbrown"
+   ],
+   "params": {
+    "height": 1.45,
+    "off": 1.4,
+    "cuff": true
+   }
+  },
+  "sandals": {
+   "slot": "feet",
+   "builder": "feet",
+   "material": "leather",
+   "dyes": [
+    "tan",
+    "leather"
+   ],
+   "params": {
+    "height": 0.15,
+    "off": 0.7,
+    "sandal": true
+   }
+  },
+  "work_gloves": {
+   "slot": "hands",
+   "builder": "hands",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "tan",
+    "darkleather"
+   ],
+   "params": {
+    "off": 0.8
+   }
+  },
+  "mittens": {
+   "slot": "hands",
+   "builder": "hands",
+   "material": "knit",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "params": {
+    "off": 0.9,
+    "mitten": true
+   }
+  },
+  "belt": {
+   "slot": "belt",
+   "builder": "belt",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "darkleather",
+    "tan",
+    "black"
+   ],
+   "params": {
+    "y": [
+     0.08,
+     0.11
+    ],
+    "width": [
+     1.4,
+     2.0
+    ],
+    "pouch": [
+     true,
+     false
+    ]
+   },
+   "metalDyes": [
+    "iron",
+    "brass"
+   ]
+  },
+  "sash": {
+   "slot": "belt",
+   "builder": "belt",
+   "material": "wool",
+   "dyes": [
+    "madder",
+    "saffron",
+    "woad",
+    "green",
+    "violet",
+    "teal",
+    "rose"
+   ],
+   "trimDyes": [
+    "gold",
+    "weld"
+   ],
+   "params": {
+    "y": [
+     0.08,
+     0.11
+    ],
+    "width": [
+     1.6,
+     2.2
+    ],
+    "sash": true
+   }
+  },
+  "half_apron": {
+   "slot": "apron",
+   "builder": "apron",
+   "material": "linen",
+   "dyes": [
+    "bleached",
+    "undyed",
+    "oatmeal",
+    "sky"
+   ],
+   "trimDyes": "palette",
+   "params": {
+    "hem": [
+     0.18,
+     0.26
+    ],
+    "width": [
+     0.09,
+     0.12
+    ],
+    "hemBand": [
+     true,
+     false
+    ]
+   }
+  },
+  "bib_apron": {
+   "slot": "apron",
+   "builder": "apron",
+   "material": "linen",
+   "dyes": [
+    "bleached",
+    "undyed"
+   ],
+   "params": {
+    "hem": [
+     0.16,
+     0.22
+    ],
+    "width": [
+     0.1,
+     0.12
+    ],
+    "bib": true
+   }
+  },
+  "leather_apron": {
+   "slot": "apron",
+   "builder": "apron",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "darkleather",
+    "tan"
+   ],
+   "trimDyes": [
+    "darkleather"
+   ],
+   "params": {
+    "hem": [
+     0.2,
+     0.26
+    ],
+    "width": [
+     0.11,
+     0.13
+    ],
+    "bib": true,
+    "edge": true
+   }
+  },
+  "cloak": {
+   "slot": "cloak",
+   "builder": "cloak",
+   "material": "wool",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "params": {
+    "hem": [
+     0.12,
+     0.32
+    ],
+    "mantle": [
+     0.05,
+     0.08
+    ],
+    "off": 2.4,
+    "flare": [
+     0.08,
+     0.16
+    ],
+    "edgeTrim": [
+     true,
+     false
+    ],
+    "hood": [
+     null,
+     {
+      "off": 2.4,
+      "rimTrim": true
+     }
+    ]
+   }
+  },
+  "fur_cloak": {
+   "slot": "cloak",
+   "builder": "cloak",
+   "material": "wool",
+   "dyes": [
+    "darkbrown",
+    "charcoal",
+    "brown",
+    "grey"
+   ],
+   "trimDyes": [
+    "fur_light",
+    "fur_dark"
+   ],
+   "trimMaterial": "fur",
+   "params": {
+    "hem": [
+     0.2,
+     0.3
+    ],
+    "mantle": [
+     0.07,
+     0.09
+    ],
+    "off": 2.8,
+    "flare": 0.12,
+    "edgeTrim": true
+   }
+  },
+  "hood": {
+   "slot": "head",
+   "builder": "hood",
+   "material": "wool",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "params": {
+    "off": [
+     2.0,
+     2.6
+    ],
+    "mantle": [
+     0.05,
+     0.09
+    ],
+    "rimTrim": [
+     true,
+     false
+    ],
+    "tail": [
+     0,
+     0,
+     0.1,
+     0.16
+    ]
+   }
+  },
+  "coif": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "linen",
+   "dyes": [
+    "bleached",
+    "undyed"
+   ],
+   "params": {
+    "kind": "coif"
+   }
+  },
+  "kerchief": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "linen",
+   "dyes": "palette",
+   "pattern": {
+    "kind": [
+     "plain",
+     "check",
+     "plain"
+    ],
+    "period": 2,
+    "c2dye": [
+     "bleached",
+     "undyed"
+    ]
+   },
+   "params": {
+    "kind": "kerchief"
+   }
+  },
+  "straw_hat": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "straw",
+   "dyes": [
+    "straw"
+   ],
+   "trimDyes": "palette",
+   "params": {
+    "kind": "straw",
+    "brim": [
+     0.05,
+     0.085
+    ],
+    "crown": [
+     0.02,
+     0.04
+    ],
+    "band": [
+     true,
+     false
+    ]
+   }
+  },
+  "felt_hat": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "felt",
+   "dyes": [
+    "black",
+    "darkbrown",
+    "madder",
+    "green",
+    "woad",
+    "grey",
+    "plum"
+   ],
+   "trimDyes": [
+    "gold",
+    "madder",
+    "weld",
+    "bleached"
+   ],
+   "accentDyes": [
+    "madder",
+    "saffron",
+    "sky",
+    "bleached"
+   ],
+   "params": {
+    "kind": "felt",
+    "brim": [
+     0.015,
+     0.035
+    ],
+    "crown": [
+     0.01,
+     0.03
+    ],
+    "band": true,
+    "feather": [
+     true,
+     false
+    ],
+    "upturn": [
+     true,
+     false
+    ]
+   }
+  },
+  "knit_cap": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "knit",
+   "dyes": "palette",
+   "trimDyes": "palette",
+   "params": {
+    "kind": "knit"
+   }
+  },
+  "beret": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "felt",
+   "dyes": [
+    "black",
+    "madder",
+    "woad",
+    "green",
+    "plum"
+   ],
+   "params": {
+    "kind": "beret"
+   }
+  },
+  "pointed_hat": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "felt",
+   "dyes": [
+    "green",
+    "moss",
+    "violet",
+    "indigo",
+    "darkbrown",
+    "teal"
+   ],
+   "trimDyes": [
+    "gold",
+    "weld",
+    "madder"
+   ],
+   "params": {
+    "kind": "pointed",
+    "brim": [
+     0.03,
+     0.05
+    ],
+    "tall": [
+     0.2,
+     0.3
+    ],
+    "bend": [
+     0.04,
+     0.1
+    ],
+    "band": true
+   }
+  },
+  "helmet": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "metal",
+   "dyes": [
+    "iron"
+   ],
+   "params": {
+    "kind": "helmet",
+    "brim": [
+     0.02,
+     0.035
+    ],
+    "crown": 0.0
+   }
+  },
+  "flower_crown": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "linen",
+   "dyes": [
+    "green"
+   ],
+   "trimDyes": [
+    "bleached",
+    "weld",
+    "rose"
+   ],
+   "accentDyes": [
+    "madder",
+    "sky",
+    "saffron",
+    "violet"
+   ],
+   "params": {
+    "kind": "crown"
+   }
+  },
+  "headband": {
+   "slot": "head",
+   "builder": "hat",
+   "material": "linen",
+   "dyes": "palette",
+   "params": {
+    "kind": "headband"
+   }
+  },
+  "satchel": {
+   "slot": "acc",
+   "builder": "bag",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "tan",
+    "darkleather"
+   ],
+   "trimDyes": [
+    "darkleather"
+   ],
+   "params": {
+    "kind": "satchel"
+   }
+  },
+  "backpack": {
+   "slot": "acc",
+   "builder": "bag",
+   "material": "leather",
+   "dyes": [
+    "leather",
+    "tan",
+    "oilskin",
+    "ochre"
+   ],
+   "trimDyes": [
+    "darkleather"
+   ],
+   "params": {
+    "kind": "backpack"
+   }
+  },
+  "basket": {
+   "slot": "acc",
+   "builder": "bag",
+   "material": "straw",
+   "dyes": [
+    "tan",
+    "straw"
+   ],
+   "trimDyes": [
+    "leather"
+   ],
+   "params": {
+    "kind": "basket"
+   }
+  },
+  "necklace": {
+   "slot": "neck",
+   "builder": "necklace",
+   "material": "leather",
+   "dyes": [
+    "darkleather"
+   ],
+   "accentDyes": [
+    "teal",
+    "madder",
+    "sky",
+    "violet",
+    "saffron"
+   ],
+   "metalDyes": [
+    "silver",
+    "brass",
+    "gold"
+   ],
+   "params": {}
+  }
+ },
+ "base": {
+  "f": {
+   "everyday": [
+    "shirt:chemise",
+    "over:kirtle|kirtle|skirt",
+    "vest:bodice:0.3",
+    "feet:turnshoes|ankle_boots",
+    "belt:belt:0.6",
+    "head:coif|kerchief|none|none"
+   ],
+   "night": [
+    "shirt:chemise"
+   ]
+  },
+  "m": {
+   "everyday": [
+    "shirt:shirt",
+    "legs:braies|hose|trousers",
+    "feet:turnshoes|ankle_boots",
+    "over:tunic|tunic|short_tunic|none",
+    "belt:belt",
+    "head:hood:0.25"
+   ],
+   "night": [
+    "shirt:nightshirt",
+    "legs:braies"
+   ]
+  },
+  "child": {
+   "everyday": [
+    "shirt:shirt@m|chemise@f",
+    "legs:shorts@m|braies@m",
+    "over:tunic|short_tunic|smock|kirtle@f",
+    "feet:turnshoes|none",
+    "belt:belt:0.4"
+   ],
+   "night": [
+    "shirt:nightshirt"
+   ]
+  },
+  "festival": [
+   "over:gown@f|festive_tunic@m|festive_tunic",
+   "belt:sash",
+   "head:flower_crown@f|felt_hat|flower_crown|none",
+   "neck:necklace:0.6",
+   "feet:turnshoes|ankle_boots",
+   "legs:hose@m"
+  ],
+  "cold": [
+   "cloak:cloak|fur_cloak",
+   "hands:mittens:0.6",
+   "feet:ankle_boots|tall_boots",
+   "head:hood|knit_cap|none"
+  ]
+ },
+ "jobs": {
+  "fisher": {
+   "wealth": [
+    0.1,
+    0.4
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m|trousers@m",
+    "over:oilskin_coat|work_coat",
+    "feet:waders|tall_boots",
+    "head:knit_cap|knit_cap|hood|none",
+    "hands:work_gloves:0.3"
+   ]
+  },
+  "netmaker": {
+   "wealth": [
+    0.1,
+    0.35
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m",
+    "over:tunic@m|kirtle@f",
+    "apron:half_apron",
+    "head:kerchief|knit_cap",
+    "feet:turnshoes|none"
+   ]
+  },
+  "boatwright": {
+   "wealth": [
+    0.2,
+    0.5
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:trousers",
+    "vest:jerkin",
+    "apron:leather_apron:0.5",
+    "feet:ankle_boots",
+    "head:knit_cap:0.5"
+   ]
+  },
+  "fishmonger": {
+   "wealth": [
+    0.2,
+    0.45
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m",
+    "over:tunic@m|kirtle@f",
+    "apron:bib_apron",
+    "head:kerchief@f|knit_cap@m",
+    "feet:tall_boots|turnshoes"
+   ]
+  },
+  "woodcutter": {
+   "wealth": [
+    0.15,
+    0.4
+   ],
+   "work": [
+    "shirt:plaid_shirt",
+    "legs:trousers|braies",
+    "vest:jerkin:0.5",
+    "feet:tall_boots|ankle_boots",
+    "head:hood|knit_cap|none",
+    "hands:work_gloves:0.6",
+    "belt:belt",
+    "acc:backpack:0.25"
+   ]
+  },
+  "hunter": {
+   "wealth": [
+    0.2,
+    0.45
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:trousers",
+    "over:short_tunic",
+    "vest:jerkin:0.5",
+    "cloak:cloak",
+    "feet:tall_boots",
+    "belt:belt",
+    "acc:satchel"
+   ]
+  },
+  "charcoal": {
+   "wealth": [
+    0.05,
+    0.25
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:braies",
+    "apron:leather_apron",
+    "feet:ankle_boots",
+    "head:hood:0.6"
+   ],
+   "dirt": 0.9
+  },
+  "carpenter": {
+   "wealth": [
+    0.25,
+    0.5
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:trousers|braies",
+    "apron:leather_apron|half_apron",
+    "feet:ankle_boots",
+    "belt:belt",
+    "head:hood|felt_hat|none"
+   ]
+  },
+  "herbalist": {
+   "wealth": [
+    0.25,
+    0.6
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:hose@m",
+    "over:robe|kirtle@f|tunic@m",
+    "cloak:cloak:0.6",
+    "head:pointed_hat|hood",
+    "belt:belt",
+    "acc:satchel",
+    "neck:necklace:0.7",
+    "feet:turnshoes"
+   ]
+  },
+  "miner": {
+   "wealth": [
+    0.1,
+    0.35
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:trousers|braies",
+    "vest:jerkin:0.5",
+    "apron:leather_apron:0.4",
+    "feet:tall_boots|ankle_boots",
+    "head:hood|coif",
+    "hands:work_gloves:0.6",
+    "belt:belt"
+   ],
+   "dirt": 0.85
+  },
+  "stonecutter": {
+   "wealth": [
+    0.2,
+    0.45
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:braies",
+    "apron:leather_apron",
+    "feet:ankle_boots",
+    "head:coif|hood|none",
+    "hands:work_gloves:0.5"
+   ],
+   "dirt": 0.6
+  },
+  "smith": {
+   "wealth": [
+    0.35,
+    0.65
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:trousers",
+    "apron:leather_apron",
+    "feet:ankle_boots|tall_boots",
+    "hands:work_gloves",
+    "belt:belt"
+   ],
+   "dirt": 0.6
+  },
+  "shepherd": {
+   "wealth": [
+    0.1,
+    0.3
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m",
+    "over:smock|tunic@m|kirtle@f",
+    "cloak:cloak|fur_cloak",
+    "head:hood|straw_hat|felt_hat",
+    "feet:ankle_boots",
+    "acc:satchel:0.5"
+   ]
+  },
+  "saltworker": {
+   "wealth": [
+    0.1,
+    0.35
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m|shorts@m",
+    "over:smock|kirtle@f",
+    "head:straw_hat|kerchief|headband",
+    "feet:sandals|none",
+    "acc:basket:0.4"
+   ],
+   "dirt": 0.4
+  },
+  "caravaner": {
+   "wealth": [
+    0.35,
+    0.7
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:trousers|braies",
+    "over:tunic|work_coat",
+    "head:kerchief|headband|straw_hat",
+    "belt:sash|belt",
+    "feet:sandals|ankle_boots",
+    "cloak:cloak:0.5",
+    "acc:satchel"
+   ]
+  },
+  "potter": {
+   "wealth": [
+    0.2,
+    0.45
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m",
+    "over:tunic@m|kirtle@f",
+    "apron:half_apron|leather_apron",
+    "head:kerchief|headband|none",
+    "feet:sandals|turnshoes"
+   ],
+   "dirt": 0.5
+  },
+  "weaver": {
+   "wealth": [
+    0.3,
+    0.6
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:hose@m",
+    "over:tunic@m|kirtle@f",
+    "apron:half_apron",
+    "head:coif@f|kerchief|none",
+    "feet:turnshoes"
+   ]
+  },
+  "merchant": {
+   "wealth": [
+    0.6,
+    1.0
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:hose@m",
+    "over:doublet@m|gown@f|festive_tunic@m",
+    "belt:belt",
+    "head:felt_hat|beret|coif@f",
+    "feet:ankle_boots|turnshoes",
+    "neck:necklace:0.5",
+    "cloak:fur_cloak:0.3"
+   ]
+  },
+  "baker": {
+   "wealth": [
+    0.3,
+    0.55
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m",
+    "over:tunic@m|kirtle@f",
+    "apron:bib_apron",
+    "head:coif|kerchief",
+    "feet:turnshoes"
+   ]
+  },
+  "innkeeper": {
+   "wealth": [
+    0.35,
+    0.65
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:trousers@m",
+    "vest:jerkin@m|bodice@f",
+    "over:skirt@f",
+    "apron:half_apron",
+    "belt:belt",
+    "feet:turnshoes|ankle_boots"
+   ]
+  },
+  "healer": {
+   "wealth": [
+    0.3,
+    0.6
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:hose@m",
+    "over:robe|kirtle@f",
+    "apron:half_apron:0.6",
+    "head:coif|hood",
+    "acc:satchel",
+    "belt:belt",
+    "feet:turnshoes"
+   ]
+  },
+  "priest": {
+   "wealth": [
+    0.4,
+    0.7
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "over:robe",
+    "cloak:cloak:0.4",
+    "belt:sash",
+    "neck:necklace",
+    "feet:sandals|turnshoes",
+    "head:hood:0.3"
+   ]
+  },
+  "guard": {
+   "wealth": [
+    0.35,
+    0.55
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:hose|trousers",
+    "over:gambeson",
+    "vest:tabard:0.7",
+    "feet:tall_boots",
+    "head:helmet|helmet|hood",
+    "hands:work_gloves",
+    "belt:belt"
+   ]
+  },
+  "farmer": {
+   "wealth": [
+    0.1,
+    0.4
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:braies@m",
+    "over:smock|tunic@m|kirtle@f",
+    "apron:half_apron@f:0.6",
+    "head:straw_hat|straw_hat|hood|kerchief@f",
+    "feet:ankle_boots|turnshoes|none",
+    "acc:basket:0.2"
+   ],
+   "dirt": 0.6
+  },
+  "tanner": {
+   "wealth": [
+    0.2,
+    0.45
+   ],
+   "work": [
+    "shirt:shirt",
+    "legs:braies",
+    "apron:leather_apron",
+    "feet:tall_boots",
+    "hands:work_gloves:0.5",
+    "head:hood:0.4"
+   ],
+   "dirt": 0.6
+  },
+  "scribe": {
+   "wealth": [
+    0.45,
+    0.75
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:hose@m",
+    "over:robe|doublet@m|kirtle@f",
+    "head:beret|coif",
+    "belt:belt",
+    "acc:satchel",
+    "feet:turnshoes"
+   ]
+  },
+  "child": {
+   "wealth": [
+    0.1,
+    0.5
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:shorts@m|braies@m",
+    "over:tunic|smock|kirtle@f",
+    "feet:none|turnshoes",
+    "head:none|none|straw_hat|knit_cap",
+    "acc:basket:0.15"
+   ]
+  },
+  "elder": {
+   "wealth": [
+    0.2,
+    0.6
+   ],
+   "work": [
+    "shirt:shirt@m|chemise@f",
+    "legs:hose@m|braies@m",
+    "over:robe|tunic@m|kirtle@f",
+    "cloak:cloak:0.5",
+    "head:hood|coif|kerchief@f|none",
+    "feet:turnshoes"
+   ]
+  }
+ }
+}

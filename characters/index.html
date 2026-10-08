@@ -1,0 +1,238 @@
+<meta charset="utf-8">
+<title>Rôle des villageois</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a parish register. Header with village tallies, filter strip, dense grid of portraits; a side drawer opens one villager in 3D. */
+:root {
+  --bg: #e8e6df;        /* limewashed wall */
+  --panel: #f4f2ec;
+  --ink: #23201c;
+  --muted: #6b655b;
+  --line: #cfcabd;
+  --madder: #9e302b;    /* accent: madder dye */
+  --woad: #34567f;
+  --tile: #efe3cf;      /* thumbnails are rendered on this ground */
+  --display: "Alegreya SC", "Palatino Linotype", Georgia, serif;
+  --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1b1a18; --panel: #252320; --ink: #ece7dc; --muted: #a39b8c; --line: #3a3631; --madder: #d0645a; --woad: #8fb0d8; --tile: #2b2824; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #1b1a18; --panel: #252320; --ink: #ece7dc; --muted: #a39b8c; --line: #3a3631; --madder: #d0645a; --woad: #8fb0d8; --tile: #2b2824; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.wrap { padding-inline: 20px; padding-block: 20px 60px; max-width: 1500px; margin: 0 auto; }
+header { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 14px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 52px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance }
+h1 small { display: block; font-family: var(--body); font-size: 15px; font-weight: 400; color: var(--muted); letter-spacing: 0; margin-top: 8px; max-width: 70ch }
+.tally { display: flex; gap: 18px; flex-wrap: wrap; font-variant-numeric: tabular-nums }
+.tally div { display: grid; text-align: right }
+.tally b { font-family: var(--display); font-size: 26px; line-height: 1 }
+.tally span { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted) }
+.filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding-block: 14px; position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 5; border-bottom: 1px solid var(--line) }
+.filters label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); display: flex; gap: 6px; align-items: center }
+select, input, button { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 5px 8px }
+button { cursor: pointer }
+button:hover { border-color: var(--ink) }
+:focus-visible { outline: 2px solid var(--madder); outline-offset: 2px }
+.count { margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--muted) }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; margin-top: 14px }
+.card { appearance: none; border: 1px solid transparent; padding: 0; background: var(--tile); border-radius: 2px; text-align: left; display: grid; cursor: pointer; overflow: hidden }
+.card:hover, .card[aria-current="true"] { border-color: var(--madder) }
+.thumb { width: 100%; aspect-ratio: 2 / 3; background-repeat: no-repeat; max-width: 100% }
+.card .cap { padding: 3px 6px 5px; font-size: 12px; line-height: 1.25; background: var(--panel); color: var(--ink) }
+.card .cap i { font-style: normal; color: var(--muted); display: block; font-size: 11px }
+.drawer { position: fixed; inset: 0 0 0 auto; width: min(560px, 100%); background: var(--panel); border-left: 2px solid var(--ink); z-index: 20; display: grid; grid-template-rows: auto minmax(0, 1fr); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); box-shadow: -20px 0 40px rgba(0,0,0,.15) }
+.dhead { display: flex; align-items: start; gap: 12px; padding: 14px 18px 10px; border-bottom: 1px solid var(--line) }
+.dhead h2 { font-family: var(--display); margin: 0; font-size: 26px; line-height: 1.05 }
+.dhead p { margin: 3px 0 0; color: var(--muted); font-size: 14px }
+.dhead button { margin-left: auto }
+.dbody { overflow-y: auto; padding: 0 18px 24px; display: grid; gap: 14px; align-content: start }
+.stage { position: relative; aspect-ratio: 4 / 5; max-width: 100%; background: var(--tile); margin-inline: -18px; }
+.stage canvas { width: 100% !important; height: 100% !important; display: block }
+.stage .busy { position: absolute; inset: auto 0 12px; text-align: center; font-family: var(--mono); font-size: 12px; color: #5b5246 }
+.seg { display: flex; flex-wrap: wrap; gap: 4px }
+.seg button { font-size: 13px; padding: 4px 9px }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink) }
+.row { display: grid; gap: 6px }
+.row > span { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted) }
+.garments { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px }
+.garments li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 14px }
+.garments li.off { opacity: .45 }
+.sw { display: flex; gap: 2px }
+.sw i { width: 14px; height: 14px; border-radius: 2px; border: 1px solid rgba(0,0,0,.25); display: block }
+.garments code, .kv code { font-family: var(--mono); font-size: 12px; color: var(--muted) }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 3px 14px; font-size: 14px; margin: 0 }
+.kv dt { color: var(--muted) }
+.kv dd { margin: 0 }
+.note { font-size: 13px; color: var(--muted); max-width: 65ch }
+.note code { font-family: var(--mono); font-size: 12px; background: var(--bg); padding: 1px 4px; border-radius: 2px }
+.seedbox { display: flex; gap: 6px; align-items: center }
+.seedbox input { width: 9em; font-family: var(--mono) }
+@media (max-width: 640px) { header { grid-template-columns: 1fr } .tally div { text-align: left } .count { margin-left: 0 } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Rôle des villageois
+      <small>Les 600 habitants des cinq villages d'Emergence, tirés d'une graine. Chaque portrait est un personnage riggé en pseudo-voxels de 1,25 cm, avec cinq tenues interchangeables. Cliquez sur un villageois pour le voir en 3D, l'animer et changer ses vêtements.</small>
+    </h1>
+    <div class="tally" id="tally"></div>
+  </header>
+  <div class="filters">
+    <label for="fv">Village <select id="fv"><option value="">Tous</option></select></label>
+    <label for="fj">Métier <select id="fj"><option value="">Tous</option></select></label>
+    <label for="fa">Âge <select id="fa"><option value="">Tous</option><option value="child">Enfants</option><option value="teen">Adolescents</option><option value="adult">Adultes</option><option value="elder">Anciens</option></select></label>
+    <label for="fs">Sexe <select id="fs"><option value="">Tous</option><option value="f">Femmes</option><option value="m">Hommes</option></select></label>
+    <div class="seedbox"><label for="seed">Graine libre</label><input id="seed" inputmode="numeric" placeholder="ex. 4242"><button id="seedgo">Générer</button></div>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<aside class="drawer" id="drawer" hidden aria-label="Villageois">
+  <div class="dhead"><div><h2 id="dname"></h2><p id="dsub"></p></div><button id="dclose">Fermer</button></div>
+  <div class="dbody">
+    <div class="stage" id="stage"><div class="busy" id="busy"></div></div>
+    <div class="row"><span>Tenue</span><div class="seg" id="segOutfit"></div></div>
+    <div class="row"><span>Animation</span><div class="seg" id="segAnim"></div></div>
+    <div class="row"><span>Garde-robe (variables du PNJ)</span><ul class="garments" id="garments"></ul></div>
+    <div class="row"><span>Apparence</span><dl class="kv" id="kv"></dl></div>
+    <p class="note" id="stats"></p>
+    <p class="note">Le fichier .glb de ce villageois (squelette, 5 tenues, animations) se produit avec <code id="cmd"></code> dans le dossier <code>personnages</code>.</p>
+  </div>
+</aside>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { generateVillager, composeOutfit, meshOutfit } from './gen/villager.js';
+import { villagerObject } from './viewer/build3d.js';
+
+const OCC = { everyday: 'Quotidien', work: 'Travail', festival: 'Fête', cold: 'Froid', night: 'Nuit' };
+const JOBS = { fisher: 'Pêcheur', netmaker: 'Ramendeur', boatwright: 'Charpentier de marine', fishmonger: 'Poissonnier', woodcutter: 'Bûcheron', hunter: 'Chasseur', charcoal: 'Charbonnier', carpenter: 'Charpentier', herbalist: 'Herboriste', miner: 'Mineur', stonecutter: 'Tailleur de pierre', smith: 'Forgeron', shepherd: 'Berger', saltworker: 'Saunier', caravaner: 'Caravanier', potter: 'Potier', weaver: 'Tisserand', merchant: 'Marchand', baker: 'Boulanger', innkeeper: 'Aubergiste', healer: 'Guérisseur', priest: 'Prêtre', guard: 'Garde', farmer: 'Paysan', tanner: 'Tanneur', scribe: 'Scribe', child: 'Enfant', elder: 'Ancien' };
+const GARM = { chemise: 'Chemise longue', shirt: 'Chemise', plaid_shirt: 'Chemise à carreaux', nightshirt: 'Chemise de nuit', tunic: 'Tunique', short_tunic: 'Tunique courte', kirtle: 'Cotte', gown: 'Robe de fête', festive_tunic: 'Tunique de fête', doublet: 'Pourpoint', gambeson: 'Gambison', smock: 'Blouse', robe: 'Robe longue', oilskin_coat: 'Ciré', work_coat: 'Manteau de travail', jerkin: 'Gilet de cuir', bodice: 'Corselet', tabard: 'Tabard', skirt: 'Jupe', braies: 'Braies', hose: 'Chausses', trousers: 'Pantalon', shorts: 'Culotte courte', turnshoes: 'Souliers', ankle_boots: 'Bottines', tall_boots: 'Bottes hautes', waders: 'Cuissardes', sandals: 'Sandales', work_gloves: 'Gants de travail', mittens: 'Moufles', belt: 'Ceinture', sash: 'Écharpe de taille', half_apron: 'Tablier', bib_apron: 'Tablier à bavette', leather_apron: 'Tablier de cuir', cloak: 'Cape', fur_cloak: 'Cape fourrée', hood: 'Chaperon', coif: 'Coiffe', kerchief: 'Fichu', straw_hat: 'Chapeau de paille', felt_hat: 'Chapeau de feutre', knit_cap: 'Bonnet', beret: 'Béret', pointed_hat: 'Chapeau pointu', helmet: 'Chapel de fer', flower_crown: 'Couronne de fleurs', headband: 'Bandeau', satchel: 'Besace', backpack: 'Sac à dos', basket: 'Hotte', necklace: 'Pendentif' };
+const AGE = { child: 'enfant', teen: 'adolescent', adult: 'adulte', elder: 'ancien' };
+
+const [cat, pop, th] = await Promise.all(['data/catalog.json', 'data/villagers.json', 'thumbs/thumbs.json'].map(u => fetch(u).then(r => r.json())));
+const V = pop.villagers;
+const SCALE = 0.55, TW = th.tw, TH = th.th, PER = th.per, COLS = th.cols;
+const sheetW = TW * COLS * SCALE;
+const $ = id => document.getElementById(id);
+
+// tallies
+$('tally').innerHTML = Object.entries(cat.villages).map(([k, v]) => `<div><b>${V.filter(x => x.village === k).length}</b><span>${v.name}</span></div>`).join('');
+for (const [k, v] of Object.entries(cat.villages)) $('fv').insertAdjacentHTML('beforeend', `<option value="${k}">${v.name}</option>`);
+for (const j of [...new Set(V.map(x => x.job))].sort((a, b) => JOBS[a].localeCompare(JOBS[b]))) $('fj').insertAdjacentHTML('beforeend', `<option value="${j}">${JOBS[j]}</option>`);
+
+function render() {
+  const f = { v: $('fv').value, j: $('fj').value, a: $('fa').value, s: $('fs').value };
+  const list = V.filter(x => (!f.v || x.village === f.v) && (!f.j || x.job === f.j) && (!f.a || x.appearance.ageClass === f.a) && (!f.s || x.appearance.sex === f.s));
+  $('count').textContent = list.length + ' villageois';
+  $('grid').innerHTML = list.map(x => {
+    const sheet = Math.floor(x.id / PER), k = x.id % PER;
+    const px = (k % COLS) * TW * SCALE, py = Math.floor(k / COLS) * TH * SCALE;
+    return `<button class="card" data-id="${x.id}"><div class="thumb" style="background-image:url(thumbs/sheet_${String(sheet).padStart(2, '0')}.webp);background-size:${sheetW}px auto;background-position:-${px}px -${py}px"></div><div class="cap">${JOBS[x.job]} · ${x.appearance.age} ans<i>n° ${x.id} · ${cat.villages[x.village].name}</i></div></button>`;
+  }).join('');
+}
+['fv', 'fj', 'fa', 'fs'].forEach(id => $(id).addEventListener('change', render));
+render();
+// the thumbnail tiles are 2:3; keep the sprite scale in step with the card width
+const ro = new ResizeObserver(() => {
+  const c = document.querySelector('.thumb'); if (!c) return;
+  const w = c.clientWidth, s = w / TW;
+  document.querySelectorAll('.thumb').forEach(t => {
+    const card = t.parentElement, x = V[+card.dataset.id], k = x.id % PER;
+    t.style.backgroundSize = `${TW * COLS * s}px auto`;
+    t.style.backgroundPosition = `-${(k % COLS) * TW * s}px -${Math.floor(k / COLS) * TH * s}px`;
+  });
+});
+ro.observe($('grid'));
+new MutationObserver(() => ro.disconnect() || ro.observe($('grid'))).observe($('grid'), { childList: true });
+
+// ---------------------------------------------------------------- 3D drawer
+let renderer, scene, cam, controls, clock = new THREE.Clock(), mixer = null, cur = null;
+function setupGL() {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  $('stage').prepend(renderer.domElement);
+  scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight('#ffeedd', '#6a5a50', 1.0));
+  const sun = new THREE.DirectionalLight('#ffe2c0', 2.8); sun.position.set(-2, 4, 3); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -1.5, right: 1.5, top: 2.5, bottom: -0.5 }); sun.shadow.normalBias = 0.01;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight('#cfe0ff', 0.45); fill.position.set(3, 2, -2); scene.add(fill);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.2 }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  cam = new THREE.PerspectiveCamera(24, 0.8, 0.05, 50); cam.position.set(1.4, 1.35, 4.2);
+  controls = new OrbitControls(cam, renderer.domElement); controls.target.set(0, 0.9, 0); controls.enableDamping = true; controls.minDistance = 0.6; controls.maxDistance = 8;
+  const resize = () => { const r = $('stage').getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); };
+  new ResizeObserver(resize).observe($('stage')); resize();
+  renderer.setAnimationLoop(() => { const dt = clock.getDelta(); if (mixer && !$('drawer').hidden) mixer.update(dt); controls.update(); if (!$('drawer').hidden) renderer.render(scene, cam); });
+}
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+const hex = n => '#' + n.toString(16).padStart(6, '0');
+
+async function open(rec) {
+  $('drawer').hidden = false;
+  if (!renderer) setupGL();
+  document.querySelectorAll('.card[aria-current]').forEach(c => c.removeAttribute('aria-current'));
+  const card = document.querySelector(`.card[data-id="${rec.id}"]`); if (card) card.setAttribute('aria-current', 'true');
+  const a = rec.appearance;
+  $('dname').textContent = (JOBS[rec.job] || rec.job) + (rec.id != null ? ' n° ' + rec.id : '');
+  $('dsub').textContent = `${a.sex === 'f' ? 'Femme' : 'Homme'}, ${a.age} ans (${AGE[a.ageClass]}), ${a.height.toFixed(2)} m · ${cat.villages[rec.village].name} · richesse ${Math.round(rec.wealth * 100)} %`;
+  $('cmd').textContent = `node tools/export.mjs ${rec.seed}` + (rec.id == null ? '' : ` # village ${rec.village}`);
+  $('busy').textContent = 'Génération du personnage…';
+  if (cur) { scene.remove(cur.group); cur = null; mixer = null; }
+  await nextFrame();
+  const t0 = performance.now();
+  const v = generateVillager(rec.seed, cat, { village: rec.village });
+  const meshes = {}; let tris = 0;
+  for (const occ of Object.keys(OCC)) { meshes[occ] = meshOutfit(v.base, composeOutfit(v, occ, cat)); }
+  const o = villagerObject(v.base, meshes);
+  o.group.rotation.y = 0;
+  scene.add(o.group); cur = { ...o, rec, v, meshes };
+  mixer = new THREE.AnimationMixer(o.group);
+  const ms = Math.round(performance.now() - t0);
+  $('busy').textContent = '';
+  const tr = Object.fromEntries(Object.entries(meshes).map(([k, m]) => [k, m.indices.length / 3]));
+  $('stats').textContent = `Généré dans ce navigateur en ${ms} ms depuis la graine ${rec.seed}. Triangles par tenue : ${Object.entries(tr).map(([k, n]) => OCC[k] + ' ' + n.toLocaleString('fr-FR')).join(', ')}. Atlas de couleurs : ${meshes.everyday.atlas.w}×${meshes.everyday.atlas.h} px.`;
+  // appearance
+  const kv = [['Peau', `<span class="sw"><i style="background:${a.skin}"></i></span>`], ['Cheveux', `${a.hairStyle} <span class="sw"><i style="background:${a.hairColor}"></i></span>`], ['Barbe', a.beard], ['Yeux', a.eyesName], ['Carrure', `corpulence ${a.build}, muscle ${a.muscle}`], ['Graine', `<code>${rec.seed}</code>`]];
+  $('kv').innerHTML = kv.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  setOutfit(rec.worn || 'everyday'); setAnim('idle');
+}
+function setOutfit(occ) {
+  const rec = cur.rec;
+  for (const [k, m] of Object.entries(cur.outfits)) m.visible = k === occ;
+  $('segOutfit').innerHTML = Object.entries(OCC).map(([k, l]) => `<button data-o="${k}" aria-pressed="${k === occ}">${l}</button>`).join('');
+  const worn = new Set(rec.outfits[occ]);
+  $('garments').innerHTML = rec.garments.slice().sort((x, y) => worn.has(y.id) - worn.has(x.id)).map(g => {
+    const cols = [g.colors.main, g.colors.trim, g.pattern?.c2].filter(Boolean);
+    return `<li class="${worn.has(g.id) ? '' : 'off'}"><span class="sw">${cols.map(c => `<i style="background:${typeof c === 'number' ? hex(c) : c}"></i>`).join('')}</span><span>${GARM[g.type] || g.type} <code>${g.material}${g.pattern ? ', ' + g.pattern.kind : ''}${g.wear > 0.3 ? ', usé' : ''}</code></span><code>${g.id}</code></li>`;
+  }).join('');
+}
+function setAnim(name) {
+  mixer.stopAllAction();
+  if (name !== 'bind') mixer.clipAction(cur.clips.find(c => c.name === name)).play();
+  else cur.group.traverse(b => { if (b.isBone) b.quaternion.identity(); });
+  $('segAnim').innerHTML = [['idle', 'Repos'], ['walk', 'Marche'], ['work', 'Travail'], ['talk', 'Parole'], ['bind', 'Pose de liaison']].map(([k, l]) => `<button data-a="${k}" aria-pressed="${k === name}">${l}</button>`).join('');
+}
+$('segOutfit').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setOutfit(b.dataset.o); });
+$('segAnim').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setAnim(b.dataset.a); });
+$('grid').addEventListener('click', e => { const c = e.target.closest('.card'); if (c) open(V[+c.dataset.id]); });
+$('dclose').addEventListener('click', () => { $('drawer').hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('drawer').hidden = true; });
+$('seedgo').addEventListener('click', async () => {
+  const s = parseInt($('seed').value, 10); if (!Number.isFinite(s)) { $('seed').focus(); return; }
+  const v = generateVillager(s, cat);
+  const { appearanceRecord } = await import('./gen/population.js');
+  open({ id: null, seed: s, appearance: appearanceRecord(v.bp), village: v.wardrobe.village, job: v.wardrobe.job, wealth: v.wardrobe.wealth, garments: v.wardrobe.garments, outfits: v.wardrobe.outfits, worn: 'everyday' });
+});
+</script>

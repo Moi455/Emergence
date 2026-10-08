@@ -24,7 +24,7 @@ Valeurs : entiers −10..+10 (bipolaires) ou 0..10 (unipolaires), catégories en
 
 `found`(1 arg), `sees`(1 arg), `hears`(1 arg), `hp_below`(1 arg), `hunger_above`(1 arg), `thirst_above`(1 arg), `fatigue_above`(1 arg), `tool_worn`(1 arg), `tool_broken`, `inventory_full`, `entity_near`(2 arg), `attacked`, `obstacle`, `unsafe`, `time_after`(1 arg), `elapsed_over`(1 arg), `reached`(1 arg), `addressed`, `message_from`(1 arg), `done`
 
-## 4. Fonctions (111) et famille d'animation proposée
+## 4. Fonctions (112) et famille d'animation proposée
 
 Chaque fonction doit correspondre à une animation existante. Colonne « Animation » : famille proposée, à valider avec le fil Skins.
 
@@ -34,6 +34,7 @@ Chaque fonction doit correspondre à une animation existante. Colonne « Animati
 | `drink` | body | oui | item:I?, place:P? | eat_drink / sleep_lie / sit_rest |
 | `sleep` | body | oui | place:P? | eat_drink / sleep_lie / sit_rest |
 | `rest` | body | oui |  | eat_drink / sleep_lie / sit_rest |
+| `dress` | body | oui | outfit:X | change_clothes (se changer, ~2 s) |
 | `go_to` | move | oui | place:P?, entity:E? | walk / run / sneak (locomotion) |
 | `follow` | move | oui | entity:E | walk / run / sneak (locomotion) |
 | `approach` | move | oui | entity:E | walk / run / sneak (locomotion) |
@@ -146,5 +147,5 @@ Types d'arguments : E entité, I objet, P lieu, T outil, D direction, N nombre, 
 
 ## 5. Ajouts prévus
 
-- **Tenue selon l'occasion** : une fonction `dress(outfit)` (catégorie body) et un jeton de garde-robe, dès que le fil Skins aura fixé les emplacements et types de vêtements. Le choix de tenue sera appris comme les autres décisions (fête, deuil, travail, froid, cour, rang).
+- **Tenue selon l'occasion (fait, 8 oct.)** : `dress(outfit:X)` est ajoutée en dernière position (les numéros des autres fonctions ne bougent pas), tenues `everyday`, `work`, `festival`, `cold`, `night`, `mourning`. Le PNJ porte une tenue, possède un sous-ensemble des six, et son usure entre dans le jeton SELF ; les personnes proches montrent leur tenue. Le choix est appris comme les autres décisions (paires minimales « fête » et « froid »). Le fil Skins traduit chaque tenue en pièces sur les 11 emplacements de `docs/interfaces.md`.
 - Fonctions du village déjà utilisées par le générateur 0.4 bien que « extension » : `teach`, `contribute`, `supply`.

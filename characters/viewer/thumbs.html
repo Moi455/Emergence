@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#efe3cf}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import * as THREE from 'three';
+import { generateVillager, composeOutfit, meshOutfit } from '../gen/villager.js';
+import { population } from '../gen/population.js';
+import { villagerObject } from './build3d.js';
+const qs = new URLSearchParams(location.search);
+const cat = await (await fetch('../data/catalog.json')).json();
+const from = +qs.get('from'), to = +qs.get('to'), cols = +(qs.get('cols') || 10);
+const TW = +(qs.get('tw') || 200), TH = +(qs.get('th') || 300), occ = qs.get('occ') || 'everyday';
+const pop = population(cat).slice(from, to);
+const rows = Math.ceil(pop.length / cols);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(TW * cols, TH * rows); renderer.setPixelRatio(1);
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.setScissorTest(true);
+renderer.setClearColor('#efe3cf');
+document.body.appendChild(renderer.domElement);
+const cam = new THREE.PerspectiveCamera(17, TW / TH, 0.1, 50);
+cam.position.set(0, 1.05, 7.4); cam.lookAt(0, 0.98, 0);
+const log = [];
+for (let k = 0; k < pop.length; k++) {
+  const p = pop[k];
+  const v = generateVillager(p.seed, cat, { village: p.village });
+  const mesh = meshOutfit(v.base, composeOutfit(v, occ, cat));
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight('#ffeedd', '#6a5a50', 1.0));
+  const sun = new THREE.DirectionalLight('#ffe2c0', 2.8); sun.position.set(-2, 4, 3); sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -1.5, right: 1.5, top: 2.5, bottom: -0.5 }); sun.shadow.normalBias = 0.01;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight('#cfe0ff', 0.45); fill.position.set(3, 2, -2); scene.add(fill);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.2 }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  const o = villagerObject(v.base, { [occ]: mesh });
+  o.group.rotation.y = 0.42;
+  scene.add(o.group);
+  const mixer = new THREE.AnimationMixer(o.group);
+  mixer.clipAction(o.clips.find(c => c.name === 'idle')).play(); mixer.update(0.6 + (k % 7) * 0.3);
+  const cx = (k % cols) * TW, cy = (rows - 1 - Math.floor(k / cols)) * TH;
+  renderer.setViewport(cx, cy, TW, TH); renderer.setScissor(cx, cy, TW, TH);
+  renderer.render(scene, cam);
+  log.push({ id: p.id, job: v.wardrobe.job, tris: mesh.indices.length / 3 });
+  renderer.dispose();
+}
+window.RESULT = { url: renderer.domElement.toDataURL('image/webp', 0.88), log };
+document.title = 'done';
+</script></body></html>
