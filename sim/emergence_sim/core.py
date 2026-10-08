@@ -36,8 +36,12 @@ def load_content(path=None):
 
 
 class Sim:
-    def __init__(self, seed=1, content=None, traj_ppm=0, traj_path=None, tracked=12, live_hours=48):
+    def __init__(self, seed=1, content=None, traj_ppm=0, traj_path=None, tracked=12, live_hours=48, brain=None):
         self.seed = seed
+        from .brain import ReferenceBrain, Governor
+        self.brain = brain or ReferenceBrain()
+        self.governor = Governor()
+        self.fallbacks = 0
         self.C = content or load_content()
         cal = self.C["calendar"]
         self.DPM = cal["days_per_month"]
@@ -486,21 +490,18 @@ class Sim:
     def run(self, days, progress=None):
         end = self.t + days * 24
         self.end_tick = end
-        from .decide import decide
+        from .decide import decide_batch
         while self.t < end:
             if self.t % 24 == 0:
                 self.daily()
             ids = self.buckets.pop(self.t, None)
             if ids:
-                ids.sort()
-                last = -1
-                for i in ids:
-                    if i == last:
-                        continue
-                    last = i
+                due = []
+                for i in sorted(set(ids)):
                     n = self.npcs[i]
                     if n.alive and n.busy_until == self.t:
-                        decide(self, n)
+                        due.append(n)
+                decide_batch(self, due)
             if end - self.t <= self.live_hours:
                 self.snapshot_live()
             self.t += 1

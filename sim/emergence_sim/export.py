@@ -95,8 +95,10 @@ def traj_begin(sim, n, reason, cands, scores, best, plan, outcome):
         "schema_version": TRAJ_SCHEMA, "seed": sim.seed, "tick": sim.t, "npc": n.id,
         "request": {"reason": reason},
         "state": to_state(sim, n),
+        "brain": sim.brain.name,
         "candidates": [{"id": c.key, "kind": c.kind, "target": c.target if isinstance(c.target, (int, str)) else None,
-                        "utility": c.u, "factors": c.factors} for c in cands],
+                        "utility": c.u, "factors": c.factors, "fn": getattr(c, "fn", None), "args": getattr(c, "args", None)}
+                       for c in cands],
         "scores": scores, "chosen": best.key,
         "plan": {k: v for k, v in plan.items() if k in ("steps", "on_done")} if plan else None,
         "outfit": n.outfit,

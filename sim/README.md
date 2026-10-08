@@ -1,6 +1,8 @@
 # Simulation sociale des villages (`sim/`)
 
-Simulation sans rendu des 500 PNJ d'Emergence, au palier 2 de l'architecture (actions résolues par leur durée et leur résultat). Python ≥ 3.9 sans dépendance, déterministe depuis une seed : c'est l'oracle du futur portage C++ (`emergence_sim` de la piste Société S5 et S6) et le générateur de trajectoires pour l'entraînement du Transformer.
+Simulation sans rendu des 500 PNJ d'Emergence, au palier 2 de l'architecture (actions résolues par leur durée et leur résultat). Python ≥ 3.9, déterministe depuis une seed : c'est l'oracle du futur portage C++ (`emergence_sim` de la piste Société S5 et S6), la boucle qui accueille le Transformer des PNJ, et le générateur de trajectoires pour son entraînement.
+
+État, mesures et ce qui manque : `ETAT.md`. Variables et actions : `docs/npc/variables_v0.3_catalogue_unique.md`.
 
 ## Lancer
 
@@ -10,6 +12,10 @@ python3 -m emergence_sim.run --seed 7 --years 1 --out out          # données de
 python3 -m emergence_sim.run --seed 7 --years 1 --traj-ppm 5000     # + 0,5 % des décisions en trajectoires
 python3 viewer/build_viewer.py out/viewer_seed7.json out/chronique.html   # page autonome à ouvrir dans un navigateur
 python3 -m unittest discover -s tests -v
+
+# avec le Transformer (PyTorch et ai/ requis)
+python3 -m emergence_sim.run --seed 7 --days 30 --brain transformer --model ../ai/student/runs/small/best.pt --device cuda
+python3 -m emergence_sim.run --seed 7 --days 2 --brain transformer --config tiny     # poids non entraînés : plomberie et débit seulement
 ```
 
 Les tests cherchent `ai/npc_pipeline/plan_contract.py` à côté de `sim/` (ou dans `EMERGENCE_AI`) pour valider chaque plan ; sans lui, ce test est sauté.
@@ -17,7 +23,10 @@ Les tests cherchent `ai/npc_pipeline/plan_contract.py` à côté de `sim/` (ou d
 ## Ce qui est simulé
 
 - **Monde** : 5 villages de `data/content.json` (Port-Salant face à la mer, Sombrebois face à la forêt, Roc-Ferrand face aux montagnes, Sable-d'Or face au désert, Bourg-Carrefour au centre), environ 100 habitants chacun, foyers sur plusieurs générations, métiers par village.
-- **Décision** : à la fin de chaque plan, le PNJ score au plus 16 options (utilités, avec le détail de chaque facteur), puis un HTN déroule l'option choisie en un plan de 1 à 6 étapes du contrat PNJ (`ai/CONTRAT_PNJ.md`, 111 fonctions, 20 conditions). Aucun PNJ n'est réveillé s'il n'a rien à décider.
+- **Décision, la prise du cerveau** (`brain.py`) : à chaque heure de jeu, tous les PNJ qui doivent décider (fin de plan, interruption) sont réunis ; le cerveau choisit pour tous en un seul lot ; la simulation exécute ensuite dans l'ordre des identifiants. Deux cerveaux :
+  - `transformer` : le modèle du fil des données (`ai/student/student_model.py`). Le moteur liste ce qui est faisable (`options.py`, au plus 16 options en fonctions du contrat, jamais filtrées sur une envie), l'état vivant devient un enregistrement du générateur 0.4 puis des jetons tok-1 (`live.py`, avec `ai/npc_pipeline/encode.py`), et le modèle note chaque option. Un gouverneur applique ses ajustements de variables dans des bornes : une émotion peut sauter, le reste avance par petits pas, le corps et les biens restent au moteur.
+  - `reference` (par défaut, sans dépendance) : les anciennes utilités à règles, figées, gardées comme étalon. Elles ne sont plus étendues.
+  Un HTN déroule ensuite l'option choisie en un plan de 1 à 6 étapes du contrat PNJ (`ai/CONTRAT_PNJ.md`, 112 fonctions, 20 conditions).
 - **Besoins et émotions** : faim, fatigue, solitude, stress, joie, colère, peur, deuil, santé, soif (oasis).
 - **Relations** : affection, confiance, respect, amour, familiarité, rancune, dette ; 48 liens au plus par PNJ, les plus faibles sont oubliés.
 - **Mémoire** : 32 souvenirs au plus par PNJ, avec intensité qui s'efface ; les actes publics ont des témoins ; les ragots transportent les souvenirs d'un PNJ à l'autre, avec la confiance comme poids ; les mensonges circulent aussi et finissent parfois démasqués.
