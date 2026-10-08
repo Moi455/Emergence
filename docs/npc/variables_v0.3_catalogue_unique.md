@@ -2,6 +2,8 @@
 
 8 octobre 2026. Tenu par le fil « Simulation sociale des villages », **à valider par le fil « Données d'entraînement du Transformer »**, qui fait foi pour le modèle (jetons, vocabulaire, sorties).
 
+**La charte du jeu de Monsieur (`CHARTE_DU_JEU.md`, 8 octobre, 20:48) prime sur tout ce qui précède, ce document compris.** Les points de la charte qui touchent ce catalogue sont repris au § 0.
+
 Ce document **remplace** comme référence de travail :
 - `variables_v0.1_catalogue.md` (catalogue exhaustif, écrit pour une grille 2D) ;
 - `variables_v0.2_noyau.md` (noyau de la tranche verticale) ;
@@ -11,7 +13,26 @@ Ces trois fichiers restent comme historique. Le contrat d'action détaillé (arg
 
 ---
 
-## 0. Ce que Monsieur a fixé (8 octobre, 15:18 et 15:34)
+## 0. Ce que Monsieur a fixé
+
+### 0.1 Charte du jeu (8 octobre, 20:48)
+
+- **§ 6, échelle** : les variables psychologiques sont quantitatives et nuancées, sur une échelle de **−10 à +10**, jamais en catégories. Ce catalogue les note ainsi (§ 1). Le moteur les stocke en dixièmes (entier × 10), pour que les petits pas restent possibles : un trait de +3,5 est stocké 35.
+- **§ 6, changement** : un timide peut devenir assuré, une personne devenir rancunière, ambitieuse ou radicale. Les traits et les valeurs bougent donc, lentement (ancienne question Q1, tranchée).
+- **§ 8, boucle cognitive** : le Transformer reçoit la perception, l'état, la personnalité, les besoins, les relations, les souvenirs pertinents, les désirs et objectifs persistants, et le contexte. Il peut ensuite :
+  - modifier l'état interne ;
+  - modifier ou créer des souvenirs ;
+  - faire évoluer perceptions, émotions et relations ;
+  - poursuivre, abandonner ou réorienter un objectif ;
+  - choisir une action ou une séquence d'actions.
+  Le moteur exécute. Une action finie, échouée ou **interrompue parce que la perception a changé** ramène le PNJ dans la boucle.
+- **§ 9, objectifs persistants** : désirs, intentions et projets gardés en mémoire sur une longue durée, mis en pause quand les circonstances l'exigent.
+- **§ 5, pas d'omniscience** : un PNJ ne voit pas les variables internes d'un autre ; il les infère. Les jetons ne montrent des autres que ce qui se perçoit, et ce que le PNJ en croit.
+- **§ 24, mobilité sociale** : aucune règle n'enferme un PNJ dans son rôle ; les options du moteur ne doivent pas l'interdire (§ 7.2 : changer de métier manque).
+- **§ 25, durée de vie** : environ 150 heures de jeu, enfance courte, âge adulte majoritaire, vieillesse accélérée (§ 5.1).
+- **§ 29, séparation** : le moteur a la vérité objective, la simulation l'état vivant, le Transformer la décision cognitive.
+
+### 0.2 Messages du 8 octobre, 15:18 et 15:34
 
 - **Tout est simulé, tout le temps.** Les 500 PNJ tournent à pleine précision de décision même loin du joueur ; seul le rendu (voxels, animation, physique fine) s'arrête hors de vue. Un pont détruit hors de vue est détruit quand le joueur arrive.
 - **Chaque PNJ a un Transformer dans sa boucle** : il reçoit ce que le PNJ voit, toute son identité, ses souvenirs ; il ajuste ses variables et choisit une action. Pas d'algorithme de décision à règles.
@@ -25,27 +46,29 @@ Ces trois fichiers restent comme historique. Le contrat d'action détaillé (arg
 
 | Colonne | Valeurs |
 |---|---|
-| **Écrit par** | `moteur` : calculé par la simulation (corps, physique, économie, perception). `T saut` : le Transformer peut le changer d'un coup. `T pas N` : le Transformer le change d'au plus N par décision. `T lent` : au plus 1 par jour de jeu. `naissance` : tiré à la naissance, puis fixe. `action` : créé ou détruit par une action choisie. |
+| **Écrit par** | `moteur` : calculé par la simulation (corps, physique, économie, perception). `T saut` : le Transformer peut le changer d'un coup. `T pas N` : le Transformer le change d'au plus N par décision, sur l'échelle de la charte. `T lent` : au plus 0,1 par jour de jeu. `naissance` : tiré à la naissance, puis fixe. `action` : créé ou détruit par une action choisie. |
 | **Vu par le modèle** | nom du champ dans le jeton tok-1 (`ai/npc_pipeline/encode.py`), ou `—` si le modèle ne le voit pas encore. |
 | **sim/** | `oui` : la simulation sans rendu (`emergence/sim/`) le simule aujourd'hui ; `neutre` : le jeton reçoit une valeur fixe tant que la simulation ne le modélise pas ; `—` : absent. |
 | **Statut** | `N` noyau, `E` extension, `R` reporté (repris de v0.1 et v0.2). |
 
-Échelles : `±100` = −100..100, `0..100`, `0..1`, `qté` = quantité réelle (le jeton la passe en échelle log 0..10). Les entiers −10..10 du jeton viennent de `representation.to10`.
+Échelles : les variables psychologiques et sociales sont sur l'échelle de la charte, `−10..10` (bipolaire) ou `0..10` (quand le négatif n'a pas de sens : faim, peur, familiarité), avec une décimale ; le moteur les stocke en dixièmes. Les grandeurs physiques gardent leur unité : `0..100` pour les points de vie ou l'usure, `0..1`, `qté` = quantité réelle (le jeton la passe en échelle log 0..10). Le jeton tok-1 arrondit à l'entier (`representation.to10`).
 
 ### 1.1 Règles d'écriture par le Transformer
 
-Appliquées par le gouverneur du moteur (`sim/emergence_sim/brain.py`, classe `Governor`), quelle que soit la sortie du modèle. La dernière colonne dit si le gouverneur l'applique déjà ; les autres groupes ne sont pas encore stockés par la simulation et sont refusés en attendant.
+Appliquées par le gouverneur du moteur (`sim/emergence_sim/brain.py`, classe `Governor`), quelle que soit la sortie du modèle. Les pas sont donnés sur l'échelle de la charte. La dernière colonne dit si le gouverneur l'applique déjà ; les autres groupes ne sont pas encore stockés par la simulation et sont refusés en attendant.
 
 | Groupe | Règle | Appliquée |
 |---|---|---|
 | Émotions (peur, colère, joie, stress ; choc, confusion) | saut permis, borné à l'échelle | oui (choc et confusion : pas encore stockés) |
-| Deuil | pas de 10 | oui |
-| Relations (affection, confiance, respect, romance, familiarité, rancune) | pas de 5 par décision | oui |
-| Pulsions | pas de 5 | oui |
-| Traits et valeurs | 1 par jour de jeu au plus (question ouverte Q1 : ou figés) | oui |
-| Humeur envers, envie d'interagir, soupçon | pas de 10 | prévue |
-| Appartenance, loyauté, confiance envers le chef | pas de 3 | prévue |
-| Importance et valence d'un souvenir | pas de 10 | prévue |
+| Deuil | pas de 1 | oui |
+| Relations (affection, confiance, respect, romance, familiarité, rancune) | pas de 0,5 par décision | oui |
+| Pulsions | pas de 0,5 | oui |
+| Traits et valeurs | 0,1 par jour de jeu au plus (charte § 6 : ils changent) | oui |
+| Humeur envers, envie d'interagir, soupçon | pas de 1 | prévue |
+| Appartenance, loyauté, confiance envers le chef | pas de 0,3 | prévue |
+| Souvenirs : réinterpréter l'importance ou la valence | pas de 1 | oui |
+| Souvenirs : en créer un (types connus de la simulation, valence et importance bornées) | création | oui |
+| Objectifs : créer, abandonner, réorienter (nouvelle cible), changer la priorité | priorité par pas de 1 ; au plus 4 objectifs | oui |
 | Corps, besoins, biens, monnaie, compétences, dette | refusé : c'est le moteur | oui |
 | Romance vers un mineur ou un parent proche | refusé toujours (règle dure) | oui |
 
@@ -74,44 +97,44 @@ Appliquées par le gouverneur du moteur (`sim/emergence_sim/brain.py`, classe `G
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| agressivité, courage, empathie, sociabilité, honnêteté, impulsivité, curiosité, tolérance, justice, rancune | ±100 | naissance, puis T lent (Q1) | `SELF.trait.*` | oui | N |
-| ambition | ±100 | naissance, T lent | `SELF.trait.ambition` | oui (rangée en pulsion) | N |
-| prudence, loyauté, possessivité, fierté, générosité, diligence, conformisme, sensualité, spiritualité, intelligence | ±100 | naissance | — | — | R |
-| réactivité émotionnelle, résilience | 0..100 | naissance | `SELF.temperament.*` | neutre (50, 55) | N |
-| humeur de base, stress de base | ±100 | naissance | — | — | E |
+| agressivité, courage, empathie, sociabilité, honnêteté, impulsivité, curiosité, tolérance, justice, rancune | −10..10 | naissance, puis T lent (charte § 6) | `SELF.trait.*` | oui | N |
+| ambition | −10..10 | naissance, T lent | `SELF.trait.ambition` | oui (rangée en pulsion) | N |
+| prudence, loyauté, possessivité, fierté, générosité, diligence, conformisme, sensualité, spiritualité, intelligence | −10..10 | naissance | — | — | R |
+| réactivité émotionnelle, résilience | 0..10 | naissance | `SELF.temperament.*` | neutre (50, 55) | N |
+| humeur de base, stress de base | −10..10 | naissance | — | — | E |
 
 ### 2.3 Valeurs
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| protection des proches, respect de la propriété, honneur, valeur de la vie, fidélité amoureuse, sensibilité aux tabous | 0..100 | naissance, T lent | `SELF.value.*` | oui | N |
-| piété | 0..100 | naissance, T lent | — | oui | N (à ajouter au jeton) |
-| loyauté au groupe, respect de l'autorité, liberté, tradition, hospitalité | 0..100 | naissance | — | — | R |
-| croyance en l'au-delà des frontières | 0..100 | moteur (récits, légendes) | — | oui | N (à ajouter au jeton) |
+| protection des proches, respect de la propriété, honneur, valeur de la vie, fidélité amoureuse, sensibilité aux tabous | 0..10 | naissance, T lent | `SELF.value.*` | oui | N |
+| piété | 0..10 | naissance, T lent | — | oui | N (à ajouter au jeton) |
+| loyauté au groupe, respect de l'autorité, liberté, tradition, hospitalité | 0..10 | naissance | — | — | R |
+| croyance en l'au-delà des frontières | 0..10 | moteur (récits, légendes) | — | oui | N (à ajouter au jeton) |
 
 ### 2.4 Pulsions et besoins
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| libido, besoin social, accomplissement, accumulation | 0..100 | T pas 5 + dérive du moteur | `SELF.drive.*` | oui | N |
-| solitude | 0..100 | moteur (présence d'autrui) | — | oui | N (à ajouter au jeton) |
-| faim, soif | 0..100 | moteur | `state.hunger`, `state.thirst` | oui | N |
-| fatigue | ±100 (−100 reposé) | moteur | `state.fatigue` | oui (0..100, convertie) | N |
-| douleur | 0..100 | moteur | `state.pain` | oui (100 − pv) | N |
+| libido, besoin social, accomplissement, accumulation | 0..10 | T pas 0,5 + dérive du moteur | `SELF.drive.*` | oui | N |
+| solitude | 0..10 | moteur (présence d'autrui) | — | oui | N (à ajouter au jeton) |
+| faim, soif | 0..10 | moteur | `state.hunger`, `state.thirst` | oui | N |
+| fatigue | −10..10 (−10 reposé) | moteur | `state.fatigue` | oui (0..100, convertie) | N |
+| douleur | 0..10 | moteur | `state.pain` | oui (100 − pv) | N |
 | heures depuis le repas | qté | moteur | `hours_since_meal` | estimée depuis la faim | N |
-| confort thermique | ±100 | moteur (météo, tenue, abri) | — | — | E |
-| reconnaissance, nouveauté, calme | 0..100 | T pas 5 | — | — | R |
+| confort thermique | −10..10 | moteur (météo, tenue, abri) | — | — | E |
+| reconnaissance, nouveauté, calme | 0..10 | T pas 0,5 | — | — | R |
 
 ### 2.5 Émotions
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| peur, choc, confusion | 0..100 | **T saut** + moteur (danger) | `state.fear/shock/confusion` | peur oui ; choc, confusion neutres | N |
-| colère, stress | ±100 | **T saut** + moteur | `state.anger/stress` | oui (0..100) | N |
-| joie | ±100 | **T saut** + moteur | `state.joy` | oui | N |
-| deuil | 0..100 | T pas 10 + moteur (décès) | — | oui | N (à ajouter au jeton) |
-| honte, culpabilité, fierté ressentie, ennui, surprise | 0..100 | T saut | — | — | E |
-| dégoût, jalousie, ébriété | 0..100 | T saut, moteur | — | — | R |
+| peur, choc, confusion | 0..10 | **T saut** + moteur (danger) | `state.fear/shock/confusion` | peur oui ; choc, confusion neutres | N |
+| colère, stress | −10..10 | **T saut** + moteur | `state.anger/stress` | oui (0..100) | N |
+| joie | −10..10 | **T saut** + moteur | `state.joy` | oui | N |
+| deuil | 0..10 | T pas 1 + moteur (décès) | — | oui | N (à ajouter au jeton) |
+| honte, culpabilité, fierté ressentie, ennui, surprise | 0..10 | T saut | — | — | E |
+| dégoût, jalousie, ébriété | 0..10 | T saut, moteur | — | — | R |
 
 ### 2.6 Activité
 
@@ -147,7 +170,7 @@ Appliquées par le gouverneur du moteur (`sim/emergence_sim/brain.py`, classe `G
 |---|---|---|---|---|---|
 | monnaie personnelle | qté | moteur | — | oui | N |
 | inventaire porté (type, quantité, qualité, usure, fraîcheur, propriétaire légitime, caché) | liste ≤ 8 | moteur | `INV.*` | neutre (vide) | N |
-| manque de nourriture, combustible, outils | ±100 | moteur | `stock.food/fuel/tools` | oui (depuis le foyer) | N |
+| manque de nourriture, combustible, outils | −10..10 | moteur | `stock.food/fuel/tools` | oui (depuis le foyer) | N |
 | logement, terres, atelier, bétail | id | moteur, action | — | foyer seulement | E |
 | créances et dettes | liste | moteur | `rel.debt` (agrégé par personne) | `rel.debt` | N |
 
@@ -155,9 +178,9 @@ Appliquées par le gouverneur du moteur (`sim/emergence_sim/brain.py`, classe `G
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| souvenir : type, agent, cible, tiers, lieu, jour | énum, id | moteur (création) | `MEMORY.type`, pointeurs | oui (≤ 32 par PNJ, 21 types) | N |
+| souvenir : type, agent, cible, tiers, lieu, jour | énum, id | moteur et T (création, charte § 8) | `MEMORY.type`, pointeurs | oui (≤ 32 par PNJ, 21 types) | N |
 | source (vu, entendu, rapporté, déduit), certitude | énum, 0..1 | moteur | `MEMORY.source`, `certainty` | oui (ouï-dire, mensonges) | N |
-| importance, valence | 0..100, ±100 | moteur à la création, puis T pas 10 | `importance`, `valence` | oui | N |
+| importance, valence | 0..10, −10..10 | moteur à la création, puis T pas 1 (réinterprétation) | `importance`, `valence` | oui | N |
 | gravité, norme enfreinte, issue (vengé, pardonné, puni, remboursé, non résolu) | | moteur, action | `severity`, `broke`, `outcome` | partiel | N |
 | marquant, secret | booléens | moteur | `defining`, `secret` | oui (secrets d'adultère, de détournement) | N |
 | nombre de rappels, distorsion | | moteur | — | — | E |
@@ -179,9 +202,10 @@ Le modèle voit 9 souvenirs choisis par saillance (question ouverte Q4 sur la m�
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| but : type (besoin, projet, vengeance, demande d'aide, tâche partagée, accompagner), cible, partenaire | énum, id | **action** (créer, abandonner) | `GOAL.type`, pointeurs | — (agenda : noces, funérailles, fêtes, recherches) | N |
-| priorité | 0..100 | T pas 10 | `GOAL.priority` | — | N |
-| progrès, échéance | 0..1, h | moteur | `progress`, `deadline_h` | — | N |
+| objectif persistant (charte § 9) : type (besoin, projet, vengeance, demande d'aide, tâche partagée, accompagner), cible, partenaire, depuis | énum, id | **T** (créer, abandonner, réorienter) | `GOAL.type`, pointeurs | oui, stocké et montré au modèle (au plus 4) ; l'agenda (noces, funérailles, fêtes, recherches) reste à part | N |
+| types d'objectifs voulus par la charte : économiser pour une maison, séduire, se venger, quitter le village, apprendre un métier, s'enrichir, obtenir une fonction, retrouver quelqu'un | énum | T | — (hors vocabulaire, sauf vengeance) | — | N (à ajouter au vocabulaire) |
+| priorité | 0..10 | T pas 1 | `GOAL.priority` | oui | N |
+| progrès, échéance | 0..1, h | moteur | `progress`, `deadline_h` | neutre (0) : le moteur ne mesure pas encore le progrès | N |
 | engagement : envers, type (promesse, serment, contrat, accompagnement, mariage, emploi), degré, statut | | action, moteur | — | fiançailles, mariage | N |
 | demande reçue : de qui, quoi, statut | | moteur | `EVENT` | — | N |
 
@@ -191,18 +215,18 @@ Relation de A vers B, asymétrique, au plus 48 par PNJ (les plus faibles sont ou
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| affection, confiance, respect, romance | ±100 | T pas 5 + moteur (événements) | `ENTITY.rel.*` | oui | N |
-| familiarité, rancune | 0..100 | T pas 5 + moteur | `rel.familiarity/grudge` | oui | N |
-| crainte | 0..100 | **T saut** | `rel.fear` | neutre (0) | N |
-| dette | ±100 | moteur | `rel.debt` | oui | N |
+| affection, confiance, respect, romance | −10..10 | T pas 0,5 + moteur (événements) | `ENTITY.rel.*` | oui | N |
+| familiarité, rancune | 0..10 | T pas 0,5 + moteur | `rel.familiarity/grudge` | oui | N |
+| crainte | 0..10 | **T saut** | `rel.fear` | neutre (0) | N |
+| dette | −10..10 | moteur | `rel.debt` | oui | N |
 | lien (parent, enfant, fratrie, conjoint, partenaire, ami, voisin, collègue, employeur, employé, rival, ennemi, inconnu) | énum | moteur | `ENTITY.link` | oui | N |
-| humeur envers, envie d'interagir | ±100 | T pas 10 | `mood_toward`, `urge_to_interact` | neutre | N |
-| soupçon, menace indirecte | 0..100 | T pas 10 | `suspicion`, `indirect_threat` | neutre | N |
-| réputation connue (fiabilité, danger) | ±100 | moteur (rumeurs), T pas 10 | `rep_trust`, `rep_danger` | neutre | N |
+| humeur envers, envie d'interagir | −10..10 | T pas 1 | `mood_toward`, `urge_to_interact` | neutre | N |
+| soupçon, menace indirecte | 0..10 | T pas 1 | `suspicion`, `indirect_threat` | neutre | N |
+| réputation connue (fiabilité, danger) | −10..10 | moteur (rumeurs), T pas 1 | `rep_trust`, `rep_danger` | neutre | N |
 | perçu, distance, jours sans contact, compréhension | 0..1, qté, ordinal | moteur (perception) | `perceived`, `distance`, `days_since_contact`, `understanding` | oui (présence, distance entre villages) | N |
 | action visible, tenue, statut amoureux, village | énum | moteur | `visible_action`, `wears.*`, `love_status`, `village` | oui | N |
 | traits et valeurs supposés, secrets connus sur B, relation supposée entre B et C | | T, moteur | — | secrets seulement | E |
-| gratitude, attachement, autorité reconnue, rivalité, jalousie, dépendance | | T pas 5 | — | — | E |
+| gratitude, attachement, autorité reconnue, rivalité, jalousie, dépendance | | T pas 0,5 | — | — | E |
 
 ## 4. La société
 
@@ -212,7 +236,7 @@ Relation de A vers B, asymétrique, au plus 48 par PNJ (les plus faibles sont ou
 |---|---|---|---|---|---|
 | membres, chef de foyer | id | moteur | `HOUSEHOLD.size`, `head` | oui | N |
 | biens (14 biens en dixièmes), monnaie, outils | qté | moteur | `HOUSEHOLD.wealth` | oui | N |
-| cohésion, honneur | 0..100, ±100 | moteur | `cohesion`, `honor` | neutres | N |
+| cohésion, honneur | 0..10, −10..10 | moteur | `cohesion`, `honor` | neutres | N |
 | querelles avec d'autres foyers | id, depuis | moteur | — | oui (vendettas, paix par mariage) | N |
 
 ### 4.2 Groupes et titres
@@ -220,7 +244,7 @@ Relation de A vers B, asymétrique, au plus 48 par PNJ (les plus faibles sont ou
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
 | groupe : type (guilde, culte, bande hors-la-loi, famille, village), membres, fondateur, savoir, fermé | | action `found_group`, moteur | — | oui (guildes, cultes, bandes) | N |
-| identification, cohésion, rang | 0..100 | T pas 3, moteur | — | — | E |
+| identification, cohésion, rang | 0..10 | T pas 0,3, moteur | — | — | E |
 | titre : nom (chef, adjoint, juge, trésorier, scribe, percepteur…), titulaire, prétendants, autorité, légitimité | | action (élection, revendication), moteur | `TITLE.*` | chef élu seulement | N |
 
 ### 4.3 Village
@@ -235,16 +259,16 @@ Relation de A vers B, asymétrique, au plus 48 par PNJ (les plus faibles sont ou
 | accusations en attente, verdicts | liste | moteur, action | — | oui (justice du chef) | N |
 | savoirs connus, savoirs perdus | listes | moteur | — | oui | N |
 | problème (disette, épidémie, raid, inondation, puits sec, pont cassé, loups…), urgence | énum, 0..100 | moteur | `problem_kind`, `urgency` | disette et épidémie | N |
-| coutumes (8 normes : parenté, propriété, honneur, vie, fidélité, vérité, équité, tabou) | 0..100 | moteur (agrégat très lent) | `VILLAGE.custom.*` | neutres (50 + biais du village) | N |
-| appartenance, loyauté, confiance envers le chef, légitimité du chef, confiance dans les institutions | ±100 | T pas 3 | `belonging`, `loyalty`, `leader_*`, `institution_trust` | confiance envers le chef oui, le reste neutre | N |
-| sécurité, réputation, cohésion | ±100 | moteur | `security`, `rep`, `cohesion` | neutres | N |
+| coutumes (8 normes : parenté, propriété, honneur, vie, fidélité, vérité, équité, tabou) | 0..10 | moteur (agrégat très lent) | `VILLAGE.custom.*` | neutres (50 + biais du village) | N |
+| appartenance, loyauté, confiance envers le chef, légitimité du chef, confiance dans les institutions | −10..10 | T pas 0,3 | `belonging`, `loyalty`, `leader_*`, `institution_trust` | confiance envers le chef oui, le reste neutre | N |
+| sécurité, réputation, cohésion | −10..10 | moteur | `security`, `rep`, `cohesion` | neutres | N |
 | fête du village, jours de repos | jour | moteur | — | oui | N |
 
 ### 4.4 Entre villages
 
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
-| relation, dépendance commerciale, menace | ±100, 0..100 | moteur | `OTHER_VILLAGE.*` | neutres | E |
+| relation, dépendance commerciale, menace | −10..10, 0..10 | moteur | `OTHER_VILLAGE.*` | neutres | E |
 | mes attaches dans l'autre village | 0..100 | moteur | `my_ties` | oui (nombre de relations) | N |
 | routes : distance, sécurité, fréquentation | km, 0..100 | monde, moteur | — | distance, temps de trajet, brigandage | N |
 | flux : migrations, caravanes, messagers | | moteur | — | migrations, voyages de commerce | N |
@@ -258,6 +282,7 @@ Le monde a 20 × 20 km de terre jouable dans 50 km de voxels ; voxels de 2 cm en
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
 | seconde, heure, jour, jour de la semaine, mois, saison, année | | moteur (1 jour de jeu = 4 h réelles, proposé) | `time.hour_*`, `season` | heure de jeu par pas | N |
+| horloge du vieillissement (charte § 25 : une vie ≈ 150 heures de jeu, enfance courte, vieillesse accélérée) | | moteur | `SELF.age` | — : la simulation vieillit au rythme du calendrier (1 an = 360 jours) | N (à décider, voir Q6) |
 | météo : type, température, précipitations, vent, nuages, humidité | énum, °C, qté | moteur (graine) | `weather` | type seulement | N |
 | luminosité (soleil, lune, nuages, feu) | 0..1 | moteur, **temps réel** | — | — | N (perception) |
 | effet sur la vue et le déplacement | 0..1 | moteur | — | tempête sur les métiers dehors | E |
@@ -324,9 +349,11 @@ Le monde a 20 × 20 km de terre jouable dans 50 km de voxels ; voxels de 2 cm en
 | légendes : titre, frontière, héros, conteurs | | moteur (récits) | `content=legend:*` | oui | N |
 | record de profondeur par village | m | moteur | — | oui | N |
 
-## 6. Perception : ce que le PNJ voit (à créer)
+## 6. Perception : ce que le PNJ voit
 
-Le jeton tok-1 décrit une situation **sociale**. Pour la boucle « vision → action » voulue par Monsieur, le moteur doit produire des jetons de perception. Proposition à trancher avec le fil Transformer (format `tok-2`) :
+Déjà en place : ce qu'un PNJ subit ou voit faire (insulte, coup, bousculade, demande en mariage, flirt, compliment, récit, réconfort) est noté par le moteur (`Sim.perceive`) et montré au modèle en jetons `EVENT` (les 3 plus forts des dernières 24 heures). Une insulte, un coup ou une demande en mariage **interrompt** l'action en cours de la cible, qui repasse dans la boucle à l'heure suivante (charte § 8).
+
+À créer : le jeton tok-1 décrit une situation **sociale**. Pour la boucle « vision → action » voulue par Monsieur, le moteur doit produire des jetons de perception. Proposition à trancher avec le fil Transformer (format `tok-2`) :
 
 | Jeton proposé | Champs | Source |
 |---|---|---|
@@ -376,6 +403,9 @@ Ce que Monsieur veut voir arriver (eau, feu, effondrements, frontières) demande
 | `explore` | frontière, profondeur visée | partir au-delà ; la simulation l'exécute déjà avec `go_to` + `search` |
 | `trade` | item, entity | acheter ou vendre au marché ; aujourd'hui `negotiate` |
 | `teach` passe du statut d'extension au noyau | entity, skill | la transmission des savoirs est au cœur du jeu |
+| `change_job` | job | mobilité sociale (charte § 24) : aujourd'hui seul l'apprentissage ou l'exode change un métier |
+| `smash` | target, tool (masse) | la masse désassemble les constructions en éléments (charte § 17) |
+| `buy_service` | entity, task | payer un artisan pour construire (charte § 17) |
 
 ### 7.3 Ce que le moteur propose au modèle
 
@@ -392,15 +422,16 @@ Types de souvenirs de la simulation aujourd'hui (21) : helped, kindness, betraye
 - **Vu par le modèle et simulé** : le cœur du PNJ (traits, valeurs, pulsions, besoins, émotions principales, corps), ses relations, ses souvenirs, son métier, son foyer et l'essentiel de son village.
 - **Vu par le modèle mais neutre dans la simulation** : tempérament, force, crainte envers les autres, humeur et soupçon envers eux, réputations, coutumes fines du village, inventaire porté. Ces champs reçoivent une valeur fixe (`sim/emergence_sim/live.py`, `NEUTRAL`) tant que la simulation ne les calcule pas.
 - **Simulé mais pas encore vu par le modèle** : piété, croyance en l'au-delà, solitude, deuil, maladie, décrets, savoirs perdus, querelles de foyers, groupes, frontières, légendes.
-- **Ni l'un ni l'autre** : la perception (§ 6), les buts (§ 2.12), le monde physique fin (§ 5.2 à 5.5) et les actions du monde qui manquent (§ 7.2).
-- **Sortie du modèle** : il choisit une option ; l'ajustement des variables (§ 1.1) est prêt côté moteur, mais la tête de sortie du modèle qui le produit n'existe pas encore.
+- **Ni l'un ni l'autre** : la perception de l'espace (§ 6), le progrès des objectifs et les types d'objectifs de la charte (§ 2.12), l'horloge du vieillissement (§ 5.1), le monde physique fin (§ 5.2 à 5.5) et les actions du monde qui manquent (§ 7.2).
+- **Sortie du modèle** : il choisit une option ; le moteur déroule ensuite l'option en une séquence de 1 à 6 étapes. L'écriture de l'état, des relations, des souvenirs et des objectifs (§ 1.1) est prête côté moteur, mais la tête de sortie du modèle qui la produit n'existe pas encore.
 
 ## 10. Questions ouvertes pour Monsieur
 
 | N° | Question | Défaut en attendant |
 |---|---|---|
-| Q1 | Les traits et les valeurs morales bougent-ils lentement au fil de la vie, ou sont-ils figés à la naissance ? | 1 par jour de jeu au plus |
+| Q1 | ~~Les traits bougent-ils ?~~ Tranchée par la charte § 6 : oui, lentement. | 0,1 par jour de jeu au plus |
 | Q2 | Combien d'appels du Transformer par seconde et par PNJ en jeu ? | à chaque fin de plan, interruption ou événement, plus un réveil périodique |
 | Q3 | Quel modèle « bien moins cher » produit les données d'entraînement, et avec quel budget ? | rien n'est lancé |
 | Q4 | Le modèle voit 9 souvenirs par décision : faut-il une mémoire longue (résumé, recherche) ? | 9 par saillance |
 | Q5 | Faut-il garder les 10 traits reportés de v0.1 (prudence, loyauté, fierté, générosité…) ? | reportés |
+| Q6 | Charte § 25 : une vie d'environ 150 heures de jeu. Avec 1 jour de jeu = 4 h réelles (P14), une vie de 70 ans durerait plus de 100 000 h. Faut-il une horloge de vieillissement séparée du calendrier, ou un calendrier compressé ? | rien n'est changé ; décision avec le fil du moteur |

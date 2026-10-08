@@ -2,7 +2,7 @@
 
 8 octobre 2026, soir. Cette révision applique les critiques de Monsieur du 8 octobre (messages de 14 h 45, 15 h 09, 15 h 18, 15 h 34 et 15 h 51) et ses images de référence (`docs/style/`). Elle remplace la version du matin. Elle explique **pourquoi** chaque choix est fait, ce qui le limite et ce qu'il coûte, pour que Monsieur puisse le critiquer.
 
-`02_architecture_cible.md` reste le document de référence pour le code. Là où il contredit ce document-ci, **ce document-ci fait foi** jusqu'à ce que 02 soit réécrit (voir l'avertissement en tête de 02).
+**`CHARTE_DU_JEU.md` (racine) prime sur tout**, y compris sur ce document. `02_architecture_cible.md` reste le document de référence pour le code. Là où il contredit ce document-ci, **ce document-ci fait foi** jusqu'à ce que 02 soit réécrit (voir l'avertissement en tête de 02).
 
 Statut des chiffres : **[Mesuré]** = obtenu par un test du projet (dans le conteneur, pas sur une vraie carte graphique) ; **[Source]** = écrit dans un autre document du projet ou publié ailleurs ; **[Calculé]** = arithmétique à partir d'hypothèses écrites ici ; tout le reste est une **estimation**. Rien n'a encore été mesuré sur un vrai GPU.
 
@@ -25,7 +25,7 @@ Statut des chiffres : **[Mesuré]** = obtenu par un test du projet (dans le cont
 | Upscaling | 720p agrandi en 1080p | **Pas d'upscaling** : il rendrait le voxel lisse et fade |
 | Eau et feu | Champs grossiers liés aux voxels | **Au plus léger et au plus réaliste**, pas forcément en voxels. L'eau reste une quantité qu'on prélève et qui réagit (gravité, collisions) |
 | Personnages | Voxels stricts | **Un style voxel** : forme générale cubique, cubes de 1,8 à 2,2 cm, avec des angles et des facettes (voir le nez de `docs/style/pnj_type.png`) |
-| Frontières | Le joueur s'effondre et se réveille ramené au village | **Aucune limite visible, jamais de retour au village.** Le monde physique s'arrête à 50 km ; le joueur n'y arrive jamais parce que la difficulté le tue avant (loups, faim, froid). Des PNJ s'y perdent et nourrissent des légendes |
+| Frontières | Le joueur s'effondre et se réveille ramené au village | **Aucune limite visible, jamais de retour au village.** Le monde physique fait environ 20 × 20 km (charte § 2) ; le joueur n'y arrive jamais parce que la difficulté le tue avant (loups, faim, froid). Des PNJ s'y perdent et nourrissent des légendes |
 
 ---
 
@@ -52,7 +52,8 @@ Elle ne change pas : partir des contraintes, chercher pour chacune ce qui ferait
 ```
 
 - **Entrée** : tout ce qui fait le personnage. Ce qu'il perçoit (personnes, objets, lieux, matières, eau, feu, bruits à sa portée), son identité (traits, valeurs, métier, titres, liens, foyer, village), ses souvenirs les plus pertinents à cet instant, son état (faim, fatigue, émotions, santé), l'action en cours, et les actions faisables proposées par le moteur.
-- **Sortie** : l'action à faire (ou continuer celle en cours), plus un **ajustement des variables**, borné par groupe. Une émotion peut sauter d'un coup ; besoins et relations bougent par petits pas ; traits et valeurs très lentement ou pas du tout (question 5).
+- **Sortie** (charte § 8) : le modèle peut modifier l'état interne du PNJ, modifier ou créer des souvenirs, faire évoluer perceptions, émotions et relations, poursuivre, abandonner ou réorienter un objectif, puis choisir **une action ou une séquence d'actions**. Les variables psychologiques vont de −10 à +10 (charte § 6). Les ajustements sont bornés par groupe : une émotion peut sauter d'un coup ; besoins et relations bougent par petits pas ; traits et valeurs **évoluent progressivement** (charte § 6 : un timide peut devenir assuré).
+- **Profondeur variable** (charte § 24) : tous les PNJ n'ont pas besoin de la même profondeur cognitive à chaque instant. La profondeur disponible peut limiter ce qu'un individu accomplit, jamais une règle qui lui interdit un rôle. C'est un levier de coût : taille d'entrée ou fréquence modulées par PNJ, sans jamais couper la simulation.
 - **Pas de cache par PNJ** (correction de Monsieur, 15 h 51) : le modèle est rappelé à chaque pas. L'économie vient du **batching** : les 500 PNJ passent dans un seul lot, ce qui remplit le GPU efficacement.
 - **Rien d'erratique** : le tirage de l'action se fait avec une graine propre au PNJ, et les bornes empêchent les sauts absurdes. Les mêmes entrées donnent la même sortie.
 
@@ -78,15 +79,14 @@ Monsieur l'a demandé : définir **toutes** les variables et **toutes** les acti
 ### 2.5 D'où viennent les données
 
 1. Amorçage : 300 000 situations étiquetées par le décideur à règles (fait, hors dépôt).
-2. **Enseignant bon marché** : un modèle bien moins cher que Claude note des situations (Gemini Flash-Lite visé, ou un modèle local). Prêt, jamais lancé : il attend l'accord et le budget de Monsieur (question 6).
+2. **Enseignant bon marché** : un modèle bien moins cher que Claude note des situations (Gemini Flash-Lite visé, ou un modèle local). Prêt, jamais lancé : il attend l'accord et le budget de Monsieur (question 3).
 3. Boucle avec la simulation : l'élève joue, on garde les états qu'il visite vraiment, l'enseignant les note, on réentraîne (principe DAgger).
 
 ---
 
 ## 3. Le monde et ses frontières
 
-- **Monde physique de 50 × 50 km**, dont un **cœur habité d'environ 20 × 20 km** où vivent les 5 villages. Au-delà de 50 km, il n'y a pas de voxel, seulement le décor lointain non jouable, jusqu'à l'horizon.
-  - *Interprétation à confirmer (question 2)* : Monsieur a validé « le monde de 20 km » le matin, puis écrit « le monde fait 50 km au total » le soir. On lit : 20 km habités, 50 km au total. Le plan du monde du moteur est aujourd'hui figé à 20 km (version 1) ; le passer à 50 km est un changement de version (plan à 16 m : environ 10 millions de cellules, environ 50 Mo [Calculé]).
+- **Monde physique d'environ 20 × 20 km** (charte § 2), où vivent les 5 villages, entouré des marches. Au-delà du bord, il n'y a pas de voxel, seulement le décor lointain non jouable, jusqu'à l'horizon.
 - **Aucune limite visible, aucun retour magique.** Entre le cœur et le bord, une hostilité croît de façon exponentielle (elle double tous les quelques centaines de mètres) : froid, faim, soif, tempêtes, bêtes, terrain. Le joueur meurt de ce qui arrive, pas d'une règle. Il ne voit jamais le bord parce qu'il n'y arrive jamais. L'hostilité vaut aussi sous terre et pour une forêt défrichée, pour qu'aucun contournement ne passe.
 - **Les PNJ obéissent aux mêmes lois.** Ceux qui partent trop loin ne reviennent pas ; leur disparition devient une histoire que les villages se racontent.
 - Orientation (acceptée) : mer à l'ouest, montagne au nord, désert à l'est, forêt au sud.
@@ -167,7 +167,7 @@ Mémoire du GPU dédié : élève < 100 Mo ; entrées et sorties d'un lot de 500
 
 ### 8.3 Simulation accélérée (tests, entraînement, temps qui passe vite)
 
-Avec le Transformer partout, **la simulation ne peut pas aller beaucoup plus vite que le temps réel** : c'est la carte graphique qui limite. Une année de jeu, à l'échelle actuelle (1 jour = 4 h réelles), dure 1 460 h réelles ; à 4 appels par seconde et 64 jetons, elle coûte environ 7 × 10¹⁸ opérations [Calculé], soit **environ deux semaines de RTX** à 5 TFLOPS efficaces. Voir la limite 2.
+Avec le Transformer partout, **la simulation ne peut pas aller beaucoup plus vite que le temps réel** : c'est la carte graphique qui limite. Une année de jeu dure environ 2 h de partie (charte § 25, vie d'environ 150 h) ; accélérer au-delà demande de baisser la fréquence ou la profondeur des décisions (charte § 24). Voir la limite 2.
 
 ---
 
@@ -175,7 +175,7 @@ Avec le Transformer partout, **la simulation ne peut pas aller beaucoup plus vit
 
 | Contenu | Taille | Calcul ou source |
 |---|---|---|
-| Plan du monde 20 km / 50 km | 8 Mo / environ 50 Mo | 1,6 M / 10 M cellules à 16 m |
+| Plan du monde 20 km | 8 Mo | 1,6 M cellules à 16 m |
 | État social des 500 PNJ (souvenirs, relations, croyances, variables) | environ 32 Mo | ~64 Ko par PNJ |
 | Maillages autour du bourg, voxels de 2 cm | 52 Mo pour 6,85 M quads, dont 90 % de feuillages lointains | [Mesuré, conteneur] ; nettement moins avec des voxels plus gros |
 | Données précalculées pour l'éclairage | jusqu'à 1 Go | plafond accepté par Monsieur |
@@ -188,12 +188,12 @@ Avec le Transformer partout, **la simulation ne peut pas aller beaucoup plus vit
 ## 10. Points limitants
 
 1. **Le GPU partagé entre rendu et IA.** Le Transformer pour 500 PNJ plusieurs fois par seconde et le rendu tiennent ensemble sur la RTX de Monsieur selon le calcul, mais rien n'est mesuré. **Premier test réel à faire sur sa machine** : la scène jouable avec un lot de 500 appels du Transformer à chaque pas.
-2. **Le temps qui passe.** « Revenir trois ans après » demande trois années de jeu. À l'échelle actuelle (1 jour = 4 h réelles), une année dure 1 460 h de partie ; et on ne peut pas faire défiler le temps beaucoup plus vite que le temps réel avec le Transformer partout (§ 8.3). Il faut choisir : une échelle de temps bien plus rapide (par exemple 1 jour = 20 minutes, comme Minecraft : une année dure alors environ 120 h de partie), une fréquence de décision qui baisse quand on accélère, ou les deux (question 4).
+2. **Le temps qui passe.** La charte (§ 25) vise une vie de PNJ d'environ **150 h de jeu**, enfance courte. Pour une vie d'environ 70 ans, une année de jeu dure donc environ 2 h de partie [Calculé], soit un jour de jeu en une vingtaine de secondes. L'échelle « 1 jour = 4 h réelles » (P14) est donc caduque. Conséquence : en temps réel, chaque PNJ vit très vite ; la fréquence du Transformer doit se compter **par jour de jeu**, pas par seconde réelle, et il faut définir quelles décisions se prennent à quel rythme (une conversation se joue à l'échelle du joueur, une vie à l'échelle des heures). À concevoir en premier dans la boucle (chantier 4).
 3. **La perception à fournir au modèle.** Le modèle ne voit aujourd'hui que des situations sociales. Il faut définir ce qu'un PNJ perçoit et l'encoder en jetons, sans exploser la taille de l'entrée (§ 8.1).
 4. **Les étiquettes.** Aucune étiquette d'enseignant n'existe ; l'élève actuel imite des règles. Il faut lancer l'enseignant bon marché (accord et budget de Monsieur), puis la boucle avec la simulation.
 5. **Le rendu à refaire.** Textures, lumière en temps réel, voxels plus gros, pas d'upscaling : rien de cela n'est encore codé. L'étude du fil Village fixe le chemin ; aucun chiffre GPU réel n'existe.
 6. **Les conséquences hors de vue.** Le bus d'opérations, les deltas sur les chunks non chargés et la sauvegarde ne sont pas codés. Sans eux, « tout a une répercussion » n'est pas tenu.
-7. **Le monde de 50 km.** Le plan est figé à 20 km ; le passage à 50 km change sa version et les empreintes des tests.
+7. **Le monde de 20 km.** Conforme au plan actuel du moteur (version 1) ; rien à changer.
 8. **Le volume de contenu** : générateurs, usure par graine et connecteurs restent la parade.
 9. **Steam** : romance non explicite entre adultes, risque faible (vérifié le 8 oct.) ; reste à déclarer le contenu généré en direct par le verbaliseur et ses garde-fous (O7).
 
@@ -201,9 +201,8 @@ Avec le Transformer partout, **la simulation ne peut pas aller beaucoup plus vit
 
 ## 11. Questions pour Monsieur
 
-1. **Taille des voxels du monde** : 5 cm par défaut ? (4 cm, 5 cm, autre)
-2. **Monde de 50 km au total avec un cœur habité de 20 km** : est-ce bien cela ?
-3. **Fréquence du Transformer** : combien d'appels par seconde et par PNJ ? Défaut proposé : 2 à 4.
-4. **Échelle de temps** : garder 1 jour = 4 h réelles, ou accélérer pour que trois années passent en une partie raisonnable ?
-5. **Traits et valeurs morales** : peuvent-ils bouger lentement, ou sont-ils figés à la naissance ?
-6. **Enseignant bon marché** : quel modèle (Gemini Flash-Lite, un modèle local) et quel budget ?
+Tranchées par la charte : la taille du monde (20 × 20 km), l'échelle de temps (une vie d'environ 150 h de jeu) et l'évolution des traits (progressive). Il reste :
+
+1. **Taille des voxels du monde** : la charte dit « quelques centimètres » ; défaut proposé 5 cm.
+2. **Fréquence du Transformer** : combien d'appels par PNJ, à exprimer par jour de jeu (voir limite 2) ?
+3. **Enseignant bon marché** : quel modèle (Gemini Flash-Lite, un modèle local) et quel budget ?

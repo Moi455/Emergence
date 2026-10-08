@@ -1,6 +1,8 @@
 # Emergence
 
-Jeu médiéval-fantastique pour Steam : monde de voxels de 2 cm entièrement destructible, physique, eau, feu, effondrements, et 500 PNJ en 5 villages dont la vie sociale émerge sans script. Rendu sur GPU intégré, IA sur GPU dédié.
+> **La charte du jeu prime sur tout.** [`CHARTE_DU_JEU.md`](CHARTE_DU_JEU.md) est la charte fonctionnelle et de design écrite par Monsieur (8 octobre 2026). Elle prime sur TOUT ce qui a été dit ou écrit avant : documents, décisions, code. En cas de contradiction, c'est elle qui fait foi. Lisez-la en premier.
+
+Jeu médiéval-fantastique pour Steam : monde de voxels de quelques centimètres entièrement destructible, physique, eau, feu, effondrements, et 500 PNJ en 5 villages pilotés chacun par un Transformer, dans une simulation réelle du monde où tout émerge.
 
 Ce dépôt réunit, au 8 octobre 2026, tout le travail fait jusqu'ici : l'architecture pensée avec Claude, le pipeline PNJ et le convertisseur d'assets écrits par les développeurs. Il est préparé pour être repris avec Claude Code (lire `CLAUDE.md`).
 

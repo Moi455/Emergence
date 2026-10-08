@@ -31,7 +31,8 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | D23 | 2026-10-08 | Lumière calculée en temps réel (heure, nuages, météo) ; seules des données rééclairables peuvent être précalculées, jusqu'à 1 Go ; pas d'upscaling | Monsieur |
 | D24 | 2026-10-08 | Eau et feu au plus léger et au plus réaliste, pas forcément en voxels ; l'eau est une quantité prélevable qui réagit (gravité, collisions) | Monsieur |
 | D25 | 2026-10-08 | Personnages en style voxel (maillage à facettes, cubes de 1,8 à 2,2 cm, avec des angles), pas en voxels stricts | Monsieur |
-| D26 | 2026-10-08 | Frontières : aucune limite visible, jamais d'évanouissement ni de retour au village ; la difficulté tue avant le bord. Monde physique de 50 km au total (interprétation : cœur habité de 20 km, voir O8). Remplace le « sauvetage narratif » de P9 | Monsieur |
+| D26 | 2026-10-08 | Frontières : aucune limite visible, jamais d'évanouissement ni de retour au village ; la difficulté tue avant le bord. Monde physique de 50 km au total : **remplacé par D27** (20 × 20 km). Remplace le « sauvetage narratif » de P9 | Monsieur |
+| D27 | 2026-10-08 | **`CHARTE_DU_JEU.md` (racine) est la charte fonctionnelle et de design ; elle prime sur tout ce qui précède.** Elle fixe notamment : monde physique d'environ 20 × 20 km (§ 2) ; variables psychologiques de −10 à +10 (§ 6) ; traits qui évoluent progressivement (§ 6) ; le Transformer modifie état, souvenirs, perceptions, émotions, relations et objectifs puis choisit une action ou une séquence d'actions (§ 8) ; profondeur de simulation variable selon les PNJ, sans règle qui interdise un rôle (§ 24) ; vie d'un PNJ d'environ 150 h de jeu (§ 25) | Monsieur |
 
 ## Proposé (à valider par Monsieur)
 
@@ -50,7 +51,7 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | P11 | Boucle d'entraînement avec le simulateur sans rendu (DAgger) | architecture § 9.2 |
 | P12 | Code Python des devs conservé comme oracle des tests du portage C++ | architecture § 12 |
 | P13 | Machine de référence : Iris Xe, 16 Go de RAM, 30 images/s en 720p interne vers 1080p | architecture § 13 |
-| P14 | Échelle de temps : 1 jour de jeu = 4 h réelles (×6) | architecture § 2.4 |
+| P14 | (caduque, D27) Échelle de temps : 1 jour de jeu = 4 h réelles (×6) | architecture § 2.4 |
 | P15 | Résumé de région en cellules de 64 m lu par la société | architecture § 2.5 |
 | P16 | (acceptée, D13) Orientation des frontières : mer à l'ouest, montagne au nord, désert à l'est, forêt au sud, tirée de la seed ; cohérente avec un vent dominant venu de la mer | architecture § 2.2 |
 | P17 | Génération du monde en entiers et virgule fixe Q16 seulement (bruit, érosion, plan, chunks), plutôt qu'en flottants stricts ; empreintes de référence épinglées dans les tests | `engine/README.md` ; empreinte identique sur 12 compilations gcc/clang le 8 oct. [Mesuré] |
@@ -73,9 +74,9 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | O5 | Licence des modèles du kit médiéval utilisé pour tester le convertisseur | ne rien distribuer avant vérification |
 | O6 | ~~Clé Gemini exposée~~ révoquée, voir D16 | — |
 | O7 | Déclaration Steam du contenu IA « live-generated » (verbaliseur LLM local) et description des garde-fous contre le contenu illégal ; aucun contenu sexuel adulte généré en direct | à rédiger avant la sortie ; les règles dures I6 et I7 en sont la base |
-| O8 | Monde de 50 km au total avec un cœur habité de 20 km : interprétation à confirmer ; le plan du moteur est figé à 20 km (version 1) | 50 km au total, cœur de 20 km |
+| O8 | ~~Monde de 50 km~~ tranché par D27 : 20 × 20 km | — |
 | O9 | Taille des voxels du monde | 5 cm |
 | O10 | Fréquence du Transformer par PNJ | 2 à 4 appels par seconde |
-| O11 | Échelle de temps : garder 1 jour = 4 h réelles (une année = 1 460 h de partie) ou accélérer | à trancher ; voir `06` limite 2 |
-| O12 | Traits et valeurs morales : figés ou lentement modifiables | lentement modifiables, bornés |
+| O11 | ~~Échelle de temps~~ tranché par D27 : vie d'environ 150 h de jeu, soit environ 2 h par année ; P14 (1 jour = 4 h) caduque | — |
+| O12 | ~~Traits figés ou non~~ tranché par D27 : ils évoluent progressivement | — |
 | O13 | Enseignant bon marché : quel modèle, quel budget | Gemini Flash-Lite, rien lancé sans accord |

@@ -6,17 +6,18 @@ Tu tournes maintenant **sur sa machine** (portable, RTX série 3000 de 6 Go, 16 
 
 ## À lire avant toute tâche (dans cet ordre, et rien d'autre tant que ce n'est pas utile)
 
-1. `CHANTIERS.md` : ce qu'il faut faire, dans quel ordre, et les questions ouvertes.
-2. `docs/06_architecture_expliquee.md` (révision 2) : l'architecture voulue par Monsieur au 8 octobre au soir. **Il fait foi** là où `docs/02_architecture_cible.md` le contredit.
-3. `docs/01_decisions.md` : D1 à D26 sont décidés ; ne les contredis jamais. Les « Proposé » ne sont pas acquis.
-4. Le `ETAT.md` du dossier où tu travailles (`ETAT.md` à la racine, `engine/`, `ai/`, et les autres quand ils existent), puis son `README.md` ou `CLAUDE.md`.
-5. `docs/interfaces.md` : le contrat entre les parties (unités, voxels, matières, personnages, actions, identifiants).
+1. **`CHARTE_DU_JEU.md` (racine) : la charte fonctionnelle et de design de Monsieur. Elle prime sur TOUT** : documents, décisions, code, ce fichier. En cas de contradiction, la charte gagne ; signale la contradiction à Monsieur.
+2. `CHANTIERS.md` : ce qu'il faut faire, dans quel ordre, et les questions ouvertes.
+3. `docs/06_architecture_expliquee.md` (révision 2) : l'architecture voulue par Monsieur au 8 octobre au soir. **Il fait foi** là où `docs/02_architecture_cible.md` le contredit.
+4. `docs/01_decisions.md` : D1 à D27 sont décidés ; ne les contredis jamais. Les « Proposé » ne sont pas acquis.
+5. Le `ETAT.md` du dossier où tu travailles (`ETAT.md` à la racine, `engine/`, `ai/`, et les autres quand ils existent), puis son `README.md` ou `CLAUDE.md`.
+6. `docs/interfaces.md` : le contrat entre les parties (unités, voxels, matières, personnages, actions, identifiants).
 
 ## La barre visuelle
 
 Les images de `docs/style/` (`monde_type.png`, `maison_type.png`, `pnj_type.png`, `style_jeu.jpg`) sont **le niveau attendu, pas moins** (Monsieur, 8 oct.). Blocs lisibles et texturés, mousse et lierre, lumière chaude en temps réel, brume et rayons de soleil, profondeur jusqu'aux montagnes, personnages en style voxel à facettes. Tout travail de rendu, d'asset ou de personnage se juge contre ces images, capture à l'appui.
 
-## Ce que Monsieur veut (résumé de D17 à D26)
+## Ce que Monsieur veut (résumé de D17 à D27 ; la charte fait foi)
 
 1. **Chaque PNJ est piloté par le Transformer**, plusieurs fois par seconde, sans cache, par lots sur le GPU. Il reçoit perception, identité, souvenirs, état ; il rend une action et des ajustements progressifs de ses variables (seule une émotion peut sauter d'un coup). Pas de moteur de règles écrit à la main pour décider à la place du modèle.
 2. **Les 500 PNJ sont simulés à pleine puissance partout**, même loin du joueur ; seul le rendu est coupé hors de vue. **Toute action a une répercussion persistante** (une `Operation` appliquée au monde, chargé ou non, et sauvegardée).
@@ -24,7 +25,8 @@ Les images de `docs/style/` (`monde_type.png`, `maison_type.png`, `pnj_type.png`
 4. **GPU** : le rendu utilise le moins possible du GPU dédié ; l'essentiel reste au Transformer.
 5. **Rendu** : voxels du monde plus gros que 2 cm (taille ouverte, défaut 5 cm), textures, lumière en temps réel (heure, nuages, météo), pas d'upscaling.
 6. **Eau et feu** au plus léger, pas forcément en voxels ; l'eau est une quantité prélevable qui réagit.
-7. **Frontières** : aucune limite visible, jamais de retour au village ; la difficulté tue avant le bord.
+7. **Frontières** : monde physique d'environ 20 × 20 km ; aucune limite visible, jamais de retour au village ; la difficulté tue avant le bord.
+8. **Temps** : un PNJ vit environ 150 h de jeu (charte § 25) ; variables psychologiques de −10 à +10 ; traits qui évoluent progressivement ; profondeur de simulation variable selon les PNJ (§ 24).
 
 ## Règles qui ne se négocient pas
 

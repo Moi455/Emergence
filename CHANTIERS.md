@@ -1,5 +1,7 @@
 # Chantiers ouverts (8 octobre 2026, passage sur Claude Code)
 
+`CHARTE_DU_JEU.md` prime sur tout ; en cas de contradiction avec ce fichier, elle gagne.
+
 Ordre conseillé. Chaque chantier se termine par une mesure sur la machine de Monsieur, pas par « ça compile ». Détail : `docs/06_architecture_expliquee.md` et les `ETAT.md` de chaque dossier.
 
 ## 1. Mesurer ce qui existe, sur le vrai GPU (premier jour)
@@ -49,10 +51,10 @@ Ordre conseillé. Chaque chantier se termine par une mesure sur la machine de Mo
 
 Aucun de ces services payants ne doit être utilisé sans l'accord de Monsieur. La licence du Medieval Village MegaKit (O5) reste à vérifier avant toute distribution.
 
-## 7. Eau, feu, frontières, monde de 50 km
+## 7. Eau, feu, frontières
 
 - Eau en champ de hauteur prélevable, feu en champ de chaleur + particules (D24).
-- Hostilité des marches jusqu'à la mort, sans limite visible (D26) ; passage du plan à 50 km si O8 est confirmé (changement de version du plan).
+- Hostilité des marches jusqu'à la mort, sans limite visible (D26), dans le monde de 20 × 20 km (D27).
 
 ## Ce qui n'est pas dans le ZIP
 
@@ -67,4 +69,4 @@ Reçus : `ETAT.md` (racine), `engine/ETAT.md`, `ai/ETAT.md`. Les bilans de la g�
 
 ## Questions pour Monsieur
 
-Voir `docs/01_decisions.md`, section « Ouvert », O8 à O13 : monde de 50 km, taille des voxels, fréquence du Transformer, échelle de temps, traits figés ou non, enseignant bon marché. Plus l'accord pour un outil comme Meshy AI.
+Il en reste trois (`docs/01_decisions.md`, O9, O10, O13) : taille des voxels (défaut 5 cm), nombre d'appels du Transformer par PNJ, enseignant bon marché et son budget. Plus l'accord pour un outil comme Meshy AI. La charte a tranché le reste.
