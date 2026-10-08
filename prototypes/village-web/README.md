@@ -12,7 +12,13 @@ Page jouable : https://claude.ai/artifact/7a6jR7fZHyJAh3shh4uToq (WebGL2, s'ouvr
 - L'effondrement (tour 2) : après chaque coup, un remplissage depuis le sol et le bord d'une zone de ±48 cm autour du trou détecte la matière qui ne tient plus à rien. Elle tombe en gros débris et le compteur « effondrés » du panneau l'affiche. Test : un anneau creusé autour d'une porte fait tomber 294 voxels détachés.
 - Un étang (tour 2) : cuvette creusée dans le terrain, berge de gravier, niveau d'eau calculé sur le point le plus bas du bord pour ne jamais déborder sur une pente. L'eau est animée (vagues, reflet du ciel selon l'angle, reflet du soleil).
 
-- Des villageois (apportés par le fil d'intégration) : 60 PNJ animés, chargés depuis un `.glb` skinné au format de `interfaces.md` § 3 à 7 par `jeu/villagers.js`. Ils se branchent sur les crochets d'`engine.js` (`window.__game.addDrawHook` et `addUpdate`). Sans `villagers.js`, la page tourne comme avant.
+- Des villageois (apportés par le fil d'intégration) : 48 vrais villageois, générés à la graine par le générateur du fil des skins (`jeu/personnages/`, copie de `/mnt/project-files/personnages/gen` et `data`), puis animés par `jeu/villagers.js` dans des workers. Ils se branchent sur les crochets d'`engine.js` (`window.__game.addDrawHook` et `addUpdate`). Sans `villagers.js`, la page tourne comme avant.
+
+## Format commun VXB3 (interfaces.md § 2, validé par le fil moteur)
+- `jeu/world.bin` (et sa copie `world.b64.txt`) est maintenant en VXB3 : classes de `materials.csv`, axes du monde (z nord, z_monde = −z_glTF, miroir pur par le plan du pivot), voxels rangés x puis z puis y, palette locale jusqu'à 255 couleurs sans perte, crc32. 7,5 Mo en gzip (6,3 Mo en VXB2, qui arrondissait 38 697 briques à 15 couleurs).
+- `jeu/village.vxi` : le plan du village en VXI1 (2 032 instances : nom du module, pivot en voxels, quarts de tour autour de +y). Les arbres `Tree_0` à `Tree_3` ne sont pas dans VXB3 : ils sont générés depuis la graine.
+- `outils/pack_world_vxb3.py` écrit VXB3, `outils/write_vxi.py` et `outils/dump_instances.js` écrivent VXI, `outils/vxb3test.js` vérifie VXB3 contre VXB2 : 9 459 268 voxels, aucune différence d'occupation.
+- La page convertit VXB3 à la lecture vers son format interne (axes glTF, palette 4 bits pour l'atlas du GPU) en 1,4 s environ.
 
 ## Architecture appliquée (06_architecture_expliquee.md)
 - VoxelId sur 16 bits = classe (9) | teinte (7). Briques 8³ uniformes ou à palette locale de 15 couleurs (index 4 bits). Voxels enfouis ramenés à une teinte par classe.

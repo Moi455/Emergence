@@ -26,10 +26,81 @@ var VX = {};
   };
 
   // ---------- VXB2 parsing ----------
+  // ---------- VXB3 (docs/interfaces.md § 2): canonical classes, world axes, voxels x then z then y ----------
+  // Converted on load to the prototype's internal layout: glTF axes (z_gltf = -z_world), prototype classes,
+  // bricks with at most 15 colours (the GPU atlas uses 4-bit indices; extra colours go to the nearest kept tint).
+  VX.CANON = { 1: 17, 2: 21, 3: 22, 4: 23, 5: 24, 6: 25, 7: 26, 8: 18, 9: 27, 10: 28, 11: 29, 12: 30, 13: 31, 16: 1, 17: 2, 18: 20, 19: 32, 20: 5 };
+  VX.parseVXB3 = function (buf) {
+    const dv = new DataView(buf), u8 = new Uint8Array(buf);
+    const NCLS = 21, NT = 128, inv = new Uint16Array(512);
+    for (const c in VX.CANON) inv[VX.CANON[c]] = +c;
+    const toInt = (v) => (inv[v >> 7] << 7) | (v & 127);
+    let p = 4;
+    const ver = dv.getUint16(p, true), flags = dv.getUint16(p + 4, true), nmod = dv.getUint16(p + 6, true); p += 8;
+    if (ver !== 1) throw new Error('VXB3 version ' + ver);
+    const palette = new Uint8Array(NCLS * NT * 3);
+    if (flags & 1) {
+      const nr = dv.getUint16(p, true); p += 2;
+      for (let r = 0; r < nr; r++) { const c = inv[dv.getUint16(p, true)]; p += 2; palette.set(u8.subarray(p, p + NT * 3), c * NT * 3); p += NT * 3; }
+    }
+    const mods = [], pool = new VX.Pool(4096), vox = new Uint16Array(512);
+    const cnt16 = new Uint16Array(65536), rem16 = new Uint16Array(65536), slot16 = new Uint8Array(65536);
+    for (let m = 0; m < nmod; m++) {
+      const nl = u8[p++]; let name = '';
+      for (let i = 0; i < nl; i++) name += String.fromCharCode(u8[p++]);
+      const wx = dv.getInt32(p, true), wy = dv.getInt32(p + 4, true), wz = dv.getInt32(p + 8, true);
+      const dx = dv.getUint16(p + 12, true), dy = dv.getUint16(p + 14, true), dz = dv.getUint16(p + 16, true), nbr = dv.getUint32(p + 18, true); p += 22;
+      const nbx = (dx + 7) >> 3, nby = (dy + 7) >> 3, nbz = (dz + 7) >> 3, nb = nbx * nby * nbz;
+      if (nb !== nbr) throw new Error('VXB3: brick count mismatch in ' + name);
+      const bricks = new Int32Array(nb); let nvox = 0;
+      for (let by = 0; by < nby; by++) for (let bz = 0; bz < nbz; bz++) for (let bx = 0; bx < nbx; bx++) {
+        const b = bx + nbx * (by + nby * (nbz - 1 - bz));   // internal order, z mirrored brick by brick
+        const tag = u8[p++];
+        if (tag === 0) continue;
+        if (tag === 1) { bricks[b] = toInt(dv.getUint16(p, true)); p += 2; nvox += 512; continue; }
+        if (tag === 2) {
+          const k = u8[p++], ids = []; for (let i = 0; i < k; i++) { ids.push(dv.getUint16(p, true)); p += 2; }
+          const bits = k + 1 <= 2 ? 1 : k + 1 <= 4 ? 2 : k + 1 <= 16 ? 4 : 8, per = 8 / bits, mask = (1 << bits) - 1;
+          for (let i = 0; i < 512; i++) { const q = (u8[p + ((i / per) | 0)] >> ((i % per) * bits)) & mask; vox[i] = q ? ids[q - 1] : 0; }
+          p += 512 * bits / 8;
+        } else if (tag === 3) { for (let i = 0; i < 512; i++) vox[i] = dv.getUint16(p + 2 * i, true); p += 1024; }
+        else throw new Error('VXB3: bad brick tag ' + tag);
+        // local palette, reduced to 15 entries when needed (count and slot tables indexed by VoxelId)
+        const keep = [];
+        for (let i = 0; i < 512; i++) { const v = vox[i]; if (v && cnt16[v]++ === 0) keep.push(v); }
+        if (keep.length > 15) {
+          keep.sort((a, c) => cnt16[c] - cnt16[a]);
+          for (let j = 15; j < keep.length; j++) {
+            const v = keep[j]; let best = keep[0], bc = 1e9;
+            for (let w = 0; w < 15; w++) { const kw = keep[w], c = ((kw >> 7) === (v >> 7) ? 0 : 1000) + Math.abs((kw & 127) - (v & 127)); if (c < bc) { bc = c; best = kw; } }
+            rem16[v] = best;
+          }
+        }
+        const nk = Math.min(15, keep.length), kept = keep.slice(0, nk).sort((a, c) => a - c);
+        const s = pool.alloc();
+        pool.pal.fill(0, s * 16, s * 16 + 16);
+        for (let i = 0; i < nk; i++) { pool.pal[s * 16 + 1 + i] = toInt(kept[i]); slot16[kept[i]] = i + 1; }
+        const o = s * 256; pool.idx.fill(0, o, o + 256);
+        for (let i = 0; i < 512; i++) {
+          let v = vox[i]; if (!v) continue;
+          if (rem16[v]) v = rem16[v];
+          const x = i & 7, z = (i >> 3) & 7, y = i >> 6, q = slot16[v], li = x + 8 * (y + 8 * (7 - z));
+          pool.idx[o + (li >> 1)] |= (li & 1) ? q << 4 : q; nvox++;
+        }
+        for (const v of keep) { cnt16[v] = 0; rem16[v] = 0; slot16[v] = 0; }
+        bricks[b] = -(s + 1);
+      }
+      // back to glTF axes: cell z_gltf = -z_world - 1, so the grid min corner is -(wz + dz)
+      mods.push({ id: m, name, ox: wx, oy: wy, oz: -(wz + dz), dx, dy, dz, nbx, nby, nbz, bricks, nvox });
+    }
+    return { ncls: NCLS, nt: NT, palette, mods, pool };
+  };
+
   VX.parseVXB = function (buf, extra) {
     const dv = new DataView(buf); const u8 = new Uint8Array(buf);
     let p = 0;
     const magic = String.fromCharCode(u8[0], u8[1], u8[2], u8[3]); p = 4;
+    if (magic === 'VXB3') return VX.parseVXB3(buf);
     if (magic !== 'VXB2') throw new Error('bad magic ' + magic);
     const ncls = dv.getUint16(p, true), nt = dv.getUint16(p + 2, true); p += 4;
     const palette = u8.slice(p, p + ncls * nt * 3); p += ncls * nt * 3;
