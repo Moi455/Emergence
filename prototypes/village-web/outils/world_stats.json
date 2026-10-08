@@ -1,0 +1,593 @@
+{
+ "raw": 23915791,
+ "gz": 6319354,
+ "modules": [
+  {
+   "name": "Balcony_Simple_Straight",
+   "voxels": 14036,
+   "dims": [
+    101,
+    63,
+    12
+   ],
+   "empty": 67,
+   "uniform": 0,
+   "mixed": 141
+  },
+  {
+   "name": "Corner_Exterior_Brick",
+   "voxels": 55923,
+   "dims": [
+    27,
+    152,
+    29
+   ],
+   "empty": 50,
+   "uniform": 4,
+   "mixed": 250
+  },
+  {
+   "name": "Corner_Exterior_Wood",
+   "voxels": 18000,
+   "dims": [
+    10,
+    150,
+    12
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 76
+  },
+  {
+   "name": "Door_1_Round",
+   "voxels": 22392,
+   "dims": [
+    56,
+    116,
+    7
+   ],
+   "empty": 3,
+   "uniform": 0,
+   "mixed": 102
+  },
+  {
+   "name": "Door_2_Flat",
+   "voxels": 24098,
+   "dims": [
+    56,
+    105,
+    14
+   ],
+   "empty": 1,
+   "uniform": 0,
+   "mixed": 195
+  },
+  {
+   "name": "Door_4_Round",
+   "voxels": 29977,
+   "dims": [
+    57,
+    117,
+    11
+   ],
+   "empty": 6,
+   "uniform": 0,
+   "mixed": 234
+  },
+  {
+   "name": "Floor_Brick",
+   "voxels": 20402,
+   "dims": [
+    101,
+    2,
+    101
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 169
+  },
+  {
+   "name": "Floor_UnevenBrick",
+   "voxels": 20402,
+   "dims": [
+    101,
+    2,
+    101
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 169
+  },
+  {
+   "name": "Floor_WoodDark",
+   "voxels": 20402,
+   "dims": [
+    101,
+    2,
+    101
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 169
+  },
+  {
+   "name": "Prop_Brick1",
+   "voxels": 1967,
+   "dims": [
+    17,
+    11,
+    14
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 12
+  },
+  {
+   "name": "Prop_Brick2",
+   "voxels": 2193,
+   "dims": [
+    21,
+    13,
+    12
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 12
+  },
+  {
+   "name": "Prop_Chimney",
+   "voxels": 38742,
+   "dims": [
+    48,
+    159,
+    51
+   ],
+   "empty": 448,
+   "uniform": 0,
+   "mixed": 392
+  },
+  {
+   "name": "Prop_Crate",
+   "voxels": 135251,
+   "dims": [
+    56,
+    54,
+    56
+   ],
+   "empty": 0,
+   "uniform": 102,
+   "mixed": 241
+  },
+  {
+   "name": "Prop_ExteriorBorder_Straight1",
+   "voxels": 24400,
+   "dims": [
+    100,
+    7,
+    35
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 65
+  },
+  {
+   "name": "Prop_MetalFence_Ornament",
+   "voxels": 24233,
+   "dims": [
+    98,
+    143,
+    8
+   ],
+   "empty": 14,
+   "uniform": 0,
+   "mixed": 220
+  },
+  {
+   "name": "Prop_Vine1",
+   "voxels": 6127,
+   "dims": [
+    71,
+    127,
+    10
+   ],
+   "empty": 166,
+   "uniform": 0,
+   "mixed": 122
+  },
+  {
+   "name": "Prop_Vine6",
+   "voxels": 12361,
+   "dims": [
+    199,
+    121,
+    68
+   ],
+   "empty": 3240,
+   "uniform": 0,
+   "mixed": 360
+  },
+  {
+   "name": "Prop_Vine9",
+   "voxels": 9815,
+   "dims": [
+    199,
+    68,
+    67
+   ],
+   "empty": 1751,
+   "uniform": 0,
+   "mixed": 274
+  },
+  {
+   "name": "Prop_Wagon",
+   "voxels": 97978,
+   "dims": [
+    98,
+    77,
+    201
+   ],
+   "empty": 2646,
+   "uniform": 0,
+   "mixed": 734
+  },
+  {
+   "name": "Prop_WoodenFence_Extension1",
+   "voxels": 5414,
+   "dims": [
+    103,
+    41,
+    6
+   ],
+   "empty": 27,
+   "uniform": 0,
+   "mixed": 51
+  },
+  {
+   "name": "Prop_WoodenFence_Single",
+   "voxels": 6114,
+   "dims": [
+    104,
+    41,
+    6
+   ],
+   "empty": 30,
+   "uniform": 0,
+   "mixed": 48
+  },
+  {
+   "name": "Roof_Front_Brick4",
+   "voxels": 87332,
+   "dims": [
+    221,
+    154,
+    57
+   ],
+   "empty": 3602,
+   "uniform": 0,
+   "mixed": 878
+  },
+  {
+   "name": "Roof_Front_Brick6",
+   "voxels": 240869,
+   "dims": [
+    334,
+    226,
+    57
+   ],
+   "empty": 8012,
+   "uniform": 0,
+   "mixed": 1732
+  },
+  {
+   "name": "Roof_RoundTiles_4x4",
+   "voxels": 758199,
+   "dims": [
+    276,
+    213,
+    279
+   ],
+   "empty": 25795,
+   "uniform": 0,
+   "mixed": 7280
+  },
+  {
+   "name": "Roof_RoundTiles_4x6",
+   "voxels": 967061,
+   "dims": [
+    276,
+    212,
+    380
+   ],
+   "empty": 35530,
+   "uniform": 0,
+   "mixed": 9830
+  },
+  {
+   "name": "Roof_RoundTiles_4x8",
+   "voxels": 1154629,
+   "dims": [
+    276,
+    212,
+    485
+   ],
+   "empty": 45234,
+   "uniform": 0,
+   "mixed": 12411
+  },
+  {
+   "name": "Roof_RoundTiles_6x6",
+   "voxels": 1333687,
+   "dims": [
+    414,
+    285,
+    402
+   ],
+   "empty": 81368,
+   "uniform": 0,
+   "mixed": 14104
+  },
+  {
+   "name": "Roof_RoundTiles_6x8",
+   "voxels": 1582927,
+   "dims": [
+    414,
+    285,
+    485
+   ],
+   "empty": 96508,
+   "uniform": 0,
+   "mixed": 17684
+  },
+  {
+   "name": "Roof_Tower_RoundTiles",
+   "voxels": 924606,
+   "dims": [
+    284,
+    369,
+    272
+   ],
+   "empty": 49553,
+   "uniform": 49,
+   "mixed": 7926
+  },
+  {
+   "name": "Stairs_Exterior_Straight",
+   "voxels": 88766,
+   "dims": [
+    101,
+    62,
+    105
+   ],
+   "empty": 887,
+   "uniform": 8,
+   "mixed": 561
+  },
+  {
+   "name": "Wall_BottomCover",
+   "voxels": 4661,
+   "dims": [
+    101,
+    13,
+    22
+   ],
+   "empty": 0,
+   "uniform": 0,
+   "mixed": 78
+  },
+  {
+   "name": "Wall_Plaster_Door_Round",
+   "voxels": 103928,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 300,
+   "uniform": 58,
+   "mixed": 422
+  },
+  {
+   "name": "Wall_Plaster_Straight",
+   "voxels": 196393,
+   "dims": [
+    101,
+    158,
+    21
+   ],
+   "empty": 0,
+   "uniform": 119,
+   "mixed": 661
+  },
+  {
+   "name": "Wall_Plaster_Window_Thin_Round",
+   "voxels": 167222,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 69,
+   "uniform": 94,
+   "mixed": 617
+  },
+  {
+   "name": "Wall_Plaster_Window_Wide_Flat",
+   "voxels": 150580,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 147,
+   "uniform": 62,
+   "mixed": 571
+  },
+  {
+   "name": "Wall_Plaster_Window_Wide_Round",
+   "voxels": 141987,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 177,
+   "uniform": 50,
+   "mixed": 553
+  },
+  {
+   "name": "Wall_Plaster_WoodGrid",
+   "voxels": 120814,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 206,
+   "uniform": 44,
+   "mixed": 530
+  },
+  {
+   "name": "Wall_UnevenBrick_Door_Flat",
+   "voxels": 110238,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 273,
+   "uniform": 11,
+   "mixed": 496
+  },
+  {
+   "name": "Wall_UnevenBrick_Door_Round",
+   "voxels": 102377,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 300,
+   "uniform": 11,
+   "mixed": 469
+  },
+  {
+   "name": "Wall_UnevenBrick_Straight",
+   "voxels": 185566,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 0,
+   "uniform": 11,
+   "mixed": 769
+  },
+  {
+   "name": "Wall_UnevenBrick_Window_Thin_Round",
+   "voxels": 161939,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 69,
+   "uniform": 11,
+   "mixed": 700
+  },
+  {
+   "name": "Wall_UnevenBrick_Window_Wide_Round",
+   "voxels": 136847,
+   "dims": [
+    101,
+    157,
+    21
+   ],
+   "empty": 170,
+   "uniform": 11,
+   "mixed": 599
+  },
+  {
+   "name": "WindowShutters_Thin_Round_Open",
+   "voxels": 13175,
+   "dims": [
+    81,
+    77,
+    20
+   ],
+   "empty": 208,
+   "uniform": 0,
+   "mixed": 122
+  },
+  {
+   "name": "WindowShutters_Wide_Round_Open",
+   "voxels": 21295,
+   "dims": [
+    116,
+    84,
+    25
+   ],
+   "empty": 495,
+   "uniform": 0,
+   "mixed": 165
+  },
+  {
+   "name": "Window_Thin_Round1",
+   "voxels": 24884,
+   "dims": [
+    46,
+    81,
+    18
+   ],
+   "empty": 46,
+   "uniform": 0,
+   "mixed": 152
+  },
+  {
+   "name": "Window_Wide_Flat1",
+   "voxels": 49123,
+   "dims": [
+    80,
+    79,
+    34
+   ],
+   "empty": 276,
+   "uniform": 0,
+   "mixed": 224
+  },
+  {
+   "name": "Window_Wide_Round1",
+   "voxels": 39936,
+   "dims": [
+    70,
+    87,
+    27
+   ],
+   "empty": 176,
+   "uniform": 0,
+   "mixed": 220
+  }
+ ],
+ "classes": [
+  "air",
+  "plaster",
+  "wood",
+  "woodwear",
+  "rocktrim",
+  "brick",
+  "redbrick",
+  "masonry",
+  "tiles",
+  "iron",
+  "glass",
+  "vine",
+  "leaves",
+  "bark",
+  "r14",
+  "r15",
+  "grass",
+  "dirt",
+  "stone",
+  "cobble",
+  "gravel"
+ ]
+}
