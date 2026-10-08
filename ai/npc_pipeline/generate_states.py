@@ -122,7 +122,7 @@ def sc(x):
 
 
 def age_cat(age):
-    return "child" if age < 14 else "adolescent" if age < 18 else "adult" if age < 60 else "elder"
+    return "child" if age < 14 else "teen" if age < 18 else "adult" if age < 60 else "elder"
 
 
 def pair_uniform(world_seed, a, b):
@@ -140,18 +140,27 @@ LOCS = ["home", "field", "forest", "mine", "well", "square", "workshop", "road"]
 ITEMS = {"bread": "food", "apple": "food", "meat": "food", "water_jug": "drink",
          "firewood": "fuel", "coal": "fuel", "stone": "material", "axe": "tool",
          "hoe": "tool", "seeds": "seed", "cloth": "material", "knife": "tool"}
-JOBS_ADULT = [("farmer", 4), ("woodcutter", 1.5), ("miner", 1.5), ("smith", 1),
-              ("carpenter", 1), ("cook", 1), ("healer", .5), ("trader", 1), ("hunter", 1)]
+# jobs of the 600 villagers in personnages/data/fiches.json (weights = their counts); there, "child" and "elder" mean job "none"
+JOBS_ADULT = [("miner", 57), ("farmer", 56), ("fisher", 44), ("saltworker", 44), ("woodcutter", 39), ("netmaker", 19),
+              ("hunter", 19), ("weaver", 17), ("caravaner", 16), ("shepherd", 13), ("stonecutter", 13), ("smith", 13),
+              ("guard", 13), ("merchant", 12), ("fishmonger", 11), ("carpenter", 11), ("innkeeper", 9), ("priest", 9),
+              ("potter", 9), ("baker", 9), ("boatwright", 8), ("healer", 8), ("herbalist", 4), ("charcoal", 3),
+              ("tanner", 3), ("scribe", 3)]
 JOB_ACTION = {"farmer": ["till", "plant", "harvest", "fetch_water"], "woodcutter": ["cut"],
-              "miner": ["dig"], "smith": ["craft"], "carpenter": ["craft", "place"],
-              "cook": ["craft"], "healer": ["craft"], "trader": ["chat"], "hunter": ["search"],
-              "apprentice": ["craft", "dig"]}
+              "miner": ["dig"], "smith": ["craft"], "carpenter": ["craft", "place"], "baker": ["craft"],
+              "healer": ["craft"], "merchant": ["chat"], "hunter": ["search"], "fisher": ["search"],
+              "saltworker": ["dig", "fetch_water"], "netmaker": ["craft"], "weaver": ["craft"], "potter": ["craft"],
+              "boatwright": ["craft", "place"], "tanner": ["craft"], "charcoal": ["cut", "craft"],
+              "stonecutter": ["dig", "craft"], "herbalist": ["search", "craft"], "shepherd": ["wander"],
+              "guard": ["wander", "wait"], "fishmonger": ["chat"], "innkeeper": ["chat", "craft"], "priest": ["chat"],
+              "scribe": ["craft"], "caravaner": ["go_to"], "apprentice": ["craft", "dig"]}
 ACTION_PLACE = {"till": "field", "plant": "field", "harvest": "field", "fetch_water": "well", "dig": "mine", "cut": "forest", "place": "workshop", "search": "forest",
                 "craft": "workshop", "chat": "square", "sleep": "home", "rest": "home",
                 "eat": "home", "go_to": "road", "wander": "road", "leisure": "square",
                 "wait": "square", "idle": "home"}
 JOB_TOOLS = {"farmer": ("hoe", "shovel"), "woodcutter": ("axe",), "miner": ("pickaxe", "shovel"),
-             "smith": ("trowel",), "carpenter": ("axe", "trowel"), "apprentice": ("trowel", "pickaxe")}
+             "smith": ("trowel",), "carpenter": ("axe", "trowel"), "apprentice": ("trowel", "pickaxe"),
+             "stonecutter": ("pickaxe", "trowel"), "saltworker": ("shovel",), "charcoal": ("axe", "shovel"), "boatwright": ("axe",)}
 TITLES = ["mayor", "deputy", "lawyer", "elder", "judge", "treasurer", "scribe", "tax_collector"]
 ACTIVITIES = ["hopscotch", "storytelling", "dice", "dancing", "wrestling_for_fun", "fishing_trip"]
 COMMIT_BY_ACTION = {"sleep": 70, "craft": 60, "till": 50, "plant": 50, "harvest": 55,
@@ -235,12 +244,12 @@ def gen_self(rng, fam, world_seed):
     weather = choose_w(rng, WEATHER_W[season])
     if ac == "child":
         job = "none"
-    elif ac == "adolescent":
-        job = rng.choice(["apprentice", "none"])
+    elif ac == "teen":
+        job = rng.choice(["apprentice", "none"]) if rng.random() < .5 else choose_w(rng, JOBS_ADULT)
     elif ac == "adult":
         job = choose_w(rng, JOBS_ADULT)
     else:
-        job = choose_w(rng, [("farmer", 2), ("none", 2), ("cook", 1), ("carpenter", 1)])
+        job = "none" if rng.random() < .5 else choose_w(rng, JOBS_ADULT)
     night = hour < 5 or hour >= 22
     if night and rng.random() < .6:
         doing = "sleep"
@@ -251,10 +260,10 @@ def gen_self(rng, fam, world_seed):
     place = ACTION_PLACE.get(doing, "road")
     if doing == "dig":
         place = "mine"
-    if doing == "craft" and job == "cook":
+    if doing == "craft" and job == "baker":
         place = "home"
     status = choose_w(rng, {"child": [("single", 1)],
-                            "adolescent": [("single", 8), ("courting", 2)],
+                            "teen": [("single", 8), ("courting", 2)],
                             "adult": [("single", 30), ("courting", 10), ("partnered", 15), ("married", 35), ("separated", 5), ("widowed", 5)],
                             "elder": [("married", 40), ("widowed", 40), ("single", 10), ("separated", 10)]}[ac])
     # body / needs
@@ -271,7 +280,7 @@ def gen_self(rng, fam, world_seed):
     injured = rng.random() < .12
     hp = rng.randint(15, 70) if injured else rng.choice([rng.randint(85, 100)] * 4 + [rng.randint(70, 85)])
     pain = clamp(max((100 - hp) * .85 + rng.gauss(0, 6), (100 - hp) * .7), 0, 100) if hp < 90 else clamp(rng.gauss(2, 3), 0, 15)
-    base_age_factor = {"child": .6, "adolescent": .85, "adult": 1, "elder": .65}[ac]
+    base_age_factor = {"child": .6, "teen": .85, "adult": 1, "elder": .65}[ac]
     me = {
         "uid": rng.randint(1, 10 ** 6), "age": age, "age_cat": ac, "love_status": status,
         "job": job, "current_action": doing, "place_type": place, "weather": weather,
@@ -362,7 +371,7 @@ def entity_age(rng, link, my_age):
 def link_weights(me, used):
     ac = me["age_cat"]
     w = {}
-    if ac in ("child", "adolescent"):
+    if ac in ("child", "teen"):
         w = {"parent": 4, "sibling": 3, "friend": 3, "neighbor": 1, "stranger": 1, "rival": .5}
     else:
         if me["love_status"] == "married":
@@ -414,9 +423,9 @@ def make_entity(rng, me, eid, link, world_seed, flip_ok=True):
     perceived = clamp(1 - dist / 30 + g(0, .1), .2, 1)
     love = {"spouse": "married", "partner": "partnered"}.get(link)
     if love is None:
-        love = {"child": "single", "adolescent": "single"}.get(ac) or \
+        love = {"child": "single", "teen": "single"}.get(ac) or \
             choose_w(rng, [("single", 30), ("courting", 8), ("partnered", 12), ("married", 35), ("widowed", 8), ("separated", 4)])
-        if ac in ("child", "adolescent"):
+        if ac in ("child", "teen"):
             love = "single"
     rep_trust = clamp(.5 * hidden["honesty"] + .5 * rel["trust"] + g(0, 15), -100, 100)
     rep_danger = clamp(.7 * hidden["aggression"] + .3 * rel["fear"] + g(0, 15), -100, 100)
@@ -1607,7 +1616,7 @@ def validate(rec):
     ids = {e["id"] for e in ents}
     if age_cat(me["age"]) != me["age_cat"]:
         bad.append("age_cat")
-    if me["age_cat"] in ("child", "adolescent") and me["love_status"] != "single" and me["age_cat"] == "child":
+    if me["age_cat"] in ("child", "teen") and me["love_status"] != "single" and me["age_cat"] == "child":
         bad.append("child_love_status")
     for e in ents:
         if age_cat(e["age"]) != e["age_cat"]:
@@ -1758,7 +1767,7 @@ def gen_work_program(rng, idx, world_seed):
     Teaches the model the *form* of work plans for free; the LLM teacher is kept for social/political choices."""
     for _ in range(50):
         me = gen_self(rng, "routine", world_seed)
-        if me["job"] in WORK_TASKS and me["age_cat"] in ("adult", "adolescent"):
+        if me["job"] in WORK_TASKS and me["age_cat"] in ("adult", "teen"):
             break
     task = rng.choice(WORK_TASKS[me["job"]])
     inv = {i["type"]: i for i in me["inventory"]}
