@@ -131,7 +131,7 @@ F("leisure", "leisure", "activity:C,entity:E?"); F("pray", "leisure", "", False)
 # commitment
 F("accompany", "commit", "entity:E"); F("break_commitment", "commit", "commitment:O"); F("continue", "commit")
 # 0.4 (2026-10-08), appended last so earlier function ids stay frozen (interfaces.md section 6)
-F("dress", "body", "outfit:X", True, "change into one of the NPC's outfits: everyday, work, festival, cold, night, mourning")
+F("dress", "body", "outfit:X", True, "change into one of the NPC's outfits: everyday, work, travel, festive, mourning, cold, court, night")
 
 # --------------------------------------------------------------------------
 # Conditions.  name -> number of args

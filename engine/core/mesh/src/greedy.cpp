@@ -16,46 +16,94 @@ struct Work {
   uint64_t col_y[N * N];  // [z][x], bit y
   uint64_t col_z[N * N];  // [y][x], bit z
   uint64_t plane[N][N];   // [slice][row], bit = in-plane w axis
+  uint32_t key[N][N];     // merge key of the faces of one slice: class << 8 | ao, bit 31 = mergeable
+  bool ao = true;
 };
 
 inline MaterialClass cls_at(const Work& w, int x, int y, int z) {
   return voxel_class(w.dense[static_cast<size_t>(chunk_index(x, y, z))]);
 }
 
+// Solidity at a cell in [-1, 64]^3: inside from the chunk, on the six face
+// layers from the borders, air elsewhere (edges and corners of the chunk).
+inline bool solid_at(const Work& w, const ChunkBorders& B, int x, int y, int z) {
+  bool ox = x < 0 || x >= N, oy = y < 0 || y >= N, oz = z < 0 || z >= N;
+  if (!ox && !oy && !oz) return (w.col_x[y * N + z] >> x) & 1;
+  if (int(ox) + int(oy) + int(oz) > 1) return false;
+  auto row = [&](FaceDir d, int r, int b) { return (B.solid[static_cast<size_t>(d)][static_cast<size_t>(r)] >> b) & 1; };
+  if (ox) return row(x < 0 ? FaceDir::NegX : FaceDir::PosX, y, z);
+  if (oy) return row(y < 0 ? FaceDir::NegY : FaceDir::PosY, z, x);
+  return row(z < 0 ? FaceDir::NegZ : FaceDir::PosZ, y, x);
+}
+
+// Ambient occlusion of the four corners of a unit face (0 = darkest, 3 = open),
+// packed 2 bits each in the order (u-, v-), (u+, v-), (u-, v+), (u+, v+) where
+// u is the quad's w axis and v its h axis.
+uint8_t face_ao(const Work& w, const ChunkBorders& B, FaceDir d, int x, int y, int z) {
+  static const int nrm[6][3] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+  // u (w axis) and v (h axis) per direction: X faces (z, y), Y faces (x, z), Z faces (x, y).
+  static const int ua[6][3] = {{0, 0, 1}, {0, 0, 1}, {1, 0, 0}, {1, 0, 0}, {1, 0, 0}, {1, 0, 0}};
+  static const int va[6][3] = {{0, 1, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, 1}, {0, 1, 0}, {0, 1, 0}};
+  const int di = static_cast<int>(d);
+  const int fx = x + nrm[di][0], fy = y + nrm[di][1], fz = z + nrm[di][2];
+  uint8_t out = 0;
+  for (int c = 0; c < 4; ++c) {
+    int su = (c & 1) ? 1 : -1, sv = (c & 2) ? 1 : -1;
+    bool s1 = solid_at(w, B, fx + su * ua[di][0], fy + su * ua[di][1], fz + su * ua[di][2]);
+    bool s2 = solid_at(w, B, fx + sv * va[di][0], fy + sv * va[di][1], fz + sv * va[di][2]);
+    bool cn = solid_at(w, B, fx + su * ua[di][0] + sv * va[di][0], fy + su * ua[di][1] + sv * va[di][1],
+                       fz + su * ua[di][2] + sv * va[di][2]);
+    int ao = (s1 && s2) ? 0 : 3 - (int(s1) + int(s2) + int(cn));
+    out = static_cast<uint8_t>(out | ao << (2 * c));
+  }
+  return out;
+}
+
 // Merges the faces of one direction, slice by slice.
 template <typename Coord>
-void greedy_planes(Work& w, FaceDir dir, Coord coord, std::vector<Quad>& out, MeshStats& st) {
+void greedy_planes(Work& w, const ChunkBorders& B, FaceDir dir, Coord coord, std::vector<Quad>& out, MeshStats& st) {
+  // Faces merge when class and corner occlusion match; a face whose four
+  // corners differ stays alone so its gradient is not stretched.
+  constexpr uint32_t kMergeable = 1u << 31;
+  auto key = [&](int r, int b) { return w.key[r][b] & ~kMergeable; };
   for (int s = 0; s < N; ++s) {
     uint64_t* plane = w.plane[s];
     for (int r = 0; r < N; ++r) {
       st.faces += static_cast<size_t>(std::popcount(plane[r]));
+      uint64_t m = plane[r];
+      while (m) {
+        int b = std::countr_zero(m);
+        m &= m - 1;
+        int x, y, z;
+        coord(s, r, b, x, y, z);
+        uint8_t ao = w.ao ? face_ao(w, B, dir, x, y, z) : 0xFF;
+        bool uniform = ao == 0x00 || ao == 0x55 || ao == 0xAA || ao == 0xFF;
+        w.key[r][b] = static_cast<uint32_t>(cls_at(w, x, y, z)) << 8 | ao | (uniform ? kMergeable : 0);
+      }
     }
     for (int r = 0; r < N; ++r) {
       while (plane[r]) {
         int b0 = std::countr_zero(plane[r]);
         int x, y, z;
         coord(s, r, b0, x, y, z);
-        MaterialClass m = cls_at(w, x, y, z);
+        const uint32_t m = key(r, b0);
+        const bool mergeable = w.key[r][b0] & kMergeable;
         int len = 1;
-        while (b0 + len < N && ((plane[r] >> (b0 + len)) & 1)) {
-          coord(s, r, b0 + len, x, y, z);
-          if (cls_at(w, x, y, z) != m) break;
+        while (mergeable && b0 + len < N && ((plane[r] >> (b0 + len)) & 1)) {
+          if (key(r, b0 + len) != m) break;
           ++len;
         }
         uint64_t run = (len == 64 ? ~uint64_t{0} : ((uint64_t{1} << len) - 1)) << b0;
         int h = 1;
-        while (r + h < N && (plane[r + h] & run) == run) {
+        while (mergeable && r + h < N && (plane[r + h] & run) == run) {
           bool same = true;
-          for (int b = b0; b < b0 + len && same; ++b) {
-            coord(s, r + h, b, x, y, z);
-            same = cls_at(w, x, y, z) == m;
-          }
+          for (int b = b0; b < b0 + len && same; ++b) same = key(r + h, b) == m;
           if (!same) break;
           ++h;
         }
         for (int k = 0; k < h; ++k) plane[r + k] &= ~run;
         coord(s, r, b0, x, y, z);
-        out.push_back(Quad::make(x, y, z, len, h, dir, m));
+        out.push_back(Quad::make(x, y, z, len, h, dir, static_cast<MaterialClass>(m >> 8), static_cast<uint8_t>(m & 255)));
         ++st.quads;
       }
     }
@@ -64,16 +112,17 @@ void greedy_planes(Work& w, FaceDir dir, Coord coord, std::vector<Quad>& out, Me
 
 }  // namespace
 
-Quad Quad::make(int x, int y, int z, int w, int h, FaceDir d, MaterialClass cls) {
+Quad Quad::make(int x, int y, int z, int w, int h, FaceDir d, MaterialClass cls, uint8_t ao) {
   Quad q;
   q.bits = static_cast<uint64_t>(x) | static_cast<uint64_t>(y) << 6 | static_cast<uint64_t>(z) << 12 |
            static_cast<uint64_t>(w - 1) << 18 | static_cast<uint64_t>(h - 1) << 24 |
-           static_cast<uint64_t>(d) << 30 | static_cast<uint64_t>(cls) << 33;
+           static_cast<uint64_t>(d) << 30 | static_cast<uint64_t>(cls) << 33 | static_cast<uint64_t>(ao) << 42;
   return q;
 }
 
-MeshStats mesh_chunk(const Chunk& chunk, const ChunkBorders& borders, std::vector<Quad>& out) {
+MeshStats mesh_chunk(const Chunk& chunk, const ChunkBorders& borders, std::vector<Quad>& out, bool ambient_occlusion) {
   static thread_local Work w;
+  w.ao = ambient_occlusion;
   MeshStats st;
   chunk.decode(w.dense);
   for (int i = 0; i < N * N; ++i) w.col_x[i] = w.col_y[i] = w.col_z[i] = 0;
@@ -109,7 +158,7 @@ MeshStats mesh_chunk(const Chunk& chunk, const ChunkBorders& borders, std::vecto
           w.plane[x][y] |= uint64_t{1} << z;
         }
       }
-    greedy_planes(w, d == 0 ? FaceDir::PosX : FaceDir::NegX,
+    greedy_planes(w, borders, d == 0 ? FaceDir::PosX : FaceDir::NegX,
                   [](int s, int r, int b, int& x, int& y, int& z) { x = s; y = r; z = b; }, out, st);
   }
   // +Y and -Y: planes [y][z], bit x.
@@ -127,7 +176,7 @@ MeshStats mesh_chunk(const Chunk& chunk, const ChunkBorders& borders, std::vecto
           w.plane[y][z] |= uint64_t{1} << x;
         }
       }
-    greedy_planes(w, d == 0 ? FaceDir::PosY : FaceDir::NegY,
+    greedy_planes(w, borders, d == 0 ? FaceDir::PosY : FaceDir::NegY,
                   [](int s, int r, int b, int& x, int& y, int& z) { x = b; y = s; z = r; }, out, st);
   }
   // +Z and -Z: planes [z][y], bit x.
@@ -145,7 +194,7 @@ MeshStats mesh_chunk(const Chunk& chunk, const ChunkBorders& borders, std::vecto
           w.plane[z][y] |= uint64_t{1} << x;
         }
       }
-    greedy_planes(w, d == 0 ? FaceDir::PosZ : FaceDir::NegZ,
+    greedy_planes(w, borders, d == 0 ? FaceDir::PosZ : FaceDir::NegZ,
                   [](int s, int r, int b, int& x, int& y, int& z) { x = b; y = r; z = s; }, out, st);
   }
   return st;

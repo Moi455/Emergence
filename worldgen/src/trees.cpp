@@ -156,15 +156,18 @@ void WorldGen::Impl::plant_trees(const ChunkBox& b, VoxelId* out) const {
     const Lattice3* nz = noise.empty() ? nullptr : &noise;
 
     const uint64_t h = t.id;
-    // Generated content carries tint 0 (docs/interfaces.md § 2).
+    // Vegetation carries the species as tint (docs/interfaces.md § 2 bis):
+    // 0 oak, 1 willow, 2 pine, 3 birch. Inner wood stays tint 0.
+    static constexpr uint16_t kSpeciesTint[] = {0, 3, 2, 1};  // Oak, Birch, Pine, Willow
+    const uint16_t tint = kSpeciesTint[static_cast<int>(t.species)];
     RasterStyle wood;
-    wood.voxel = m.bark;
+    wood.voxel = static_cast<VoxelId>(m.bark | tint);
     wood.replace = kRepAir | kRepSoil | kRepLeaves;
     RasterStyle core = wood;
     core.voxel = m.wood;
     core.replace = kRepAir | kRepSoil | kRepLeaves | kRepWood;
     RasterStyle leaves;
-    leaves.voxel = m.leaves;
+    leaves.voxel = m.leaves_is_fallback ? m.leaves : static_cast<VoxelId>(m.leaves | tint);
     leaves.replace = kRepAir;
     leaves.noise = nz;
     leaves.noise_q16 = kOne * 3 / 10;

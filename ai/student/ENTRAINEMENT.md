@@ -52,7 +52,7 @@ Trois mesures :
 2. **Paires minimales** (`minimal_pairs.py`, 25 sondes) : on change une seule variable (agressivité, confiance envers celui qui propose, faim, fidélité, tabou, loyauté au village, nombre d'autres détenteurs d'un métier, fête, froid…) et on vérifie que la probabilité des bonnes options bouge dans le bon sens. Les sens attendus sont écrits à la main, pas lus dans la référence. La sonde « noise_witness » présente deux fois la même situation : elle doit donner deux fois la même réponse.
 3. **Vitesse** : décisions par seconde par lots de 512. Le jeu a besoin d'environ 30 décisions par seconde pour 500 PNJ.
 
-## Résultat mesuré ici (point de départ, 8 oct.)
+## Résultat mesuré ici (point de départ, 8 oct., avant le passage à 8 tenues)
 
 `tiny`, 3 passes sur 135 000 situations, processeur 4 cœurs, 16 minutes : test top1 0,752, good 0,995, 1 518 décisions/s. Paires minimales : élève 86 %, référence 98,6 %. Sondes encore faibles : peur de l'interrogateur (0 %), tenue de fête (35 %), accaparement (45 %), honnêteté (60 %). `small` sur 300 000 situations et 8 passes devrait les rattraper ; c'est la première chose à regarder dans `eval.json` après votre entraînement.
 

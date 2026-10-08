@@ -50,7 +50,7 @@ STATES_U = ["hunger", "thirst", "pain", "fear", "shock", "confusion"]
 STATES_S = ["fatigue", "anger", "stress", "joy"]
 NORMS = ["kin", "property", "honor", "life", "fidelity", "truth", "fairness", "taboo"]
 SEASONS = ["spring", "summer", "autumn", "winter"]
-OUTFITS = ["everyday", "work", "festival", "cold", "night", "mourning"]
+OUTFITS = ["everyday", "work", "travel", "festive", "mourning", "cold", "court", "night"]
 
 # (slot name, kind, vmax) per token type; categories and pointers listed separately
 LAYOUT = {
@@ -346,6 +346,8 @@ def build_vocab(paths):
     for a in gs.ACTION_IDS:
         v.id("fn", a)
         v.id("action", a)
+    for o in OUTFITS:
+        v.id("outfit", o)
     for path in paths:
         for line in open(path, encoding="utf-8"):
             encode(json.loads(line), v)

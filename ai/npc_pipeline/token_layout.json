@@ -179,26 +179,36 @@
     },
     {
      "slot": 26,
-     "name": "owns.festival",
+     "name": "owns.travel",
      "kind": "BOOL"
     },
     {
      "slot": 27,
-     "name": "owns.cold",
+     "name": "owns.festive",
      "kind": "BOOL"
     },
     {
      "slot": 28,
-     "name": "owns.night",
-     "kind": "BOOL"
-    },
-    {
-     "slot": 29,
      "name": "owns.mourning",
      "kind": "BOOL"
     },
     {
+     "slot": 29,
+     "name": "owns.cold",
+     "kind": "BOOL"
+    },
+    {
      "slot": 30,
+     "name": "owns.court",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 31,
+     "name": "owns.night",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 32,
      "name": "outfit.wear",
      "kind": "U100"
     }
@@ -675,22 +685,32 @@
     },
     {
      "slot": 22,
-     "name": "wears.festival",
+     "name": "wears.travel",
      "kind": "BOOL"
     },
     {
      "slot": 23,
-     "name": "wears.cold",
+     "name": "wears.festive",
      "kind": "BOOL"
     },
     {
      "slot": 24,
-     "name": "wears.night",
+     "name": "wears.mourning",
      "kind": "BOOL"
     },
     {
      "slot": 25,
-     "name": "wears.mourning",
+     "name": "wears.cold",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 26,
+     "name": "wears.court",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 27,
+     "name": "wears.night",
      "kind": "BOOL"
     }
    ]

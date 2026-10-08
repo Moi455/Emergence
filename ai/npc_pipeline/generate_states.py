@@ -313,17 +313,12 @@ def gen_self(rng, fam, world_seed):
     return me
 
 
-OUTFITS = ["everyday", "work", "festival", "cold", "night", "mourning"]   # outfit slots of the Skins thread (+ mourning)
+OUTFITS = ["everyday", "work", "travel", "festive", "mourning", "cold", "court", "night"]   # frozen in docs/interfaces.md v0.2 (Skins thread)
 
 
 def gen_wardrobe(rng, me):
     """Which outfits ME owns and wears (garments themselves live in personnages/data/villagers.json)."""
-    has = ["everyday"]
-    if me["job"] != "none":
-        has.append("work")
-    for o, p_ in (("festival", .75), ("cold", .8), ("night", .55), ("mourning", .35 if me["age_cat"] in ("adult", "elder") else .05)):
-        if rng.random() < p_:
-            has.append(o)
+    has = list(OUTFITS)                          # every villager owns all 8; a missing garment set falls back to everyday
     doing = me["current_action"]
     if doing == "sleep" and "night" in has and rng.random() < .8:
         worn = "night"
@@ -332,7 +327,7 @@ def gen_wardrobe(rng, me):
     elif me["season"] == "winter" and "cold" in has and rng.random() < .6:
         worn = "cold"
     else:
-        worn = "everyday" if rng.random() < .85 else rng.choice(has)
+        worn = "everyday" if rng.random() < .85 else rng.choice(["everyday", "travel", "festive", "court"])
     return {"has": has, "worn": worn, "wear": rng.randint(0, 90)}
 
 
@@ -442,7 +437,7 @@ def make_entity(rng, me, eid, link, world_seed, flip_ok=True):
         "visible_action": rng.choice(["none", "none", "till", "chat", "rest", "craft", "dig", "leisure", "go_to"]),
         "explain": explain,
         "suspicion": ci((rng.uniform(20, 70) if rel["trust"] < -30 else rng.uniform(0, 15)) + (20 if "flip_trust" in explain else 0), 0, 100),
-        "worn": rng.choices(OUTFITS, weights=[10, 4, 1, 2, .3, .3])[0],
+        "worn": rng.choices(OUTFITS, weights=[10, 4, 1, 1, .3, 2, .4, .3])[0],
         "indirect_threat": 0, "threat_via": None,
     }
     if link in ("spouse", "partner", "child", "parent", "sibling") or ent["rel"]["familiarity"] > 60:
@@ -1072,7 +1067,11 @@ def build_candidates(rng, me, ents, events, items, include_ext=False, mems=(), t
             occ.append("everyday")
         for ev in events:
             if ev["type"] == "celebration":
-                occ.append("mourning" if ev["content"]["kind"] == "funeral" else "festival")
+                occ.append("mourning" if ev["content"]["kind"] == "funeral" else "festive")
+            elif ev["type"] in ("claim_title", "poll_open"):
+                occ.append("court")
+            elif ev["type"] == "proposal" and (ev["content"] or {}).get("kind") == "accompany":
+                occ.append("travel")
         for o in dict.fromkeys(occ):
             if o in wd["has"] and o != wd["worn"]:
                 add("dress", outfit=o)

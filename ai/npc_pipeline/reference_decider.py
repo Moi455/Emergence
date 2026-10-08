@@ -684,11 +684,14 @@ def utility(c, cand):
         fit = {"work": .6 if 5 <= c.hour < 9 and c.me["job"] != "none" else -.3,
                "cold": .5 + (.3 if c.me["weather"] == "snow" else 0) if cold else -.5,
                "night": .5 + .4 * max(0, c.s["fatigue"]) if c.night else -.6,
-               "festival": (.5 + .3 * c.t["sociability"] + .2 * c.t["ambition"]) if cel and cel["content"]["kind"] != "funeral" else -.6,
+               "festive": (.5 + .3 * c.t["sociability"] + .2 * c.t["ambition"]) if cel and cel["content"]["kind"] != "funeral" else -.6,
+               "court": (.35 + .4 * c.t["ambition"] + .2 * c.v["honor"]) if any(x["type"] in ("claim_title", "poll_open") for x in c.st["events"]) else -.6,
+               "travel": .45 + .3 * c.t["curiosity"] if any(x["type"] == "proposal" and (x["content"] or {}).get("kind") == "accompany"
+                                                              for x in c.st["events"]) else -.5,
                "mourning": (.6 + .4 * c.v["honor"]) if cel and cel["content"]["kind"] == "funeral" else -.8,
                "everyday": .25 if not c.night else -.2}.get(o, -.3)
-        u.add("norm" if o in ("festival", "mourning") else "need" if o in ("cold", "night") else "habit", fit)
-        u.add("norm", .15 * (c.vil["norms"]["honor"] / 100 if c.vil else .5) if o in ("festival", "mourning") else 0)
+        u.add("norm" if o in ("festive", "mourning", "court") else "need" if o in ("cold", "night") else "habit", fit)
+        u.add("norm", .15 * (c.vil["norms"]["honor"] / 100 if c.vil else .5) if o in ("festive", "mourning", "court") else 0)
         u.base -= .25 + .5 * c.urgency * (cel is None)
     else:
         u.base -= .8                                         # unknown to the reference: rarely chosen
@@ -741,7 +744,9 @@ def _selftest():
         n += 1
     assert bad == 0, "romantic action scored with a minor"
     # directional checks on hand-made minimal pairs
-    rec = gs.gen_situation(random.Random(1), 0, "provocation", 77, 2, 1, False)
+    r_ = random.Random(1)
+    rec = next(x for x in (gs.gen_situation(r_, i, "provocation", 77, 2, 1, False) for i in range(50))
+               if any(c["a"] == "insult" for c in x["cands"]))
     def best_of(r, act):
         o = decide(r)
         return max([u for u, c in zip(o["util"], r["cands"]) if c["a"] == act] + [-9])

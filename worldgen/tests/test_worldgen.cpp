@@ -56,6 +56,13 @@ std::vector<ChunkKey> reference_keys(const WorldGen& g) {
   keys.push_back(surface_key(g, map / 2, map / 30, 0));      // forest march (south)
   keys.push_back(surface_key(g, map / 2, map / 30, 0, 4));
   keys.push_back(surface_key(g, map / 2, map - map / 20, 0)); // mountains (north)
+  std::vector<TreeInstance> trees;  // tree trunks and crowns
+  g.trees_in(1000000, 1000000, 1100000, 1100000, &trees);
+  for (size_t i = 0; i < trees.size() && i < 4; ++i)
+    for (int dy : {0, 4})
+      keys.push_back({static_cast<int32_t>(floor_div(trees[i].x_mm, chunk_mm(0))),
+                      static_cast<int32_t>(floor_div(trees[i].y_mm + 600, chunk_mm(0))) + dy,
+                      static_cast<int32_t>(floor_div(trees[i].z_mm, chunk_mm(0))), 0});
   for (const auto& c : g.cave_segments()) {  // inside a cave
     keys.push_back({static_cast<int32_t>(c.ax / chunk_mm(0)), static_cast<int32_t>(floor_div(c.ay, chunk_mm(0))),
                     static_cast<int32_t>(c.az / chunk_mm(0)), 0});
@@ -192,6 +199,36 @@ TEST(trees_partition_and_stable_ids) {
   for (const auto& t : all) ids[t.id]++;
   CHECK_EQ(ids.size(), all.size());
   std::printf("  %zu trees in 400 m x 400 m\n", all.size());
+}
+
+TEST(vegetation_carries_species_tint) {
+  // docs/interfaces.md § 2 bis: bark and leaves tint = species, everything else 0.
+  const WorldGen& g = gen();
+  std::vector<TreeInstance> trees;
+  g.trees_in(1000000, 1000000, 1400000, 1400000, &trees);
+  CHECK(!trees.empty());
+  int checked = 0;
+  std::vector<VoxelId> v(kChunkVoxels);
+  for (const auto& t : trees) {
+    if (checked >= 8) break;
+    ChunkKey k{static_cast<int32_t>(floor_div(t.x_mm, chunk_mm(0))), static_cast<int32_t>(floor_div(t.y_mm + 600, chunk_mm(0))),
+               static_cast<int32_t>(floor_div(t.z_mm, chunk_mm(0))), 0};
+    g.generate(k, v.data());
+    const uint8_t want = t.species == TreeSpecies::Oak ? 0 : t.species == TreeSpecies::Willow ? 1
+                       : t.species == TreeSpecies::Pine ? 2 : 3;
+    int bark = 0;
+    for (VoxelId x : v) {
+      if (voxel_class(x) == 31) {
+        ++bark;
+        CHECK_EQ(int{voxel_tint(x)}, int{want});
+      } else if (voxel_class(x) != 30) {
+        CHECK_EQ(int{voxel_tint(x)}, 0);
+      }
+    }
+    if (bark > 0) ++checked;
+  }
+  CHECK(checked > 0);
+  std::printf("  %d trunks checked\n", checked);
 }
 
 TEST(caves_exist_and_stay_in_the_world) {

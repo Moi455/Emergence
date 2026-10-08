@@ -58,7 +58,8 @@ int main(int argc, char** argv) {
   for (int lod = 0; lod <= 2; ++lod) {
     Source src{gen, {}};
     std::vector<double> times;
-    size_t quads = 0, faces = 0, meshed = 0;
+    size_t quads = 0, faces = 0, meshed = 0, quads_no_ao = 0;
+    std::vector<double> times_no_ao;
     int n = lod == 2 ? samples / 4 : samples;
     for (int k = 0; k < n; ++k) {
       int64_t vx = static_cast<int64_t>(mix64(static_cast<uint64_t>(k) * 2 + 11) % static_cast<uint64_t>(gen.map_voxels()));
@@ -76,6 +77,10 @@ int main(int argc, char** argv) {
       Timer t;
       MeshStats st = mesh_chunk(c, b, q);
       times.push_back(t.ms());
+      std::vector<Quad> q2;
+      Timer t2;
+      quads_no_ao += mesh_chunk(c, b, q2, false).quads;
+      times_no_ao.push_back(t2.ms());
       quads += st.quads;
       faces += st.faces;
       ++meshed;
@@ -88,6 +93,11 @@ int main(int argc, char** argv) {
                 lod, 2 << lod, 1.28 * (1 << lod), sum / static_cast<double>(meshed), times[times.size() * 95 / 100],
                 quads_per_chunk[lod], static_cast<double>(faces) / static_cast<double>(meshed),
                 static_cast<double>(faces) / static_cast<double>(quads), quads_per_chunk[lod] * 8 / 1024);
+    double sum2 = 0;
+    for (double t : times_no_ao) sum2 += t;
+    std::printf("      without ambient occlusion: %.3f ms mean, %.0f quads/chunk (x%.1f merge)\n",
+                sum2 / static_cast<double>(meshed), static_cast<double>(quads_no_ao) / static_cast<double>(meshed),
+                static_cast<double>(faces) / static_cast<double>(quads_no_ao));
   }
   // Ring estimate (architecture § 5): ring k uses 2^k x 2 cm voxels from
   // R(k-1) to R(k) = 10 m * 2^k; surface chunks ~ annulus area / chunk area,
