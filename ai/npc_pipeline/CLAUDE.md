@@ -16,6 +16,7 @@ python3 reference_decider.py; python3 encode.py; python3 minimal_pairs.py
 - `encode.py` : format de jetons `tok-1`, **oracle du portage C++** ; `--build-vocab` réécrit `model_vocab.json` (le hash change, les jeux de données doivent être refaits).
 - `build_dataset.py` : génère, étiquette (référence, professeur `--teacher-labels`, simulation `--sim-trajectories`), écrit des fichiers binaires. Gros jeux dans `/mnt/project-files/donnees-transformer/`.
 - `minimal_pairs.py` : 25 sondes à sens attendu écrit à la main.
+- `sim_adapter.py` : convertit les trajectoires de `emergence/sim/` (sim-traj-0.1) en enregistrements 0.4 pour `build_dataset.py --sim-trajectories` ; garde les valeurs vécues (personnage, relations, souvenirs, village), complète le reste par le générateur, tables de correspondance en tête de fichier.
 - Entraînement : `../student/ENTRAINEMENT.md`.
 
 ## Règles
@@ -27,6 +28,6 @@ python3 reference_decider.py; python3 encode.py; python3 minimal_pairs.py
 
 ## Prochain travail (ordre)
 Fait en 0.4 : vue en entiers, ambition et tolérance, couche village et foyer, contenu des souvenirs, familles village/apprentissage/frontière/commerce entre villages/fête, garde-robe et `dress(outfit)`, rapport (`docs/npc/audit/report_v04.md`), paires minimales.
-1. Brancher les trajectoires du fil Simulation (`--sim-trajectories`, champs id/family/state/cands).
+1. Trajectoires du fil Simulation : adaptateur fait ; reste à aligner les métiers et lieux de la simulation sur les fiches, puis à ajouter des décisions sociales (la graine 7 ne contient que des fins de plan routinières).
 2. Pilote réel du professeur (sur demande de Monsieur seulement).
 3. Quantification entière de l'élève (M12, S7) et encodeur C++ fidèle à `encode.py`.

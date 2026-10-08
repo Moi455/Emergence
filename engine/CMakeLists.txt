@@ -23,6 +23,14 @@ endif()
 add_subdirectory(core)
 add_subdirectory(sim)
 
+# Fine world generation (emergence/worldgen, owned by the world generation
+# thread) and the terrain module built on it, when the folder is present.
+set(EMERGENCE_WORLDGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../worldgen" CACHE PATH "emergence/worldgen")
+if(EXISTS "${EMERGENCE_WORLDGEN_DIR}/CMakeLists.txt")
+  add_subdirectory(${EMERGENCE_WORLDGEN_DIR} worldgen)
+  add_subdirectory(terrain)
+endif()
+
 # Godot binding (roadmap 0.4): only when godot-cpp is provided.
 if(GODOT_CPP_DIR)
   add_subdirectory(gdext)

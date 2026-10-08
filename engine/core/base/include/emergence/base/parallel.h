@@ -12,4 +12,8 @@ int worker_count();
 
 void parallel_for(int64_t begin, int64_t end, const std::function<void(int64_t, int64_t)>& body);
 
+// Same contract, one index at a time handed to whichever thread is free:
+// for items of very uneven cost (chunks).
+void parallel_each(int64_t begin, int64_t end, const std::function<void(int64_t)>& body);
+
 }  // namespace em

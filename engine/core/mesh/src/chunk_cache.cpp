@@ -1,5 +1,7 @@
 #include "emergence/mesh/chunk_cache.h"
 
+#include <algorithm>
+
 #include "emergence/base/fixed.h"
 #include "emergence/base/parallel.h"
 
@@ -40,17 +42,17 @@ void ChunkCache::prefetch(const std::vector<LodChunk>& keys) {
   std::vector<LodChunk> missing;
   for (const LodChunk& k : keys)
     if (!cache_.count(k)) missing.push_back(k);
+  std::sort(missing.begin(), missing.end());
+  missing.erase(std::unique(missing.begin(), missing.end()), missing.end());
   if (missing.empty()) return;
   if (!src_.native_lod()) {
     for (const LodChunk& k : missing) get(k.lod, k.x, k.y, k.z);
     return;
   }
   std::vector<Chunk> made(missing.size());
-  parallel_for(0, static_cast<int64_t>(missing.size()), [&](int64_t b, int64_t e) {
-    for (int64_t i = b; i < e; ++i) {
-      const LodChunk& k = missing[static_cast<size_t>(i)];
-      made[static_cast<size_t>(i)] = make(k.lod, k.x, k.y, k.z);
-    }
+  parallel_each(0, static_cast<int64_t>(missing.size()), [&](int64_t i) {
+    const LodChunk& k = missing[static_cast<size_t>(i)];
+    made[static_cast<size_t>(i)] = make(k.lod, k.x, k.y, k.z);
   });
   for (size_t i = 0; i < missing.size(); ++i) cache_.emplace(missing[i], std::move(made[i]));
 }

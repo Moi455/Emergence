@@ -66,6 +66,20 @@ python3 minimal_pairs.py --per-probe 60 --out paires_minimales.jsonl
 
 Tout est déterministe : même graine, mêmes fichiers. Aucune dépendance externe pour ces deux scripts.
 
+## Données de la simulation
+
+`sim_seed7/` contient 6 978 décisions vécues dans la simulation sans rendu (5 ans de jeu, 500 PNJ), converties par `sim_adapter.py` et étiquetées par la référence. Elles servent d'abord de **test hors distribution** :
+
+```
+python eval_student.py --ckpt runs/small/best.pt --data /chemin/vers/donnees-transformer/sim_seed7
+```
+
+Pour les mélanger à l'entraînement :
+
+```
+python3 build_dataset.py --n 300000 --name ref_sim_v04 --sim-trajectories ../../../donnees-transformer/sim/seed7_adapte_v04.jsonl
+```
+
 ## Lancer le professeur (seulement avec votre accord)
 
 Le professeur consomme votre clé Gemini et votre quota. Rien n'a été lancé. Quand vous le décidez :

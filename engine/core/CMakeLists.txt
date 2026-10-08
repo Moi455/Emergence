@@ -13,6 +13,7 @@ add_library(emergence_core STATIC
   world/src/chunk_gen.cpp
   mesh/src/greedy.cpp
   mesh/src/chunk_cache.cpp
+  mesh/src/terrain_streamer.cpp
 )
 target_include_directories(emergence_core PUBLIC
   base/include
