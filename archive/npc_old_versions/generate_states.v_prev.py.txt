@@ -1,0 +1,1135 @@
+#!/usr/bin/env python3
+"""generate_states.py (schema 0.3)
+
+Generates synthetic NPC decision situations (state + candidate actions) for
+teacher labelling and for student pre-training.
+
+Coherence principles
+  * personality comes from 5 latent factors, so traits correlate
+  * body/needs derive from clock, injuries and recent events
+  * relations derive from the link type (spouse, child, rival...)
+  * a few "contradictions" are injected on purpose (loved but distrusted,
+    wounded but numb...) and each one is EXPLAINED by a memory or a state,
+    so that the label never needs an impossible story
+  * hard safety rules: no romantic/sexual action involving a child category,
+    none between kin; verified by --check
+
+Usage (fish or bash):
+  python3 generate_states.py --n 2000 --seed 1 --out states.jsonl --check
+  python3 generate_states.py --dump-actions-md
+  python3 generate_states.py --dump-schema schema.json
+"""
+import argparse, hashlib, json, math, random, sys
+from collections import Counter
+
+VERSION = "0.3"
+
+# --------------------------------------------------------------------------
+# Schema
+# --------------------------------------------------------------------------
+TRAITS = ["aggression", "courage", "empathy", "sociability", "honesty",
+          "impulsivity", "curiosity", "justice", "grudge"]            # [-100,100]
+TEMPERAMENT = ["reactivity", "resilience"]                             # [0,100]
+VALUES = ["kin_protection", "property_respect", "honor", "life_value",
+          "romantic_fidelity"]                                         # [0,100]
+DRIVES = ["libido", "social_need", "achievement", "hoarding"]          # [0,100]
+STATES_U = ["hunger", "thirst", "pain", "fear", "shock", "confusion"]  # [0,100]
+STATES_S = ["fatigue", "anger", "stress", "joy"]                       # [-100,100]
+STOCK = ["food", "fuel", "tools"]                                      # [-100,100]
+REL_S = ["affection", "trust", "respect", "romance", "debt"]           # [-100,100]
+REL_U = ["fear", "familiarity", "grudge"]                              # [0,100]
+NORMS = ["kin", "property", "honor", "life", "fidelity", "truth", "fairness"]
+
+SCHEMA = {
+    "version": VERSION,
+    "self": {"traits": TRAITS, "temperament": TEMPERAMENT, "values": VALUES,
+             "drives": DRIVES, "states_unsigned": STATES_U,
+             "states_signed": STATES_S, "stock_gap": STOCK,
+             "body": ["hp", "strength", "load_ratio", "job_skill"],
+             "activity": ["progress", "commitment", "secs_since_decision"],
+             "time": ["hour_sin", "hour_cos", "season_sin", "season_cos"],
+             "categories": ["age_cat", "love_status", "job", "current_action",
+                            "weather", "place_type"]},
+    "entity": {"relation_signed": REL_S, "relation_unsigned": REL_U,
+               "mood": ["mood_toward", "urge_to_interact"],
+               "perception": ["chemistry", "perceived", "distance", "beauty",
+                              "days_since_contact", "rep_trust", "rep_danger",
+                              "understanding"],
+               "categories": ["kin_links", "age_cat", "love_status",
+                              "visible_action"]},
+    "event": {"scalars": ["intensity", "salience", "understanding",
+                          "reliability", "delay", "out_of_world"],
+              "norm_violation": NORMS,
+              "categories": ["type", "role", "source"]},
+    "memory": {"scalars": ["age_days", "certainty", "importance", "valence",
+                           "defining"], "categories": ["type", "role", "source"]},
+    "goal": {"scalars": ["priority", "progress", "deadline_h"],
+             "categories": ["type", "target"]},
+}
+
+# --------------------------------------------------------------------------
+# Action vocabulary (model output).  args codes:
+#  E entity  I item  R resource node  L location  A activity  F fact/claim
+#  P proposal id  K skill  M mode  C commitment id
+# --------------------------------------------------------------------------
+ACTIONS = []
+
+
+def A(id_, cat, args="", core=True, note=""):
+    ACTIONS.append(dict(id=id_, cat=cat, args=args, core=core, note=note))
+
+
+# body
+A("eat", "body", "I"); A("drink", "body", "I|R"); A("sleep", "body", "L")
+A("rest", "body")
+# movement
+A("go_to", "move", "L"); A("follow", "move", "E"); A("approach", "move", "E")
+A("avoid", "move", "E"); A("flee", "move", "E|L"); A("wander", "move")
+A("wait", "move"); A("hide", "move", "L", False); A("return_home", "move")
+# work (verb is chosen by the resource affordance: chop, mine, pick, fish...)
+A("gather", "work", "R", True, "chop/mine/pick/fish by affordance")
+A("clear_land", "work", "L", False); A("dig", "work", "L", False)
+A("till", "work", "L"); A("plant", "work", "I,L"); A("tend_crop", "work", "L", False)
+A("harvest", "work", "L"); A("draw_water", "work", "R"); A("craft", "work", "recipe")
+A("build", "work", "L", False); A("repair", "work", "target", False)
+A("hunt", "work", "R", False)
+# inventory / property
+A("pick_up", "inventory", "I"); A("drop", "inventory", "I")
+A("store", "inventory", "I,L"); A("take_from", "inventory", "L,I")
+A("give", "inventory", "E,I"); A("steal", "inventory", "E|L,I")
+A("destroy", "inventory", "target", False); A("claim", "inventory", "I|L", False)
+# speech acts
+A("greet", "speech", "E"); A("chat", "speech", "E"); A("inform", "speech", "E,F")
+A("deceive", "speech", "E,F"); A("ask", "speech", "E,F"); A("propose", "speech", "E,P")
+A("request", "speech", "E,P"); A("order", "speech", "E,P", False)
+A("accept", "speech", "P"); A("refuse", "speech", "P"); A("promise", "speech", "E,P")
+A("threaten", "speech", "E,F"); A("accuse", "speech", "E,F"); A("apologize", "speech", "E")
+A("thank", "speech", "E"); A("compliment", "speech", "E"); A("insult", "speech", "E")
+A("warn", "speech", "E,F"); A("call_for_help", "speech"); A("comfort", "speech", "E")
+A("forgive", "speech", "E"); A("teach", "speech", "E,K", False)
+# intimacy (adults only, never kin; engine-enforced)
+A("flirt", "intimacy", "E"); A("kiss", "intimacy", "E"); A("embrace", "intimacy", "E", True, "non-romantic hug allowed for any age")
+A("be_intimate", "intimacy", "E", True, "adults, mutual, private place only")
+# conflict
+A("attack", "conflict", "E,M", True, "mode: shove|strike|armed|lethal")
+A("defend", "conflict", "E"); A("chase", "conflict", "E"); A("restrain", "conflict", "E", False)
+A("expel", "conflict", "E,L")
+# care
+A("heal", "care", "E", False); A("assist", "care", "E,task")
+# attention
+A("observe", "attention", "E|L"); A("search", "attention", "E|I|L")
+A("eavesdrop", "attention", "E", False); A("investigate", "attention", "L", False)
+# leisure
+A("leisure", "leisure", "A,E?"); A("pray", "leisure", "", False); A("mourn", "leisure", "", False)
+# commitment
+A("accompany", "commit", "E"); A("break_commitment", "commit", "C"); A("continue", "commit")
+ACTION_IDS = [a["id"] for a in ACTIONS]
+assert len(ACTION_IDS) == len(set(ACTION_IDS))
+
+# --------------------------------------------------------------------------
+# Small helpers
+# --------------------------------------------------------------------------
+def clamp(x, lo, hi):
+    return max(lo, min(hi, x))
+
+
+def ci(x, lo, hi):
+    return int(clamp(round(x), lo, hi))
+
+
+def sc(x):
+    return ci(40 * x, -100, 100)
+
+
+def age_cat(age):
+    return "child" if age < 14 else "adolescent" if age < 18 else "adult" if age < 60 else "elder"
+
+
+def pair_uniform(world_seed, a, b):
+    h = hashlib.md5(f"{world_seed}|{a}|{b}".encode()).hexdigest()
+    return (int(h[:12], 16) / float(16 ** 12)) * 2 - 1
+
+
+HOUR_W = [1, 1, 1, 1, 1, 3, 6, 8, 9, 9, 9, 9, 7, 6, 8, 8, 8, 8, 7, 6, 5, 3, 2, 1]
+SEASONS = ["spring", "summer", "autumn", "winter"]
+WEATHER_W = {"spring": [("clear", 4), ("cloudy", 3), ("rain", 3), ("fog", 1), ("wind", 1)],
+             "summer": [("clear", 7), ("cloudy", 2), ("rain", 1), ("storm", 1)],
+             "autumn": [("clear", 3), ("cloudy", 4), ("rain", 4), ("fog", 2), ("wind", 2)],
+             "winter": [("clear", 3), ("cloudy", 3), ("snow", 4), ("fog", 2), ("wind", 1)]}
+LOCS = ["home", "field", "forest", "mine", "well", "square", "workshop", "road"]
+ITEMS = {"bread": "food", "apple": "food", "meat": "food", "water_jug": "drink",
+         "firewood": "fuel", "coal": "fuel", "stone": "material", "axe": "tool",
+         "hoe": "tool", "seeds": "seed", "cloth": "material", "knife": "tool"}
+JOBS_ADULT = [("farmer", 4), ("woodcutter", 1.5), ("miner", 1.5), ("smith", 1),
+              ("carpenter", 1), ("cook", 1), ("healer", .5), ("trader", 1), ("hunter", 1)]
+JOB_ACTION = {"farmer": ["till", "plant", "harvest", "draw_water"], "woodcutter": ["gather"],
+              "miner": ["gather"], "smith": ["craft"], "carpenter": ["craft"],
+              "cook": ["craft"], "healer": ["craft"], "trader": ["chat"], "hunter": ["gather"],
+              "apprentice": ["craft", "gather"]}
+ACTION_PLACE = {"till": "field", "plant": "field", "harvest": "field", "draw_water": "well",
+                "craft": "workshop", "chat": "square", "sleep": "home", "rest": "home",
+                "eat": "home", "go_to": "road", "wander": "road", "leisure": "square",
+                "wait": "square", "idle": "home", "gather": "forest"}
+ACTIVITIES = ["hopscotch", "storytelling", "dice", "dancing", "wrestling_for_fun", "fishing_trip"]
+COMMIT_BY_ACTION = {"sleep": 70, "craft": 60, "till": 50, "plant": 50, "harvest": 55,
+                    "gather": 55, "draw_water": 35, "chat": 25, "leisure": 30,
+                    "rest": 20, "wander": 10, "wait": 8, "idle": 5, "go_to": 30, "eat": 40}
+
+# link priors: (mu, sd) for relation scalars
+LINK_PRIORS = {
+    "spouse":   dict(affection=(60, 25), trust=(50, 30), respect=(40, 25), fear=(5, 8), fam=(95, 4), grudge=(8, 12)),
+    "partner":  dict(affection=(55, 25), trust=(40, 30), respect=(35, 25), fear=(5, 8), fam=(80, 12), grudge=(8, 12)),
+    "child":    dict(affection=(85, 12), trust=(35, 25), respect=(10, 20), fear=(0, 3), fam=(100, 1), grudge=(3, 6)),
+    "parent":   dict(affection=(65, 30), trust=(45, 30), respect=(50, 25), fear=(12, 15), fam=(100, 1), grudge=(10, 15)),
+    "sibling":  dict(affection=(50, 35), trust=(40, 30), respect=(25, 25), fear=(8, 12), fam=(100, 2), grudge=(15, 20)),
+    "friend":   dict(affection=(55, 25), trust=(45, 25), respect=(30, 25), fear=(3, 6), fam=(70, 18), grudge=(5, 10)),
+    "neighbor": dict(affection=(15, 30), trust=(15, 30), respect=(15, 25), fear=(5, 10), fam=(55, 22), grudge=(10, 15)),
+    "colleague": dict(affection=(10, 30), trust=(20, 30), respect=(20, 30), fear=(6, 10), fam=(60, 20), grudge=(10, 15)),
+    "employer": dict(affection=(0, 30), trust=(10, 30), respect=(30, 30), fear=(22, 20), fam=(55, 20), grudge=(10, 15)),
+    "employee": dict(affection=(5, 30), trust=(15, 30), respect=(20, 30), fear=(4, 8), fam=(55, 20), grudge=(8, 12)),
+    "rival":    dict(affection=(-40, 25), trust=(-20, 30), respect=(10, 30), fear=(20, 25), fam=(55, 22), grudge=(45, 25)),
+    "enemy":    dict(affection=(-75, 15), trust=(-70, 20), respect=(-30, 30), fear=(40, 30), fam=(50, 25), grudge=(70, 20)),
+    "stranger": dict(affection=(0, 15), trust=(0, 15), respect=(0, 15), fear=(10, 15), fam=(3, 5), grudge=(0, 4)),
+}
+KIN = {"child", "parent", "sibling", "spouse"}
+ADULT_ONLY_LINKS = {"spouse", "partner", "employer", "employee", "colleague"}
+LINK_LABEL = {"spouse": "spouse", "partner": "partner", "child": "my child", "parent": "my parent",
+              "sibling": "my sibling", "friend": "friend", "neighbor": "neighbor",
+              "colleague": "colleague", "employer": "employer", "employee": "employee",
+              "rival": "rival", "enemy": "enemy", "stranger": "stranger"}
+
+
+def choose_w(rng, pairs):
+    items, ws = zip(*pairs)
+    return rng.choices(items, weights=ws)[0]
+
+
+# --------------------------------------------------------------------------
+# Self
+# --------------------------------------------------------------------------
+def gen_self(rng, fam, world_seed):
+    r = rng.random()
+    age = rng.randint(6, 13) if r < .06 else rng.randint(14, 17) if r < .12 else \
+        rng.randint(18, 59) if r < .82 else rng.randint(60, 82)
+    if fam in ("romance", "harmful_proposal") and age < 18:
+        age = rng.randint(18, 59)
+    ac = age_cat(age)
+    z = {k: rng.gauss(0, 1) for k in "AXCOH"}
+    g = lambda: rng.gauss(0, 1)
+    traits = {
+        "aggression": sc(-.5 * z["A"] + .6 * z["H"] + .5 * g()),
+        "courage": sc(.3 * z["X"] + .3 * z["H"] - .1 * z["A"] + .8 * g()),
+        "empathy": sc(.7 * z["A"] + .1 * z["O"] + .5 * g()),
+        "sociability": sc(.8 * z["X"] + .2 * z["A"] + .4 * g()),
+        "honesty": sc(.5 * z["A"] + .5 * z["C"] + .6 * g()),
+        "impulsivity": sc(.7 * z["H"] - .5 * z["C"] + .5 * g()),
+        "curiosity": sc(.8 * z["O"] + .1 * z["X"] + .5 * g()),
+        "justice": sc(.3 * z["A"] + .4 * z["C"] + .2 * z["O"] + .8 * g()),
+        "grudge": sc(-.4 * z["A"] + .4 * z["H"] + .7 * g()),
+    }
+    flips = []
+    for k in TRAITS:           # deliberate "out of character" traits
+        if rng.random() < .05:
+            traits[k] = rng.randint(-100, 100)
+            flips.append(k)
+    temperament = {"reactivity": ci(50 + 22 * (.6 * z["H"] + .6 * g()), 0, 100),
+                   "resilience": ci(55 + 20 * (.4 * z["C"] - .3 * z["H"] + .6 * g()), 0, 100)}
+    values = {
+        "kin_protection": ci(65 + 12 * z["A"] + 20 * g(), 0, 100),
+        "property_respect": ci(55 + .25 * traits["honesty"] + 20 * g(), 0, 100),
+        "honor": ci(50 + .2 * traits["aggression"] + 25 * g(), 0, 100),
+        "life_value": ci(65 + .2 * traits["empathy"] - .2 * traits["aggression"] + 15 * g(), 0, 100),
+        "romantic_fidelity": ci(55 + .2 * traits["honesty"] + 25 * g(), 0, 100),
+    }
+    hour = rng.choices(range(24), weights=HOUR_W)[0] + rng.random()
+    season = rng.choice(SEASONS)
+    weather = choose_w(rng, WEATHER_W[season])
+    if ac == "child":
+        job = "none"
+    elif ac == "adolescent":
+        job = rng.choice(["apprentice", "none"])
+    elif ac == "adult":
+        job = choose_w(rng, JOBS_ADULT)
+    else:
+        job = choose_w(rng, [("farmer", 2), ("none", 2), ("cook", 1), ("carpenter", 1)])
+    night = hour < 5 or hour >= 22
+    if night and rng.random() < .6:
+        doing = "sleep"
+    elif 6 <= hour < 18 and job in JOB_ACTION and rng.random() < .65:
+        doing = rng.choice(JOB_ACTION[job])
+    else:
+        doing = rng.choice(["rest", "leisure", "wander", "wait", "chat", "go_to", "idle"])
+    place = ACTION_PLACE.get(doing, "road")
+    if doing == "gather":
+        place = "mine" if job == "miner" else "forest"
+    if doing == "craft" and job == "cook":
+        place = "home"
+    status = choose_w(rng, {"child": [("single", 1)],
+                            "adolescent": [("single", 8), ("courting", 2)],
+                            "adult": [("single", 30), ("courting", 10), ("partnered", 15), ("married", 35), ("separated", 5), ("widowed", 5)],
+                            "elder": [("married", 40), ("widowed", 40), ("single", 10), ("separated", 10)]}[ac])
+    # body / needs
+    h_meal = rng.uniform(.5, 11)
+    h_drink = rng.uniform(.3, 8)
+    hunger = clamp(7 * h_meal - 8 + rng.gauss(0, 8), 0, 100)
+    thirst = clamp(11 * h_drink - 6 + rng.gauss(0, 8) + (8 if season == "summer" else 0), 0, 100)
+    wake = 5.5 + rng.gauss(0, .8)
+    awake = (hour - wake) % 24
+    if doing == "sleep":
+        fatigue = clamp(40 + rng.gauss(0, 15), -100, 100)
+    else:
+        fatigue = clamp(9 * (awake - 9) + rng.gauss(0, 12), -100, 100)
+    injured = rng.random() < .12
+    hp = rng.randint(15, 70) if injured else rng.choice([rng.randint(85, 100)] * 4 + [rng.randint(70, 85)])
+    pain = clamp(max((100 - hp) * .85 + rng.gauss(0, 6), (100 - hp) * .7), 0, 100) if hp < 90 else clamp(rng.gauss(2, 3), 0, 15)
+    base_age_factor = {"child": .6, "adolescent": .85, "adult": 1, "elder": .65}[ac]
+    me = {
+        "uid": rng.randint(1, 10 ** 6), "age": age, "age_cat": ac, "love_status": status,
+        "job": job, "current_action": doing, "place_type": place, "weather": weather,
+        "season": season, "hour": round(hour, 2),
+        "traits": traits, "temperament": temperament, "values": values,
+        "drives": {
+            "libido": 0 if ac == "child" else ci(rng.uniform(10, 80) * (.5 if ac == "elder" else 1), 0, 100),
+            "social_need": ci(25 + .2 * traits["sociability"] + 18 * g(), 0, 100),
+            "achievement": ci(45 + 18 * g() - (12 if job == "none" else 0), 0, 100),
+            "hoarding": ci(25 + 14 * g(), 0, 100)},
+        "states": {"hunger": hunger, "thirst": thirst, "pain": pain, "fear": clamp(abs(rng.gauss(0, 6)), 0, 100),
+                   "shock": 0.0, "confusion": 0.0, "fatigue": fatigue,
+                   "anger": clamp(rng.gauss(-15, 15), -100, 100),
+                   "stress": clamp(rng.gauss(0, 18) + .2 * hunger, -100, 100),
+                   "joy": clamp(rng.gauss(10, 25) - .2 * hunger - .3 * pain, -100, 100)},
+        "stock_gap": {"food": sc(rng.gauss(0, .9) + (.6 if season == "winter" else 0)),
+                      "fuel": sc(rng.gauss(0, .8) + (1.1 if season == "winter" else -.4 if season == "summer" else 0)),
+                      "tools": sc(rng.gauss(0, .8))},
+        "body": {"hp": hp, "strength": ci(55 * base_age_factor + 18 * g() + 10, 5, 100),
+                 "load_ratio": round(clamp(rng.betavariate(2, 4), 0, 1), 2),
+                 "job_skill": 0 if job == "none" else ci(15 + max(0, age - 16) * 1.5 + 10 * g(), 0, 98)},
+        "activity": {"progress": round(rng.random(), 2),
+                     "commitment": ci(COMMIT_BY_ACTION.get(doing, 10) + 10 * g(), 0, 100),
+                     "secs_since_decision": rng.randint(0, 600)},
+        "flips": flips, "hours_since_meal": round(h_meal, 1),
+    }
+    return me
+
+
+# --------------------------------------------------------------------------
+# Entities
+# --------------------------------------------------------------------------
+def entity_age(rng, link, my_age):
+    if link == "child":
+        a = my_age - rng.randint(18, 40)
+        return a if a >= 0 else None
+    if link == "parent":
+        a = my_age + rng.randint(18, 40)
+        return a if a <= 92 else None
+    if link == "sibling":
+        a = my_age + rng.randint(-10, 10)
+    elif link in ("spouse", "partner"):
+        a = my_age + rng.randint(-8, 8)
+    elif link == "employer":
+        a = max(25, my_age + rng.randint(-5, 20))
+    elif link == "employee":
+        a = max(16, my_age + rng.randint(-15, 5))
+    elif my_age < 18:
+        a = my_age + rng.randint(-3, 3)
+    else:
+        a = my_age + rng.randint(-12, 12)
+    a = int(clamp(a, 3, 92))
+    if link in ADULT_ONLY_LINKS and a < 18:
+        return None
+    return a
+
+
+def link_weights(me, used):
+    ac = me["age_cat"]
+    w = {}
+    if ac in ("child", "adolescent"):
+        w = {"parent": 4, "sibling": 3, "friend": 3, "neighbor": 1, "stranger": 1, "rival": .5}
+    else:
+        if me["love_status"] == "married":
+            w["spouse"] = 3
+        if me["love_status"] in ("partnered", "courting"):
+            w["partner"] = 3
+        if me["age"] >= 25:
+            w["child"] = 2 if ac == "adult" else 3
+        if me["age"] <= 62:
+            w["parent"] = 1.5
+        w.update({"sibling": 1.5, "friend": 3, "neighbor": 2, "colleague": 2 if ac == "adult" else .5,
+                  "employer": 1 if ac == "adult" else 0, "employee": 1 if ac == "adult" else 0,
+                  "rival": 1, "enemy": .5, "stranger": 2})
+    for u in used:
+        if u in ("spouse", "partner"):
+            w.pop(u, None)
+    return {k: v for k, v in w.items() if v > 0}
+
+
+def make_entity(rng, me, eid, link, world_seed, flip_ok=True):
+    age = entity_age(rng, link, me["age"])
+    if age is None:
+        return None
+    ac = age_cat(age)
+    pri = LINK_PRIORS[link]
+    g = rng.gauss
+    rel = {k: g(*pri[k]) for k in ("affection", "trust", "respect", "fear", "grudge")}
+    fam = clamp(g(*pri["fam"]), 0, 100)
+    hidden = {"honesty": rng.gauss(0, 45), "aggression": rng.gauss(0, 45)}
+    explain = []
+    if flip_ok and rng.random() < .12:             # explained contradiction
+        k = rng.choice(["affection", "trust", "respect"])
+        rel[k] = -rel[k] if abs(rel[k]) > 20 else rel[k] + rng.choice([-50, 50])
+        explain.append("flip_" + k)
+    rel["fear"] = clamp(rel["fear"] + .2 * max(0, hidden["aggression"]), 0, 100)
+    beauty = clamp(rng.gauss(55, 18), 5, 98)
+    chem = pair_uniform(world_seed, me["uid"], eid)
+    romance = 0.0
+    if me["age_cat"] == "adult" and ac == "adult" and link not in KIN and link not in ("employer", "employee"):
+        romance = 55 * chem + .3 * (beauty - 55) + .4 * rel["affection"] * (fam / 100) + g(0, 10)
+        if link in ("partner",):
+            romance = max(romance, 30) + g(20, 15)
+    elif link == "spouse":
+        romance = g(45, 25)
+    debt = 0.0
+    if rng.random() < .15:
+        debt = rng.choice([-1, 1]) * rng.uniform(15, 70)
+    dist = rng.uniform(1, 20)
+    perceived = clamp(1 - dist / 30 + g(0, .1), .2, 1)
+    love = {"spouse": "married", "partner": "partnered"}.get(link)
+    if love is None:
+        love = {"child": "single", "adolescent": "single"}.get(ac) or \
+            choose_w(rng, [("single", 30), ("courting", 8), ("partnered", 12), ("married", 35), ("widowed", 8), ("separated", 4)])
+        if ac in ("child", "adolescent"):
+            love = "single"
+    rep_trust = clamp(.5 * hidden["honesty"] + .5 * rel["trust"] + g(0, 15), -100, 100)
+    rep_danger = clamp(.7 * hidden["aggression"] + .3 * rel["fear"] + g(0, 15), -100, 100)
+    ent = {
+        "id": eid, "uid": rng.randint(1, 10 ** 6), "link": link, "age": age, "age_cat": ac,
+        "love_status": love, "is_player": False, "hidden": hidden,
+        "rel": {"affection": ci(rel["affection"], -100, 100), "trust": ci(rel["trust"], -100, 100),
+                "respect": ci(rel["respect"], -100, 100), "romance": ci(romance, -100, 100),
+                "debt": ci(debt, -100, 100), "fear": ci(rel["fear"], 0, 100),
+                "familiarity": ci(fam, 0, 100), "grudge": ci(rel["grudge"], 0, 100)},
+        "mood_toward": ci(.6 * rel["affection"] - .3 * rel["grudge"] + g(0, 15), -100, 100),
+        "urge_to_interact": ci(.5 * rel["affection"] + .3 * (me["drives"]["social_need"] - 50) + g(0, 20), -100, 100),
+        "chemistry": round(chem, 3), "perceived": round(perceived, 2), "distance": round(dist, 1),
+        "beauty": ci(beauty, 0, 100),
+        "days_since_contact": int(rng.expovariate(1 / (.3 + (100 - fam) / 8))),
+        "rep_trust": ci(rep_trust, -100, 100), "rep_danger": ci(rep_danger, -100, 100),
+        "understanding": 4 if perceived > .7 else rng.choice([2, 3]),
+        "visible_action": rng.choice(["none", "none", "till", "chat", "rest", "craft", "gather", "leisure", "go_to"]),
+        "explain": explain,
+    }
+    if link in ("spouse", "partner", "child", "parent", "sibling") or ent["rel"]["familiarity"] > 60:
+        ent["days_since_contact"] = min(ent["days_since_contact"], 3)
+    return ent
+
+
+def gen_entities(rng, fam, me, n, world_seed, force=None):
+    ents, used, tries = [], [], 0
+    force = list(force or [])
+    while len(ents) < n and tries < 40:
+        tries += 1
+        link = force.pop(0) if force else choose_w(rng, list(link_weights(me, used).items()))
+        e = make_entity(rng, me, f"E{len(ents) + 1}", link, world_seed)
+        if e is None:
+            continue
+        used.append(link)
+        ents.append(e)
+    return ents
+
+
+# --------------------------------------------------------------------------
+# Events
+# --------------------------------------------------------------------------
+def ent_by(ents, pred):
+    c = [e for e in ents if pred(e)]
+    return c
+
+
+def norm_vec(ev, me, ents):
+    """PLACEHOLDER appraisal table. The real table is built offline."""
+    v = dict.fromkeys(NORMS, 0)
+    t = ev["type"]
+    tgt = next((e for e in ents if e["id"] == ev.get("target")), None)
+    kin_tgt = tgt is not None and tgt["link"] in KIN
+    inten = ev["intensity"]
+    if t in ("theft",):
+        v["property"], v["fairness"] = 60, 40
+    elif t in ("shove", "strike", "threat"):
+        v["life"] = {"shove": 15, "strike": 40, "threat": 30}[t]
+        v["honor"] = 20 if ev.get("target") == "me" else 0
+    elif t == "insult":
+        v["honor"] = 50
+    elif t in ("lie_revealed",):
+        v["truth"], v["honor"] = 70, 30
+    elif t == "promise_broken":
+        v["truth"], v["honor"], v["fairness"] = 40, 30, 30
+    elif t in ("flirt", "kiss", "embrace") and ev.get("romantic"):
+        v["fidelity"] = 50 if t == "flirt" else 80
+    elif t == "proposal" and ev["content"].get("kind") == "harm":
+        act = ev["content"]["act"]
+        v["life"] = {"kill": 90, "beat": 50, "lock_up": 40}.get(act, 20)
+        v["property"] = 60 if act == "steal_from" else 0
+        v["fairness"] = 50
+    if kin_tgt and t not in ("gift", "help_given", "compliment"):
+        v["kin"] = ci(60 + .3 * inten, 0, 100)
+    if ev["content"].get("kind") == "harm":
+        victim = next((e for e in ents if e["id"] == ev["content"].get("victim")), None)
+        if victim is not None and victim["link"] in KIN:
+            v["kin"] = 90
+    return {k: ci(x, 0, 100) for k, x in v.items()}
+
+
+def mk_event(rng, etype, agent, target, role="target", source="seen", content=None,
+             intensity=None, oow=False, romantic=False):
+    inten = intensity if intensity is not None else rng.randint(20, 90)
+    return {"type": etype, "agent": agent, "target": target, "role": role, "source": source,
+            "content": content or {}, "intensity": inten,
+            "salience": ci(.7 * inten + (15 if role == "target" else 0) + rng.randint(-8, 8), 0, 100),
+            "understanding": 4 if source == "seen" else 3,
+            "reliability": 1.0 if source == "seen" else round(rng.uniform(.4, .9), 2),
+            "delay": rng.randint(0, 90), "out_of_world": oow, "romantic": romantic}
+
+
+def pick_agent(rng, ents, prefer_player=False, pred=None):
+    c = [e for e in ents if (pred is None or pred(e))]
+    if not c:
+        return None
+    pl = [e for e in c if e["is_player"]]
+    return rng.choice(pl) if (prefer_player and pl) else rng.choice(c)
+
+
+def make_proposal(rng, me, agent, ents, kind=None):
+    kinds = ["leisure", "trade", "task", "accompany"]
+    if me["age_cat"] == "adult" and agent["age_cat"] == "adult" and agent["link"] not in KIN:
+        kinds += ["romance"]
+    kind = kind or rng.choice(kinds)
+    if kind == "leisure":
+        return {"kind": "leisure", "activity": rng.choice(ACTIVITIES)}
+    if kind == "trade":
+        give, get = rng.sample(list(ITEMS), 2)
+        return {"kind": "trade", "you_give": get, "you_get": give}
+    if kind == "task":
+        return {"kind": "task", "task": rng.choice(["harvest", "gather", "craft", "build_shed"]), "where": rng.choice(LOCS)}
+    if kind == "accompany":
+        return {"kind": "accompany", "dest": rng.choice(["forest", "mine", "road", "field"]), "for": rng.choice(["1h", "3h", "a day"])}
+    return {"kind": "romance", "step": rng.choice(["walk_together", "kiss", "intimacy"])}
+
+
+def build_events(rng, fam, me, ents, items):
+    ev = []
+    others = ents
+    a = pick_agent(rng, others, prefer_player=fam in ("proposal", "harmful_proposal", "request", "out_of_world", "commitment"))
+    if fam == "routine":
+        if others and rng.random() < .3:
+            ev.append(mk_event(rng, "greeting", rng.choice(others)["id"], "me", intensity=15))
+    elif fam == "urgent_need":
+        me["states"]["hunger"] = max(me["states"]["hunger"], rng.uniform(65, 95))
+        me["states"]["thirst"] = max(me["states"]["thirst"], rng.uniform(40, 90)) if rng.random() < .5 else me["states"]["thirst"]
+    elif fam == "greeting" and a:
+        ev.append(mk_event(rng, rng.choice(["greeting", "chat_overture"]), a["id"], "me", intensity=20))
+    elif fam == "proposal" and a:
+        ev.append(mk_event(rng, "proposal", a["id"], "me", content=make_proposal(rng, me, a, ents), intensity=40))
+    elif fam == "harmful_proposal" and a:
+        victims = [e for e in ents if e is not a and e["age_cat"] != "child"]
+        victims.sort(key=lambda e: e["link"] not in KIN)
+        if victims:
+            v = victims[0] if rng.random() < .7 else rng.choice(victims)
+            ev.append(mk_event(rng, "proposal", a["id"], "me", intensity=55,
+                               content={"kind": "harm", "act": rng.choice(["beat", "steal_from", "abandon", "kill", "lock_up", "insult"]),
+                                        "victim": v["id"]}))
+    elif fam == "request" and a:
+        ev.append(mk_event(rng, "request", a["id"], "me", intensity=35,
+                           content={"kind": rng.choice(["item", "loan", "help_task", "favor"]), "item": rng.choice(list(ITEMS))}))
+    elif fam == "provocation" and a:
+        t = rng.choice(["insult", "threat", "shove", "strike"])
+        ev.append(mk_event(rng, t, a["id"], "me", intensity={"insult": rng.randint(30, 70), "threat": rng.randint(40, 85),
+                                                            "shove": rng.randint(30, 60), "strike": rng.randint(55, 95)}[t]))
+    elif fam == "wrongdoing_witnessed" and len(ents) >= 2:
+        x, y = rng.sample(ents, 2)
+        t = rng.choice(["theft", "strike", "insult", "shove"])
+        ev.append(mk_event(rng, t, x["id"], y["id"], role="witness", intensity=rng.randint(30, 90),
+                           content={"item": rng.choice(list(ITEMS))} if t == "theft" else {}))
+    elif fam == "kindness" and a:
+        ev.append(mk_event(rng, rng.choice(["gift", "help_given", "compliment"]), a["id"], "me", intensity=45,
+                           content={"item": rng.choice(list(ITEMS))}))
+    elif fam == "romance":
+        pool = [e for e in ents if e["age_cat"] == "adult" and e["link"] not in KIN]
+        spouse = next((e for e in ents if e["link"] in ("spouse", "partner")), None)
+        if spouse and len(pool) >= 2 and rng.random() < .4:
+            other = rng.choice([e for e in pool if e is not spouse])
+            ev.append(mk_event(rng, rng.choice(["flirt", "kiss"]), spouse["id"], other["id"], role="witness",
+                               intensity=60, romantic=True))
+        elif pool:
+            ev.append(mk_event(rng, rng.choice(["flirt", "kiss", "embrace"]), rng.choice(pool)["id"], "me",
+                               intensity=50, romantic=True))
+    elif fam == "betrayal" and a:
+        t = rng.choice(["lie_revealed", "promise_broken", "accusation"])
+        ev.append(mk_event(rng, t, a["id"], "me", role="target", source=rng.choice(["seen", "told"]), intensity=rng.randint(40, 90),
+                           content={"claim": rng.choice(["stole", "lied", "betrayed", "slandered"])}))
+        a["explain"].append("betrayed")
+    elif fam == "danger":
+        t = rng.choice(["noise_danger", "fire", "wild_animal"])
+        ev.append(mk_event(rng, t, None, None, role="witness", intensity=rng.randint(50, 95)))
+        if ents and rng.random() < .5:
+            ev.append(mk_event(rng, "injury", None, rng.choice(ents)["id"], role="witness", intensity=rng.randint(40, 90)))
+    elif fam == "out_of_world":
+        who = a["id"] if a else None
+        ev.append(mk_event(rng, "utterance", who, "me", intensity=30, oow=True,
+                           content={"unknown_concept": rng.choice(["car", "telephone", "police", "television", "airplane"])}))
+    elif fam == "opportunity":
+        it = rng.choice(list(ITEMS))
+        items.append({"type": it, "qty": rng.randint(1, 4), "owner": "none"})
+        ev.append(mk_event(rng, "found_item", None, None, role="witness", intensity=rng.randint(25, 55), content={"item": it}))
+    elif fam == "rumor" and len(ents) >= 2:
+        x, y = rng.sample(ents, 2)
+        ev.append(mk_event(rng, "inform", x["id"], "me", source="told", intensity=30,
+                           content={"about": y["id"], "claim": rng.choice(["stole", "lied", "is_ill", "loves_someone", "hit_someone"])}))
+    elif fam == "commitment" and a:
+        ev.append(mk_event(rng, rng.choice(["request", "noise_danger", "greeting"]), a["id"], "me", intensity=40,
+                           content={"kind": "help_task", "item": "axe"}))
+    if me["current_action"] == "sleep" and not ev:
+        ev.append(mk_event(rng, "noise_danger", None, None, role="witness", intensity=rng.randint(40, 80)))
+    for i, e in enumerate(ev, 1):
+        e["id"] = f"V{i}"
+        e["norm"] = norm_vec(e, me, ents)
+    return ev
+
+
+def apply_event_effects(rng, me, ents, events):
+    s, t = me["states"], me["traits"]
+    for e in events:
+        if e["delay"] > 120:
+            continue
+        sev = e["intensity"] / 100
+        ty = e["type"]
+        tgt_me = e["target"] == "me"
+        if ty in ("shove", "strike", "threat", "fire", "wild_animal", "noise_danger"):
+            s["fear"] += 60 * sev * (1 - t["courage"] / 200)
+            if tgt_me or ty in ("fire", "wild_animal", "noise_danger"):
+                s["shock"] += 50 * sev
+            if tgt_me and e["agent"]:
+                s["anger"] += 40 * sev * (.5 + t["aggression"] / 200)
+            if ty in ("strike", "shove") and tgt_me:
+                me["body"]["hp"] = ci(me["body"]["hp"] - 25 * sev, 5, 100)
+                s["pain"] = max(s["pain"], 20 + 50 * sev)
+        elif ty == "insult" and tgt_me:
+            s["anger"] += 50 * sev * (.5 + me["values"]["honor"] / 100)
+            s["joy"] -= 25 * sev
+        elif ty in ("lie_revealed", "promise_broken", "accusation", "theft") and (tgt_me or ty == "theft"):
+            s["anger"] += 45 * sev * (1 if tgt_me else .4)
+            s["joy"] -= 30 * sev * (1 if tgt_me else .3)
+            s["stress"] += 20 * sev
+        elif ty in ("gift", "help_given", "compliment"):
+            s["joy"] += 30 * sev
+        elif ty in ("flirt", "kiss", "embrace") and tgt_me:
+            s["joy"] += 15
+        elif ty == "injury":
+            tg = next((x for x in ents if x["id"] == e["target"]), None)
+            if tg and (tg["link"] in KIN or tg["rel"]["affection"] > 40):
+                s["fear"] += 30
+                s["stress"] += 30
+                s["shock"] += 40 * sev
+        if e["out_of_world"]:
+            s["confusion"] += 60 * sev + 20
+    for k in STATES_U:
+        s[k] = clamp(s[k], 0, 100)
+    for k in STATES_S:
+        s[k] = clamp(s[k], -100, 100)
+    if s["shock"] > 60:
+        s["pain"] *= .5                      # numbness explains low pain with low hp
+    me["body"]["hp"] = int(me["body"]["hp"])
+    for k in STATES_U + STATES_S:
+        s[k] = ci(s[k], -100 if k in STATES_S else 0, 100)
+
+
+# --------------------------------------------------------------------------
+# Memories and goals
+# --------------------------------------------------------------------------
+def gen_memories(rng, me, ents, fam):
+    mems = []
+
+    def add(t, agent, target, val, imp, age, defining=False, why=""):
+        mems.append({"type": t, "agent": agent, "target": target, "valence": val, "importance": imp,
+                     "age_days": age, "certainty": round(rng.uniform(.7, 1), 2), "defining": defining,
+                     "source": "seen", "why": why})
+    for e in ents:
+        r = e["rel"]
+        if r["trust"] < -40 or "betrayed" in e["explain"]:
+            add(rng.choice(["lie_revealed", "promise_broken"]), e["id"], "me", -60, 75, rng.randint(5, 200), True, "trust")
+        if r["grudge"] > 50 or (r["affection"] < -50 and r["grudge"] > 35):
+            add(rng.choice(["strike", "insult", "theft"]), e["id"], "me", -70, 80, rng.randint(5, 300), True, "grudge")
+        if r["debt"] < -30:
+            add("help_given", e["id"], "me", 55, 65, rng.randint(3, 90), False, "debt_owed")
+        if r["fear"] > 50:
+            add(rng.choice(["threat", "strike"]), e["id"], "me", -65, 70, rng.randint(3, 200), False, "fear")
+        if r["affection"] > 60 and e["link"] not in KIN and rng.random() < .6:
+            add(rng.choice(["gift", "help_given", "kiss" if e["rel"]["romance"] > 40 else "chat"]), e["id"], "me", 60, 55, rng.randint(2, 120))
+    for _ in range(rng.randint(0, 2)):
+        if ents:
+            e = rng.choice(ents)
+            add(rng.choice(["chat", "greeting", "help_given", "insult"]), e["id"], "me", rng.randint(-30, 40), rng.randint(10, 40), rng.randint(1, 60))
+    mems = mems[:6]
+    for i, m in enumerate(mems, 1):
+        m["id"] = f"M{i}"
+    return mems
+
+
+def gen_goals(rng, me, ents, events, fam):
+    goals = []
+    s = me["states"]
+    if s["hunger"] > 60:
+        goals.append({"type": "need", "target": "food", "priority": ci(s["hunger"], 0, 100), "progress": 0.0, "deadline_h": 1})
+    if s["fatigue"] > 70:
+        goals.append({"type": "need", "target": "sleep", "priority": ci(s["fatigue"], 0, 100), "progress": 0.0, "deadline_h": 3})
+    for e in ents:
+        if e["rel"]["grudge"] > 60 and rng.random() < .4:
+            goals.append({"type": "vengeance", "target": e["id"], "priority": ci(e["rel"]["grudge"], 0, 100), "progress": 0.0, "deadline_h": 72})
+    if me["job"] != "none" and rng.random() < .5:
+        goals.append({"type": "project", "target": rng.choice(["harvest_field", "stock_firewood", "repair_tools"]),
+                      "priority": rng.randint(25, 65), "progress": round(rng.random(), 2), "deadline_h": rng.randint(8, 120)})
+    if fam == "commitment":
+        pl = next((e for e in ents if e["is_player"]), ents[0] if ents else None)
+        if pl:
+            goals.append({"type": "accompany", "target": pl["id"], "priority": rng.randint(50, 85),
+                          "progress": round(rng.random() * .6, 2), "deadline_h": rng.randint(1, 6)})
+    return sorted(goals, key=lambda g_: -g_["priority"])[:4]
+
+
+# --------------------------------------------------------------------------
+# Candidates (what the teacher scores and what the model chooses among)
+# --------------------------------------------------------------------------
+def can_romance(me, e):
+    return me["age_cat"] == "adult" and e["age_cat"] == "adult" and e["link"] not in KIN
+
+
+def build_candidates(rng, me, ents, events, items, include_ext=False):
+    C, seen = [], set()
+
+    def add(act, /, **args):
+        key = (act, tuple(sorted(args.items())))
+        if key in seen:
+            return
+        if not include_ext and not next(x for x in ACTIONS if x["id"] == act)["core"]:
+            return
+        seen.add(key)
+        C.append({"a": act, "args": args})
+
+    eids = {e["id"]: e for e in ents}
+    s = me["states"]
+    add("continue" if me["current_action"] != "idle" else "wait")
+    if s["hunger"] >= 50:
+        for it in items:
+            if ITEMS[it["type"]] == "food" and it["owner"] in ("me", "none"):
+                add("eat", i=it["type"])
+        add("eat", i="bread")
+    if s["thirst"] >= 50:
+        add("drink", i="water_jug"); add("go_to", l="well")
+    if s["fatigue"] >= 60:
+        add("sleep", l="home"); add("rest")
+    crisis = False
+    for ev in events:
+        t, ag, tg = ev["type"], ev["agent"], ev["target"]
+        agent = eids.get(ag)
+        if t == "proposal":
+            add("accept", p=ev["id"]); add("refuse", p=ev["id"]); add("ask", e=ag, f="details")
+            if ev["content"].get("kind") == "harm":
+                crisis = True
+                add("attack", e=ag, m="shove"); add("expel", e=ag, l="home"); add("threaten", e=ag, f="consequence")
+                add("call_for_help"); add("avoid", e=ag)
+                vic = ev["content"].get("victim")
+                if vic:
+                    add("warn", e=vic, f=f"{ag}:plans_harm")
+            else:
+                add("propose", e=ag, p=f"counter:{ev['id']}"); add("chat", e=ag)
+                if ev["content"].get("kind") == "accompany":
+                    add("accompany", e=ag)
+        elif t == "request":
+            add("accept", p=ev["id"]); add("refuse", p=ev["id"]); add("ask", e=ag, f="why"); add("assist", e=ag, task="their_task")
+        elif t in ("greeting", "chat_overture"):
+            add("greet", e=ag); add("chat", e=ag); add("avoid", e=ag); add("approach", e=ag)
+        elif t in ("insult", "threat", "shove", "strike") and tg == "me":
+            crisis = t != "insult" or crisis
+            add("insult", e=ag); add("attack", e=ag, m="shove"); add("threaten", e=ag, f="retaliation")
+            add("avoid", e=ag); add("call_for_help"); add("ask", e=ag, f="why"); add("apologize", e=ag)
+            if t in ("threat", "strike"):
+                add("flee", e=ag); add("defend", e="self")
+        elif t in ("theft", "strike", "shove", "insult") and tg != "me":
+            add("accuse", e=ag, f=f"{t}"); add("chase", e=ag); add("call_for_help"); add("assist", e=tg, task="help_victim")
+            add("inform", e=tg if tg in eids else ag, f=f"{ag}:{t}")
+        elif t in ("gift", "help_given", "compliment"):
+            add("thank", e=ag); add("compliment", e=ag); add("give", e=ag, i=ev["content"].get("item", "bread")); add("embrace", e=ag)
+        elif t in ("flirt", "kiss", "embrace"):
+            if tg == "me" and agent and can_romance(me, agent):
+                add("flirt", e=ag); add("kiss", e=ag); add("avoid", e=ag); add("chat", e=ag); add("refuse", p=ev["id"])
+                if me["place_type"] == "home" and agent["rel"]["romance"] > 20:
+                    add("be_intimate", e=ag)
+            elif tg != "me":
+                add("accuse", e=ag, f="infidelity"); add("ask", e=ag, f="explanation"); add("avoid", e=ag); add("observe", e=tg)
+                add("insult", e=tg)
+        elif t in ("lie_revealed", "promise_broken", "accusation"):
+            add("accuse", e=ag, f=ev["content"].get("claim", "lied")); add("ask", e=ag, f="why"); add("forgive", e=ag)
+            add("avoid", e=ag); add("insult", e=ag); add("attack", e=ag, m="strike"); add("inform", e=next(iter(eids), ag), f=f"{ag}:lied")
+        elif t in ("noise_danger", "fire", "wild_animal"):
+            crisis = True
+            add("flee", l="home"); add("investigate" if include_ext else "observe", l="source"); add("call_for_help"); add("warn", e=next(iter(eids), "all"), f="danger")
+            add("defend", e="self"); add("assist", e=next(iter(eids), "all"), task="evacuate")
+        elif t == "injury":
+            add("assist", e=tg, task="aid"); add("comfort", e=tg); add("call_for_help"); add("heal" if include_ext else "observe", e=tg)
+        elif t == "utterance":
+            add("ask", e=ag, f="what_do_you_mean"); add("observe", e=ag); add("avoid", e=ag); add("chat", e=ag)
+        elif t == "found_item":
+            it = ev["content"]["item"]
+            add("pick_up", i=it); add("claim" if include_ext else "observe", i=it); add("inform", e=next(iter(eids), "all"), f=f"found:{it}")
+        elif t == "inform":
+            add("ask", e=ag, f="proof"); add("chat", e=ag); add("inform", e=ev["content"]["about"], f=f"{ag}:said_{ev['content']['claim']}")
+            if rng.random() < .3:
+                add("deceive", e=ev["content"]["about"], f="denial")
+    if crisis:
+        add("flee", l="home")
+        add("call_for_help")
+        aggressor = next((ev["agent"] for ev in events if ev["agent"] in eids and ev["target"] == "me"
+                          and ev["type"] in ("threat", "shove", "strike", "proposal")), None)
+        if me["age_cat"] != "child" and aggressor:
+            add("attack", e=aggressor, m="shove")
+    # filler: plausible neutral options
+    pool = [("rest", {}), ("wander", {}), ("go_to", {"l": "square"}), ("go_to", {"l": "home"}), ("leisure", {"a": rng.choice(ACTIVITIES)})]
+    if me["job"] in JOB_ACTION:
+        pool.append((JOB_ACTION[me["job"]][0], {"l": "field"} if JOB_ACTION[me["job"]][0] in ("till", "harvest") else {"r": "node"}))
+    for e in ents[:2]:
+        pool += [("chat", {"e": e["id"]}), ("greet", {"e": e["id"]}), ("observe", {"e": e["id"]})]
+        if e["rel"]["affection"] > 40:
+            pool.append(("embrace", {"e": e["id"]}))
+    rng.shuffle(pool)
+    for a_, args in pool[:rng.randint(3, 5)]:
+        add(a_, **args)
+    # hard safety masks
+    out = []
+    for c in C:
+        a_, args = c["a"], c["args"]
+        e = eids.get(args.get("e"))
+        if a_ in ("flirt", "kiss", "be_intimate") and not (e and can_romance(me, e)):
+            continue
+        if a_ == "attack" and args.get("m") == "lethal" and me["age_cat"] == "child":
+            continue
+        if a_ == "steal":
+            continue
+        out.append(c)
+    rng.shuffle(out)
+    out = out[:16]
+    # keep 'continue' in
+    if not any(c["a"] in ("continue", "wait") for c in out):
+        out[-1] = {"a": "continue", "args": {}}
+    for i, c in enumerate(out):
+        c["i"] = i
+    return out
+
+
+# --------------------------------------------------------------------------
+# Compact, binned, sparse view for the teacher LLM
+# --------------------------------------------------------------------------
+def bs(v):
+    return "--" if v <= -60 else "-" if v <= -25 else "" if v < 25 else "+" if v < 60 else "++"
+
+
+def bu(v):
+    return "" if v < 25 else "some" if v < 55 else "high" if v < 80 else "max"
+
+
+def tod(h):
+    return "night" if h < 5 or h >= 22 else "morning" if h < 11 else "midday" if h < 14 else "afternoon" if h < 18 else "evening"
+
+
+def sparse(d, f):
+    return {k: f(v) for k, v in d.items() if f(v)}
+
+
+def view_of(me, ents, events, mems, goals, cands, items):
+    v = {"me": {"age": me["age_cat"], "love": me["love_status"], "job": me["job"], "doing": me["current_action"],
+                "place": me["place_type"], "time": tod(me["hour"]), "season": me["season"], "weather": me["weather"]}}
+    m = v["me"]
+    m["traits"] = sparse(me["traits"], bs)
+    vals = {k: ("high" if x >= 80 else "low" if x <= 30 else "") for k, x in me["values"].items()}
+    m["values"] = {k: x for k, x in vals.items() if x}
+    m["drives"] = sparse(me["drives"], bu)
+    st = {}
+    for k in STATES_U:
+        if bu(me["states"][k]):
+            st[k] = bu(me["states"][k])
+    for k in STATES_S:
+        if bs(me["states"][k]):
+            st[k] = bs(me["states"][k])
+    m["state"] = st
+    if me["body"]["hp"] < 60:
+        m["hp"] = "low"
+    gap = sparse(me["stock_gap"], bs)
+    if gap:
+        m["stock_gap"] = gap
+    if me["activity"]["commitment"] >= 60:
+        m["busy"] = "high"
+    v["others"] = {}
+    for e in ents:
+        r = e["rel"]
+        rel = {}
+        for k in ("affection", "trust", "respect", "romance", "debt"):
+            if bs(r[k]):
+                rel[k] = bs(r[k])
+        for k in ("fear", "grudge"):
+            if bu(r[k]):
+                rel[k] = bu(r[k])
+        o = {"is": LINK_LABEL[e["link"]], "age": e["age_cat"], "rel": rel}
+        if e["rel"]["familiarity"] >= 70:
+            o["knows"] = "well"
+        elif e["rel"]["familiarity"] < 10:
+            o["knows"] = "barely"
+        rp = {}
+        if bs(e["rep_trust"]):
+            rp["trust"] = bs(e["rep_trust"])
+        if bs(e["rep_danger"]):
+            rp["danger"] = bs(e["rep_danger"])
+        if rp:
+            o["rep"] = rp
+        if e["visible_action"] != "none":
+            o["doing"] = e["visible_action"]
+        o["near"] = "close" if e["distance"] < 6 else "far"
+        v["others"][e["id"]] = o
+    v["events"] = []
+    for ev in events:
+        d = {"id": ev["id"], "type": ev["type"], "from": ev["agent"] or "-", "to": ev["target"] or "-",
+             "int": bu(ev["intensity"]) or "low"}
+        if ev["role"] != "target":
+            d["role"] = ev["role"]
+        if ev["source"] != "seen":
+            d["src"] = ev["source"]
+        if ev["reliability"] < .8:
+            d["reliable"] = "doubtful"
+        if ev["content"]:
+            d["what"] = ev["content"]
+        if ev["out_of_world"]:
+            d["note"] = "concept does not exist in this world"
+        v["events"].append(d)
+    v["mem"] = [{"id": x["id"], "type": x["type"], "who": x["agent"], "val": bs(x["valence"]) or "0",
+                 "imp": bu(x["importance"]) or "low", "ago_d": x["age_days"]} for x in mems]
+    v["goals"] = [{"type": g_["type"], "target": g_["target"], "prio": bu(g_["priority"]) or "low"} for g_ in goals]
+    if items:
+        v["items"] = [{"type": i["type"], "owner": i["owner"]} for i in items]
+    v["opts"] = [[c["i"], c["a"]] + [str(x) for x in c["args"].values()] for c in cands]
+    return v
+
+
+def view_text(v):
+    """Line-based DSL of the view. Much cheaper in tokens than JSON."""
+    def kv(d):
+        out = []
+        for k, x in d.items():
+            out.append(f"{k}{x}" if x in ("-", "--", "+", "++") else f"{k}={x}")
+        return ", ".join(out)
+    m = v["me"]
+    L = [f"ME {m['age']} {m['love']} {m['job']}; doing {m['doing']}@{m['place']}; {m['time']} {m['season']} {m['weather']}"]
+    for key in ("traits", "values", "drives", "state", "stock_gap"):
+        if m.get(key):
+            L.append(f" {key}: {kv(m[key])}")
+    if m.get("hp"):
+        L.append(" hp: low")
+    if m.get("busy"):
+        L.append(" busy: high")
+    for eid, o in v["others"].items():
+        bits = [f"{eid} {o['is']} {o['age']} {o['near']}"]
+        if o.get("knows"):
+            bits.append(f"knows={o['knows']}")
+        if o.get("doing"):
+            bits.append(f"doing={o['doing']}")
+        s_ = " ".join(bits)
+        rel = kv(o["rel"]) if o["rel"] else "-"
+        rep_ = (" | rep " + kv(o["rep"])) if o.get("rep") else ""
+        L.append(f"{s_} | {rel}{rep_}")
+    for ev in v["events"]:
+        extra = ""
+        if ev.get("what"):
+            extra += " " + json.dumps(ev["what"], separators=(",", ":"), ensure_ascii=False)
+        for k in ("role", "src", "reliable", "note"):
+            if ev.get(k):
+                extra += f" {k}={ev[k]}"
+        L.append(f"EVENT {ev['id']} {ev['type']} {ev['from']}->{ev['to']} int={ev['int']}{extra}")
+    for x in v["mem"]:
+        L.append(f"MEM {x['id']} {x['type']} {x['who']} val{x['val']} imp={x['imp']} {x['ago_d']}d")
+    for g_ in v["goals"]:
+        L.append(f"GOAL {g_['type']} {g_['target']} prio={g_['prio']}")
+    if v.get("items"):
+        L.append("ITEMS " + ", ".join(f"{i['type']}({i['owner']})" for i in v["items"]))
+    L.append("OPTS " + " | ".join(" ".join(str(y) for y in o) for o in v["opts"]))
+    return "\n".join(L)
+
+
+# --------------------------------------------------------------------------
+# Assembly, validation
+# --------------------------------------------------------------------------
+FAMILIES = {"routine": 3, "urgent_need": 2, "greeting": 2, "proposal": 4, "harmful_proposal": 3,
+            "request": 2, "provocation": 3, "wrongdoing_witnessed": 3, "kindness": 2, "romance": 3,
+            "betrayal": 3, "danger": 2, "out_of_world": 1, "opportunity": 2, "rumor": 2, "commitment": 2}
+NEEDS_ENTS = {"greeting": 1, "proposal": 1, "harmful_proposal": 2, "request": 1, "provocation": 1,
+              "wrongdoing_witnessed": 2, "kindness": 1, "romance": 2, "betrayal": 1, "rumor": 2, "commitment": 1,
+              "out_of_world": 1}
+
+
+def gen_situation(rng, idx, fam, world_seed, max_ent, max_ev, include_ext):
+    me = gen_self(rng, fam, world_seed)
+    n_min = NEEDS_ENTS.get(fam, 0)
+    n = max(n_min, rng.randint(max(1, n_min), max_ent)) if max_ent >= n_min else n_min
+    force = []
+    if fam == "harmful_proposal":
+        force = ["stranger" if me["age_cat"] != "adult" else "friend", rng.choice(["spouse", "sibling", "parent", "friend"])]
+    if fam == "romance" and me["love_status"] in ("married", "partnered"):
+        force = [("spouse" if me["love_status"] == "married" else "partner")]
+    if fam == "commitment":
+        force = ["stranger"]
+    ents = gen_entities(rng, fam, me, n, world_seed, force)
+    if fam in ("proposal", "harmful_proposal", "request", "out_of_world", "commitment", "romance") and ents and rng.random() < .6:
+        pl = ents[0] if fam != "romance" else next((e for e in ents if e["age_cat"] == "adult" and e["link"] not in KIN), None)
+        if pl is not None:
+            pl["is_player"] = True
+    items = []
+    for _ in range(rng.randint(0, 2)):
+        items.append({"type": rng.choice(list(ITEMS)), "qty": rng.randint(1, 3),
+                      "owner": rng.choice(["me", "none"] + [e["id"] for e in ents])})
+    events = build_events(rng, fam, me, ents, items)[:max_ev]
+    apply_event_effects(rng, me, ents, events)
+    mems = gen_memories(rng, me, ents, fam)
+    goals = gen_goals(rng, me, ents, events, fam)
+    cands = build_candidates(rng, me, ents, events, items, include_ext)
+    rec = {"id": f"s{idx:06d}", "schema": VERSION, "family": fam,
+           "state": {"me": me, "entities": ents, "events": events, "memories": mems, "goals": goals, "items": items},
+           "cands": cands,
+           "view": view_of(me, ents, events, mems, goals, cands, items)}
+    rec["text"] = view_text(rec["view"])
+    return rec
+
+
+def validate(rec):
+    bad = []
+    st = rec["state"]
+    me, ents, evs, mems = st["me"], st["entities"], st["events"], st["memories"]
+    ids = {e["id"] for e in ents}
+    if age_cat(me["age"]) != me["age_cat"]:
+        bad.append("age_cat")
+    if me["age_cat"] in ("child", "adolescent") and me["love_status"] != "single" and me["age_cat"] == "child":
+        bad.append("child_love_status")
+    for e in ents:
+        if age_cat(e["age"]) != e["age_cat"]:
+            bad.append("ent_age_cat")
+        if e["link"] == "child" and me["age"] - e["age"] < 16:
+            bad.append("kin_age_child")
+        if e["link"] == "parent" and e["age"] - me["age"] < 16:
+            bad.append("kin_age_parent")
+        if (me["age_cat"] != "adult" or e["age_cat"] != "adult") and e["link"] != "spouse" and e["rel"]["romance"] != 0:
+            bad.append("romance_with_minor")
+        if e["link"] in KIN and e["link"] != "spouse" and e["rel"]["romance"] != 0:
+            bad.append("romance_with_kin")
+        r = e["rel"]
+        if (r["trust"] < -40 or r["grudge"] > 50 or r["fear"] > 50) and not any(m["agent"] == e["id"] for m in mems):
+            bad.append("unexplained_relation")
+        for k, lo, hi in [("affection", -100, 100), ("trust", -100, 100), ("fear", 0, 100), ("grudge", 0, 100), ("familiarity", 0, 100)]:
+            if not lo <= r[k] <= hi:
+                bad.append("range_rel")
+    s = me["states"]
+    if me["body"]["hp"] < 60 and s["pain"] < 25 and s["shock"] < 59:
+        bad.append("hp_pain_incoherent")
+    for k in STATES_U:
+        if not 0 <= s[k] <= 100:
+            bad.append("range_state")
+    for k in STATES_S:
+        if not -100 <= s[k] <= 100:
+            bad.append("range_state")
+    if me["current_action"] == "sleep" and not evs:
+        bad.append("sleep_without_wakeup")
+    for ev in evs:
+        for k in ("agent", "target"):
+            if ev[k] not in (None, "me") and ev[k] not in ids:
+                bad.append("event_ref")
+    cs = rec["cands"]
+    if [c["i"] for c in cs] != list(range(len(cs))):
+        bad.append("cand_index")
+    if not any(c["a"] in ("continue", "wait") for c in cs):
+        bad.append("no_continue")
+    evids = {e["id"] for e in evs}
+    for c in cs:
+        a, args = c["a"], c["args"]
+        if a not in ACTION_IDS:
+            bad.append("unknown_action")
+        if a in ("accept", "refuse") and args.get("p") not in evids:
+            bad.append("proposal_ref")
+        e = next((x for x in ents if x["id"] == args.get("e")), None)
+        if a in ("flirt", "kiss", "be_intimate"):
+            if e is None or me["age_cat"] != "adult" or e["age_cat"] != "adult" or e["link"] in KIN:
+                bad.append("forbidden_romantic_action")
+        if a == "attack" and args.get("m") == "lethal" and me["age_cat"] == "child":
+            bad.append("child_lethal")
+    blob = json.dumps(rec["view"]) + rec["text"]
+    for banned in ("is_player", "chemistry", "uid", "hidden", "norm"):
+        if banned in blob:
+            bad.append("view_leak:" + banned)
+    return bad
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--n", type=int, default=1000)
+    ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--out", default="")
+    ap.add_argument("--max-entities", type=int, default=4)
+    ap.add_argument("--max-events", type=int, default=2)
+    ap.add_argument("--families", default="", help="comma list name=weight")
+    ap.add_argument("--ext", action="store_true", help="include extension actions")
+    ap.add_argument("--check", action="store_true")
+    ap.add_argument("--dump-actions-md", action="store_true")
+    ap.add_argument("--dump-schema", default="")
+    a = ap.parse_args()
+    if a.dump_actions_md:
+        cats = []
+        for x in ACTIONS:
+            if x["cat"] not in cats:
+                cats.append(x["cat"])
+        print("| Category | Action (args) | Level |\n|---|---|---|")
+        for c in cats:
+            acts = [x for x in ACTIONS if x["cat"] == c]
+            fmt = lambda x: f"`{x['id']}({x['args'].replace('|', '/')})`" if x["args"] else f"`{x['id']}`"
+            txt = ", ".join(fmt(x) for x in acts if x["core"])
+            ext = ", ".join(fmt(x) for x in acts if not x["core"])
+            if txt:
+                print(f"| {c} | {txt} | core |")
+            if ext:
+                print(f"| {c} | {ext} | extension |")
+        return
+    if a.dump_schema:
+        json.dump({"schema": SCHEMA, "actions": ACTIONS}, open(a.dump_schema, "w"), indent=1)
+        return
+    fams = dict(FAMILIES)
+    if a.families:
+        fams = {k: float(v) for k, v in (p.split("=") for p in a.families.split(","))}
+    rng = random.Random(a.seed)
+    world_seed = a.seed * 7919
+    names, ws = zip(*fams.items())
+    out = open(a.out, "w", encoding="utf-8") if a.out else None
+    viol, fam_count, lens, ncands = Counter(), Counter(), [], []
+    for i in range(a.n):
+        fam = rng.choices(names, weights=ws)[0]
+        rec = gen_situation(rng, i, fam, world_seed, a.max_entities, a.max_events, a.ext)
+        fam_count[fam] += 1
+        if a.check:
+            for b in validate(rec):
+                viol[b] += 1
+        lens.append(len(rec["text"]))
+        ncands.append(len(rec["cands"]))
+        if out:
+            out.write(json.dumps(rec, separators=(",", ":"), ensure_ascii=False) + "\n")
+    if out:
+        out.close()
+    print(f"generated {a.n} situations, {len(ACTION_IDS)} actions in vocabulary", file=sys.stderr)
+    print("families:", dict(fam_count), file=sys.stderr)
+    print(f"teacher text size: mean {sum(lens) / len(lens):.0f} chars, max {max(lens)}; candidates mean {sum(ncands) / len(ncands):.1f}", file=sys.stderr)
+    if a.check:
+        print("violations:", dict(viol) if viol else "none", file=sys.stderr)
+        sys.exit(1 if viol else 0)
+
+
+if __name__ == "__main__":
+    main()
