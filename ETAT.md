@@ -1,6 +1,6 @@
 # État du dépôt (8 octobre 2026)
 
-Branche `claude/integration-5q5447`, PR #1 (brouillon, à fusionner par Monsieur). La CI (`.github/workflows/ci.yml`) lance cinq tâches : pipeline PNJ et convertisseur (`scripts/test_all.sh`), moteur C++ (ctest), génération du monde (`test_worldgen`), simulation sociale (unittest). Elle était verte jusqu'au commit 29b225a. Le commit 761b050 passe tous les tests en local ; vérifiez son résultat sur GitHub.
+Branche `claude/integration-5q5447`, PR #1 (brouillon, à fusionner par Monsieur). La CI (`.github/workflows/ci.yml`) lance cinq tâches : pipeline PNJ et convertisseur (`scripts/test_all.sh`), moteur C++ (ctest), génération du monde (`test_worldgen`), simulation sociale (unittest). Elle est verte sur 7b970f6 ; chaque commit suivant passe tous les tests en local avant d'être poussé. Vérifiez le résultat du dernier commit sur GitHub.
 
 ## Ce qui est là
 
