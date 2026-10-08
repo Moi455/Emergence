@@ -144,6 +144,23 @@ export function makeSkeleton(P, U) {
     add(S + 'Foot', S + 'LowerLeg', [s * P.lx, P.yA, -0.006]);
     add(S + 'Toes', S + 'Foot', [s * P.lx, 0.018, P.footL * 0.55], [s * P.lx, 0.018, P.footL * 0.86]);
   }
+  // Appended after the original 43 so earlier bone indices never move (interfaces.md § 3).
+  // Third phalanges carry skin weights; eyes, jaw and attachment points carry none.
+  for (const [S, s] of SIDES) {
+    add(S + 'ThumbDistal', S + 'ThumbProximal', [s * (P.ax - 0.007), P.yW - 0.056, 0.038], [s * (P.ax - 0.008), P.yW - 0.068, 0.041]);
+    FINGERS.forEach((F, i) => {
+      const z = 0.020 - i * 0.0135;
+      add(S + F + 'Distal', S + F + 'Intermediate', [s * P.ax, P.yW - P.hl * 0.88, z], [s * P.ax, P.yW - P.hl, z]);
+    });
+  }
+  const eyeY = P.cy - P.headH * 0.045, eyeX = P.headH * 0.175;
+  for (const [S, s] of SIDES) add(S + 'Eye', 'Head', [s * eyeX, eyeY, P.rz * 0.8], [s * eyeX, eyeY, P.rz * 1.1]);
+  add('Jaw', 'Head', [0, P.cy - P.ry * 0.35, P.rz * 0.15], [0, P.cy - P.ry * 0.95, P.rz * 0.75]);
+  // attachment points: tool grip in the palm (handle along local +Y), back, right hip, top of head
+  for (const [S, s] of SIDES) add(S + 'HandProp', S + 'Hand', [s * P.ax, P.yW - P.hl * 0.42, 0.006], [s * P.ax, P.yW - P.hl * 0.42 + 0.1, 0.006]);
+  add('BackProp', 'UpperChest', [0, yUC, -0.1], [0, yUC + 0.1, -0.1]);
+  add('HipProp', 'Hips', [-(P.lx + 0.075), P.yHip + 0.02, 0.01], [-(P.lx + 0.075), P.yHip + 0.12, 0.01]);
+  add('HeadProp', 'Head', [0, P.cy + P.ry, 0], [0, P.cy + P.ry + 0.1, 0]);
   // tails: first child head, else explicit
   for (const b of bones) {
     if (b.tail) continue;
@@ -170,7 +187,8 @@ export function makeJoints(sk, P, U) {
     add('UpperChest', S + 'Shoulder', 0.02); add(S + 'Shoulder', S + 'UpperArm', 0.032);
     add(S + 'UpperArm', S + 'LowerArm', 0.026); add(S + 'LowerArm', S + 'Hand', 0.016);
     add(S + 'Hand', S + 'ThumbMetacarpal', 0.006); add(S + 'ThumbMetacarpal', S + 'ThumbProximal', 0.004);
-    for (const F of FINGERS) { add(S + 'Hand', S + F + 'Proximal', 0.008); add(S + F + 'Proximal', S + F + 'Intermediate', 0.005); }
+    for (const F of FINGERS) { add(S + 'Hand', S + F + 'Proximal', 0.008); add(S + F + 'Proximal', S + F + 'Intermediate', 0.005); add(S + F + 'Intermediate', S + F + 'Distal', 0.004); }
+    add(S + 'ThumbProximal', S + 'ThumbDistal', 0.003);
     add('Hips', S + 'UpperLeg', 0.04); add(S + 'UpperLeg', S + 'LowerLeg', 0.028);
     add(S + 'LowerLeg', S + 'Foot', 0.018); add(S + 'Foot', S + 'Toes', 0.01);
   }
@@ -262,7 +280,7 @@ export function refineLabels(grid, field, sk, P, U) {
     } else if (pt === PARTS.hand) {
       const S = x > 0 ? 'Left' : 'Right';
       if (/Thumb/.test(B[lab[i]].name)) {
-        lab[i] = y > P.yW * U - 0.03 * U ? n[S + 'ThumbMetacarpal'] : n[S + 'ThumbProximal'];
+        lab[i] = y > P.yW * U - 0.03 * U ? n[S + 'ThumbMetacarpal'] : y > (P.yW - 0.056) * U ? n[S + 'ThumbProximal'] : n[S + 'ThumbDistal'];
         continue;
       }
       const yf = P.yW * U - P.hl * U * 0.5;
@@ -270,7 +288,7 @@ export function refineLabels(grid, field, sk, P, U) {
         const zr = 0.0275 * U; // hand half width
         let fi = Math.floor((zr - z) / (2 * zr) * 4); fi = fi < 0 ? 0 : fi > 3 ? 3 : fi;
         const F = FINGERS[fi];
-        lab[i] = y > P.yW * U - P.hl * U * 0.74 ? n[S + F + 'Proximal'] : n[S + F + 'Intermediate'];
+        lab[i] = y > P.yW * U - P.hl * U * 0.74 ? n[S + F + 'Proximal'] : y > (P.yW - P.hl * 0.88) * U ? n[S + F + 'Intermediate'] : n[S + F + 'Distal'];
       } else lab[i] = n[S + 'Hand'];
     } else if (pt === PARTS.foot) {
       const S = x > 0 ? 'Left' : 'Right';

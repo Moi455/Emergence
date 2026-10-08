@@ -1,6 +1,6 @@
 # Village jouable avec ses villageois (intégration)
 
-Le prototype du fil « Village voxelisé jouable » (`../jeu/`) et les villageois du fil « Skins des villageois » (`/characters`) assemblés en un seul jeu dans le navigateur.
+Le prototype du fil « Village voxelisé jouable » (`../jeu/`) et les villageois du fil « Skins des villageois » (`/characters` : générateur et données ; les .glb d'exemple, 19 à 29 Mo, ne sont pas versés, `node characters/tools/export.mjs <graine> <dossier> <village>` les régénère) assemblés en un seul jeu dans le navigateur.
 
 ## Jouer depuis le dépôt
 

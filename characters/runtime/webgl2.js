@@ -1,6 +1,7 @@
 // Villagers for a raw WebGL2 engine (the playable village prototype), no dependency.
 // The generator runs in the page: seed -> skinned mesh + atlas; clips are sampled on the CPU
-// and sent as one mat4 per bone (43 bones) to the vertex shader.
+// and sent as one mat4 per skinning bone (the first 53; eyes, jaw and attachment points
+// come after them and carry no weight) to the vertex shader.
 //
 //   const v = makeVillager(seed, catalog, { village, outfit: 'work', lod: 0 });
 //   const gv = uploadVillager(gl, v);          // VAO + atlas texture
@@ -9,11 +10,13 @@
 import { generateVillager, composeOutfit, meshOutfit } from '../gen/villager.js';
 import { makeClips, sampleClip, skinMatrices } from '../gen/anim.js';
 
+export const SKIN_BONES = 53;
+
 export function makeVillager(seed, catalog, opts = {}) {
   const v = generateVillager(seed, catalog, opts);
   const outfit = opts.outfit || 'everyday';
   const mesh = meshOutfit(v.base, composeOutfit(v, outfit, catalog), opts.lod || 0);
-  const clips = Object.fromEntries(makeClips(v.base.sk, v.bp).map(c => [c.name, c]));
+  const clips = Object.fromEntries(makeClips(v.base.sk, v.bp, v.base.voxel).map(c => [c.name, c]));
   return { v, mesh, clips, outfit };
 }
 
@@ -30,7 +33,7 @@ layout(location=0) in vec3 aPos;
 layout(location=1) in vec2 aUV;
 layout(location=2) in uvec4 aJoints;
 layout(location=3) in vec4 aWeights;
-uniform mat4 uBones[43];
+uniform mat4 uBones[53];
 uniform mat4 uModel, uViewProj;
 out vec2 vUV; out vec3 vWorld;
 void main() {
@@ -90,10 +93,13 @@ export function uploadVillager(gl, villager) {
   const mats = skinMatrices(base.sk, base.voxel, null);
   return {
     vao, tex, count: m.indices.length, bufs, ib, mats,
+    // world matrix of any bone (e.g. RightHandProp to attach a tool): mats[i] * bind head
+    boneIndex: name => base.sk.byName[name],
+    clipDuration: name => villager.clips[name] ? villager.clips[name].duration : 0,
     pose(clipName, t) { const c = villager.clips[clipName]; skinMatrices(base.sk, base.voxel, c ? sampleClip(c, t) : null, mats); },
     draw(p, viewProj, model, sun = [-0.45, 0.8, 0.4]) {
       gl.useProgram(p);
-      gl.uniformMatrix4fv(p.u.bones, false, mats); gl.uniformMatrix4fv(p.u.model, false, model); gl.uniformMatrix4fv(p.u.vp, false, viewProj);
+      gl.uniformMatrix4fv(p.u.bones, false, mats.subarray(0, SKIN_BONES * 16)); gl.uniformMatrix4fv(p.u.model, false, model); gl.uniformMatrix4fv(p.u.vp, false, viewProj);
       const l = Math.hypot(...sun); gl.uniform3f(p.u.sun, sun[0] / l, sun[1] / l, sun[2] / l);
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(p.u.atlas, 0);
       gl.bindVertexArray(vao); gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_INT, 0); gl.bindVertexArray(null);

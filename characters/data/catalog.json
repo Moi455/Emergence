@@ -1699,7 +1699,7 @@
     "shirt:nightshirt"
    ]
   },
-  "festival": [
+  "festive": [
    "over:gown@f|festive_tunic@m|festive_tunic",
    "belt:sash",
    "head:flower_crown@f|felt_hat|flower_crown|none",
@@ -1712,6 +1712,27 @@
    "hands:mittens:0.6",
    "feet:ankle_boots|tall_boots",
    "head:hood|knit_cap|none"
+  ],
+  "travel": [
+   "cloak:cloak:0.7",
+   "feet:ankle_boots|tall_boots",
+   "head:hood|felt_hat|straw_hat|hood",
+   "acc:satchel:0.8",
+   "belt:belt"
+  ],
+  "mourning": [
+   "head:hood@m|kerchief@f|coif@f|none@m",
+   "belt:belt:0.5"
+  ],
+  "court": [
+   "over:gown@f|festive_tunic@m|doublet@m",
+   "vest:bodice@f:0.5",
+   "belt:sash|belt",
+   "head:felt_hat@m|beret|coif@f",
+   "neck:necklace:0.7",
+   "feet:ankle_boots|turnshoes",
+   "cloak:cloak:0.35",
+   "legs:hose@m"
   ]
  },
  "jobs": {

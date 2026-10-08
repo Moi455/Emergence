@@ -33,11 +33,18 @@ export function makeWeigher(sk, joints, P, U) {
   return (x, y, z, label, mode) => {
     if (mode === MODE_RIGID) return [[label, 1]];
     if (mode === MODE_SKIRT) {
+      // The cloth follows the thighs more the lower it hangs, the front more than the back, and
+      // between the legs it follows both, so it stays closed in a stride and over a seated lap.
+      // (Linear skinning cannot drape: a long skirt sitting stays a stiff bell; cloth is for later.)
       const fy = Math.floor(clamp01((yHip - y) / (yHip - yLow)) * 6) / 6;
-      const fx = Math.floor(clamp01(Math.abs(x) / (P.lx * U * 1.3)) * 3) / 3;
-      const w = q(fy * fx * 0.6);
-      if (w <= 0) return [[n.Hips, 1]];
-      return [[x > 0 ? n.LeftUpperLeg : n.RightUpperLeg, w], [n.Hips, 1 - w]];
+      const zf = 0.3 + 0.7 * Math.floor(clamp01(z / (P.lx * U * 1.4) + 0.4) * 4) / 4;
+      const w = fy * 0.55 * zf;
+      const t = Math.floor(clamp01((x / (P.lx * U * 1.6) + 1) / 2) * 4 + 0.5) / 4; // 1 = left leg
+      const wl = q(w * t), wr = q(w * (1 - t));
+      const ws = [[n.Hips, 1 - wl - wr]];
+      if (wl > 0) ws.push([n.LeftUpperLeg, wl]);
+      if (wr > 0) ws.push([n.RightUpperLeg, wr]);
+      return ws;
     }
     if (mode === MODE_CLOAK) {
       const t = q(Math.floor(clamp01((y - ySp) / (yUC - ySp)) * 4) / 4);

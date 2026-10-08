@@ -72,16 +72,19 @@ export function writeGLB({ name, sk, voxel, outfits, clips, extras }, encodePNG)
       samplersA.push({ input: tIn, output: tOut, interpolation: 'LINEAR' });
       channels.push({ sampler: samplersA.length - 1, target: { node: ni, path: 'rotation' } });
     }
-    if (c.rootY) {
+    if (c.root) {
       const hips = sk.byName.Hips, base = nodes[hips].translation;
-      const tIn = acc(Float32Array.from(c.rootY.times), 'SCALAR', 5126, c.rootY.times.length, { min: [c.rootY.times[0]], max: [c.rootY.times[c.rootY.times.length - 1]] });
-      const vals = new Float32Array(c.rootY.values.length * 3);
-      c.rootY.values.forEach((v, i) => { vals[i * 3] = base[0]; vals[i * 3 + 1] = base[1] + v; vals[i * 3 + 2] = base[2]; });
-      const tOut = acc(vals, 'VEC3', 5126, c.rootY.values.length);
+      const tIn = acc(Float32Array.from(c.root.times), 'SCALAR', 5126, c.root.times.length, { min: [c.root.times[0]], max: [c.root.times[c.root.times.length - 1]] });
+      const vals = new Float32Array(c.root.values.length * 3);
+      c.root.values.forEach((v, i) => { vals[i * 3] = base[0] + v[0]; vals[i * 3 + 1] = base[1] + v[1]; vals[i * 3 + 2] = base[2] + v[2]; });
+      const tOut = acc(vals, 'VEC3', 5126, c.root.values.length);
       samplersA.push({ input: tIn, output: tOut, interpolation: 'LINEAR' });
       channels.push({ sampler: samplersA.length - 1, target: { node: hips, path: 'translation' } });
     }
-    animations.push({ name: c.name, samplers: samplersA, channels });
+    // interfaces.md § 7: loop or once, reference speed for in-place locomotion, named events (seconds)
+    const ex = { loop: c.loop !== false, fps: 30, events: c.events || [] };
+    if (c.speed_mps) ex.speed_mps = c.speed_mps;
+    animations.push({ name: c.name, samplers: samplersA, channels, extras: ex });
   }
   const rootNode = nodes.length;
   nodes.push({ name, children: [0], extras });

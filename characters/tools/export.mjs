@@ -17,7 +17,7 @@ export function exportVillager(seed, opts = {}) {
     outfits.push({ name: occ, garments: v.wardrobe.outfits[occ], mesh: meshOutfit(v.base, grid) });
     if (opts.lods !== false) for (const lod of [1, 2, 3]) outfits.push({ name: occ + '_LOD' + lod, lod, garments: v.wardrobe.outfits[occ], mesh: meshOutfit(v.base, grid, lod) });
   }
-  const clips = makeClips(v.base.sk, v.bp);
+  const clips = makeClips(v.base.sk, v.bp, v.base.voxel);
   const glb = writeGLB({ name: 'Villager_' + seed, sk: v.base.sk, voxel: v.base.voxel, outfits, clips, extras: { seed } }, png);
   return { v, glb, outfits };
 }

@@ -2,7 +2,9 @@
 // the outfits (lists of garment ids) for each occasion. Pure data, no voxels.
 import { Rng, hashCombine } from './rng.js';
 
-export const OCCASIONS = ['everyday', 'work', 'festival', 'cold', 'night'];
+// The eight outfit keys of interfaces.md § 4 (order fixed, add at the end only).
+export const OCCASIONS = ['everyday', 'work', 'travel', 'festive', 'mourning', 'cold', 'court', 'night'];
+const MOURNING = ['black', 'charcoal', 'darkbrown', 'grey'];
 
 function parseRule(rule) {
   const parts = rule.split(':');
@@ -36,15 +38,19 @@ export function makeWardrobe(base, catalog, opts = {}) {
   const wealth = Math.round(r.range(J.wealth[0], J.wealth[1]) * 100) / 100;
   const sexKey = bp.ageClass === 'child' ? 'child' : bp.sex;
   const dye = name => catalog.dyes[name][0];
-  const affordable = list => {
-    const ok = list.filter(n => catalog.dyes[n][1] <= wealth * 3 + 0.6);
+  const affordable = (list, boost = 0) => {
+    const ok = list.filter(n => catalog.dyes[n][1] <= (wealth + boost) * 3 + 0.6);
     return ok.length ? ok : list;
   };
-  const dyeList = spec => spec === 'palette' ? affordable(V.palette) : spec;
+  let occNow = null; // occasion being built: mourning dyes cloth dark, court spends more
+  const dyeList = spec => {
+    if (occNow === 'mourning' && spec === 'palette') return affordable(MOURNING);
+    return spec === 'palette' ? affordable(V.palette, occNow === 'court' ? 0.35 : 0) : spec;
+  };
   const garments = [];
   const byType = new Map();
   const make = (type, slot, occasion) => {
-    const key = type + (occasion === 'festival' ? '' : '');
+    const key = type + (occasion === 'mourning' || occasion === 'court' ? '#' + occasion : '');
     if (byType.has(key)) return byType.get(key);
     const D = catalog.garments[type];
     if (!D) throw new Error('unknown garment ' + type);
@@ -70,7 +76,8 @@ export function makeWardrobe(base, catalog, opts = {}) {
     const params = {};
     for (const [k, v] of Object.entries(D.params)) params[k] = resolveParam(gr, v);
     let wear = Math.max(0, Math.min(1, (1 - wealth) * 0.5 + (J.dirt ?? 0.2) * (occasion === 'work' ? 0.6 : 0.2) + gr.range(-0.1, 0.15)));
-    if (occasion === 'festival' || occasion === 'night') wear *= 0.2;
+    if (occasion === 'festive' || occasion === 'night' || occasion === 'mourning') wear *= 0.2;
+    if (occasion === 'court') wear *= 0.05;
     const g = { id: 'g' + garments.length, type, slot: D.slot, builder: D.builder, material: D.material, colors, pattern, params, wear: Math.round(wear * 100) / 100, seed: gr.u32() };
     if (D.trimMaterial) g.trimMaterial = D.trimMaterial;
     if (D.embroider) g.embroider = gr.pick(D.embroider);
@@ -88,6 +95,7 @@ export function makeWardrobe(base, catalog, opts = {}) {
     return { slot: R.slot, id: make(c.name, R.slot, occ).id };
   };
   const build = (rules, occ, start = {}) => {
+    occNow = occ;
     const out = { ...start };
     for (const rule of rules) { const { slot, id } = pickRule(rule, occ); out[slot] = id; }
     return out;
@@ -95,14 +103,18 @@ export function makeWardrobe(base, catalog, opts = {}) {
   const baseRules = catalog.base[sexKey];
   const everyday = build(baseRules.everyday, 'everyday');
   const work = job === 'child' || job === 'elder' ? build(J.work, 'work', {}) : build(J.work, 'work', {});
-  // a dress already covers the legs: drop skirts over legs etc.
-  const festival = build(catalog.base.festival, 'festival', { ...everyday });
-  if (bp.ageClass === 'child') { festival.neck = null; }
+  const festive = build(catalog.base.festive, 'festive', { ...everyday });
+  if (bp.ageClass === 'child') { festive.neck = null; }
+  const travel = build(catalog.base.travel, 'travel', { ...everyday });
+  // mourning: the everyday cut remade in dark dyes, head covered
+  const mourning = build([...baseRules.everyday, ...catalog.base.mourning], 'mourning');
+  // court: best clothes the household can afford, a step above the festive ones
+  const court = build(catalog.base.court, 'court', bp.ageClass === 'child' ? { ...festive } : build(baseRules.everyday, 'court'));
   const cold = build(catalog.base.cold, 'cold', { ...(job === 'child' ? everyday : work) });
   if (cold.acc) cold.acc = null; // no backpack under a cloak
   const night = build(baseRules.night, 'night');
   const clean = o => Object.values(o).filter(Boolean);
-  const outfits = { everyday: clean(everyday), work: clean(work), festival: clean(festival), cold: clean(cold), night: clean(night) };
+  const outfits = { everyday: clean(everyday), work: clean(work), travel: clean(travel), festive: clean(festive), mourning: clean(mourning), cold: clean(cold), court: clean(court), night: clean(night) };
   // drop garments never used (can happen when a slot was overridden)
   const used = new Set(Object.values(outfits).flat());
   const kept = garments.filter(g => used.has(g.id));

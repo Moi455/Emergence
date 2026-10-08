@@ -57,7 +57,7 @@ button:hover { border-color: var(--ink) }
 .seg button { font-size: 13px; padding: 4px 9px }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink) }
 .row { display: grid; gap: 6px }
-.row > span { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted) }
+.row > span, .row > label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted) }
 .garments { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px }
 .garments li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 14px }
 .garments li.off { opacity: .45 }
@@ -98,7 +98,7 @@ button:hover { border-color: var(--ink) }
   <div class="dbody">
     <div class="stage" id="stage"><div class="busy" id="busy"></div></div>
     <div class="row"><span>Tenue</span><div class="seg" id="segOutfit"></div></div>
-    <div class="row"><span>Animation</span><div class="seg" id="segAnim"></div></div>
+    <div class="row"><label for="segAnim">Animation</label><div class="seg"><select id="segAnim"></select><button id="replay" type="button">Rejouer</button></div></div>
     <div class="row"><span>Garde-robe (variables du PNJ)</span><ul class="garments" id="garments"></ul></div>
     <div class="row"><span>Apparence</span><dl class="kv" id="kv"></dl></div>
     <p class="note" id="stats"></p>
@@ -111,9 +111,16 @@ button:hover { border-color: var(--ink) }
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { generateVillager, composeOutfit, meshOutfit } from './gen/villager.js';
-import { villagerObject } from './viewer/build3d.js';
+import { villagerObject, addOutfit } from './viewer/build3d.js';
 
-const OCC = { everyday: 'Quotidien', work: 'Travail', festival: 'Fête', cold: 'Froid', night: 'Nuit' };
+const OCC = { everyday: 'Quotidien', work: 'Travail', travel: 'Voyage', festive: 'Fête', mourning: 'Deuil', cold: 'Froid', court: 'Apparat', night: 'Nuit' };
+const ANIMS = [['Déplacement', [['idle', 'Repos'], ['walk', 'Marche'], ['run', 'Course'], ['carry_idle', 'Porter, arrêté'], ['carry_walk', 'Porter en marchant']]],
+  ['Corps', [['sit_down', "S'asseoir"], ['sit_idle', 'Assis'], ['stand_up', 'Se lever'], ['sleep', 'Dormir'], ['eat', 'Manger'], ['drink', 'Boire']]],
+  ['Travail', [['swing_axe', 'Hache'], ['swing_pickaxe', 'Pioche'], ['dig_shovel', 'Pelle'], ['kneel_work', 'À genoux']]],
+  ['Objets', [['pick_up', 'Ramasser'], ['put_down', 'Poser'], ['give', 'Donner']]],
+  ['Parole', [['talk_calm', 'Parler'], ['wave', 'Saluer'], ['nod', 'Acquiescer'], ['shake_head', 'Refuser de la tête']]],
+  ['Conflit', [['hit_react', 'Encaisser un coup'], ['fall_down', 'Tomber']]],
+  ['Squelette', [['bind', 'Pose de liaison']]]];
 const JOBS = { fisher: 'Pêcheur', netmaker: 'Ramendeur', boatwright: 'Charpentier de marine', fishmonger: 'Poissonnier', woodcutter: 'Bûcheron', hunter: 'Chasseur', charcoal: 'Charbonnier', carpenter: 'Charpentier', herbalist: 'Herboriste', miner: 'Mineur', stonecutter: 'Tailleur de pierre', smith: 'Forgeron', shepherd: 'Berger', saltworker: 'Saunier', caravaner: 'Caravanier', potter: 'Potier', weaver: 'Tisserand', merchant: 'Marchand', baker: 'Boulanger', innkeeper: 'Aubergiste', healer: 'Guérisseur', priest: 'Prêtre', guard: 'Garde', farmer: 'Paysan', tanner: 'Tanneur', scribe: 'Scribe', child: 'Enfant', elder: 'Ancien' };
 const GARM = { chemise: 'Chemise longue', shirt: 'Chemise', plaid_shirt: 'Chemise à carreaux', nightshirt: 'Chemise de nuit', tunic: 'Tunique', short_tunic: 'Tunique courte', kirtle: 'Cotte', gown: 'Robe de fête', festive_tunic: 'Tunique de fête', doublet: 'Pourpoint', gambeson: 'Gambison', smock: 'Blouse', robe: 'Robe longue', oilskin_coat: 'Ciré', work_coat: 'Manteau de travail', jerkin: 'Gilet de cuir', bodice: 'Corselet', tabard: 'Tabard', skirt: 'Jupe', braies: 'Braies', hose: 'Chausses', trousers: 'Pantalon', shorts: 'Culotte courte', turnshoes: 'Souliers', ankle_boots: 'Bottines', tall_boots: 'Bottes hautes', waders: 'Cuissardes', sandals: 'Sandales', work_gloves: 'Gants de travail', mittens: 'Moufles', belt: 'Ceinture', sash: 'Écharpe de taille', half_apron: 'Tablier', bib_apron: 'Tablier à bavette', leather_apron: 'Tablier de cuir', cloak: 'Cape', fur_cloak: 'Cape fourrée', hood: 'Chaperon', coif: 'Coiffe', kerchief: 'Fichu', straw_hat: 'Chapeau de paille', felt_hat: 'Chapeau de feutre', knit_cap: 'Bonnet', beret: 'Béret', pointed_hat: 'Chapeau pointu', helmet: 'Chapel de fer', flower_crown: 'Couronne de fleurs', headband: 'Bandeau', satchel: 'Besace', backpack: 'Sac à dos', basket: 'Hotte', necklace: 'Pendentif' };
 const AGE = { child: 'enfant', teen: 'adolescent', adult: 'adulte', elder: 'ancien' };
@@ -193,16 +200,15 @@ async function open(rec) {
   await nextFrame();
   const t0 = performance.now();
   const v = generateVillager(rec.seed, cat, { village: rec.village });
-  const meshes = {}; let tris = 0;
-  for (const occ of Object.keys(OCC)) { meshes[occ] = meshOutfit(v.base, composeOutfit(v, occ, cat)); }
+  const worn = rec.worn || 'everyday';
+  const meshes = { [worn]: meshOutfit(v.base, composeOutfit(v, worn, cat)) };
   const o = villagerObject(v.base, meshes);
   o.group.rotation.y = 0;
   scene.add(o.group); cur = { ...o, rec, v, meshes };
   mixer = new THREE.AnimationMixer(o.group);
   const ms = Math.round(performance.now() - t0);
   $('busy').textContent = '';
-  const tr = Object.fromEntries(Object.entries(meshes).map(([k, m]) => [k, m.indices.length / 3]));
-  $('stats').textContent = `Généré dans ce navigateur en ${ms} ms depuis la graine ${rec.seed}. Triangles par tenue : ${Object.entries(tr).map(([k, n]) => OCC[k] + ' ' + n.toLocaleString('fr-FR')).join(', ')}. Atlas de couleurs : ${meshes.everyday.atlas.w}×${meshes.everyday.atlas.h} px.`;
+  cur.ms = ms;
   // appearance
   const kv = [['Peau', `<span class="sw"><i style="background:${a.skin}"></i></span>`], ['Cheveux', `${a.hairStyle} <span class="sw"><i style="background:${a.hairColor}"></i></span>`], ['Barbe', a.beard], ['Yeux', a.eyesName], ['Carrure', `corpulence ${a.build}, muscle ${a.muscle}`], ['Graine', `<code>${rec.seed}</code>`]];
   $('kv').innerHTML = kv.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
@@ -210,6 +216,14 @@ async function open(rec) {
 }
 function setOutfit(occ) {
   const rec = cur.rec;
+  if (!cur.outfits[occ]) { // each outfit is meshed the first time it is shown
+    const t0 = performance.now();
+    cur.meshes[occ] = meshOutfit(cur.v.base, composeOutfit(cur.v, occ, cat));
+    addOutfit(cur, occ, cur.meshes[occ]);
+    cur.ms = Math.round(performance.now() - t0);
+  }
+  const m = cur.meshes[occ];
+  $('stats').textContent = `Tenue « ${OCC[occ]} » générée dans ce navigateur en ${cur.ms} ms depuis la graine ${rec.seed} : ${(m.indices.length / 3).toLocaleString('fr-FR')} triangles, atlas de couleurs ${m.atlas.w}×${m.atlas.h} px.`;
   for (const [k, m] of Object.entries(cur.outfits)) m.visible = k === occ;
   $('segOutfit').innerHTML = Object.entries(OCC).map(([k, l]) => `<button data-o="${k}" aria-pressed="${k === occ}">${l}</button>`).join('');
   const worn = new Set(rec.outfits[occ]);
@@ -220,12 +234,16 @@ function setOutfit(occ) {
 }
 function setAnim(name) {
   mixer.stopAllAction();
-  if (name !== 'bind') mixer.clipAction(cur.clips.find(c => c.name === name)).play();
-  else cur.group.traverse(b => { if (b.isBone) b.quaternion.identity(); });
-  $('segAnim').innerHTML = [['idle', 'Repos'], ['walk', 'Marche'], ['work', 'Travail'], ['talk', 'Parole'], ['bind', 'Pose de liaison']].map(([k, l]) => `<button data-a="${k}" aria-pressed="${k === name}">${l}</button>`).join('');
+  cur.group.traverse(b => { if (b.isBone) b.quaternion.identity(); });
+  if (name !== 'bind') {
+    const clip = cur.clips.find(c => c.name === name), act = mixer.clipAction(clip);
+    act.reset(); act.setLoop(clip.userData.loop ? THREE.LoopRepeat : THREE.LoopOnce); act.clampWhenFinished = true; act.play();
+  }
+  $('segAnim').innerHTML = ANIMS.map(([g, l]) => `<optgroup label="${g}">${l.map(([k, t]) => `<option value="${k}"${k === name ? ' selected' : ''}>${t}</option>`).join('')}</optgroup>`).join('');
 }
 $('segOutfit').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setOutfit(b.dataset.o); });
-$('segAnim').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setAnim(b.dataset.a); });
+$('segAnim').addEventListener('change', e => setAnim(e.target.value));
+$('replay').addEventListener('click', () => setAnim($('segAnim').value));
 $('grid').addEventListener('click', e => { const c = e.target.closest('.card'); if (c) open(V[+c.dataset.id]); });
 $('dclose').addEventListener('click', () => { $('drawer').hidden = true; });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') $('drawer').hidden = true; });

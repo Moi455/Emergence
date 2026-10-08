@@ -38,30 +38,34 @@ export function attach(meshObj, bones) {
   return skel;
 }
 
-export function threeClips(sk, bp) {
-  return makeClips(sk, bp).map(c => {
+export function threeClips(sk, bp, voxel) {
+  return makeClips(sk, bp, voxel).map(c => {
     const tracks = [];
     for (const [bn, t] of Object.entries(c.tracks))
       tracks.push(new THREE.QuaternionKeyframeTrack(bn + '.quaternion', t.times, t.rotations.flat()));
-    if (c.rootY) {
-      const hb = sk.bones[sk.byName.Hips], p = sk.bones[hb.parent].head;
-      const vs = [];
-      // translations are filled in by the caller-scale below (voxel units -> metres done by caller)
-      c.rootY.values.forEach(v => vs.push(0, v, 0));
-      tracks.push({ rootY: true, times: c.rootY.times, values: vs });
-    }
-    return { name: c.name, duration: c.duration, tracks };
+    if (c.root) tracks.push({ root: true, times: c.root.times, values: c.root.values });
+    return { name: c.name, duration: c.duration, tracks, loop: c.loop };
   });
 }
 
 export function makeClip(c, hipsRest) {
   const tracks = c.tracks.map(t => {
-    if (!t.rootY) return t;
+    if (!t.root) return t;
     const vals = [];
-    for (let i = 0; i < t.values.length; i += 3) vals.push(hipsRest.x, hipsRest.y + t.values[i + 1], hipsRest.z);
+    for (const v of t.values) vals.push(hipsRest.x + v[0], hipsRest.y + v[1], hipsRest.z + v[2]);
     return new THREE.VectorKeyframeTrack('Hips.position', t.times, vals);
   });
-  return new THREE.AnimationClip(c.name, c.duration, tracks);
+  const clip = new THREE.AnimationClip(c.name, c.duration, tracks);
+  clip.userData = { loop: c.loop !== false };
+  return clip;
+}
+
+// Add one more outfit mesh to an existing villager object (outfits are meshed on demand).
+export function addOutfit(o, name, mesh) {
+  const m = buildMesh(mesh, o.bones);
+  m.bind(o.skel, new THREE.Matrix4());
+  m.name = name; o.group.add(m); o.outfits[name] = m;
+  return m;
 }
 
 // One villager object: group with a skinned mesh per requested outfit sharing one skeleton.
@@ -77,6 +81,6 @@ export function villagerObject(base, meshes) {
     m.bind(skel, new THREE.Matrix4());
     m.name = name; group.add(m); objs[name] = m;
   }
-  const clips = threeClips(base.sk, base.bp).map(c => makeClip(c, bones[base.sk.byName.Hips].position));
+  const clips = threeClips(base.sk, base.bp, base.voxel).map(c => makeClip(c, bones[base.sk.byName.Hips].position));
   return { group, bones, skel, outfits: objs, clips };
 }
