@@ -76,9 +76,10 @@ class H(BaseHTTPRequestHandler):
                                                   "message": "Quota exceeded for metric GenerateRequestsPerMinutePerProjectPerModel-FreeTier"}})
             WIN.append(now)
             r = RNG.random()
+            nreq = STATS["requests"]
         if body.get("generation_config", {}).get("thinking_level") == "minimal" and ARGS.reject_minimal:
             return self._send(400, {"error": {"code": 400, "message": "thinking_level 'minimal' is not supported for this model"}})
-        if r < ARGS.p503:
+        if r < ARGS.p503 or (ARGS.force_every and nreq % ARGS.force_every == 5):   # forced: tests see at least one
             STATS["503"] += 1
             return self._send(503, {"error": {"code": 503, "message": "The model is overloaded."}})
         system = body.get("system_instruction", "")
@@ -124,7 +125,7 @@ class H(BaseHTTPRequestHandler):
             STATS["bad_len"] += 1
             out[0]["s"] = out[0]["s"][:-1]
         text = json.dumps({"r": out})
-        if RNG.random() < ARGS.pbad:
+        if RNG.random() < ARGS.pbad or (ARGS.force_every and STATS["ok"] % ARGS.force_every == 3):
             STATS["bad_json"] += 1
             text = text[: len(text) // 2]
         STATS["ok"] += 1
@@ -146,6 +147,7 @@ def main():
     ap.add_argument("--rpd", type=int, default=40)
     ap.add_argument("--p503", type=float, default=.04)
     ap.add_argument("--pbad", type=float, default=.03)
+    ap.add_argument("--force-every", type=int, default=0, help="also inject a 503 and a truncated JSON every N requests (deterministic tests)")
     ap.add_argument("--plen", type=float, default=.03)
     ap.add_argument("--pflat", type=float, default=.02)
     ap.add_argument("--poison-mod", type=int, default=0)

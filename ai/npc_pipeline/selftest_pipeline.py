@@ -33,7 +33,7 @@ def main():
             shutil.copy(os.path.join(HERE, f), work)
     env = dict(os.environ, NPC_SIM_DAY_SECONDS="10", GEMINI_API_KEY="selftest", GEMINI_BASE_URL=f"http://127.0.0.1:{PORT}")
     mock = subprocess.Popen([sys.executable, "mock_gemini_server.py", "--port", str(PORT), "--rpm", "200", "--rpd", "34", "--p503", ".05",
-                             "--pbad", ".04", "--plen", ".04", "--pflat", ".03", "--poison-mod", "53", "--reject-minimal", "--latency", "0.35"],
+                             "--pbad", ".04", "--plen", ".04", "--pflat", ".03", "--poison-mod", "53", "--reject-minimal", "--latency", "0.35", "--force-every", "20"],
                             cwd=work, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(1.0)
     cfg = {"rpm": 150, "tpm": 3000000, "rpd": 34, "rpd_reserve": 4, "per_call": 8, "workers": 4, "variant": "auto", "thinking": "auto",
