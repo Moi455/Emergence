@@ -11,16 +11,7 @@ Une relecture adverse a confronté ce document à ses scripts, à ses résultats
    - la latence est mesurée pour chaque perception jusqu'à la décision suivante, quelle que soit la classe qui l'emporte : l'ancien « P3 2,7 s » souffrait d'un biais du survivant ;
    - le banc ajoute des dangers récurrents et des cascades de cris, et réveille chaque auditeur d'une parole. Une cascade sans identité d'événement s'emballait (500 000 alertes en 45 min) ; un danger porte donc une identité, et percevoir à nouveau le même danger n'est pas un nouvel indice.
 
-   Sur 45 min de jeu et 500 PNJ :
-
-   | Mesure | Valeur |
-   |---|---|
-   | décisions par seconde | 184 en moyenne, 64 au plus par pas |
-   | danger, délai au p95 | 0 s (servi dans le pas) |
-   | parole adressée, délai | immédiat |
-   | fin de geste, délai au p95 | 1,4 s |
-   | perception notable, délai au p95 | 5,8 s |
-   | réveil périodique, délai au p95 | 8,8 s |
+   Les résultats, refaits avec de l'espace (portée de la voix, des cris, de la vue) après une seconde relecture, sont au § 3.2.
 
 2. **Aucune entrée calculée sur la vérité.** Le masque de faisabilité, les réveils, la sélection du contexte et le dépliage de la parole reposent sur ce que le PNJ perçoit et croit. Un geste que le monde refuse échoue physiquement, et cet échec est perçu. L'auditeur apparie lui-même les noms, désignations et descriptions à ses dossiers, sans passer par l'identité vraie (`catalogue/data/language_grammar.toml`).
 3. **Têtes de sortie générées depuis le catalogue** (`catalogue/generated/model_interface.json`, `catalogue/tools/model_interface.py`) :
@@ -93,7 +84,7 @@ Autres mesures [Mesuré] :
  moteur (vérité) ─► [ordonnanceur] ─► [sélecteur] ─► [politique rapide] ─► [gouverneur] ─► Operation
                      qui pense          128 jetons     geste, pointeurs,       bornes,
                      maintenant         choisis        manière, ≤ 4 écritures   règles dures
-                                                       si « parler » ─► [décodeur par cadres]
+                                                       si « parler » ─► [décodeur à automate de grammaire, 20 pas]
  sommeil, objectif fini, plan bloqué ─► [même modèle, mode « réfléchir »] ─► objectifs, plan, souvenirs
 ```
 
@@ -102,7 +93,7 @@ Autres mesures [Mesuré] :
 | Ordonnanceur | non (moteur) | pas de 100 ms | négligeable |
 | Sélecteur de contexte | score appris, candidats du moteur | chaque décision | ≈ 12 % d'une décision [Estimé] |
 | Politique rapide | oui | 200/s en moyenne | § 2.1 |
-| Décodeur par cadres | oui | geste « parler » (≈ 15 %) | ≈ 1 ms par lot [Estimé] |
+| Décodeur à automate de grammaire (20 pas) | oui | geste « parler », écriture d'une proposition (≈ 15 %) | 5 à 10 ms par lot à 16 pas [Mesuré] ; à remesurer à 20 pas |
 | Boucle lente | oui, mêmes poids | ≈ 10 % du budget, davantage la nuit | une décision |
 | Gouverneur | non (catalogue) | chaque sortie | négligeable |
 
@@ -118,13 +109,21 @@ L'ordonnanceur choisit **quand** un PNJ pense, jamais **ce qu'il fait** : ce n'e
 - **P3 perception notable**, filtrée par `PLAN.commitment`, que le modèle écrit lui-même : le PNJ règle sa propre distraction.
 - **P4 battement** : rien depuis 8 s éveillé, 60 s endormi.
 
-À chaque pas de 100 ms, on sert 20 PNJ, du plus prioritaire au plus ancien. Un danger permet un pic à 64, pris sur une réserve (seau à jetons) : la moyenne reste à 200/s. Chaque geste porte sa **condition de réveil**, choisie par le modèle (cadre des « options » : Sutton, Precup, Singh, 1999). Un PNJ pense ainsi en moyenne toutes les 2,5 s, et aussitôt quand quelque chose le concerne.
+À chaque pas de 100 ms, on sert 18 PNJ, du plus prioritaire au plus ancien, plus un par danger en attente (64 au plus), pris sur une réserve (seau à jetons) qui se recharge : la moyenne reste sous 200/s. Chaque geste porte sa **condition de réveil**, choisie par le modèle (cadre des « options » : Sutton, Precup, Singh, 1999). Un PNJ pense ainsi en moyenne toutes les 2,5 s, et aussitôt quand quelque chose le concerne.
 
-Simulation (`sim_scheduler.py`, 45 min, charge inventée qui sature le budget, couteau dans une taverne : 40 PNJ, incendie : 100 PNJ) [Mesuré] :
-- les 140 dangers et toutes les interpellations sont servis dans le pas même : moins de 100 ms d'attente, plus 5 à 15 ms d'inférence ;
-- les fins de geste attendent 0,5 s au p95 (0,7 s au pire) ;
-- ce sont les perceptions notables qui attendent : 2,7 s au p95, 26 s au pire ;
-- chaque PNJ reçoit entre 0,32 et 0,48 décision/s.
+Simulation (`sim_scheduler.py`, refaite le 10 oct. après relecture, 45 min, 500 PNJ placés dans leur village ; paroles entendues à 8 m : le destinataire est réveillé, les autres le notent ; cris à 60 m, qui réveillent une partie des dormeurs ; dangers vus à 35 m et plus ; un danger porte une identité ; latence mesurée depuis l'instant de l'événement) [Mesuré] :
+
+| Mesure | Valeur |
+|---|---|
+| décisions par seconde | 181 en moyenne, 46 au plus par pas |
+| réserve | jamais sous 302 sur 400 |
+| danger vu | servi en 0,1 s au p95 |
+| parole adressée | servie en 0,1 s au p95 |
+| fin de geste | 0,37 s au p95 |
+| perception remarquable | 11 s au p95, jusqu'à la décision suivante de ce PNJ, quelle qu'elle soit |
+| décision par PNJ | de 0,17 à 0,74 par seconde |
+
+- **Saturation, à dire franchement.** Les fins de geste prennent presque tout le budget : 446 000 décisions sur 490 000, contre 594 gagnées par une perception remarquable. La parade est dans la conception, pas dans l'ordonnanceur : des **intentions plus longues** (plusieurs gestes enchaînés par le moteur entre deux décisions, plan de 1 à 6 étapes) libèrent des décisions pour ce qu'on remarque.
 
 ### 3.3 Ce qui entre dans les 128 jetons
 
@@ -144,7 +143,7 @@ Pour l'entraîner, un modèle « large vue » hors jeu lit tous les candidats (�
 - **Manière** : 5 paramètres × 5 niveaux ; **réveil** : 16 conditions.
 - **Écritures** : 4 emplacements (pointeur, variable, valeur en 21 niveaux) ; une tête de valeur pour le renforcement.
 - **Tirage déterministe** : bruit de Gumbel tiré de Philox(graine du monde, PNJ, numéro de décision).
-- **Parole par cadres.** Une expression est un prédicat à 3 arguments au plus, sur 2 niveaux au plus : on la décode en 3 tours au lieu de 16 pas (mode et prédicat ; arguments en parallèle selon leur type : pointeur, sorte, quantité ; proposition imbriquée). La profondeur étant bornée, la grammaire se compile en **automate fini** et le masque est une lecture de table sur le GPU (principe d'Outlines : Willard & Louf, 2023). Le décodeur à 16 pas mesuré sert de borne haute.
+- **Parole et propositions** : décodeur autorégressif dont chaque pas est masqué par un automate tiré de la grammaire typée (`catalogue/tools/language.py` : types des arguments, rôles des gestes, un seul mode, 3 pointeurs, 2 niveaux), 20 symboles au plus. Le « décodage par cadres » en 3 tours, envisagé d'abord, est abandonné : il ne produisait ni la logique (si, et, parce que) ni les rôles (with, to, says), donc pas le chantage.
 
 ### 3.5 Le graphe social : GNN ou pas ?
 
@@ -225,8 +224,8 @@ Progression : survie → face-à-face → parole et croyances → groupes, norme
 
 ## 7. Risques et questions pour Monsieur
 
-1. **Contradiction à trancher** : D18 et `CLAUDE.md` disent « chaque PNJ plusieurs fois par seconde » ; votre consigne du 9 oct. fixe 200 décisions/s pour tous (0,4 par PNJ). Je propose d'inscrire la seconde : la réactivité vient des réveils sur événement.
-2. **Marge** : 200/s n'occupe que 4 % du GPU en `small`. La dépenser en intelligence (`base`, `large`) plutôt qu'en fréquence ?
+1. ~~Contradiction entre D18 et 200 décisions/s~~ : tranchée par D32 (200 décisions/s au total ; la réactivité vient des réveils sur événement).
+2. **Marge** : 200/s n'occupe que 4 % du GPU en `small` en débit pur (≈ 6 % sous rendu, § 0). La dépenser en intelligence (`base`, `large`) plutôt qu'en fréquence ? (question O17)
 3. **Un second modèle partagé**, plus profond, pour la seule réflexion : est-ce compatible avec « un seul modèle » ?
 4. **Professeur** : accord pour les quotas gratuits Gemini (≈ 1 100 requêtes/jour) et un modèle local la nuit ? Rien n'est lancé.
 5. **Steam** : NVIDIA seule en version 1, ou Vulkan dès le départ ?

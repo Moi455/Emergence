@@ -21,19 +21,21 @@ import statistics
 from common import save
 
 TICK = 0.1
+TALK_M, SCREAM_M, SIGHT_M = 8.0, 60.0, 35.0     # hearing a voice, hearing a scream, seeing a danger
 RATE = 200.0
 NOMINAL, BURST, BUCKET_MAX = 18, 64, 400.0   # nominal under the refill (20/tick): the bucket recovers (review 10 Oct)
 CLASSES = ("P0_danger", "P1_addressed", "P2_gesture_end", "P3_notable", "P4_heartbeat")
 
 
 class Npc:
-    __slots__ = ("id", "village", "asleep", "commitment", "last", "pending", "pending_since", "decisions", "cues", "seen_events", "danger_event")
+    __slots__ = ("id", "village", "asleep", "commitment", "last", "pending", "pending_since", "decisions", "cues", "seen_events", "danger_event", "x", "y")
 
     def __init__(self, i, rng):
         self.cues = []
         self.seen_events = set()
         self.danger_event = None
         self.id, self.village = i, i // 100
+        self.x, self.y = rng.uniform(0, 200), rng.uniform(0, 200)     # metres inside the village (review 10 Oct)
         self.asleep = False
         self.commitment = rng.uniform(0, 10)
         self.last = 0.0
@@ -54,6 +56,10 @@ class Scheduler:
         self.bucket_trace = []
         self.per_tick = []
         self.bursts = {}
+
+    def near(self, npc, radius):
+        return [o for o in self.npcs[npc.village * 100:(npc.village + 1) * 100]
+                if o is not npc and (o.x - npc.x) ** 2 + (o.y - npc.y) ** 2 <= radius * radius]
 
     def push(self, t, npc, cls, event=None):
         self.seq += 1
@@ -80,18 +86,20 @@ class Scheduler:
         for t0, c in npc.cues:              # unbiased: each perception's delay to the next decision, whatever won
             self.cue_latency[CLASSES[c]].append(t - t0)
         npc.cues = []
-        if cls == 0:                        # cascade: a scream wakes the neighbours who hear it
-            for o in self.npcs[npc.village * 100:(npc.village + 1) * 100]:
-                if o is not npc and not o.asleep and self.rng.random() < 0.05:
-                    self.push(t + self.rng.uniform(0.5, 1.5), o, 0, npc.danger_event)
+        if cls == 0 and self.rng.random() < 0.5:   # half of those who react cry out: heard within SCREAM_M
+            for o in self.near(npc, SCREAM_M):
+                if not o.asleep or self.rng.random() < 0.3:          # a scream wakes some sleepers
+                    self.push(t + self.rng.uniform(0.2, 0.6), o, 0, npc.danger_event)
         npc.pending, npc.last = None, t
         npc.decisions += 1
         # the decision starts a gesture; its end (stop condition) is a future P2 ; a talker is answered (P1)
         self.push(t + self.gesture_duration(npc), npc, 2)
-        if not npc.asleep and self.rng.random() < 0.12:     # speech: EVERY hearer gets P1 (review 10 Oct)
-            others = [o for o in self.npcs[npc.village * 100:(npc.village + 1) * 100] if o is not npc and not o.asleep]
-            for o in self.rng.sample(others, min(len(others), self.rng.randint(1, 5))):
-                self.push(t + self.rng.uniform(1.0, 3.0), o, 1)
+        if not npc.asleep and self.rng.random() < 0.12:     # speech: the addressee P1, other hearers in range P3
+            hearers = [o for o in self.near(npc, TALK_M) if not o.asleep]
+            if hearers:
+                addressee = self.rng.choice(hearers)
+                for o in hearers:
+                    self.push(t + self.rng.uniform(1.0, 3.0), o, 1 if o is addressee else 3)
 
     def scenario(self, horizon):
         for npc in self.npcs:
@@ -103,8 +111,11 @@ class Scheduler:
         dangers = [(600.0, 40, 1), (1200.0, 100, 3)]
         dangers += [(t0, 15, int(t0 // 120) % 5) for t0 in range(180, int(horizon), 120)]   # recurrent smaller dangers
         for k, (t0, size, village) in enumerate(dangers):
-            for npc in self.rng.sample(self.npcs[village * 100:(village + 1) * 100], size):   # those who SEE it
-                self.push(t0 + self.rng.uniform(0, 0.3), npc, 0, k)
+            px, py = self.rng.uniform(0, 200), self.rng.uniform(0, 200)
+            radius = SIGHT_M * (1.0 + size / 40.0)                   # a big fire is seen from further away
+            for npc in self.npcs[village * 100:(village + 1) * 100]:   # those who SEE it, awake
+                if (npc.x - px) ** 2 + (npc.y - py) ** 2 <= radius * radius and not npc.asleep:
+                    self.push(t0 + self.rng.uniform(0, 0.3), npc, 0, k)
 
     def night(self, t):
         # one third of the cycle asleep (D30: night 30 min of a 1 h 30 day), staggered by village
@@ -120,20 +131,20 @@ class Scheduler:
             if int(t * 10) % 50 == 0:
                 self.night(t)
             while self.events and self.events[0][0] <= t:
-                _, _, npc, cls, event = heapq.heappop(self.events)
+                t_ev, _, npc, cls, event = heapq.heappop(self.events)
                 if event is not None:                      # the same danger perceived again is not a new cue
                     if event in npc.seen_events:
                         continue
                     npc.seen_events.add(event)
                     npc.danger_event = event
-                self.raise_flag(t, npc, cls)
+                self.raise_flag(t_ev, npc, cls)
             for npc in self.npcs:                               # heartbeat
                 if npc.pending is None and t - npc.last > (60.0 if npc.asleep else 8.0):
                     self.raise_flag(t, npc, 4)
             self.bucket = min(BUCKET_MAX, self.bucket + RATE * TICK)
             waiting = sorted((n for n in self.npcs if n.pending is not None), key=lambda n: (n.pending, n.pending_since))
-            danger = any(n.pending == 0 for n in waiting)
-            cap = BURST if danger else NOMINAL
+            n_danger = sum(1 for n in waiting if n.pending == 0)
+            cap = min(BURST, NOMINAL + n_danger)               # the burst only serves dangers
             cap = int(min(cap, self.bucket, len(waiting)))
             for npc in waiting[:cap]:
                 self.decide(t, npc)
@@ -151,6 +162,7 @@ class Scheduler:
                                          for c, xs in self.cue_latency.items()}
         out["bucket_min"] = min(self.bucket_trace) if self.bucket_trace else None
         out["burst_ticks_served"] = sum(1 for c in self.per_tick if c > NOMINAL)
+        out["raised_vs_served"] = {c: {"raised": len(self.cue_latency[c]), "won_a_decision": len(self.latency[c])} for c in CLASSES}
         for c, xs in self.latency.items():
             out[c] = {"n": len(xs), "p50_s": pct(xs, 0.5), "p95_s": pct(xs, 0.95), "p99_s": pct(xs, 0.99),
                       "max_s": max(xs) if xs else None}
