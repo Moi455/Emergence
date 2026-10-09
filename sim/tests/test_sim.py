@@ -138,8 +138,10 @@ class Society(unittest.TestCase):
         alive = sum(1 for n in sim.npcs if n.alive)
         self.assertGreater(alive, 380, "population collapsed")
         kinds = {e["k"] for e in sim.events}
-        for k in ("apprenticeship", "wedding", "birth", "death"):
+        for k in ("apprenticeship", "wedding", "birth"):
             self.assertIn(k, kinds)
+        # every end of life, including those lost beyond the frontier (announced as "vanished", not "death")
+        self.assertGreater(sum(v for k, v in sim.counts.items() if k.startswith("death_")), 0)
         self.assertGreater(sim.interactions, 10000)
         changed = sum(1 for n in sim.npcs if n.outfit_changes > 0)
         self.assertGreater(changed, 300)
@@ -227,6 +229,50 @@ class BrainSocket(unittest.TestCase):
         r0 = child.rel[k][3]
         g.apply(sim, child, {f"rel.E{k}.romance": 5})
         self.assertEqual(child.rel[k][3], r0)                             # hard rule, whatever the model says
+
+    def test_governor_memories_and_goals(self):
+        from emergence_sim.brain import Governor
+        sim = Sim(seed=3)
+        g = Governor()
+        n = next(x for x in sim.npcs if x.alive and sim.age(x) >= 30 and x.rel)
+        o = sorted(n.rel)[0]
+        k = len(n.mem)
+        g.apply(sim, n, {"mem.add": {"kind": "betrayed", "about": o, "valence": -60, "importance": 70}})
+        self.assertEqual(len(n.mem), min(k + 1, sim.norms["max_memories_per_npc"]))
+        i = next(j for j, m in enumerate(n.mem) if m[1] == "betrayed" and m[2] == o)
+        v0 = n.mem[i][3]
+        g.apply(sim, n, {f"mem.{i}.valence": 40})
+        self.assertEqual(n.mem[i][3], v0 + 10)                          # a memory is reinterpreted by steps of 10
+        g.apply(sim, n, {"mem.add": {"kind": "free text", "about": o}})
+        self.assertEqual(g.s["refused"], 1)                             # only known memory kinds
+        g.apply(sim, n, {"goal.add": {"type": "vengeance", "target": o, "priority": 60}})
+        self.assertEqual(n.goals[0]["type"], "vengeance")
+        g.apply(sim, n, {"goal.0.priority": 50})
+        self.assertEqual(n.goals[0]["priority"], 70)
+        sim.run(2)
+        self.assertEqual(n.goals[0]["target"], o)                       # goals persist across decisions (charter 9)
+        g.apply(sim, n, {"goal.0.drop": 1})
+        self.assertEqual(n.goals, [])
+
+    def test_a_blow_is_perceived_and_interrupts(self):
+        from emergence_sim import options, live
+        sim = Sim(seed=3)
+        sim.run(1)
+        adults = [x for x in sim.npcs if x.alive and sim.age(x) >= 25]
+        a, b = adults[0], adults[1]
+        b.busy_until = sim.t + 8
+        b.plan = {"steps": []}
+        social.fight(sim, a, b, a.loc or f"{a.village}:square", [], "shove")
+        if not b.alive:
+            self.skipTest("the blow was fatal")
+        self.assertEqual(b.seen[-1][1:4], ["shove", a.id, "target"])
+        self.assertEqual(b.busy_until, sim.t + 1)                       # b decides again at the next hour
+        self.assertTrue(b.plan.get("interrupted"))
+        if find_plan_contract() is not None:
+            rec = live.record(sim, b, options.feasible(sim, b))
+            self.assertEqual(rec["state"]["events"][0]["type"], "shove")
+            self.assertEqual(rec["state"]["events"][0]["agent"], f"E{a.id}")
+            live.tokens(sim, b, options.feasible(sim, b))
 
 
 if __name__ == "__main__":

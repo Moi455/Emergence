@@ -1,6 +1,6 @@
 # Contrat d'interfaces : un seul jeu, six chantiers
 
-Version 0.3, 8 octobre 2026. Propriétaire : le fil « Construction du moteur ». Ce document fixe ce qui passe d'un chantier à l'autre, pour que le village jouable, les villageois, le moteur et les données d'entraînement s'assemblent **sans conversion manuelle**.
+Version 0.4, 8 octobre 2026. Propriétaire : le fil « Construction du moteur ». Ce document fixe ce qui passe d'un chantier à l'autre, pour que le village jouable, les villageois, le moteur et les données d'entraînement s'assemblent **sans conversion manuelle**.
 
 Comment le faire évoluer : un fil qui a besoin d'un changement l'envoie au fil du moteur, qui tranche, met à jour ce fichier (numéro de version, ligne dans le journal en bas) et renvoie la version aux autres fils. On ajoute, on ne renumérote jamais un identifiant déjà publié. Le fil d'architecture relit en cas de doute.
 
@@ -78,7 +78,7 @@ Un seul squelette pour tous les humains, du nourrisson au vieillard : les propor
 
 ## 4. Vêtements
 
-Style tranché (I-2) : **pseudo-voxels** plus fins que le monde (1,25 à 1,5 cm, paramètre du générateur), avec un index de palette et un os par voxel. La source de vérité est une pile de couches de voxels : le corps, puis chaque vêtement ajusté à ce corps. Un vêtement est une **recette de données** (emplacement, type, matière, couleurs, motif, usure, graine) portée par le PNJ ; sa géométrie est recalculée pour le corps qui le porte. Le cœur C++ compose les couches et remaille à la volée (quelques ms), ce qui permet les vêtements déchirés ou brûlés et des niveaux de détail par sous-échantillonnage. Un PNJ change de tenue sans changer de modèle (la fonction `dress` du contrat PNJ en dépend).
+Style tranché (I-2), précisé par Monsieur : **style voxel**, pas voxel strict. La forme est faite de blocs de 2 cm (angles et triangles permis), peints en voxels de 1 cm ; chaque voxel porte un index de palette et un os. Les extras des nœuds `.glb` donnent `voxel_m` (bloc) et `texel_m` ; les LOD 0 et 1 portent une `normalTexture` (biseau par voxel). La source de vérité est une pile de couches de voxels : le corps, puis chaque vêtement ajusté à ce corps. Un vêtement est une **recette de données** (emplacement, type, matière, couleurs, motif, usure, graine) portée par le PNJ ; sa géométrie est recalculée pour le corps qui le porte. Le cœur C++ compose les couches et remaille à la volée (quelques ms), ce qui permet les vêtements déchirés ou brûlés et des niveaux de détail par sous-échantillonnage. Un PNJ change de tenue sans changer de modèle (la fonction `dress` du contrat PNJ en dépend).
 
 | Emplacement | Exemples | Couche |
 |---|---|---|
@@ -126,7 +126,7 @@ Style tranché (I-2) : **pseudo-voxels** plus fins que le monde (1,25 à 1,5 cm,
 }
 ```
 
-- **Budgets** (mesurés par le fil des villageois sur 40 villageois habillés ; à vérifier sur GPU intégré avec 100 PNJ visibles, environ 500 000 triangles au pire) : LOD 0 en voxels de 1,25 cm jusqu'à 4 m (environ 30 000 triangles), LOD 1 en 2,5 cm jusqu'à 12 m (8 300), LOD 2 en 5 cm jusqu'à 30 m (2 400), LOD 3 en 10 cm jusqu'à 60 m (670), imposteur au-delà ; 4 os d'influence par sommet ; textures en palette ou atlas d'au plus 256 × 256 par personnage. Une tenue absente de `outfits` se replie sur `everyday`.
+- **Budgets** (mesurés par le fil des villageois sur 40 villageois habillés ; à vérifier sur GPU intégré avec 100 PNJ visibles, environ 500 000 triangles au pire) : LOD 0 en blocs de 2 cm jusqu'à 4 m (environ 22 300 triangles), LOD 1 en 4 cm jusqu'à 12 m (5 200), LOD 2 en 8 cm jusqu'à 30 m (1 250), LOD 3 en 16 cm jusqu'à 60 m (260), imposteur au-delà (mesures sur 29 adultes) ; 4 os d'influence par sommet ; textures en palette ou atlas d'au plus 256 × 256 par personnage. Une tenue absente de `outfits` se replie sur `everyday`.
 
 ## 6. Contrat PNJ : état, décision, action
 
@@ -208,3 +208,4 @@ Flux JSONL, une ligne par événement, `schema_version` `"sim-events-0.1"` (prop
 | 0.1 | 2026-10-08 | Première version : repères, voxels et matières (classes 21 à 33 ajoutées pour le kit et les vêtements), squelette humanoïde Godot, emplacements de vêtements, export glTF et fiche JSON, contrat PNJ 0.4 adopté, liste des animations |
 | 0.2 | 2026-10-08 | VXB3 adopté (ordre x, z, y ; palette ≤ 255) et fichier d'instances VXI ; génération des chunks confiée à `worldgen`, plan figé en version 1 ; teinte d'essence pour la végétation générée ; pose de liaison bras le long du corps ; personnages en pseudo-voxels composés par couches, un `.glb` par PNJ ; huit tenues ; identifiants de village et lieux abstraits ; flux d'événements sociaux ; exports géographie et zones |
 | 0.3 | 2026-10-08 | Teinte 1 = saule ; sens de rotation et miroir de VXI ; budgets des personnages en 4 niveaux mesurés ; plusieurs vêtements par emplacement (`layer`) ; ordre du masque de zones ; matières de recette ; métadonnées des clips dans `extras` ; alias `work` et `talk` ; `dress` = fonction 112, `tok-1` figé |
+| 0.4 | 2026-10-08 | Villageois en style voxel : blocs de 2 cm peints en voxels de 1 cm, `voxel_m` et `texel_m` dans les extras, budgets remesurés |

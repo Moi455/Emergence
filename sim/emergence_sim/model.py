@@ -27,7 +27,7 @@ class NPC:
         "rel", "mem", "loc", "busy_until", "plan", "plan_kind", "last_t", "outfit",
         "mentor", "apprentices", "learning", "titles", "groups", "legends", "belief",
         "exiled", "expeditions", "max_depth", "agenda", "lifelog", "tracked", "mind",
-        "deeds", "outfit_changes", "pending_traj", "orient", "last_exp",
+        "deeds", "outfit_changes", "pending_traj", "orient", "last_exp", "seen", "goals",
     )
 
     def __init__(self, id_):
@@ -80,6 +80,8 @@ class NPC:
         self.expeditions = 0
         self.max_depth = 0
         self.last_exp = -9999     # day of the last expedition
+        self.seen = []            # recent percepts [tick, event type, agent, role, intensity], at most 6
+        self.goals = []           # persistent goals {type, target, priority, since}, at most 4 (charter 9)
         self.agenda = []      # [(tick, kind, place, ref)] invitations: wedding, funeral, festival, trial
         self.lifelog = []     # indices into sim.events
         self.tracked = False

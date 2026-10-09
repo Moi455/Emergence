@@ -42,9 +42,26 @@ Chaque PNJ a un Transformer qui tourne plusieurs fois par seconde, avec un cache
 
 ## Questions ouvertes pour Monsieur
 
-- Les traits et les valeurs morales peuvent-ils bouger, lentement, ou sont-ils figés à la naissance ?
+- ~~Traits et valeurs figés ou non ?~~ Réglé par la charte § 6 : ils changent (au plus 0,1 par jour de jeu).
 - Quel modèle « bien moins cher » pour l'enseignant (Gemini Flash-Lite, un modèle local ?), et avec quel budget ?
 - Combien d'appels du Transformer par seconde et par PNJ, en jeu ?
+
+## Décisions pour tok-2 (prises avec le fil Simulation, 9 oct., d'après CHARTE_DU_JEU.md)
+
+- **Entrée en dixièmes.** Le moteur stocke les variables psychologiques et sociales en dixièmes de l'échelle −10..+10 de la charte. Le modèle lira ces dixièmes : en int8, −100..+100 divisé par 100. Avec des entiers, les pas de 0,5 (relations) ou de 0,1 par jour (traits) resteraient invisibles. Le texte de l'enseignant garde les entiers −10..+10.
+- **Tête de sortie** :
+  - deltas d'état ;
+  - deltas de relations, par jeton ENTITY ;
+  - réinterprétation des souvenirs, par jeton MEMORY ;
+  - opération sur objectif : garder, abandonner, réorienter, ou créer avec un type ;
+  - score des options.
+  Les bornes sont celles du gouverneur (`docs/npc/variables_v0.3_catalogue_unique.md` § 1.1).
+- **Vocabulaire à ajouter** :
+  - objectifs de la charte § 9 : save_for_house, seduce, leave_village, learn_trade, get_rich, obtain_office, find_person ;
+  - les 9 types de souvenirs de la simulation sans équivalent ;
+  - les 10 fonctions du monde proposées (§ 7.2 du catalogue) ;
+  - les jetons de perception (§ 6 du catalogue), ce qui porte le contexte à environ 80 jetons.
+- **Données** : la simulation remplit désormais les événements vécus, et un événement interrompt la cible. Les prochaines trajectoires contiendront donc des décisions sociales, pas seulement des fins de plan.
 
 ## Répartition convenue avec le fil Simulation
 

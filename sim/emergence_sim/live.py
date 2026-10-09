@@ -51,10 +51,16 @@ NEUTRAL = {
     "entity.beauty": 50,
     "village.loyalty / leader_legit / institution_trust / security / rep": 0,
     "village.belonging / cohesion": "70 / 50",
-    "events, goals, items, titles": "none yet (no perception stream in the abstract sim)",
+    "event content, reliability, understanding": "{}, 1.0, 4 (seen directly)",
+    "goal progress, deadline": "0 (the engine does not measure goal progress yet)",
+    "items, titles": "none yet (no spatial perception in the abstract sim)",
 }
 MAX_ENTITIES = 6
 MAX_MEMORIES = 9
+MAX_EVENTS = 3
+MAX_GOALS = 4
+# norms an event touches (0..100), for the EVENT token's norm vector
+EVENT_NORMS = {"insult": {"honor": 50}, "strike": {"life": 60, "honor": 30}, "shove": {"honor": 30, "life": 20}}
 OTHER_ORDER = ["sea_village", "mountain_village", "desert_village", "forest_village", "market_town"]
 
 
@@ -136,11 +142,15 @@ def record(sim, n, options):
         "wardrobe": {"has": list(enc.OUTFITS), "worn": n.outfit if n.outfit in enc.OUTFITS else "everyday", "wear": 0},
     }
 
-    # people: the targets of the options first (their pointers must resolve), then the most salient ties
+    # what n perceived in the last day, strongest first (charter 8: a new percept is why n decides again)
+    seen = sorted((p for p in n.seen if sim.t - p[0] <= 24 and p[2] is not None and sim.npcs[p[2]].alive),
+                  key=lambda p: (-p[4], -p[0]))[:MAX_EVENTS]
+    # people: the targets of the options, the authors of the percepts and the targets of the goals first
+    # (their pointers must resolve), then the most salient ties
     want = []
-    for c in options:
-        if isinstance(c.target, int) and c.target not in want and c.target != n.id:
-            want.append(c.target)
+    for o in [c.target for c in options] + [p[2] for p in seen] + [g["target"] for g in n.goals]:
+        if isinstance(o, int) and o not in want and o != n.id and sim.npcs[o].alive:
+            want.append(o)
     scored = []
     for o, r in n.rel.items():
         m = sim.npcs[o]
@@ -181,6 +191,21 @@ def record(sim, n, options):
             "worn": m.outfit,
         })
     eids = {e["id"] for e in ents}
+
+    events = []
+    for p in seen:
+        t0, etype, agent, role, inten = p
+        norm = {k: 0 for k in enc.NORMS}
+        norm.update(EVENT_NORMS.get(etype, {}))
+        events.append({"id": f"V{len(events) + 1}", "type": etype, "role": role, "source": "seen",
+                       "agent": f"E{agent}" if f"E{agent}" in eids else None, "target": "me" if role == "target" else None,
+                       "content": {}, "intensity": inten, "salience": inten, "understanding": 4, "reliability": 1.0,
+                       "delay": 3600 * (sim.t - t0), "out_of_world": False, "norm": norm, "holders": 1})
+    goals = []
+    for g in n.goals[:MAX_GOALS]:
+        tgt = g["target"]
+        goals.append({"type": g["type"], "target": f"E{tgt}" if isinstance(tgt, int) else tgt, "partner": None,
+                      "priority": g["priority"], "progress": 0, "deadline_h": 0})
 
     mems = []
     for m in sorted(n.mem, key=lambda x: (-x[4], -x[0])):
@@ -235,7 +260,7 @@ def record(sim, n, options):
                 continue                                 # target fell outside the six people: the option stays, unpointed
             args[k] = x
         cands.append({"a": c.fn, "args": args})
-    return {"state": {"me": me, "entities": ents, "events": [], "memories": mems, "goals": [], "items": [], "titles": [],
+    return {"state": {"me": me, "entities": ents, "events": events, "memories": mems, "goals": goals, "items": [], "titles": [],
                       "village": village, "household": household}, "cands": cands}
 
 
