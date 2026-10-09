@@ -22,6 +22,7 @@ endif()
 
 add_subdirectory(core)
 add_subdirectory(sim)
+add_subdirectory(social)   # social engine (D31), tables generated from catalogue/
 
 # Fine world generation (emergence/worldgen, owned by the world generation
 # thread) and the terrain module built on it, when the folder is present.

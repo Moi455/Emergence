@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "tools"))
 from schema import Catalogue  # noqa: E402
 import model_interface  # noqa: E402
-from governor import tenths  # noqa: E402
+from governor import ADULT_AGE, tenths  # noqa: E402
 
 OUT = ROOT.parent / "engine" / "social" / "generated" / "emergence" / "social" / "catalogue_gen.h"
 WRITER_BITS = {"engine": 1, "T_jump": 2, "T_step": 4, "T_slow": 8, "birth": 16, "action": 32, "derived": 64}
@@ -23,6 +23,19 @@ SCALES = ("bipolar10", "unipolar10", "qty", "ratio", "enum", "id", "mref", "word
 FAMILIES = ("move", "posture", "grasp", "force", "tool", "transform", "consume", "care", "perceive", "communicate", "meta")
 PARAM_TYPES = ("ref", "enum", "qty", "duration", "condition", "expression", "bool")
 MAX_PARAMS, MAX_VALUES = 6, 12
+
+
+CPP_KEYWORDS = {"alignas", "alignof", "and", "asm", "auto", "bool", "break", "case", "catch", "char", "class", "const",
+                "continue", "default", "delete", "do", "double", "else", "enum", "explicit", "export", "extern", "false",
+                "float", "for", "friend", "goto", "if", "inline", "int", "long", "mutable", "namespace", "new", "not",
+                "operator", "or", "private", "protected", "public", "register", "return", "short", "signed", "sizeof",
+                "static", "struct", "switch", "template", "this", "throw", "true", "try", "typedef", "typename", "union",
+                "unsigned", "using", "virtual", "void", "volatile", "while", "xor", "concept", "requires", "module"}
+
+
+def ident(name: str) -> str:
+    """A catalogue id as a C++ identifier (keywords get a trailing underscore: throw -> throw_)."""
+    return name + "_" if name in CPP_KEYWORDS else name
 
 
 def fnv1a64(text: str) -> int:
@@ -48,7 +61,7 @@ class CppGenerator:
     def enum(self, name: str, base: str, ids: list[str]):
         self.emit(f"enum class {name} : {base} {{")
         for i in ids:
-            self.emit(f"  {i},")
+            self.emit(f"  {ident(i)},")
         self.emit("  kCount")
         self.emit("};")
         self.emit(f"inline constexpr std::array<std::string_view, {len(ids)}> k{name}Names = {{")
@@ -71,10 +84,12 @@ class CppGenerator:
                 allowed = a.minor_whitelist.get(p.name)
                 mmask = (1 << len(p.values)) - 1 if allowed is None else sum(1 << i for i, v in enumerate(p.values) if v in allowed)
                 vals = ", ".join(cpp_str(v) for v in p.values)
-                ps.append(f"ParamSpec{{{cpp_str(p.name)}, ParamType::{p.type}, {len(p.values)}, {{{vals}}}, "
-                          f"0x{imask:x}, 0x{mmask:x}, {str(p.ordinal).lower()}, {str(p.optional).lower()}}}")
+                ps.append(f"ParamSpec{{{cpp_str(p.name)}, ParamType::{ident(p.type)}, {len(p.values)}, {{{vals}}}, "
+                          f"0x{imask:x}, 0x{mmask:x}, {str(p.ordinal).lower()}, {str(p.optional).lower()}, "
+                          f"{str(p.name in a.party_params).lower()}, {str(p.name in a.minor_whitelist).lower()}}}")
             fam = FAMILIES.index(a.family)
-            self.emit(f"  GestureSpec{{{cpp_str(a.id)}, Family::{a.family}, {str(a.contact).lower()}, {len(ps)}, {{")
+            self.emit(f"  GestureSpec{{{cpp_str(a.id)}, Family::{ident(a.family)}, {str(bool(a.contact)).lower()}, "
+                      f"{str(a.minor_person_ok).lower()}, {len(ps)}, {{")
             for x in ps:
                 self.emit(f"    {x},")
             self.emit("  }},")
@@ -94,7 +109,7 @@ class CppGenerator:
             comp = self.cat["component"].get(v.holder)
             engine_only = bool(comp is not None and comp.engine_only)
             bits = sum(WRITER_BITS[w] for w in v.writer)
-            self.emit(f"  VariableSpec{{{cpp_str(v.id)}, {cpp_str(v.holder)}, Scale::{v.scale}, 0x{bits:02x}, "
+            self.emit(f"  VariableSpec{{{cpp_str(v.id)}, {cpp_str(v.holder)}, Scale::{ident(v.scale)}, 0x{bits:02x}, "
                       f"{tenths(v.step)}, {tenths(v.rate)}, {tenths(v.slow_rate)}, {str(bool(v.intimate)).lower()}, "
                       f"{str(engine_only).lower()}}},")
         self.emit("}};")
@@ -107,15 +122,18 @@ class CppGenerator:
         self.emit("#include <array>\n#include <cstdint>\n#include <string_view>\n")
         self.emit("namespace em::social::gen {\n")
         self.emit(f"inline constexpr std::uint64_t kCatalogueFingerprint = 0x{fp:016x}ull;  // of model_interface.json")
-        self.emit(f"inline constexpr int kMaxParams = {MAX_PARAMS};\ninline constexpr int kMaxValues = {MAX_VALUES};\n")
-        self.emit("enum class Scale : std::uint8_t { " + ", ".join(SCALES) + " };")
-        self.emit("enum class Family : std::uint8_t { " + ", ".join(FAMILIES) + " };")
-        self.emit("enum class ParamType : std::uint8_t { " + ", ".join(PARAM_TYPES) + " };")
+        self.emit(f"inline constexpr int kMaxParams = {MAX_PARAMS};\ninline constexpr int kMaxValues = {MAX_VALUES};")
+        self.emit(f"inline constexpr int kAdultAgeYears = {int(ADULT_AGE)};   // D10, read from life_stage\n")
+        self.emit("enum class Scale : std::uint8_t { " + ", ".join(ident(x) for x in SCALES) + " };")
+        self.emit("enum class Family : std::uint8_t { " + ", ".join(ident(x) for x in FAMILIES) + " };")
+        self.emit("enum class ParamType : std::uint8_t { " + ", ".join(ident(x) for x in PARAM_TYPES) + " };")
         self.emit("namespace writer { " + " ".join(f"inline constexpr std::uint8_t {k} = 0x{b:02x};" for k, b in WRITER_BITS.items()) + " }\n")
         self.emit("struct ParamSpec {\n  std::string_view name;\n  ParamType type;\n  std::uint8_t n_values;\n"
                   "  std::array<std::string_view, kMaxValues> values;\n  std::uint16_t intimate_mask;   // D10: refused with a minor\n"
-                  "  std::uint16_t minor_mask;      // D10: values allowed when a minor is involved\n  bool ordinal;\n  bool optional;\n};\n")
-        self.emit("struct GestureSpec {\n  std::string_view id;\n  Family family;\n  bool contact;\n  std::uint8_t n_params;\n"
+                  "  std::uint16_t minor_mask;      // D10: values allowed when a minor is involved\n  bool ordinal;\n  bool optional;\n"
+                  "  bool party;                    // D10: may designate a person involved\n"
+                  "  bool whitelisted;              // D10: REQUIRED and checked against minor_mask when a minor is involved\n};\n")
+        self.emit("struct GestureSpec {\n  std::string_view id;\n  Family family;\n  bool contact;\n  bool minor_person_ok;   // D10\n  std::uint8_t n_params;\n"
                   "  std::array<ParamSpec, kMaxParams> params;\n};\n")
         self.emit("struct VariableSpec {\n  std::string_view id;\n  std::string_view holder;\n  Scale scale;\n  std::uint8_t writers;\n"
                   "  std::int16_t step_tenths;      // per decision\n  std::int16_t rate_tenths;      // per game day (T_step)\n"

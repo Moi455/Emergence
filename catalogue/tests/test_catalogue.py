@@ -158,6 +158,11 @@ class TestCatalogue(unittest.TestCase):
                 e = language.Expression(f"(assert {n})", vocab)
                 self.assertTrue(e.ok, (i.id, n, e.problems))
 
+    def test_cpp_tables_and_vectors_are_up_to_date(self):
+        import gen_cpp
+        self.assertEqual(gen_cpp.OUT.read_text(encoding="utf-8"), gen_cpp.CppGenerator(self.cat).generate(),
+                         "regenerate: python3 catalogue/tools/gen_cpp.py")
+
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()
         cat._add("action", {"id": "blackmail", "family": "communicate"}, "test")
