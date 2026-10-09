@@ -1,5 +1,6 @@
 {
  "input": {
+  "encoding": "bipolar10 and unipolar10 read as int8 tenths / 100; qty log-scaled; enum and word as vocabulary ids; mref as a pointer to a token slot of the same decision; time as age in game hours (log)",
   "max_tokens": 128,
   "object_vector": [
    "mass",
@@ -49,295 +50,1507 @@
   "token_types": {
    "BELIEF": {
     "count": 12,
-    "fields": [
-     "age",
-     "certainty",
-     "contradicted",
-     "hops",
-     "importance",
-     "informant",
-     "polarity",
-     "prop",
-     "secret",
-     "shared",
-     "source",
-     "weight"
-    ]
+    "fields": {
+     "age": {
+      "from": "b_acquired",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "certainty": {
+      "from": "b_certainty",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "contradicted": {
+      "from": "b_contradicted",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "hops": {
+      "from": "b_hops",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "importance": {
+      "from": "b_importance",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "informant": {
+      "from": "b_informant",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "polarity": {
+      "from": "b_polarity",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "prop": {
+      "from": "b_proposition",
+      "scale": "proposition",
+      "unit": "",
+      "values": []
+     },
+     "secret": {
+      "from": "b_secret",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "shared": {
+      "from": "b_told_to",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "source": {
+      "from": "b_source",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "assumed",
+       "dreamt",
+       "heard",
+       "inferred",
+       "read",
+       "seen",
+       "told"
+      ]
+     },
+     "weight": {
+      "from": "b_weight",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "COMMIT": {
     "count": 3,
-    "fields": [
-     "COMMIT"
-    ]
+    "fields": {},
+    "layout": "counterparty (mref), mine_or_theirs, prop (expression), deadline_felt, status_believed, witnesses_believed"
    },
    "ENTITY": {
     "count": 10,
-    "fields": [
-     "dir",
-     "dist",
-     "id_certainty",
-     "known_by",
-     "link",
-     "look.age",
-     "look.attire",
-     "look.build",
-     "look.condition",
-     "look.expression",
-     "look.gaze",
-     "look.health",
-     "look.held",
-     "look.marks",
-     "look.motion",
-     "look.posture",
-     "look.sex",
-     "look.signs",
-     "look.wounds",
-     "present",
-     "rel.affection",
-     "rel.attraction",
-     "rel.familiarity",
-     "rel.fear",
-     "rel.obligation",
-     "rel.perceived_regard",
-     "rel.resentment",
-     "rel.respect",
-     "rel.rivalry",
-     "rel.since_contact",
-     "rel.trust",
-     "rep"
-    ]
+    "fields": {
+     "dir": {
+      "from": "ep_dir",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "dist": {
+      "from": "ep_dist",
+      "scale": "qty",
+      "unit": "m",
+      "values": []
+     },
+     "id_certainty": {
+      "from": "r_id_certainty",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "known_by": {
+      "from": "r_known_by",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "seen",
+       "name_only",
+       "described"
+      ]
+     },
+     "link": {
+      "from": "r_link_believed",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "apprentice",
+       "aunt_uncle",
+       "betrothed",
+       "child",
+       "colleague",
+       "cousin",
+       "employee",
+       "employer",
+       "enemy",
+       "former_spouse",
+       "friend",
+       "grandchild",
+       "grandparent",
+       "guest",
+       "in_law",
+       "lover",
+       "master",
+       "neighbor",
+       "niece_nephew",
+       "parent",
+       "sibling",
+       "spouse",
+       "stranger"
+      ]
+     },
+     "look.age": {
+      "from": "ep_age",
+      "scale": "qty",
+      "unit": "ans",
+      "values": []
+     },
+     "look.attire": {
+      "from": "ep_attire",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "look.build": {
+      "from": "ep_build",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "look.condition": {
+      "from": "ep_condition",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "active",
+       "hurt",
+       "down",
+       "motionless",
+       "obviously_dead"
+      ]
+     },
+     "look.expression": {
+      "from": "ep_expression",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "neutral",
+       "smile",
+       "laugh",
+       "frown",
+       "anger",
+       "fear",
+       "sadness",
+       "crying",
+       "disgust",
+       "surprise",
+       "pain",
+       "contempt",
+       "boredom",
+       "tenderness"
+      ]
+     },
+     "look.gaze": {
+      "from": "ep_gaze",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "look.health": {
+      "from": "ep_health",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "look.held": {
+      "from": "ep_held",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "look.marks": {
+      "from": "ep_marks",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "look.motion": {
+      "from": "ep_motion",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "still",
+       "approaching",
+       "leaving",
+       "running"
+      ]
+     },
+     "look.posture": {
+      "from": "ep_posture",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "standing",
+       "walking",
+       "running",
+       "sitting",
+       "kneeling",
+       "crouching",
+       "lying",
+       "prone",
+       "climbing",
+       "swimming",
+       "guard",
+       "carrying"
+      ]
+     },
+     "look.sex": {
+      "from": "ep_sex",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "female",
+       "male",
+       "unclear"
+      ]
+     },
+     "look.signs": {
+      "from": "ep_signs",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "look.wounds": {
+      "from": "ep_wounds",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "present": {
+      "from": "r_present",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "rel.affection": {
+      "from": "r_affection",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.attraction": {
+      "from": "r_attraction",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.familiarity": {
+      "from": "r_familiarity",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.fear": {
+      "from": "r_fear",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.obligation": {
+      "from": "r_obligation",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.perceived_regard": {
+      "from": "r_perceived_regard",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.resentment": {
+      "from": "r_resentment",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.respect": {
+      "from": "r_respect",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.rivalry": {
+      "from": "r_rivalry",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.since_contact": {
+      "from": "r_last_contact",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "rel.trust": {
+      "from": "r_trust",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rep": {
+      "from": "r_reputation_seen",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "EVENT": {
     "count": 6,
-    "fields": [
-     "actor",
-     "age",
-     "from_to",
-     "gesture",
-     "manner",
-     "sense",
-     "target",
-     "with"
-    ]
+    "fields": {
+     "actor": {
+      "from": "ev_actor",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "age": {
+      "from": "ev_age",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "from_to": {
+      "from": "ev_from_to",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "gesture": {
+      "from": "ev_gesture",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
+     "manner": {
+      "from": "ev_manner_seen",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "sense": {
+      "from": "ev_sense",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "seen",
+       "heard",
+       "felt"
+      ]
+     },
+     "target": {
+      "from": "ev_target",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "with": {
+      "from": "ev_with",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "GOAL": {
     "count": 4,
-    "fields": [
-     "age",
-     "deadline",
-     "mode",
-     "origin",
-     "origin_ref",
-     "priority",
-     "progress",
-     "prop",
-     "status"
-    ]
+    "fields": {
+     "age": {
+      "from": "g_since",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "deadline": {
+      "from": "g_deadline",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "mode": {
+      "from": "g_mode",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "achieve",
+       "avoid",
+       "maintain"
+      ]
+     },
+     "origin": {
+      "from": "g_origin",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "self",
+       "asked",
+       "role",
+       "agreement",
+       "norm"
+      ]
+     },
+     "origin_ref": {
+      "from": "g_origin_ref",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "priority": {
+      "from": "g_priority",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "progress": {
+      "from": "g_progress",
+      "scale": "ratio",
+      "unit": "",
+      "values": []
+     },
+     "prop": {
+      "from": "g_desired",
+      "scale": "proposition",
+      "unit": "",
+      "values": []
+     },
+     "status": {
+      "from": "g_status",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "active",
+       "paused",
+       "achieved",
+       "failed",
+       "abandoned"
+      ]
+     }
+    },
+    "layout": ""
    },
    "GROUP": {
     "count": 2,
-    "fields": [
-     "known_by",
-     "rel.affection",
-     "rel.fear",
-     "rel.resentment",
-     "rel.respect",
-     "rel.trust"
-    ]
+    "fields": {
+     "known_by": {
+      "from": "r_known_by",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "seen",
+       "name_only",
+       "described"
+      ]
+     },
+     "rel.affection": {
+      "from": "r_affection",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.fear": {
+      "from": "r_fear",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.resentment": {
+      "from": "r_resentment",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.respect": {
+      "from": "r_respect",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "rel.trust": {
+      "from": "r_trust",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "HEARD": {
     "count": 2,
-    "fields": [
-     "HEARD"
-    ]
+    "fields": {},
+    "layout": "same fields as BELIEF (prop, polarity, certainty=engine prior, source=told, informant, hops, age)"
    },
    "INV": {
     "count": 8,
-    "fields": [
-     "INV"
-    ]
+    "fields": {},
+    "layout": "same fields as THING (kind, props = object vector, state, amount, owner, file)"
    },
    "MEMORY": {
     "count": 9,
-    "fields": [
-     "age",
-     "defining",
-     "emotion",
-     "importance",
-     "interp",
-     "place",
-     "prop",
-     "role",
-     "secret",
-     "valence",
-     "vividness"
-    ]
+    "fields": {
+     "age": {
+      "from": "m_when",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "defining": {
+      "from": "m_defining",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "emotion": {
+      "from": "m_emotion",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "e_anger",
+       "e_anxiety",
+       "e_boredom",
+       "e_confusion",
+       "e_contempt",
+       "e_disgust",
+       "e_envy",
+       "e_fear",
+       "e_gratitude",
+       "e_grief",
+       "e_guilt",
+       "e_jealousy",
+       "e_joy",
+       "e_pride",
+       "e_sadness",
+       "e_shame",
+       "e_surprise",
+       "e_tenderness"
+      ]
+     },
+     "importance": {
+      "from": "m_importance",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "interp": {
+      "from": "m_interpretation",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
+     "place": {
+      "from": "m_where",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "prop": {
+      "from": "m_content",
+      "scale": "proposition",
+      "unit": "",
+      "values": []
+     },
+     "role": {
+      "from": "m_role",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "actor",
+       "target",
+       "witness",
+       "told"
+      ]
+     },
+     "secret": {
+      "from": "m_secret",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "valence": {
+      "from": "m_valence",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "vividness": {
+      "from": "m_vividness",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "PLACE": {
     "count": 1,
-    "fields": [
-     "air_felt",
-     "crowd",
-     "indoors",
-     "light",
-     "noise",
-     "signs",
-     "weather"
-    ]
+    "fields": {
+     "air_felt": {
+      "from": "pp_air_felt",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "freezing",
+       "cold",
+       "cool",
+       "mild",
+       "warm",
+       "hot"
+      ]
+     },
+     "crowd": {
+      "from": "pp_crowd_seen",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "indoors": {
+      "from": "pp_indoors",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "light": {
+      "from": "pp_light",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "noise": {
+      "from": "pp_noise",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "signs": {
+      "from": "pp_signs",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "weather": {
+      "from": "pp_weather_seen",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "PLAN": {
     "count": 1,
-    "fields": [
-     "PLAN",
-     "commitment",
-     "goal",
-     "progress"
-    ]
+    "fields": {
+     "commitment": {
+      "from": "i_commitment",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "goal": {
+      "from": "i_serves",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "progress": {
+      "from": "i_step_index",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": "steps (gesture + params), goal (mref), progress, commitment"
    },
    "REQUEST": {
     "count": 2,
-    "fields": [
-     "age",
-     "from",
-     "prop"
-    ]
+    "fields": {
+     "age": {
+      "from": "q_since",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "from": {
+      "from": "q_from",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "prop": {
+      "from": "q_content",
+      "scale": "proposition",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": "from (mref), prop (expression), age"
    },
    "SELF": {
     "count": 1,
-    "fields": [
-     "age",
-     "age_stage",
-     "body.bleeding",
-     "body.breath",
-     "body.consciousness",
-     "body.endurance",
-     "body.intox",
-     "body.load",
-     "body.manipulation",
-     "body.mobility",
-     "body.pain",
-     "body.sickness",
-     "body.strength",
-     "held",
-     "need.exhaustion",
-     "need.hunger",
-     "need.reserves",
-     "need.sleep",
-     "need.thermal",
-     "need.thirst",
-     "place",
-     "posture",
-     "season",
-     "sex",
-     "time",
-     "wound"
-    ]
+    "fields": {
+     "age": {
+      "from": "age_years",
+      "scale": "qty",
+      "unit": "ans",
+      "values": []
+     },
+     "age_stage": {
+      "from": "life_stage",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "infant",
+       "child",
+       "teen",
+       "adult",
+       "elder"
+      ]
+     },
+     "body.bleeding": {
+      "from": "bleeding",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "body.breath": {
+      "from": "breath",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "body.consciousness": {
+      "from": "consciousness",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "body.endurance": {
+      "from": "endurance",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "body.intox": {
+      "from": "intoxication",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "body.load": {
+      "from": "load_ratio",
+      "scale": "ratio",
+      "unit": "",
+      "values": []
+     },
+     "body.manipulation": {
+      "from": "manipulation",
+      "scale": "ratio",
+      "unit": "",
+      "values": []
+     },
+     "body.mobility": {
+      "from": "mobility",
+      "scale": "ratio",
+      "unit": "",
+      "values": []
+     },
+     "body.pain": {
+      "from": "pain",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "body.sickness": {
+      "from": "sickness_felt",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "body.strength": {
+      "from": "strength",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "held": {
+      "from": "hands",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "need.exhaustion": {
+      "from": "exhaustion",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "need.hunger": {
+      "from": "hunger",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "need.reserves": {
+      "from": "reserves",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "need.sleep": {
+      "from": "sleepiness",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "need.thermal": {
+      "from": "thermal_comfort",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "need.thirst": {
+      "from": "thirst",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "place": {
+      "from": "place_recognized",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "posture": {
+      "from": "posture_felt",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "standing",
+       "walking",
+       "running",
+       "sitting",
+       "kneeling",
+       "crouching",
+       "lying",
+       "prone",
+       "climbing",
+       "swimming",
+       "guard",
+       "carrying"
+      ]
+     },
+     "season": {
+      "from": "season_felt",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "spring",
+       "summer",
+       "autumn",
+       "winter"
+      ]
+     },
+     "sex": {
+      "from": "sex",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "female",
+       "male"
+      ]
+     },
+     "time": {
+      "from": "time_felt",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "wound": {
+      "from": "wounds",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "SELF_MIND": {
     "count": 1,
-    "fields": [
-     "ability.coordination",
-     "ability.intellect",
-     "ability.self_control",
-     "attracted_to",
-     "temper.baseline_mood",
-     "temper.resilience",
-     "trait.altruism",
-     "trait.anxiousness",
-     "trait.assurance",
-     "trait.creativity",
-     "trait.diligence",
-     "trait.fairness",
-     "trait.fearfulness",
-     "trait.forgiveness",
-     "trait.gentleness",
-     "trait.greed_avoidance",
-     "trait.inquisitiveness",
-     "trait.modesty",
-     "trait.patience",
-     "trait.prudence",
-     "trait.sentimentality",
-     "trait.sincerity",
-     "trait.sociability",
-     "trait.unconventionality",
-     "value.achievement",
-     "value.authority",
-     "value.honor",
-     "value.liberty",
-     "value.loyalty",
-     "value.pleasure",
-     "value.power",
-     "value.sanctity"
-    ]
+    "fields": {
+     "ability.coordination": {
+      "from": "coordination",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "ability.intellect": {
+      "from": "intellect",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "ability.self_control": {
+      "from": "self_control",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "attracted_to": {
+      "from": "attracted_to",
+      "scale": "list",
+      "unit": "",
+      "values": [
+       "female",
+       "male"
+      ]
+     },
+     "temper.baseline_mood": {
+      "from": "baseline_mood",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "temper.resilience": {
+      "from": "resilience",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.altruism": {
+      "from": "altruism",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.anxiousness": {
+      "from": "anxiousness",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.assurance": {
+      "from": "assurance",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.creativity": {
+      "from": "creativity",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.diligence": {
+      "from": "diligence",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.fairness": {
+      "from": "fairness",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.fearfulness": {
+      "from": "fearfulness",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.forgiveness": {
+      "from": "forgiveness",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.gentleness": {
+      "from": "gentleness",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.greed_avoidance": {
+      "from": "greed_avoidance",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.inquisitiveness": {
+      "from": "inquisitiveness",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.modesty": {
+      "from": "modesty",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.patience": {
+      "from": "patience",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.prudence": {
+      "from": "prudence",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.sentimentality": {
+      "from": "sentimentality",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.sincerity": {
+      "from": "sincerity",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.sociability": {
+      "from": "sociability",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "trait.unconventionality": {
+      "from": "unconventionality",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.achievement": {
+      "from": "v_achievement",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.authority": {
+      "from": "v_authority",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.honor": {
+      "from": "v_honor",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.liberty": {
+      "from": "v_liberty",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.loyalty": {
+      "from": "v_loyalty",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.pleasure": {
+      "from": "v_pleasure",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.power": {
+      "from": "v_power",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "value.sanctity": {
+      "from": "v_sanctity",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "SELF_STATE": {
     "count": 1,
-    "fields": [
-     "attention",
-     "drive.achievement",
-     "drive.acquisition",
-     "drive.autonomy",
-     "drive.company",
-     "drive.esteem",
-     "drive.intimacy",
-     "drive.meaning",
-     "drive.novelty",
-     "drive.play",
-     "drive.security",
-     "emo.anger",
-     "emo.anxiety",
-     "emo.boredom",
-     "emo.confusion",
-     "emo.contempt",
-     "emo.disgust",
-     "emo.envy",
-     "emo.fear",
-     "emo.gratitude",
-     "emo.grief",
-     "emo.guilt",
-     "emo.jealousy",
-     "emo.joy",
-     "emo.pride",
-     "emo.sadness",
-     "emo.shame",
-     "emo.surprise",
-     "emo.tenderness",
-     "masking",
-     "mood.energy",
-     "mood.valence",
-     "self_regard",
-     "stress"
-    ]
+    "fields": {
+     "attention": {
+      "from": "attention",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "drive.achievement": {
+      "from": "need_achievement",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.acquisition": {
+      "from": "need_acquisition",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.autonomy": {
+      "from": "need_autonomy",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.company": {
+      "from": "need_company",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.esteem": {
+      "from": "need_esteem",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.intimacy": {
+      "from": "need_intimacy",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.meaning": {
+      "from": "need_meaning",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.novelty": {
+      "from": "need_novelty",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.play": {
+      "from": "need_play",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "drive.security": {
+      "from": "need_security",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.anger": {
+      "from": "anger",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.anxiety": {
+      "from": "anxiety",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.boredom": {
+      "from": "boredom",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.confusion": {
+      "from": "confusion",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.contempt": {
+      "from": "contempt",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.disgust": {
+      "from": "disgust",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.envy": {
+      "from": "envy",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.fear": {
+      "from": "fear",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.gratitude": {
+      "from": "gratitude",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.grief": {
+      "from": "grief",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.guilt": {
+      "from": "guilt",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.jealousy": {
+      "from": "jealousy",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.joy": {
+      "from": "joy",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.pride": {
+      "from": "pride",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.sadness": {
+      "from": "sadness",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.shame": {
+      "from": "shame",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.surprise": {
+      "from": "surprise",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "emo.tenderness": {
+      "from": "tenderness",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "masking": {
+      "from": "masking",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "mood.energy": {
+      "from": "mood_energy",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "mood.valence": {
+      "from": "mood_valence",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "self_regard": {
+      "from": "self_regard",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "stress": {
+      "from": "stress",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "SKILL": {
     "count": 3,
-    "fields": [
-     "self_estimate",
-     "technique"
-    ]
+    "fields": {
+     "self_estimate": {
+      "from": "k_self_estimate",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "technique": {
+      "from": "k_technique",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "t_archery",
+       "t_brewing",
+       "t_climbing",
+       "t_cooking",
+       "t_digging",
+       "t_farming",
+       "t_fighting",
+       "t_fishing",
+       "t_foraging",
+       "t_glass",
+       "t_healing",
+       "t_hunting",
+       "t_husbandry",
+       "t_leather",
+       "t_literacy",
+       "t_magic",
+       "t_music",
+       "t_pottery",
+       "t_reckoning",
+       "t_riding",
+       "t_smithing",
+       "t_stealth",
+       "t_stonework",
+       "t_swimming",
+       "t_textile",
+       "t_woodwork"
+      ]
+     }
+    },
+    "layout": "technique (word), self_estimate"
    },
    "TASTE": {
     "count": 2,
-    "fields": [
-     "TASTE"
-    ]
+    "fields": {},
+    "layout": "concept (pointer to a word) + attitude (bipolar10)"
    },
    "THING": {
     "count": 16,
-    "fields": [
-     "amount",
-     "depth",
-     "dir",
-     "display",
-     "dist",
-     "file",
-     "file_certainty",
-     "kind",
-     "motion",
-     "owner",
-     "props",
-     "state"
-    ]
+    "fields": {
+     "amount": {
+      "from": "pc_amount_seen",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "none",
+       "few",
+       "some",
+       "many",
+       "unknown"
+      ]
+     },
+     "depth": {
+      "from": "pc_depth_seen",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "shallow",
+       "waist",
+       "deep",
+       "unseen_bottom"
+      ]
+     },
+     "dir": {
+      "from": "pc_dir",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "display": {
+      "from": "pc_display",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "calm",
+       "grazing",
+       "alert",
+       "fleeing",
+       "growling",
+       "baring_teeth",
+       "charging",
+       "stalking",
+       "playing"
+      ]
+     },
+     "dist": {
+      "from": "pc_dist",
+      "scale": "qty",
+      "unit": "m",
+      "values": []
+     },
+     "file": {
+      "from": "pc_file",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "file_certainty": {
+      "from": "pc_file_certainty",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "kind": {
+      "from": "pc_kind_seen",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
+     "motion": {
+      "from": "pc_motion",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "still",
+       "approaching",
+       "leaving",
+       "falling",
+       "rolling"
+      ]
+     },
+     "owner": {
+      "from": "pc_owner_believed",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "props": {
+      "from": "pc_props_seen",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "state": {
+      "from": "pc_state_seen",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    }
   }
  },
@@ -366,18 +1579,6 @@
    "c_thirst_above",
    "c_time",
    "c_tool_broken"
-  ],
-  "direction_head": [
-   "ahead",
-   "ahead_right",
-   "right",
-   "behind_right",
-   "behind",
-   "behind_left",
-   "left",
-   "ahead_left",
-   "up",
-   "down"
   ],
   "feasibility_mask": "computed on the NPC's percepts and beliefs, never on the world; a gesture that the world refuses fails physically and that failure is perceived",
   "gesture_head": [
@@ -423,1151 +1624,1899 @@
    "write"
   ],
   "gestures": {
-   "blow": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "fire"
+   "blow": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "fire"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "channel": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "structure",
+       "terrain",
+       "voxel"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "intent",
+      "name": "intent",
+      "optional": false
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     },
+     {
+      "name": "into",
+      "optional": true,
+      "pointer": [
+       "belief",
+       "form"
+      ],
+      "token": [
+       "BELIEF",
+       "kinds table (forms)"
+      ]
+     }
+    ],
+    "party_params": []
+   },
+   "climb": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "structure",
+       "terrain",
+       "voxel",
+       "item",
+       "plant"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "climb.pace",
+      "name": "pace",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "drink": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "item",
+      "optional": false,
+      "pointer": [
+       "item",
+       "water"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "amount",
+      "name": "amount",
+      "optional": false
+     },
+     {
+      "name": "to",
+      "optional": true,
+      "pointer": [
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING"
+      ]
+     }
+    ],
+    "party_params": []
+   },
+   "eat": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "item",
+      "optional": false,
+      "pointer": [
+       "item",
+       "plant"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "amount",
+      "name": "amount",
+      "optional": false
+     },
+     {
+      "name": "to",
+      "optional": true,
+      "pointer": [
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING"
+      ]
+     }
+    ],
+    "party_params": []
+   },
+   "examine": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "contact_zone": [
+      "head",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "legs"
+     ],
+     "sense": [
+      "look",
+      "touch",
+      "smell"
      ]
     },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    }
-   ],
-   "channel": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "structure",
-      "terrain",
-      "voxel"
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal",
+       "item",
+       "structure",
+       "terrain",
+       "voxel",
+       "water",
+       "trace",
+       "plant"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "sense",
+      "name": "sense",
+      "optional": false
+     },
+     {
+      "head": "contact_zone",
+      "name": "contact_zone",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "give": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "item",
+      "optional": false,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "to",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING"
+      ]
+     },
+     {
+      "head": "give.mode",
+      "name": "mode",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "go": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "place",
+       "agent",
+       "animal",
+       "item",
+       "structure",
+       "trace",
+       "water",
+       "direction"
+      ],
+      "token": [
+       "ENTITY",
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV",
+       "relative_direction_head"
+      ]
+     },
+     {
+      "head": "relation",
+      "name": "relation",
+      "optional": false
+     },
+     {
+      "head": "go.pace",
+      "name": "pace",
+      "optional": false
+     },
+     {
+      "head": "stealth",
+      "name": "stealth",
+      "optional": false
+     },
+     {
+      "head": "stop_at",
+      "name": "stop_at",
+      "optional": true
+     }
+    ],
+    "party_params": []
+   },
+   "grab": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "hold_zone": [
+      "arm",
+      "collar",
+      "hair"
      ]
     },
-    {
-     "head": "intent",
-     "name": "intent",
-     "optional": false
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    },
-    {
-     "name": "into",
-     "optional": true,
-     "pointer": [
-      "belief",
-      "form"
-     ]
-    }
-   ],
-   "climb": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "structure",
-      "terrain",
-      "voxel",
-      "item",
-      "plant"
-     ]
-    },
-    {
-     "head": "climb.pace",
-     "name": "pace",
-     "optional": false
-    }
-   ],
-   "drink": [
-    {
-     "name": "item",
-     "optional": false,
-     "pointer": [
-      "item",
-      "water"
-     ]
-    },
-    {
-     "head": "amount",
-     "name": "amount",
-     "optional": false
-    },
-    {
-     "name": "to",
-     "optional": true,
-     "pointer": [
-      "agent",
-      "animal"
-     ]
-    }
-   ],
-   "eat": [
-    {
-     "name": "item",
-     "optional": false,
-     "pointer": [
-      "item",
-      "plant"
-     ]
-    },
-    {
-     "head": "amount",
-     "name": "amount",
-     "optional": false
-    },
-    {
-     "name": "to",
-     "optional": true,
-     "pointer": [
-      "agent",
-      "animal"
-     ]
-    }
-   ],
-   "examine": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal",
-      "item",
-      "structure",
-      "terrain",
-      "voxel",
-      "water",
-      "trace",
-      "plant"
-     ]
-    },
-    {
-     "head": "sense",
-     "name": "sense",
-     "optional": false
-    },
-    {
-     "head": "contact_zone",
-     "name": "contact_zone",
-     "optional": false
-    }
-   ],
-   "give": [
-    {
-     "name": "item",
-     "optional": false,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "name": "to",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal"
-     ]
-    },
-    {
-     "head": "give.mode",
-     "name": "mode",
-     "optional": false
-    }
-   ],
-   "go": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "place",
-      "agent",
-      "animal",
-      "item",
-      "structure",
-      "trace",
-      "water",
-      "direction"
-     ]
-    },
-    {
-     "head": "relation",
-     "name": "relation",
-     "optional": false
-    },
-    {
-     "head": "pace",
-     "name": "pace",
-     "optional": false
-    },
-    {
-     "head": "stealth",
-     "name": "stealth",
-     "optional": false
-    },
-    {
-     "head": "stop_at",
-     "name": "stop_at",
-     "optional": true
-    }
-   ],
-   "grab": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal"
-     ]
-    },
-    {
-     "head": "hold_zone",
-     "name": "hold_zone",
-     "optional": false
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    },
-    {
-     "name": "until",
-     "optional": false,
-     "type": "condition"
-    }
-   ],
-   "guard": [
-    {
-     "name": "against",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal"
-     ]
-    },
-    {
-     "head": "stance",
-     "name": "stance",
-     "optional": false
-    }
-   ],
-   "jump": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "place",
-      "direction",
-      "voxel",
-      "water"
-     ]
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    }
-   ],
-   "listen": [
-    {
-     "name": "target",
-     "optional": true,
-     "pointer": [
-      "agent",
-      "place",
-      "direction"
-     ]
-    },
-    {
-     "head": "stealth",
-     "name": "stealth",
-     "optional": false
-    }
-   ],
-   "look": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal",
-      "item",
-      "structure",
-      "terrain",
-      "water",
-      "fire",
-      "place",
-      "trace",
-      "direction"
-     ]
-    },
-    {
-     "head": "look.mode",
-     "name": "mode",
-     "optional": false
-    },
-    {
-     "head": "stealth",
-     "name": "stealth",
-     "optional": false
-    }
-   ],
-   "mount": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "animal",
-      "item"
-     ]
-    },
-    {
-     "head": "mode",
-     "name": "mode",
-     "optional": false
-    }
-   ],
-   "operate": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "structure"
-     ]
-    },
-    {
-     "head": "operate.mode",
-     "name": "mode",
-     "optional": false
-    },
-    {
-     "name": "with",
-     "optional": true,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "head": "stealth",
-     "name": "stealth",
-     "optional": false
-    }
-   ],
-   "perform": [
-    {
-     "name": "with",
-     "optional": true,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "head": "mood",
-     "name": "mood",
-     "optional": false
-    },
-    {
-     "head": "duration",
-     "name": "duration",
-     "optional": false
-    }
-   ],
-   "pour": [
-    {
-     "name": "from",
-     "optional": false,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "name": "into",
-     "optional": false,
-     "pointer": [
-      "item",
-      "place",
-      "terrain",
-      "fire",
-      "agent",
-      "water"
-     ]
-    },
-    {
-     "head": "amount",
-     "name": "amount",
-     "optional": false
-    },
-    {
-     "head": "stealth",
-     "name": "stealth",
-     "optional": false
-    }
-   ],
-   "pull": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal",
-      "item",
-      "structure",
-      "voxel"
-     ]
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    },
-    {
-     "name": "toward",
-     "optional": true,
-     "pointer": [
-      "place",
-      "direction"
-     ]
-    }
-   ],
-   "push": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal",
-      "item",
-      "structure"
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING"
+      ]
+     },
+     {
+      "head": "hold_zone",
+      "name": "hold_zone",
+      "optional": false
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     },
+     {
+      "name": "until",
+      "optional": false,
+      "type": "condition"
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "guard": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "against",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING"
+      ]
+     },
+     {
+      "head": "stance",
+      "name": "stance",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "jump": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "place",
+       "direction",
+       "voxel",
+       "water"
+      ],
+      "token": [
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "relative_direction_head"
+      ]
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "listen": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": true,
+      "pointer": [
+       "agent",
+       "place",
+       "direction"
+      ],
+      "token": [
+       "ENTITY",
+       "PLACE (here) or a known place file (@L)",
+       "relative_direction_head"
+      ]
+     },
+     {
+      "head": "stealth",
+      "name": "stealth",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "look": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal",
+       "item",
+       "structure",
+       "terrain",
+       "water",
+       "fire",
+       "place",
+       "trace",
+       "direction"
+      ],
+      "token": [
+       "ENTITY",
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV",
+       "relative_direction_head"
+      ]
+     },
+     {
+      "head": "look.mode",
+      "name": "mode",
+      "optional": false
+     },
+     {
+      "head": "stealth",
+      "name": "stealth",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "mount": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "animal",
+       "item"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "mount.mode",
+      "name": "mode",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "operate": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "structure"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "operate.mode",
+      "name": "mode",
+      "optional": false
+     },
+     {
+      "name": "with",
+      "optional": true,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "stealth",
+      "name": "stealth",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "perform": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "with",
+      "optional": true,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "mood",
+      "name": "mood",
+      "optional": false
+     },
+     {
+      "head": "duration",
+      "name": "duration",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "pour": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "from",
+      "optional": false,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "into",
+      "optional": false,
+      "pointer": [
+       "item",
+       "place",
+       "terrain",
+       "fire",
+       "agent",
+       "water"
+      ],
+      "token": [
+       "ENTITY",
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "amount",
+      "name": "amount",
+      "optional": false
+     },
+     {
+      "head": "stealth",
+      "name": "stealth",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "pull": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal",
+       "item",
+       "structure",
+       "voxel"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     },
+     {
+      "name": "toward",
+      "optional": true,
+      "pointer": [
+       "place",
+       "direction"
+      ],
+      "token": [
+       "PLACE (here) or a known place file (@L)",
+       "relative_direction_head"
+      ]
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "push": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal",
+       "item",
+       "structure"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     },
+     {
+      "head": "direction",
+      "name": "direction",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "put": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "contact_zone": [
+      "arms",
+      "back"
      ]
     },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    },
-    {
-     "head": "direction",
-     "name": "direction",
-     "optional": false
-    }
-   ],
-   "put": [
-    {
-     "name": "item",
-     "optional": false,
-     "pointer": [
-      "item",
-      "agent",
-      "animal"
+    "params": [
+     {
+      "name": "item",
+      "optional": false,
+      "pointer": [
+       "item",
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "where",
+      "optional": false,
+      "pointer": [
+       "place",
+       "item",
+       "structure",
+       "terrain",
+       "voxel",
+       "water"
+      ],
+      "token": [
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "stealth",
+      "name": "stealth",
+      "optional": false
+     },
+     {
+      "head": "contact_zone",
+      "name": "contact_zone",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "item"
+    ]
+   },
+   "read": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "structure"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     }
+    ],
+    "party_params": []
+   },
+   "rest": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "head": "duration",
+      "name": "duration",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "scoop": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "terrain",
+       "voxel",
+       "water",
+       "item"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "with",
+      "optional": true,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "amount",
+      "name": "amount",
+      "optional": false
+     },
+     {
+      "name": "into",
+      "optional": true,
+      "pointer": [
+       "item",
+       "place",
+       "terrain"
+      ],
+      "token": [
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV"
+      ]
+     }
+    ],
+    "party_params": []
+   },
+   "search": {
+    "contact": true,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "place",
+       "item",
+       "agent",
+       "structure",
+       "terrain",
+       "trace",
+       "water"
+      ],
+      "token": [
+       "ENTITY",
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "thoroughness",
+      "name": "thoroughness",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "set_posture": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "head": "posture",
+      "name": "posture",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "shape": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "terrain"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "into",
+      "optional": false,
+      "pointer": [
+       "belief",
+       "form"
+      ],
+      "token": [
+       "BELIEF",
+       "kinds table (forms)"
+      ]
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "sign": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "head": "kind",
+      "name": "kind",
+      "optional": false
+     },
+     {
+      "name": "at",
+      "optional": true,
+      "pointer": [
+       "agent",
+       "animal",
+       "item",
+       "place",
+       "direction",
+       "group"
+      ],
+      "token": [
+       "ENTITY",
+       "GROUP",
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV",
+       "relative_direction_head"
+      ]
+     }
+    ],
+    "party_params": []
+   },
+   "sleep": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "where",
+      "optional": false,
+      "pointer": [
+       "place",
+       "item",
+       "structure",
+       "terrain"
+      ],
+      "token": [
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "until",
+      "optional": false,
+      "type": "condition"
+     }
+    ],
+    "party_params": []
+   },
+   "speak": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "to",
+      "optional": true,
+      "pointer": [
+       "agent",
+       "group",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "GROUP",
+       "THING"
+      ]
+     },
+     {
+      "head": "volume",
+      "name": "volume",
+      "optional": false
+     },
+     {
+      "head": "tone",
+      "name": "tone",
+      "optional": false
+     },
+     {
+      "name": "content",
+      "optional": false,
+      "type": "expression"
+     }
+    ],
+    "party_params": []
+   },
+   "stop": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [],
+    "party_params": []
+   },
+   "strike": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal",
+       "item",
+       "structure",
+       "terrain",
+       "voxel",
+       "plant"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "zone",
+      "name": "zone",
+      "optional": false
+     },
+     {
+      "head": "strike.with",
+      "name": "with",
+      "optional": false
+     },
+     {
+      "head": "strike.motion",
+      "name": "motion",
+      "optional": false
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     },
+     {
+      "name": "until",
+      "optional": false,
+      "type": "condition"
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "swim": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "place",
+       "water",
+       "direction"
+      ],
+      "token": [
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "relative_direction_head"
+      ]
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     }
+    ],
+    "party_params": []
+   },
+   "take": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "contact_zone": [
+      "arms",
+      "hands",
+      "back"
      ]
     },
-    {
-     "name": "where",
-     "optional": false,
-     "pointer": [
-      "place",
-      "item",
-      "structure",
-      "terrain",
-      "voxel",
-      "water"
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "from",
+      "name": "from",
+      "optional": false
+     },
+     {
+      "head": "hold",
+      "name": "hold",
+      "optional": false
+     },
+     {
+      "head": "stealth",
+      "name": "stealth",
+      "optional": false
+     },
+     {
+      "head": "contact_zone",
+      "name": "contact_zone",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "throw": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "item",
+      "optional": false,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "at",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal",
+       "item",
+       "structure",
+       "place",
+       "water",
+       "fire",
+       "voxel",
+       "direction"
+      ],
+      "token": [
+       "ENTITY",
+       "PLACE (here) or a known place file (@L)",
+       "THING",
+       "THING|INV",
+       "relative_direction_head"
+      ]
+     },
+     {
+      "head": "zone",
+      "name": "zone",
+      "optional": true
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     },
+     {
+      "name": "with",
+      "optional": true,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     }
+    ],
+    "party_params": []
+   },
+   "tie": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "contact_zone": [
+      "head",
+      "arms",
+      "hands",
+      "legs"
+     ],
+     "mode": [
+      "knot"
+     ],
+     "tightness": [
+      "light",
+      "firm"
      ]
     },
-    {
-     "head": "stealth",
-     "name": "stealth",
-     "optional": false
-    },
-    {
-     "head": "contact_zone",
-     "name": "contact_zone",
-     "optional": false
-    }
-   ],
-   "read": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "structure"
-     ]
-    }
-   ],
-   "rest": [
-    {
-     "head": "duration",
-     "name": "duration",
-     "optional": false
-    }
-   ],
-   "scoop": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "terrain",
-      "voxel",
-      "water",
-      "item"
-     ]
-    },
-    {
-     "name": "with",
-     "optional": true,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "head": "amount",
-     "name": "amount",
-     "optional": false
-    },
-    {
-     "name": "into",
-     "optional": true,
-     "pointer": [
-      "item",
-      "place",
-      "terrain"
-     ]
-    }
-   ],
-   "search": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "place",
-      "item",
-      "agent",
-      "structure",
-      "terrain",
-      "trace",
-      "water"
-     ]
-    },
-    {
-     "head": "thoroughness",
-     "name": "thoroughness",
-     "optional": false
-    }
-   ],
-   "set_posture": [
-    {
-     "head": "posture",
-     "name": "posture",
-     "optional": false
-    }
-   ],
-   "shape": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "terrain"
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "agent",
+       "animal",
+       "structure"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "to",
+      "optional": true,
+      "pointer": [
+       "item",
+       "structure",
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "tie.mode",
+      "name": "mode",
+      "optional": false
+     },
+     {
+      "name": "with",
+      "optional": false,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "tightness",
+      "name": "tightness",
+      "optional": false
+     },
+     {
+      "head": "contact_zone",
+      "name": "contact_zone",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "target",
+     "to"
+    ]
+   },
+   "touch": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "contact_zone": [
+      "head",
+      "shoulder",
+      "arms",
+      "hands",
+      "back"
+     ],
+     "manner": [
+      "gentle",
+      "firm",
+      "playful"
+     ],
+     "with": [
+      "hand",
+      "arms"
      ]
     },
-    {
-     "name": "into",
-     "optional": false,
-     "pointer": [
-      "belief",
-      "form"
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "agent",
+       "animal"
+      ],
+      "token": [
+       "ENTITY",
+       "THING"
+      ]
+     },
+     {
+      "head": "touch.with",
+      "name": "with",
+      "optional": false
+     },
+     {
+      "head": "contact_zone",
+      "name": "contact_zone",
+      "optional": false
+     },
+     {
+      "head": "manner",
+      "name": "manner",
+      "optional": false
+     },
+     {
+      "head": "duration",
+      "name": "duration",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "wait": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "until",
+      "optional": false,
+      "type": "condition"
+     }
+    ],
+    "party_params": []
+   },
+   "wear": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "contact_zone": [
+      "head",
+      "shoulder",
+      "arms",
+      "hands",
+      "legs"
+     ],
+     "mode": [
+      "put_on"
      ]
     },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    }
-   ],
-   "sign": [
-    {
-     "head": "kind",
-     "name": "kind",
-     "optional": false
-    },
-    {
-     "name": "at",
-     "optional": true,
-     "pointer": [
-      "agent",
-      "animal",
-      "item",
-      "place",
-      "direction",
-      "group"
-     ]
-    }
-   ],
-   "sleep": [
-    {
-     "name": "where",
-     "optional": false,
-     "pointer": [
-      "place",
-      "item",
-      "structure",
-      "terrain"
-     ]
-    },
-    {
-     "name": "until",
-     "optional": false,
-     "type": "condition"
-    }
-   ],
-   "speak": [
-    {
-     "name": "to",
-     "optional": true,
-     "pointer": [
-      "agent",
-      "group",
-      "animal"
-     ]
-    },
-    {
-     "head": "volume",
-     "name": "volume",
-     "optional": false
-    },
-    {
-     "head": "tone",
-     "name": "tone",
-     "optional": false
-    },
-    {
-     "name": "content",
-     "optional": false,
-     "type": "expression"
-    }
-   ],
-   "stop": [],
-   "strike": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal",
-      "item",
-      "structure",
-      "terrain",
-      "voxel",
-      "plant"
+    "params": [
+     {
+      "name": "item",
+      "optional": false,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "wear.mode",
+      "name": "mode",
+      "optional": false
+     },
+     {
+      "name": "on",
+      "optional": true,
+      "pointer": [
+       "agent"
+      ],
+      "token": [
+       "ENTITY"
+      ]
+     },
+     {
+      "head": "contact_zone",
+      "name": "contact_zone",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "on"
+    ]
+   },
+   "work": {
+    "contact": true,
+    "minor_person_ok": true,
+    "minor_whitelist": {
+     "contact_zone": [
+      "head",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "legs"
+     ],
+     "duration": [
+      "brief",
+      "a_while"
+     ],
+     "intensity": [
+      "faint",
+      "light",
+      "firm"
+     ],
+     "motion": [
+      "press"
      ]
     },
-    {
-     "head": "zone",
-     "name": "zone",
-     "optional": false
-    },
-    {
-     "head": "with",
-     "name": "with",
-     "optional": false
-    },
-    {
-     "head": "motion",
-     "name": "motion",
-     "optional": false
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    },
-    {
-     "name": "until",
-     "optional": false,
-     "type": "condition"
-    }
-   ],
-   "swim": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "place",
-      "water",
-      "direction"
-     ]
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    }
-   ],
-   "take": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "agent",
-      "animal"
-     ]
-    },
-    {
-     "head": "from",
-     "name": "from",
-     "optional": false
-    },
-    {
-     "head": "hold",
-     "name": "hold",
-     "optional": false
-    },
-    {
-     "head": "stealth",
-     "name": "stealth",
-     "optional": false
-    },
-    {
-     "head": "contact_zone",
-     "name": "contact_zone",
-     "optional": false
-    }
-   ],
-   "throw": [
-    {
-     "name": "item",
-     "optional": false,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "name": "at",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal",
-      "item",
-      "structure",
-      "place",
-      "water",
-      "fire",
-      "voxel",
-      "direction"
-     ]
-    },
-    {
-     "head": "zone",
-     "name": "zone",
-     "optional": true
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    },
-    {
-     "name": "with",
-     "optional": true,
-     "pointer": [
-      "item"
-     ]
-    }
-   ],
-   "tie": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "agent",
-      "animal",
-      "structure"
-     ]
-    },
-    {
-     "name": "to",
-     "optional": true,
-     "pointer": [
-      "item",
-      "structure",
-      "agent",
-      "animal"
-     ]
-    },
-    {
-     "head": "tie.mode",
-     "name": "mode",
-     "optional": false
-    },
-    {
-     "name": "with",
-     "optional": false,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "head": "tightness",
-     "name": "tightness",
-     "optional": false
-    },
-    {
-     "head": "contact_zone",
-     "name": "contact_zone",
-     "optional": false
-    }
-   ],
-   "touch": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "agent",
-      "animal"
-     ]
-    },
-    {
-     "head": "touch.with",
-     "name": "with",
-     "optional": false
-    },
-    {
-     "head": "contact_zone",
-     "name": "contact_zone",
-     "optional": false
-    },
-    {
-     "head": "manner",
-     "name": "manner",
-     "optional": false
-    },
-    {
-     "head": "duration",
-     "name": "duration",
-     "optional": false
-    }
-   ],
-   "wait": [
-    {
-     "name": "until",
-     "optional": false,
-     "type": "condition"
-    }
-   ],
-   "wear": [
-    {
-     "name": "item",
-     "optional": false,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "head": "wear.mode",
-     "name": "mode",
-     "optional": false
-    },
-    {
-     "name": "on",
-     "optional": true,
-     "pointer": [
-      "agent"
-     ]
-    },
-    {
-     "head": "contact_zone",
-     "name": "contact_zone",
-     "optional": false
-    }
-   ],
-   "work": [
-    {
-     "name": "target",
-     "optional": false,
-     "pointer": [
-      "item",
-      "agent",
-      "animal",
-      "structure",
-      "terrain",
-      "voxel"
-     ]
-    },
-    {
-     "name": "with",
-     "optional": true,
-     "pointer": [
-      "item"
-     ]
-    },
-    {
-     "head": "work.motion",
-     "name": "motion",
-     "optional": false
-    },
-    {
-     "head": "intensity",
-     "name": "intensity",
-     "optional": false
-    },
-    {
-     "head": "duration",
-     "name": "duration",
-     "optional": false
-    },
-    {
-     "head": "contact_zone",
-     "name": "contact_zone",
-     "optional": false
-    }
-   ],
-   "write": [
-    {
-     "name": "on",
-     "optional": false,
-     "pointer": [
-      "item",
-      "structure"
-     ]
-    },
-    {
-     "name": "content",
-     "optional": false,
-     "type": "expression"
-    }
-   ]
+    "params": [
+     {
+      "name": "target",
+      "optional": false,
+      "pointer": [
+       "item",
+       "agent",
+       "animal",
+       "structure",
+       "terrain",
+       "voxel"
+      ],
+      "token": [
+       "ENTITY",
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "with",
+      "optional": true,
+      "pointer": [
+       "item"
+      ],
+      "token": [
+       "THING|INV"
+      ]
+     },
+     {
+      "head": "work.motion",
+      "name": "motion",
+      "optional": false
+     },
+     {
+      "head": "intensity",
+      "name": "intensity",
+      "optional": false
+     },
+     {
+      "head": "duration",
+      "name": "duration",
+      "optional": false
+     },
+     {
+      "head": "contact_zone",
+      "name": "contact_zone",
+      "optional": false
+     }
+    ],
+    "party_params": [
+     "target"
+    ]
+   },
+   "write": {
+    "contact": false,
+    "minor_person_ok": false,
+    "minor_whitelist": {},
+    "params": [
+     {
+      "name": "on",
+      "optional": false,
+      "pointer": [
+       "item",
+       "structure"
+      ],
+      "token": [
+       "THING",
+       "THING|INV"
+      ]
+     },
+     {
+      "name": "content",
+      "optional": false,
+      "type": "expression"
+     }
+    ],
+    "party_params": []
+   }
   },
   "manner_heads": {
-   "amount": [
-    "little",
-    "some",
-    "all"
-   ],
-   "climb.pace": [
-    "slow",
-    "walk",
-    "brisk"
-   ],
-   "contact_zone": [
-    "head",
-    "face",
-    "shoulder",
-    "arms",
-    "hands",
-    "back",
-    "torso",
-    "legs",
-    "body"
-   ],
-   "direction": [
-    "away",
-    "down",
-    "aside",
-    "into"
-   ],
-   "duration": [
-    "brief",
-    "a_while",
-    "long"
-   ],
-   "from": [
-    "ground",
-    "container",
-    "hand_of",
-    "worn_by"
-   ],
-   "give.mode": [
-    "offer",
-    "press"
-   ],
-   "hold": [
-    "in_hand",
-    "in_arms",
-    "on_back",
-    "by_arm"
-   ],
-   "hold_zone": [
-    "arm",
-    "collar",
-    "hair",
-    "neck",
-    "waist"
-   ],
-   "intensity": [
-    "faint",
-    "light",
-    "firm",
-    "hard",
-    "full"
-   ],
-   "intent": [
-    "assemble",
-    "disassemble",
-    "mend",
-    "shape"
-   ],
-   "kind": [
-    "point",
-    "nod",
-    "shake_head",
-    "wave",
-    "beckon",
-    "shrug",
-    "bow",
-    "applaud",
-    "raise_hand",
-    "show",
-    "spit",
-    "fist"
-   ],
-   "look.mode": [
-    "glance",
-    "watch",
-    "stare"
-   ],
-   "manner": [
-    "gentle",
-    "firm",
-    "playful",
-    "romantic",
-    "intimate"
-   ],
-   "mode": [
-    "get_on",
-    "get_off"
-   ],
-   "mood": [
-    "joyful",
-    "sad",
-    "solemn",
-    "lively",
-    "eerie"
-   ],
-   "motion": [
-    "swing",
-    "thrust"
-   ],
-   "operate.mode": [
-    "open",
-    "close",
-    "lock",
-    "unlock",
-    "activate"
-   ],
-   "pace": [
-    "slow",
-    "walk",
-    "brisk",
-    "run"
-   ],
-   "posture": [
-    "stand",
-    "sit",
-    "kneel",
-    "crouch",
-    "lie"
-   ],
-   "relation": [
-    "toward",
-    "along",
-    "away"
-   ],
-   "sense": [
-    "look",
-    "touch",
-    "weigh",
-    "smell",
-    "taste"
-   ],
-   "stance": [
-    "block",
-    "dodge",
-    "cover"
-   ],
-   "stealth": [
-    "open",
-    "discreet"
-   ],
-   "stop_at": [
-    "touch",
-    "near",
-    "talk",
-    "sight"
-   ],
-   "thoroughness": [
-    "brief",
-    "a_while",
-    "long"
-   ],
-   "tie.mode": [
-    "knot",
-    "lash",
-    "sew",
-    "bind"
-   ],
-   "tightness": [
-    "light",
-    "firm",
-    "hard"
-   ],
-   "tone": [
-    "warm",
-    "calm",
-    "cold",
-    "angry",
-    "pleading"
-   ],
-   "touch.with": [
-    "hand",
-    "arms",
-    "lips",
-    "forehead",
-    "body"
-   ],
-   "volume": [
-    "whisper",
-    "low",
-    "normal",
-    "loud",
-    "shout"
-   ],
-   "wear.mode": [
-    "put_on",
-    "take_off"
-   ],
-   "with": [
-    "held",
-    "open_hand",
-    "fist",
-    "foot",
-    "head",
-    "mouth"
-   ],
-   "work.motion": [
-    "press",
-    "rub",
-    "stir",
-    "squeeze",
-    "saw"
-   ],
-   "zone": [
-    "head",
-    "torso",
-    "arms",
-    "legs",
-    "any"
-   ]
+   "amount": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "little",
+     "some",
+     "all"
+    ]
+   },
+   "climb.pace": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "slow",
+     "walk",
+     "brisk"
+    ]
+   },
+   "contact_zone": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "head",
+     "face",
+     "shoulder",
+     "arms",
+     "hands",
+     "back",
+     "torso",
+     "legs",
+     "body"
+    ]
+   },
+   "direction": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "away",
+     "down",
+     "aside",
+     "into"
+    ]
+   },
+   "duration": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "brief",
+     "a_while",
+     "long"
+    ]
+   },
+   "from": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "ground",
+     "container",
+     "hand_of",
+     "worn_by"
+    ]
+   },
+   "give.mode": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "offer",
+     "press"
+    ]
+   },
+   "go.pace": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "slow",
+     "walk",
+     "brisk",
+     "run"
+    ]
+   },
+   "hold": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "in_hand",
+     "in_arms",
+     "on_back",
+     "by_arm"
+    ]
+   },
+   "hold_zone": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "arm",
+     "collar",
+     "hair",
+     "neck",
+     "waist"
+    ]
+   },
+   "intensity": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "faint",
+     "light",
+     "firm",
+     "hard",
+     "full"
+    ]
+   },
+   "intent": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "assemble",
+     "disassemble",
+     "mend",
+     "shape"
+    ]
+   },
+   "kind": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "point",
+     "nod",
+     "shake_head",
+     "wave",
+     "beckon",
+     "shrug",
+     "bow",
+     "applaud",
+     "raise_hand",
+     "show",
+     "spit",
+     "fist"
+    ]
+   },
+   "look.mode": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "glance",
+     "watch",
+     "stare"
+    ]
+   },
+   "manner": {
+    "intimate": [
+     "romantic",
+     "intimate"
+    ],
+    "ordinal": false,
+    "values": [
+     "gentle",
+     "firm",
+     "playful",
+     "romantic",
+     "intimate"
+    ]
+   },
+   "mood": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "joyful",
+     "sad",
+     "solemn",
+     "lively",
+     "eerie"
+    ]
+   },
+   "mount.mode": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "get_on",
+     "get_off"
+    ]
+   },
+   "operate.mode": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "open",
+     "close",
+     "lock",
+     "unlock",
+     "activate"
+    ]
+   },
+   "posture": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "stand",
+     "sit",
+     "kneel",
+     "crouch",
+     "lie_down"
+    ]
+   },
+   "relation": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "toward",
+     "along",
+     "away"
+    ]
+   },
+   "sense": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "look",
+     "touch",
+     "weigh",
+     "smell",
+     "taste"
+    ]
+   },
+   "stance": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "block",
+     "dodge",
+     "cover"
+    ]
+   },
+   "stealth": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "open",
+     "discreet"
+    ]
+   },
+   "stop_at": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "touch",
+     "near",
+     "talk",
+     "sight"
+    ]
+   },
+   "strike.motion": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "swing",
+     "thrust"
+    ]
+   },
+   "strike.with": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "held",
+     "open_hand",
+     "fist",
+     "foot",
+     "head",
+     "mouth"
+    ]
+   },
+   "thoroughness": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "brief",
+     "a_while",
+     "long"
+    ]
+   },
+   "tie.mode": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "knot",
+     "lash",
+     "sew",
+     "bind"
+    ]
+   },
+   "tightness": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "light",
+     "firm",
+     "hard"
+    ]
+   },
+   "tone": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "warm",
+     "calm",
+     "cold",
+     "angry",
+     "pleading"
+    ]
+   },
+   "touch.with": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "hand",
+     "arms",
+     "lips",
+     "forehead",
+     "body"
+    ]
+   },
+   "volume": {
+    "intimate": [],
+    "ordinal": true,
+    "values": [
+     "whisper",
+     "low",
+     "normal",
+     "loud",
+     "shout"
+    ]
+   },
+   "wear.mode": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "put_on",
+     "take_off"
+    ]
+   },
+   "work.motion": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "press",
+     "rub",
+     "stir",
+     "squeeze",
+     "saw"
+    ]
+   },
+   "zone": {
+    "intimate": [],
+    "ordinal": false,
+    "values": [
+     "head",
+     "torso",
+     "arms",
+     "legs",
+     "any"
+    ]
+   }
   },
   "max_pointers_per_gesture": 3,
+  "relative_direction_head": [
+   "ahead",
+   "ahead_right",
+   "right",
+   "behind_right",
+   "behind",
+   "behind_left",
+   "left",
+   "ahead_left",
+   "up",
+   "down"
+  ],
   "speech": {
    "grammar_words": [
     "a_while",
@@ -1590,6 +3539,7 @@
     "altruism",
     "and",
     "angry",
+    "animal_cruelty",
     "anxiousness",
     "any",
     "anyone",
@@ -1667,6 +3617,7 @@
     "caused",
     "channel",
     "charge",
+    "chief",
     "child",
     "climb",
     "climbable",
@@ -1686,8 +3637,24 @@
     "cultivable",
     "custom",
     "cuts",
+    "d_bearded",
+    "d_child",
+    "d_fat",
+    "d_limping",
+    "d_man",
+    "d_old",
+    "d_ragged",
+    "d_rich_clothes",
+    "d_scarred",
+    "d_short",
+    "d_stranger",
+    "d_tall",
+    "d_thin",
+    "d_woman",
+    "d_young",
     "dark_berries",
     "dead",
+    "deputy",
     "described",
     "did",
     "digs",
@@ -1702,6 +3669,7 @@
     "dreamt",
     "drink",
     "drinkable",
+    "drunkenness",
     "e_anger",
     "e_anxiety",
     "e_boredom",
@@ -1720,6 +3688,9 @@
     "e_shame",
     "e_surprise",
     "e_tenderness",
+    "each_day",
+    "each_season",
+    "each_year",
     "eat",
     "edge",
     "edible",
@@ -1727,6 +3698,7 @@
     "elasticity",
     "employee",
     "employer",
+    "encroachment",
     "enemy",
     "everyone",
     "examine",
@@ -1815,6 +3787,7 @@
     "in_hand",
     "in_law",
     "inferred",
+    "ingratitude",
     "injustice",
     "inquisitiveness",
     "insulation",
@@ -1828,8 +3801,10 @@
     "is_a",
     "joins",
     "joyful",
+    "judge",
     "jump",
     "key_for",
+    "kidnapping",
     "kindness",
     "kneel",
     "knot",
@@ -1837,11 +3812,13 @@
     "lash",
     "laugh",
     "launches",
+    "laziness",
     "leads",
     "left",
     "legs",
     "less",
     "lie",
+    "lie_down",
     "light",
     "light_emission",
     "light_source",
@@ -1870,6 +3847,7 @@
     "many",
     "mass",
     "master",
+    "master_of_workshop",
     "may",
     "maybe",
     "me",
@@ -1888,6 +3866,7 @@
     "named",
     "near",
     "neck",
+    "negligence",
     "neighbor",
     "niece_nephew",
     "no",
@@ -1901,6 +3880,26 @@
     "nothing_special",
     "now",
     "nutrition",
+    "o_baker",
+    "o_brewer",
+    "o_builder",
+    "o_carpenter",
+    "o_farmer",
+    "o_fisher",
+    "o_healer",
+    "o_hunter",
+    "o_innkeeper",
+    "o_mason",
+    "o_merchant",
+    "o_miller",
+    "o_miner",
+    "o_potter",
+    "o_scribe",
+    "o_shepherd",
+    "o_smith",
+    "o_tanner",
+    "o_weaver",
+    "o_woodcutter",
     "obligatory",
     "odor",
     "offer",
@@ -1933,7 +3932,9 @@
     "poisoning",
     "potency",
     "pour",
+    "pregnancy",
     "press",
+    "priest",
     "protection",
     "protects",
     "prudence",
@@ -1971,6 +3972,7 @@
     "resilience",
     "resonance",
     "rest",
+    "revenge",
     "right",
     "rolls",
     "rolls_load",
@@ -1978,6 +3980,7 @@
     "route",
     "rub",
     "run",
+    "sacrilege",
     "sad",
     "saw",
     "says",
@@ -2011,6 +4014,7 @@
     "sincerity",
     "sit",
     "size",
+    "slander",
     "sleep",
     "sleepiness",
     "slow",
@@ -2021,6 +4025,7 @@
     "some",
     "someone",
     "soon",
+    "sorcery",
     "sorry",
     "speak",
     "spit",
@@ -2072,6 +4077,7 @@
     "talk",
     "taste",
     "tastes",
+    "tax_collector",
     "temperature",
     "thanks",
     "that",
@@ -2094,6 +4100,7 @@
     "toward",
     "toxicity",
     "traps",
+    "treasurer",
     "trespass",
     "trigger",
     "unconventionality",
@@ -2817,14 +4824,16 @@
     "@T<n>",
     "@G<n>",
     "@L<n>",
+    "@V<n>",
     "@PLACE",
     "b:<n>",
     "m:<n>",
     "g:<n>",
-    "n:<name>"
+    "n:<name id>"
    ]
   },
   "writes": {
+   "format": "(target, variable, value); a structured value (proposition) comes from the speech decoder; creating a record = one write",
    "max_per_decision": 4,
    "writable": {
     "altruism": {
@@ -2834,6 +4843,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -2846,6 +4858,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -2858,6 +4873,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -2870,6 +4888,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -2882,6 +4903,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -2894,6 +4918,9 @@
      "scale": "mref",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -2905,6 +4932,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "BELIEF pointer or new record",
+     "values": [],
      "writer": [
       "engine",
       "T_jump"
@@ -2917,6 +4947,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 1.0,
+     "structured": false,
+     "target": "BELIEF pointer or new record",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -2929,6 +4962,9 @@
      "scale": "bool",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "BELIEF pointer or new record",
+     "values": [],
      "writer": [
       "engine",
       "T_jump"
@@ -2941,6 +4977,9 @@
      "scale": "proposition",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "BELIEF pointer or new record",
+     "values": [],
      "writer": [
       "engine",
       "T_jump"
@@ -2953,6 +4992,9 @@
      "scale": "bool",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "BELIEF pointer or new record",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -2964,6 +5006,17 @@
      "scale": "enum",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "BELIEF pointer or new record",
+     "values": [
+      "assumed",
+      "dreamt",
+      "heard",
+      "inferred",
+      "read",
+      "seen",
+      "told"
+     ],
      "writer": [
       "engine",
       "T_jump"
@@ -2976,6 +5029,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.3,
+     "structured": false,
+     "target": "BELIEF pointer or new record",
+     "values": [],
      "writer": [
       "T_step"
      ]
@@ -2987,6 +5043,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -2999,6 +5058,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3011,6 +5073,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3023,6 +5088,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3035,6 +5103,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3047,6 +5118,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3059,6 +5133,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3071,6 +5148,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3083,6 +5163,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3095,6 +5178,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3107,6 +5193,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3119,6 +5208,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3131,6 +5223,9 @@
      "scale": "time",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "GOAL pointer or new record",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3143,6 +5238,9 @@
      "scale": "proposition",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "GOAL pointer or new record",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -3154,6 +5252,13 @@
      "scale": "enum",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "GOAL pointer or new record",
+     "values": [
+      "achieve",
+      "avoid",
+      "maintain"
+     ],
      "writer": [
       "T_jump"
      ]
@@ -3165,6 +5270,15 @@
      "scale": "enum",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "GOAL pointer or new record",
+     "values": [
+      "self",
+      "asked",
+      "role",
+      "agreement",
+      "norm"
+     ],
      "writer": [
       "T_jump",
       "engine"
@@ -3177,6 +5291,9 @@
      "scale": "mref",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "GOAL pointer or new record",
+     "values": [],
      "writer": [
       "engine",
       "T_jump"
@@ -3189,6 +5306,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 1.0,
+     "structured": false,
+     "target": "GOAL pointer or new record",
+     "values": [],
      "writer": [
       "T_step"
      ]
@@ -3200,6 +5320,15 @@
      "scale": "enum",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "GOAL pointer or new record",
+     "values": [
+      "active",
+      "paused",
+      "achieved",
+      "failed",
+      "abandoned"
+     ],
      "writer": [
       "T_jump",
       "engine"
@@ -3212,6 +5341,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3224,6 +5356,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3236,6 +5371,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3248,6 +5386,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3260,6 +5401,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3272,6 +5416,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "the current PLAN",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -3283,6 +5430,9 @@
      "scale": "mref",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "the current PLAN",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -3294,6 +5444,9 @@
      "scale": "list",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "the current PLAN",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -3305,6 +5458,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3317,6 +5473,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3329,6 +5488,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3341,6 +5503,9 @@
      "scale": "proposition",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "MEMORY pointer or new record",
+     "values": [],
      "writer": [
       "engine",
       "T_jump"
@@ -3353,6 +5518,9 @@
      "scale": "bool",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "MEMORY pointer or new record",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -3364,6 +5532,28 @@
      "scale": "enum",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "MEMORY pointer or new record",
+     "values": [
+      "e_anger",
+      "e_anxiety",
+      "e_boredom",
+      "e_confusion",
+      "e_contempt",
+      "e_disgust",
+      "e_envy",
+      "e_fear",
+      "e_gratitude",
+      "e_grief",
+      "e_guilt",
+      "e_jealousy",
+      "e_joy",
+      "e_pride",
+      "e_sadness",
+      "e_shame",
+      "e_surprise",
+      "e_tenderness"
+     ],
      "writer": [
       "T_jump"
      ]
@@ -3375,6 +5565,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 1.0,
+     "structured": false,
+     "target": "MEMORY pointer or new record",
+     "values": [],
      "writer": [
       "T_jump",
       "T_step"
@@ -3387,6 +5580,55 @@
      "scale": "word",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "MEMORY pointer or new record",
+     "values": [
+      "accident",
+      "adultery",
+      "animal_cruelty",
+      "arson",
+      "assault",
+      "betrayal",
+      "bribery",
+      "broken_promise",
+      "cowardice",
+      "disrespect_absence",
+      "drunkenness",
+      "encroachment",
+      "extortion",
+      "fraud",
+      "generosity",
+      "heroism",
+      "hospitality",
+      "hypocrisy",
+      "ingratitude",
+      "injustice",
+      "insult",
+      "kidnapping",
+      "kindness",
+      "laziness",
+      "lie",
+      "loyalty",
+      "manslaughter",
+      "mockery",
+      "murder",
+      "negligence",
+      "nothing_special",
+      "poisoning",
+      "rebellion",
+      "rescue",
+      "revenge",
+      "sacrilege",
+      "self_defense",
+      "slander",
+      "sorcery",
+      "taking_back",
+      "theft",
+      "threat_felt",
+      "trespass",
+      "usurpation",
+      "vandalism"
+     ],
      "writer": [
       "T_jump"
      ]
@@ -3398,6 +5640,9 @@
      "scale": "bool",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": true,
+     "target": "MEMORY pointer or new record",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -3409,6 +5654,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.0,
      "step": 1.0,
+     "structured": false,
+     "target": "MEMORY pointer or new record",
+     "values": [],
      "writer": [
       "T_jump",
       "T_step"
@@ -3421,6 +5669,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump"
      ]
@@ -3432,6 +5683,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3444,6 +5698,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3456,6 +5713,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3468,6 +5728,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3480,6 +5743,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3492,6 +5758,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3504,6 +5773,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3516,6 +5788,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3528,6 +5803,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3540,6 +5818,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3552,6 +5833,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "engine",
       "T_step"
@@ -3564,6 +5848,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3576,6 +5863,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3588,6 +5878,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3600,6 +5893,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3612,6 +5908,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3624,6 +5923,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3636,6 +5938,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3648,6 +5953,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3660,6 +5968,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3672,6 +5983,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3684,6 +5998,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "ENTITY|GROUP pointer",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3696,6 +6013,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.3,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3708,6 +6028,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3720,6 +6043,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3732,6 +6058,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.5,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_step",
       "engine"
@@ -3744,6 +6073,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3756,6 +6088,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3768,6 +6103,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3780,6 +6118,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3792,6 +6133,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3804,6 +6148,9 @@
      "scale": "list",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": true,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3816,6 +6163,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.0,
      "step": 0.0,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "T_jump",
       "engine"
@@ -3828,6 +6178,9 @@
      "scale": "bipolar10",
      "slow_per_life_year": 1.0,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3840,6 +6193,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3852,6 +6208,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3864,6 +6223,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3876,6 +6238,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3888,6 +6253,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3900,6 +6268,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3912,6 +6283,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"
@@ -3924,6 +6298,9 @@
      "scale": "unipolar10",
      "slow_per_life_year": 0.5,
      "step": 0.1,
+     "structured": false,
+     "target": "self",
+     "values": [],
      "writer": [
       "birth",
       "T_slow"

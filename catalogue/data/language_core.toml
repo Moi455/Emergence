@@ -32,6 +32,7 @@ concept = [
   { id = "is_a", category = "predicate", args = ["entity", "kind"], label_fr = "est un (type connu, espèce, catégorie de groupe…)" },
   { id = "named", category = "predicate", args = ["entity", "name"], label_fr = "s'appelle (un nom de la table des noms, jamais du texte libre)" },
   { id = "state", category = "predicate", args = ["entity", "variable", "quantity"], label_fr = "a tel état, à tel degré : une propriété (« le pont est cassé »), une quantité (« il reste peu de grain »), un trait (« il est malhonnête »), une émotion (« elle a peur »), un état du corps (« elle est enceinte », « il est malade »)" },
+  { id = "quality", category = "predicate", args = ["entity", "concept", "quantity"], label_fr = "est (beau, fort, bête, riche, dangereux…) à tel degré : un jugement qualitatif" },
   { id = "attitude", category = "predicate", args = ["agent", "variable", "entity", "quantity"], label_fr = "a telle attitude ou émotion envers (affection, confiance, crainte, colère contre…)" },
   { id = "worth", category = "predicate", args = ["entity", "quantity"], label_fr = "vaut tant (prix, valeur)" },
   { id = "route", category = "predicate", args = ["place", "place"], label_fr = "on va de … à … (par là)" },

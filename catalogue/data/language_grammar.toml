@@ -11,10 +11,13 @@
 #
 # Pointeurs vers le contexte du parleur (ce que le modèle a sous les yeux, ses propres dossiers) :
 #   @E3 = la personne du jeton ENTITY 3 ; @T5 = la chose du jeton THING 5 ; @G1 = le groupe 1 ;
-#   @L2 = un lieu qu'il connaît (son dossier de lieu : « la forêt », « ma maison ») ;
+#   @L2 = un lieu qu'il connaît (son dossier de lieu : « la forêt », « ma maison ») ; @V4 = un événement
+#   qu'il vient de percevoir (jeton EVENT 4 : « ce que tu viens de faire ») ;
 #   b:7 = sa croyance 7 ; m:2 = son souvenir 2 ; g:1 = son objectif 1 ; @PLACE = le lieu où l'on est.
-# Le moteur DÉPLIE la parole pour chaque auditeur SANS passer par la vérité (revue du 10 oct.) :
-#   - b:7, m:2 → la proposition, dont chaque pointeur est déplié à son tour ;
+# Au moment de DIRE ou d'ÉCRIRE, le moteur FIGE la parole (revue du 10 oct.), sans passer par la vérité :
+#   - b:7, m:2, g:1 → une COPIE de la proposition, sur un seul niveau (pas de dépliage récursif), dont les
+#     pointeurs sont figés à leur tour ; l'auditeur reçoit une seule nouvelle entrée HEARD ;
+#   - me, you, @L : figés en nom ou description du parleur, comme les personnes ;
 #   - une personne ou une chose pointée (@E2, @T5) est transmise sous la forme que le PARLEUR peut donner :
 #     son nom s'il le croit (n:<nom>), un geste de désignation si elle est là (sign point), ou une description
 #     tirée de ce que le parleur en perçoit (« described smith tall ») ; jamais l'identité vraie ;
@@ -31,7 +34,7 @@ grammar = [
   { id = "proposition", rule = "PROP := [not] [TIME] [EVID] PRED ARG* ROLE* | LOGIC PROP PROP | that PTR", label_fr = "une proposition" },
   { id = "logic", rule = "LOGIC := and | or | if | because", label_fr = "relier deux propositions (si…, parce que…)" },
   { id = "argument", rule = "ARG := REF | KIND[:QTY] | QTY | DEGREE | WORD | PROP | WH", label_fr = "un argument" },
-  { id = "reference", rule = "REF := me | you | this | here | @E<n> | @T<n> | @G<n> | @L<n> | @PLACE | n:<nom> | someone | anyone | everyone | no_one | (described KIND DEGREE? WORD?)", label_fr = "désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description" },
+  { id = "reference", rule = "REF := me | you | this | here | @E<n> | @T<n> | @G<n> | @L<n> | @PLACE | n:<n° de nom> | someone | anyone | everyone | no_one | (described WORD+)  — WORD : descriptor, role_word, occupation, sorte", label_fr = "désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description" },
   { id = "role", rule = "ROLE := (with REF) | (to REF) | (into REF) | (how WORD) | (says PROP)", label_fr = "les rôles d'un événement (étape 6, cadre did)" },
   { id = "question", rule = "WH := who | what | where | when | why | how_much | which", label_fr = "le trou d'une question (ask)" },
   { id = "limits", rule = "≤ 20 symboles ; imbrication d'arguments-propositions ≤ 2 ; un seul mode par parole", label_fr = "budget de l'IA" },
@@ -103,6 +106,55 @@ concept = [
   { id = "watch_out", category = "formula", label_fr = "attention !" },
   { id = "ouch", category = "formula", label_fr = "aïe" },
   { id = "laugh", category = "formula", label_fr = "(rire)" },
+  # ─── Rythmes ───
+  { id = "each_day", category = "time", label_fr = "chaque jour" },
+  { id = "each_season", category = "time", label_fr = "chaque saison" },
+  { id = "each_year", category = "time", label_fr = "chaque année" },
+  # ─── Décrire quelqu'un ou quelque chose sans le nommer (described …) ───
+  { id = "d_tall", category = "descriptor", label_fr = "grand" },
+  { id = "d_short", category = "descriptor", label_fr = "petit" },
+  { id = "d_fat", category = "descriptor", label_fr = "gros" },
+  { id = "d_thin", category = "descriptor", label_fr = "maigre" },
+  { id = "d_old", category = "descriptor", label_fr = "vieux" },
+  { id = "d_young", category = "descriptor", label_fr = "jeune" },
+  { id = "d_bearded", category = "descriptor", label_fr = "barbu" },
+  { id = "d_scarred", category = "descriptor", label_fr = "balafré" },
+  { id = "d_limping", category = "descriptor", label_fr = "qui boite" },
+  { id = "d_rich_clothes", category = "descriptor", label_fr = "richement vêtu" },
+  { id = "d_ragged", category = "descriptor", label_fr = "en haillons" },
+  { id = "d_stranger", category = "descriptor", label_fr = "pas d'ici" },
+  { id = "d_woman", category = "descriptor", label_fr = "une femme" },
+  { id = "d_man", category = "descriptor", label_fr = "un homme" },
+  { id = "d_child", category = "descriptor", label_fr = "un enfant" },
+  # ─── Rôles et métiers (des mots : qui occupe un rôle est une croyance holds / works_as) ───
+  { id = "chief", category = "role_word", label_fr = "chef" },
+  { id = "deputy", category = "role_word", label_fr = "adjoint" },
+  { id = "judge", category = "role_word", label_fr = "juge" },
+  { id = "treasurer", category = "role_word", label_fr = "trésorier" },
+  { id = "guard", category = "role_word", label_fr = "garde" },
+  { id = "priest", category = "role_word", label_fr = "prêtre" },
+  { id = "tax_collector", category = "role_word", label_fr = "percepteur" },
+  { id = "master_of_workshop", category = "role_word", label_fr = "maître d'atelier" },
+  { id = "o_farmer", category = "occupation", label_fr = "paysan" },
+  { id = "o_fisher", category = "occupation", label_fr = "pêcheur" },
+  { id = "o_smith", category = "occupation", label_fr = "forgeron" },
+  { id = "o_baker", category = "occupation", label_fr = "boulanger" },
+  { id = "o_miller", category = "occupation", label_fr = "meunier" },
+  { id = "o_weaver", category = "occupation", label_fr = "tisserand" },
+  { id = "o_mason", category = "occupation", label_fr = "maçon" },
+  { id = "o_carpenter", category = "occupation", label_fr = "charpentier" },
+  { id = "o_miner", category = "occupation", label_fr = "mineur" },
+  { id = "o_hunter", category = "occupation", label_fr = "chasseur" },
+  { id = "o_shepherd", category = "occupation", label_fr = "berger" },
+  { id = "o_merchant", category = "occupation", label_fr = "marchand" },
+  { id = "o_healer", category = "occupation", label_fr = "guérisseur" },
+  { id = "o_brewer", category = "occupation", label_fr = "brasseur" },
+  { id = "o_potter", category = "occupation", label_fr = "potier" },
+  { id = "o_builder", category = "occupation", label_fr = "bâtisseur (à la baguette)" },
+  { id = "o_innkeeper", category = "occupation", label_fr = "aubergiste" },
+  { id = "o_scribe", category = "occupation", label_fr = "scribe" },
+  { id = "o_woodcutter", category = "occupation", label_fr = "bûcheron" },
+  { id = "o_tanner", category = "occupation", label_fr = "tanneur" },
   # ─── Classes de sosies (ce que voit un œil non exercé) ───
   { id = "white_mushroom", category = "lookalike", label_fr = "champignon blanc (comestible ou mortel)" },
   { id = "dark_berries", category = "lookalike", label_fr = "baies sombres (mûres, baies sauvages, belladone)" },

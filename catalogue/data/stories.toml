@@ -94,7 +94,7 @@ text_fr = "Un charpentier promet d'aider son voisin à refaire son toit au print
 id = "lie_about_whereabouts"
 status = "expressible"
 actions = ["speak"]
-utterances = ["(assert (past (did me sleep (into @L1))))"]
+utterances = ["(assert (past (did me sleep @L1)))"]
 charter = ["§5"]
 text_fr = "Interrogé sur sa nuit, un homme affirme qu'il dormait chez lui alors qu'il était à la mine ; celui qui l'interroge le croit."
 
@@ -102,7 +102,7 @@ text_fr = "Interrogé sur sa nuit, un homme affirme qu'il dormait chez lui alors
 id = "false_rumor_spreads"
 status = "expressible"
 actions = ["speak"]
-utterances = ["(assert (heard_said (habitual (did @E4 pour (into flour_sack) (with sand_sack)))))"]
+utterances = ["(assert (heard_said (habitual (did @E4 pour sand_sack (into flour_sack)))))"]
 charter = ["§5", "§10"]
 text_fr = "Une rumeur fausse (le meunier coupe sa farine avec du sable) passe de bouche en bouche et ses ventes chutent, alors que personne ne l'a vu faire."
 
@@ -115,7 +115,7 @@ text_fr = "Une servante raconte à son amie, sous le sceau du secret, que la fil
 id = "invite_walk_refused"
 status = "expressible"
 actions = ["speak"]
-utterances = ["(hello (request (did you go @L2 (with me))))"]
+utterances = ["(hello (request (and (did me go @L2) (did you go me (how along)))))"]
 charter = ["§15"]
 text_fr = "« Salut Georgette, ça te dirait de venir te promener en forêt ? » Georgette, méfiante envers lui depuis un mensonge, refuse poliment."
 
@@ -160,7 +160,7 @@ text_fr = "Une marchande et un fermier marchandent le prix d'un cochon : elle of
 id = "seduction_courtship"
 status = "expressible"
 actions = ["speak"]
-utterances = ["(assert (state you w_beautiful very_high))"]
+utterances = ["(assert (quality you w_beautiful very_high))"]
 charter = ["§6", "§12"]
 text_fr = "Deux adultes se plaisent : compliments, rires partagés, une promenade, puis un premier baiser au bord de la rivière."
 
@@ -176,7 +176,7 @@ text_fr = "Un homme dit à voix haute devant tous que le pain du boulanger ne no
 id = "ask_for_directions_wrong"
 status = "expressible"
 actions = ["speak"]
-utterances = ["(ask (route here where))"]
+utterances = ["(ask (at n:31 where))"]
 charter = ["§5"]
 text_fr = "Un voyageur demande le chemin du village de la mer ; un PNJ qui se trompe sur la route l'envoie dans la mauvaise vallée."
 

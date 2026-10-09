@@ -101,7 +101,7 @@ animation = ["+mount"]
 id = "set_posture"
 family = "posture"
 label_fr = "se tenir (debout, assis, à genoux, accroupi, couché)"
-params = [{ name = "posture", type = "enum", values = ["stand", "sit", "kneel", "crouch", "lie"] }]
+params = [{ name = "posture", type = "enum", values = ["stand", "sit", "kneel", "crouch", "lie_down"] }]
 effects = "accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient"
 perceptibility = "vu"
 duration = "un instant"

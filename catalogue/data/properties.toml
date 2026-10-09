@@ -502,7 +502,7 @@ derived_from = ["fertility"]
 
 [[property]]
 id = "shapes_matter"
-perceptible = true
+perceptible = false
 label_fr = "transforme la matière par magie (bâtir, assembler, désassembler)"
 category = "affordance"
 applies_to = ["item"]

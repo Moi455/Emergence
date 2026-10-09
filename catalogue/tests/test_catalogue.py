@@ -140,6 +140,24 @@ class TestCatalogue(unittest.TestCase):
         for social in ("steal", "blackmail", "deceive", "threaten", "insult", "bribe"):
             self.assertIn(mig[social].becomes, ("interpretation", "speech"), social)
 
+    def test_interpretation_cues_are_perceptible_and_norms_parse(self):
+        import re as _re
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+        import budget, language
+        slots = budget.slots(self.cat)
+        vocab = language.Vocabulary(self.cat)
+        for i in self.cat["interpretation"].values():
+            for cue in i.cues:
+                m = _re.match(r"^([A-Z_]+)(?:\.([\w.]+))?(?:=\S+)? : ", cue)
+                self.assertIsNotNone(m, (i.id, cue))
+                typ, fld = m.group(1), m.group(2)
+                self.assertIn(typ, slots, (i.id, cue))
+                if fld:
+                    self.assertIn(fld, slots[typ], (i.id, cue))
+            for n in i.norms:
+                e = language.Expression(f"(assert {n})", vocab)
+                self.assertTrue(e.ok, (i.id, n, e.problems))
+
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()
         cat._add("action", {"id": "blackmail", "family": "communicate"}, "test")

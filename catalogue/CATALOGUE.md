@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 49, variable 333, property 89, action 40, concept 246, grammar 8, interpretation 34, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
+Compte : entity 16, component 49, variable 333, property 89, action 40, concept 293, grammar 8, interpretation 45, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
 
 ## Histoires (tests d'acceptation)
 
@@ -672,7 +672,7 @@ Compte : entity 16, component 49, variable 333, property 89, action 40, concept 
 | r_id_certainty | certitude que la personne vue est bien celle du dossier (pénombre, distance, déguisement, masque) | unipolar10 | calculé |  | privé | le moteur la calcule depuis la lumière, la distance, la familiarité, ce qui cache le visage ; basse, on peut se tromper de personne | ENTITY.id_certainty | 0 |
 | r_true_entity | la vraie entité derrière ce dossier mental (le moteur seul la connaît) | id | moteur |  | moteur seul |  |  | 0 |
 | r_known_by | comment on le connaît (vu et reconnu, seulement de nom, seulement décrit) | enum (seen, name_only, described) | moteur |  | privé | un dossier « de nom » se lie à une personne vue quand on apprend que c'est elle (une croyance, qui peut être fausse) | ENTITY.known_by ; GROUP.known_by | 0 |
-| r_present | là maintenant, ou absent | bool | calculé |  | privé | un absent saillant (un proche, quelqu'un qu'on s'attendait à voir) reste montré : on remarque l'absence (charte § 20) | ENTITY.present | 1 |
+| r_present | là maintenant pour CE PNJ (perçu), ou absent de sa perception | bool | calculé |  | privé | présent = une perception de la personne en ce moment (entity_percept) ; un absent saillant (un proche, quelqu'un attendu) reste montré : on remarque l'absence (charte § 20) ; quelqu'un de caché est absent pour lui | ENTITY.present | 1 |
 | r_affection | affection (−10 haine, +10 amour profond) | bipolar10 | T pas, moteur | 0.5 | privé | le moteur ne fait que l'effacement lent vers 0 après des années sans contact | ENTITY.rel.affection ; GROUP.rel.affection | 0 |
 | r_trust | confiance (−10 s'attend à être trompé, +10 confie sa vie) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.trust ; GROUP.rel.trust | 2 |
 | r_respect | respect, admiration (−10 mépris, +10 admiration) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.respect ; GROUP.rel.respect | 1 |
@@ -1613,7 +1613,7 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | swim | move | nager | target:ref; intensity:enum=faint/light/firm/hard/full | épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade | vu, entendu | 0 |
 | jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu | 0 |
 | mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu | 0 |
-| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | 0 |
+| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie_down | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | 0 |
 | take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 2 |
 | put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 0 |
 | give | grasp | tendre, donner en main propre, nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | 1 |
@@ -1685,6 +1685,7 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | is_a | predicate | entity, kind | est un (type connu, espèce, catégorie de groupe…) |  |
 | named | predicate | entity, name | s'appelle (un nom de la table des noms, jamais du texte libre) |  |
 | state | predicate | entity, variable, quantity | a tel état, à tel degré : une propriété (« le pont est cassé »), une quantité (« il reste peu de grain »), un trait (« il est malhonnête »), une émotion (« elle a peur »), un état du corps (« elle est enceinte », « il est malade ») |  |
+| quality | predicate | entity, concept, quantity | est (beau, fort, bête, riche, dangereux…) à tel degré : un jugement qualitatif |  |
 | attitude | predicate | agent, variable, entity, quantity | a telle attitude ou émotion envers (affection, confiance, crainte, colère contre…) |  |
 | worth | predicate | entity, quantity | vaut tant (prix, valeur) |  |
 | route | predicate | place, place | on va de … à … (par là) |  |
@@ -1878,6 +1879,52 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | watch_out | formula |  | attention ! |  |
 | ouch | formula |  | aïe |  |
 | laugh | formula |  | (rire) |  |
+| each_day | time |  | chaque jour |  |
+| each_season | time |  | chaque saison |  |
+| each_year | time |  | chaque année |  |
+| d_tall | descriptor |  | grand |  |
+| d_short | descriptor |  | petit |  |
+| d_fat | descriptor |  | gros |  |
+| d_thin | descriptor |  | maigre |  |
+| d_old | descriptor |  | vieux |  |
+| d_young | descriptor |  | jeune |  |
+| d_bearded | descriptor |  | barbu |  |
+| d_scarred | descriptor |  | balafré |  |
+| d_limping | descriptor |  | qui boite |  |
+| d_rich_clothes | descriptor |  | richement vêtu |  |
+| d_ragged | descriptor |  | en haillons |  |
+| d_stranger | descriptor |  | pas d'ici |  |
+| d_woman | descriptor |  | une femme |  |
+| d_man | descriptor |  | un homme |  |
+| d_child | descriptor |  | un enfant |  |
+| chief | role_word |  | chef |  |
+| deputy | role_word |  | adjoint |  |
+| judge | role_word |  | juge |  |
+| treasurer | role_word |  | trésorier |  |
+| guard | role_word |  | garde |  |
+| priest | role_word |  | prêtre |  |
+| tax_collector | role_word |  | percepteur |  |
+| master_of_workshop | role_word |  | maître d'atelier |  |
+| o_farmer | occupation |  | paysan |  |
+| o_fisher | occupation |  | pêcheur |  |
+| o_smith | occupation |  | forgeron |  |
+| o_baker | occupation |  | boulanger |  |
+| o_miller | occupation |  | meunier |  |
+| o_weaver | occupation |  | tisserand |  |
+| o_mason | occupation |  | maçon |  |
+| o_carpenter | occupation |  | charpentier |  |
+| o_miner | occupation |  | mineur |  |
+| o_hunter | occupation |  | chasseur |  |
+| o_shepherd | occupation |  | berger |  |
+| o_merchant | occupation |  | marchand |  |
+| o_healer | occupation |  | guérisseur |  |
+| o_brewer | occupation |  | brasseur |  |
+| o_potter | occupation |  | potier |  |
+| o_builder | occupation |  | bâtisseur (à la baguette) |  |
+| o_innkeeper | occupation |  | aubergiste |  |
+| o_scribe | occupation |  | scribe |  |
+| o_woodcutter | occupation |  | bûcheron |  |
+| o_tanner | occupation |  | tanneur |  |
 | white_mushroom | lookalike |  | champignon blanc (comestible ou mortel) |  |
 | dark_berries | lookalike |  | baies sombres (mûres, baies sauvages, belladone) |  |
 | small_vial | lookalike |  | petite fiole (potion, somnifère, poison) |  |
@@ -1908,7 +1955,7 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | proposition | PROP := [not] [TIME] [EVID] PRED ARG* ROLE* \| LOGIC PROP PROP \| that PTR | une proposition |
 | logic | LOGIC := and \| or \| if \| because | relier deux propositions (si…, parce que…) |
 | argument | ARG := REF \| KIND[:QTY] \| QTY \| DEGREE \| WORD \| PROP \| WH | un argument |
-| reference | REF := me \| you \| this \| here \| @E<n> \| @T<n> \| @G<n> \| @L<n> \| @PLACE \| n:<nom> \| someone \| anyone \| everyone \| no_one \| (described KIND DEGREE? WORD?) | désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description |
+| reference | REF := me \| you \| this \| here \| @E<n> \| @T<n> \| @G<n> \| @L<n> \| @PLACE \| n:<n° de nom> \| someone \| anyone \| everyone \| no_one \| (described WORD+)  — WORD : descriptor, role_word, occupation, sorte | désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description |
 | role | ROLE := (with REF) \| (to REF) \| (into REF) \| (how WORD) \| (says PROP) | les rôles d'un événement (étape 6, cadre did) |
 | question | WH := who \| what \| where \| when \| why \| how_much \| which | le trou d'une question (ask) |
 | limits | ≤ 20 symboles ; imbrication d'arguments-propositions ≤ 2 ; un seul mode par parole | budget de l'IA |
@@ -1917,46 +1964,57 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 
 | id | libellé | faits objectifs | normes |
 |---|---|---|---|
-| theft | vol | custody passed by take, without a give from the previous holder, the previous holder or a claimant is recognized by others | norm(forbidden, take what is another's without their give) |
-| taking_back | reprendre son bien | custody passed by take, the taker held it earlier and gave it as a loan (agreement) | norm(permitted, take back what one lent) |
-| assault | agression, coups | strike or push or grab on an agent, harm caused (wounds, pain) | norm(forbidden, strike someone who did not strike) |
-| self_defense | légitime défense | the target struck or threatened first with a weapon | norm(permitted, strike to protect oneself or one's own) |
-| murder | meurtre | an agent died of wounds from strikes by another agent | norm(forbidden, cause someone's death) |
-| manslaughter | mort sans l'avoir voulu (rixe qui tourne mal, accident) | an agent died of wounds from strikes in a brawl, or from an accident caused by another | norm(shameful, cause a death by carelessness) |
-| accident | accident | harm without any agent's gesture aimed at it (a collapse, a fall, a beast) |  |
-| lie | mensonge | the speaker asserted P while holding the belief not-P | norm(forbidden, assert what one believes false) |
-| betrayal | trahison | an agreement or a secret was broken by a party, to the other's harm | norm(forbidden, break one's word), norm(forbidden, reveal what was confided) |
-| broken_promise | promesse non tenue | an agreement passed its deadline unfulfilled | norm(obligatory, do what one promised) |
-| adultery | adultère, infidélité | an adult in a marriage agreement had an intimate touch with another adult | norm(forbidden, romantic touch outside one's marriage) |
-| injustice | injustice | someone was punished or deprived for an act they did not commit, or more than others for the same act | norm(forbidden, punish the innocent), norm(obligatory, the same rule for all) |
-| generosity | générosité | goods given without any agreement asking for a return | norm(admirable, share in hard times) |
-| kindness | gentillesse, aide | a gesture that reduced another's pain, hunger, danger or work | norm(admirable, help those who need it) |
-| rescue | sauvetage | an agent moved or protected another out of a lethal danger | norm(admirable, risk oneself for another) |
-| cowardice | lâcheté | an agent moved away from a danger while others nearby were harmed | norm(shameful, abandon one's own in danger) |
-| heroism | héroïsme | an agent faced a lethal danger to protect others | norm(admirable, risk oneself for another) |
-| insult | insulte, humiliation | an utterance attributed a low state to the hearer, in front of others | norm(forbidden, shame someone in public) |
-| mockery | moquerie, plaisanterie | an utterance or gesture followed by laughter, about someone present |  |
-| threat_felt | menace | an utterance conditioning a harm to the hearer on the hearer's act | norm(forbidden, force someone by fear) |
-| extortion | chantage, racket | an offer conditioning the revealing of a secret or a harm on a payment | norm(forbidden, force someone by fear), norm(forbidden, sell silence) |
-| bribery | corruption, pot-de-vin | goods given to a role holder conditioned on not doing what the role is believed to require | norm(forbidden, buy a role holder) |
-| fraud | tromperie, fraude (fausse monnaie, balance faussée, marchandise trompeuse) | goods exchanged while the seller held a belief that their state was worse than said or shown | norm(forbidden, deceive in trade) |
-| poisoning | empoisonnement | an agent poured or put a toxic substance into what another ate or drank | norm(forbidden, cause someone's death) |
-| arson | incendie volontaire | a fire started by an agent's gesture on fuel belonging to another | norm(forbidden, destroy what is another's) |
-| vandalism | dégradation, destruction du bien d'autrui | strikes reduced the integrity of a thing believed to be another's | norm(forbidden, destroy what is another's) |
-| trespass | intrusion | an agent entered a place others recognize as belonging to someone else, without being invited | norm(forbidden, enter another's home uninvited) |
-| hypocrisy | hypocrisie | an agent asserted a norm and acted against it | norm(shameful, preach what one does not do) |
-| disrespect_absence | manque d'égards (absence remarquée) | an agent expected by custom was not present at an event (funeral, wedding, feast) | custom(village, everyone attends a funeral) |
-| loyalty | loyauté, fidélité | an agent kept an agreement or a secret at a cost to themselves | norm(admirable, keep faith) |
-| hospitality | hospitalité | an agent let another into their home, gave food or shelter | norm(admirable, welcome the traveller) |
-| rebellion | rébellion, désobéissance | an agent refused or acted against a request from someone others believe holds a role | norm(obligatory, obey the one who holds the role) |
-| usurpation | usurpation | an agent claimed a role others believe held by someone else, and acted as its holder | norm(forbidden, take a role by force) |
+| theft | vol | la détention est passée par take, sans give de celui qui tenait la chose, d'autres reconnaissent un propriétaire (recognized_claims) | (norm forbidden (did anyone take this)) |
+| taking_back | reprendre son bien | la détention est passée par take, le preneur l'avait tenue et donnée par un accord de prêt | (norm permitted (did anyone take this)) |
+| assault | agression, coups | strike, push ou grab sur une personne, blessures ou douleur causées | (norm forbidden (did anyone strike someone)) |
+| self_defense | légitime défense | l'autre a frappé ou a levé une lame le premier | (norm permitted (did anyone strike someone)) |
+| murder | meurtre | une personne est morte des blessures de coups portés par une autre | (norm forbidden (did anyone strike someone (how full))) |
+| manslaughter | mort sans l'avoir voulu (rixe qui tourne mal) | une personne est morte des coups d'une rixe, sans arme | (norm shameful (did anyone strike someone (how hard))) |
+| accident | accident | une blessure ou une mort sans geste d'autrui dirigé contre la victime (chute, effondrement, bête) |  |
+| negligence | négligence | une blessure ou une perte causée par une chose laissée par quelqu'un (feu non éteint, mur non étayé, bête non attachée) | (norm obligatory (did anyone tie this)) |
+| lie | mensonge | le parleur a affirmé P en tenant la croyance non-P | (norm forbidden (did anyone speak (says b:1))) |
+| slander | calomnie | un parleur a affirmé d'un absent un fait qu'il croyait faux, à son détriment | (norm forbidden (did anyone speak (says b:1))) |
+| betrayal | trahison | un accord ou un secret confié a été rompu par une partie, au détriment de l'autre | (norm forbidden (not (did anyone speak (says g:1)))) |
+| broken_promise | promesse non tenue | un accord a dépassé son échéance sans être rempli | (norm obligatory (did anyone give this)) |
+| adultery | adultère, infidélité | un adulte lié par un accord de mariage a eu un touch romantique ou intime avec un autre adulte | (norm forbidden (did anyone touch someone (how romantic))) |
+| injustice | injustice | quelqu'un a été frappé, enfermé ou dépouillé sur la parole d'un titulaire de rôle, pour un fait que le moteur n'a pas enregistré de sa main | (norm forbidden (did anyone strike someone)) |
+| generosity | générosité | des biens donnés (give) sans accord qui demande un retour | (norm admirable (did anyone give this)) |
+| kindness | gentillesse, aide | un geste qui a réduit la douleur, la faim ou le travail d'un autre (work bandage, give nourriture, take by_arm) | (norm admirable (did anyone work someone)) |
+| rescue | sauvetage | une personne a été portée ou tirée hors d'un feu, d'une eau profonde, d'un effondrement ou d'une bête qui chargeait | (norm admirable (did anyone take someone)) |
+| cowardice | lâcheté | une personne s'est éloignée (go away) pendant que d'autres proches étaient frappés ou attaqués | (norm shameful (did anyone go (how away))) |
+| heroism | héroïsme | une personne est allée vers un feu, une eau profonde ou une bête qui chargeait pour en sortir quelqu'un | (norm admirable (did anyone go (how toward))) |
+| insult | insulte, humiliation | une parole attribuant à l'auditeur une qualité ou un état de degré bas, dite fort devant d'autres | (norm forbidden (did anyone speak (says (quality you w_bad high)))) |
+| mockery | moquerie, plaisanterie | une parole ou un geste suivi de rires, au sujet de quelqu'un de présent |  |
+| threat_felt | menace | une parole qui conditionne un geste nuisible à l'auditeur à un geste de l'auditeur | (norm forbidden (did anyone speak (says (if b:1 b:2)))) |
+| extortion | chantage, racket | une offre qui conditionne une révélation ou un geste nuisible à un paiement, parfois à chaque période | (norm forbidden (did anyone speak (says (if b:1 b:2)))) |
+| bribery | corruption, pot-de-vin | des biens donnés à un titulaire de rôle par un accord dont l'obligation est qu'il ne fasse pas un geste attendu de ce rôle | (norm forbidden (did anyone give this (to someone))) |
+| fraud | tromperie, fraude (fausse monnaie, balance faussée, marchandise trompeuse) | un échange où le vendeur tenait la croyance que l'état de la chose était pire que dit ou montré | (norm forbidden (did anyone give this)) |
+| poisoning | empoisonnement | une personne a versé ou mis une substance toxique dans ce qu'une autre a mangé ou bu | (norm forbidden (did anyone pour this)) |
+| arson | incendie volontaire | un feu a commencé par un geste work (torche) d'une personne sur un combustible cru à un autre | (norm forbidden (did anyone work this (with torch))) |
+| vandalism | dégradation du bien d'autrui | des coups ont baissé l'intégrité d'une chose crue à un autre | (norm forbidden (did anyone strike this)) |
+| trespass | intrusion | une personne est entrée dans un lieu reconnu à un autre, sans y avoir été invitée par une parole | (norm forbidden (did anyone go here)) |
+| encroachment | empiètement (sur un champ, un pré, une source) | des gestes de travail (strike, scoop, put) sur un terrain reconnu à un autre | (norm forbidden (did anyone strike this)) |
+| kidnapping | enlèvement, séquestration | une personne a été portée, tirée ou attachée et gardée dans un lieu fermé contre ses gestes de fuite | (norm forbidden (did anyone tie someone)) |
+| animal_cruelty | cruauté envers une bête | des coups répétés sur une bête sans que cela serve à la nourrir, la mener ou la tuer pour la manger | (norm shameful (did anyone strike this)) |
+| revenge | vengeance | un geste nuisible contre quelqu'un qui avait d'abord nui à l'acteur ou aux siens | (norm admirable (did anyone strike someone)) |
+| sorcery | sorcellerie (ce qu'on croit tel) | un geste channel, une plante ou un objet étrange, ou un phénomène, suivi d'un malheur | (norm forbidden (did anyone channel this)) |
+| sacrilege | sacrilège | des gestes de coup, de prise ou de saleté sur une chose que d'autres tiennent pour sacrée (symbole, relique, tombe, temple) | (norm forbidden (did anyone strike this)) |
+| hypocrisy | hypocrisie | une personne a affirmé une norme et a fait un geste qu'elle interdit | (norm shameful (did anyone speak (says b:1))) |
+| disrespect_absence | manque d'égards (absence remarquée) | une personne n'était pas présente à un rassemblement (funérailles, noces, fête) où d'autres sont venus | (custom @G1 (did everyone go here)) |
+| ingratitude | ingratitude | une personne aidée ou nourrie par une autre a refusé ensuite de l'aider, ou lui a nui | (norm obligatory (did anyone give this)) |
+| drunkenness | ivrognerie | une personne a bu jusqu'à tituber, souvent | (norm shameful (did anyone drink this (how all))) |
+| laziness | paresse | une personne reste sans geste de travail des jours où d'autres travaillent | (norm shameful (did anyone rest)) |
+| loyalty | loyauté, fidélité | une personne a tenu un accord ou gardé un secret alors que cela lui coûtait (on l'interrogeait, on la frappait) | (norm admirable (not (did anyone speak (says b:1)))) |
+| hospitality | hospitalité | une personne en a laissé entrer une autre chez elle, lui a donné à manger ou un lit | (norm admirable (did anyone give this)) |
+| rebellion | rébellion, désobéissance | une personne a dit non à une demande d'un titulaire cru de rôle, ou a fait le geste qu'un décret dit interdit | (norm obligatory (did anyone go here)) |
+| usurpation | usurpation | une personne a dit tenir un rôle que d'autres croient tenu par un vivant, et des gestes de gardes l'ont suivie | (norm forbidden (did anyone speak (says (holds me @G1)))) |
 | nothing_special | rien de particulier |  |  |
 
 ## Règles dures
 
 | id | règle | s'applique à |
 |---|---|---|
-| D10_minors | Refusé dès que l'âge RÉEL (life_stage), l'âge CRU par l'acteur (croyance state(cible, age_years, …) ; une croyance absente compte comme mineur) ou l'âge APPARENT (look_age_seen) d'un des deux, acteur ou cible, est inférieur à l'âge adulte, ou que le dossier mental de la cible n'est pas résolu (r_known_by = name_only ou described) : tout geste dont une valeur sort de minor_whitelist, tout geste marqué intimate, toute expression contenant un concept ou une variable marqué intimate (r_attraction, need_intimacy, attracted_to ; liens spouse, betrothed, lover, former_spouse), tout objectif ou croyance écrit par le modèle qui en contient, tout accord dont les obligations en contiennent, toute montée de r_attraction ou de need_intimacy. need_intimacy vaut 0 avant l'âge adulte. Vérifié par check.py (_check_hard_rules) et par le gouverneur. | action, concept, variable, agreement |
+| D10_minors | Refusé dès que l'âge RÉEL (life_stage), l'âge CRU par l'acteur (croyance state(cible, age_years, …) ; une croyance absente compte comme mineur) ou l'âge APPARENT (look_age_seen) d'un des deux, acteur ou cible, est inférieur à l'âge adulte, ou que le dossier mental de la cible n'est pas résolu (r_known_by = name_only ou described) : tout geste dont une valeur sort de minor_whitelist, tout geste marqué intimate, toute expression contenant un concept ou une variable marqué intimate (r_attraction, need_intimacy, attracted_to ; liens spouse, betrothed, lover, former_spouse), tout objectif ou croyance écrit par le modèle qui en contient, tout accord dont les obligations en contiennent, toute montée de r_attraction ou de need_intimacy. need_intimacy vaut 0 avant l'âge adulte. La structure (drapeaux, listes blanches, zones, paramètres de parties) est vérifiée par check.py ; l'application, par le gouverneur (catalogue/tools/governor.py, tests test_governor.py), et par lui seul. | action, concept, variable, agreement |
 | engine_owns_body | Le Transformer n'écrit jamais une variable d'un composant engine_only (corps, besoins, cycle de vie, apparence, porteur, registre, maîtrise) : il agit par des gestes, la physique en fait les effets. | variable |
 | no_truth_in_tokens | Les jetons pointent vers des dossiers mentaux, des événements remémorés ou décrits, des lieux connus ; jamais vers un identifiant objectif, l'état réel d'un accord, la vraie identité, la vraie santé ou la vérité d'une croyance (charte § 5). | variable, concept |
 | sparse_writes | Au plus 4 écritures (pointeur, variable, valeur) par décision, en plus du geste choisi ; chacune bornée par le pas par décision et le taux par jour de jeu. Le reste suit les lois de retour du moteur. | variable |
