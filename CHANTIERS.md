@@ -34,8 +34,8 @@ Ordre conseillé. Chaque chantier se termine par une mesure sur la machine de Mo
 **Écart actuel (constaté le 8 oct.)** : voxels de 2 cm à couleurs unies, sans texture ; lumière simple, sans brume ni rayons ; feuillage lointain lourd ; personnages en voxels stricts. Monsieur a jugé le rendu « très moche ». Les images de `docs/style/` sont la barre, pas moins.
 
 À faire :
-- Taille des voxels à 5 cm par défaut (O9) : constante `kVoxelMm`, extension Godot, empreintes, contrat d'interfaces.
-- Textures par matière dans le shader, avec variantes.
+- Taille des voxels (O9) : 5 cm proposé ; le prototype village a essayé 10 cm (son `RENDU.md`). À trancher par Monsieur sur captures, puis constante `kVoxelMm`, extension Godot, empreintes, contrat d'interfaces.
+- Textures par matière (O14) : demandées par Monsieur ; le prototype village s'en passe (grain procédural, biseau, PRT, grille de ciel). Montrer les deux sur captures avant de choisir.
 - Lumière en temps réel (soleil, ciel, nuages, météo) avec données rééclairables précalculées (occlusion, visibilité du ciel, sondes d'irradiance), brume de hauteur, rayons de soleil ; pas d'upscaling.
 - Personnages en style voxel à facettes (`characters/`), cubes de 1,8 à 2,2 cm.
 - Chaque étape : une capture comparée aux images de référence.
@@ -69,4 +69,4 @@ Reçus : `ETAT.md` (racine), `engine/ETAT.md`, `ai/ETAT.md`. Les bilans de la g�
 
 ## Questions pour Monsieur
 
-Il en reste trois (`docs/01_decisions.md`, O9, O10, O13) : taille des voxels (défaut 5 cm), nombre d'appels du Transformer par PNJ, enseignant bon marché et son budget. Plus l'accord pour un outil comme Meshy AI. La charte a tranché le reste.
+Il en reste quatre (`docs/01_decisions.md`, O9, O10, O13, O14) : taille des voxels (5 cm proposé, 10 cm essayé), textures bitmap ou non, nombre d'appels du Transformer par PNJ, enseignant bon marché et son budget. Plus l'accord pour un outil comme Meshy AI. La charte a tranché le reste.

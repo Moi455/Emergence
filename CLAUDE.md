@@ -23,7 +23,7 @@ Les images de `docs/style/` (`monde_type.png`, `maison_type.png`, `pnj_type.png`
 2. **Les 500 PNJ sont simulés à pleine puissance partout**, même loin du joueur ; seul le rendu est coupé hors de vue. **Toute action a une répercussion persistante** (une `Operation` appliquée au monde, chargé ou non, et sauvegardée).
 3. **Avant de coder une action ou une variable**, elle doit être dans le catalogue unique (`ai/CATALOGUE_modele.md` et le catalogue de `sim/`).
 4. **GPU** : le rendu utilise le moins possible du GPU dédié ; l'essentiel reste au Transformer.
-5. **Rendu** : voxels du monde plus gros que 2 cm (taille ouverte, défaut 5 cm), textures, lumière en temps réel (heure, nuages, météo), pas d'upscaling.
+5. **Rendu** : voxels du monde plus gros que 2 cm (taille ouverte : 5 cm proposé, 10 cm essayé par le prototype village), textures (demandées ; le prototype s'en passe, question O14), lumière en temps réel (heure, nuages, météo), pas d'upscaling.
 6. **Eau et feu** au plus léger, pas forcément en voxels ; l'eau est une quantité prélevable qui réagit.
 7. **Frontières** : monde physique d'environ 20 × 20 km ; aucune limite visible, jamais de retour au village ; la difficulté tue avant le bord.
 8. **Temps** : un PNJ vit environ 150 h de jeu (charte § 25) ; variables psychologiques de −10 à +10 ; traits qui évoluent progressivement ; profondeur de simulation variable selon les PNJ (§ 24).
