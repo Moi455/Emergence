@@ -1,0 +1,87 @@
+# body.toml - étape 3 : le corps, les besoins, l'âge, l'apparence, ce qu'on porte.
+#
+# Tout ici est écrit par le MOTEUR (composants engine_only) : le Transformer choisit des gestes ; la
+# physique en fait des blessures, de la fatigue, de la faim. Charte § 29.
+#
+# Le dommage (référence pour le moteur, pas une décision) :
+#   énergie du coup = force du geste × masse et allonge de l'instrument × maîtrise ;
+#   type = tranchant (edge) → coupure ; pointe (point) → perforation ; sinon contondant ;
+#   gravité = énergie − protection portée sur la zone − robustesse ; une fracture si la gravité
+#   dépasse le seuil de l'os de la zone ; la conscience baisse avec les coups à la tête, la douleur
+#   et la perte de sang ; la mort vient du sang (< 40 %), d'une zone vitale détruite (tête, torse
+#   haut), de l'asphyxie, du froid, de la maladie ou de la faim.
+#   Ainsi : une gifle (force 2, main ouverte, tête) = douleur +2, joue rouge, aucun dommage ;
+#   un coup de poing (force 5) = douleur, bleu ; un passage à tabac (force 6-8 répétée) = fractures,
+#   perte de conscience ; continuer sur un corps inconscient = hémorragie interne, mort. Un seul geste.
+#
+# Budget de l'IA : elle voit un RÉSUMÉ (champ token). Les 16 zones, le volume de sang, la grossesse
+# précoce, la maladie avant les symptômes restent au moteur (visibility = engine).
+# Zones = docs/interfaces.md § 4 (masque de 16 bits des vêtements) : la protection d'un vêtement s'applique
+# exactement aux zones qu'il couvre.
+
+variable = [
+  # ─── Vie et état général ───
+  { id = "alive", label_fr = "vivant (la vérité)", holder = "body", scale = "bool", writer = ["engine"], visibility = "engine", note = "On ne voit que l'état apparent (condition)." },
+  { id = "consciousness", label_fr = "conscience (10 éveillé et lucide, 0 inconscient)", holder = "body", scale = "unipolar10", writer = ["engine"], visibility = "observable", dynamics = "baisse avec coups à la tête, douleur extrême, sang perdu, ivresse, sommeil ; remonte au repos", token = "SELF.body.consciousness" },
+  { id = "condition", label_fr = "état apparent (debout, blessé, à terre, immobile, mort à l'évidence)", holder = "appearance", scale = "enum", values = ["active", "hurt", "down", "motionless", "obviously_dead"], writer = ["derived"], visibility = "observable", dynamics = "un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit", token = "ENTITY.look.condition" },
+  { id = "blood_volume", label_fr = "volume de sang (100 = plein)", holder = "body", scale = "qty", unit = "%", writer = ["engine"], visibility = "engine", dynamics = "baisse selon le saignement ; < 60 % faiblesse, < 40 % mort ; remonte lentement" },
+  { id = "bleeding", label_fr = "saignement", holder = "body", scale = "unipolar10", writer = ["engine"], visibility = "observable", dynamics = "somme des plaies ouvertes ; un bandage ou la pression le réduisent", token = "SELF.body.bleeding" },
+  { id = "pain", label_fr = "douleur", holder = "body", scale = "unipolar10", writer = ["engine"], visibility = "private", dynamics = "saute au coup, décroît ; les blessures en entretiennent une part ; certaines potions l'atténuent", token = "SELF.body.pain" },
+  { id = "breath", label_fr = "souffle (asphyxie : noyade, fumée, étranglement)", holder = "body", scale = "unipolar10", writer = ["engine"], visibility = "observable", dynamics = "baisse sous l'eau, dans la fumée, la gorge serrée ; à 0, perte de conscience puis mort", token = "SELF.body.breath" },
+  { id = "body_temperature", label_fr = "température du corps", holder = "body", scale = "qty", unit = "°C", writer = ["engine"], visibility = "engine", dynamics = "suit le lieu, la tenue (isolation), l'humidité, le feu ; fièvre par infection ; < 33 °C ou > 41 °C : danger" },
+  # ─── Blessures par zone ───
+  { id = "zones", label_fr = "zones du corps", holder = "body", scale = "enum", values = ["head", "neck", "upper_torso", "lower_torso", "upper_arm_l", "upper_arm_r", "forearm_l", "forearm_r", "hand_l", "hand_r", "pelvis", "thigh_l", "thigh_r", "calf_l", "calf_r", "feet"], writer = ["birth"], visibility = "engine", note = "Ordre du masque de 16 bits de docs/interfaces.md § 4." },
+  { id = "wounds", label_fr = "blessures : zone, type (contusion, coupure, perforation, brûlure, fracture, gelure, morsure), gravité, infectée, soignée, âge", holder = "body", scale = "list", writer = ["engine"], visibility = "observable", dynamics = "processus heal_tissue ; l'infection les aggrave ; une fracture non réduite laisse une séquelle", token = "SELF.wound (les 2 pires : région grossière tête/torse/bras/jambes, type, gravité)" },
+  { id = "permanent_marks", label_fr = "séquelles et marques (cicatrice, boiterie, œil perdu, doigts manquants)", holder = "body", scale = "list", writer = ["engine"], visibility = "observable", token = "ENTITY.look.marks" },
+  { id = "mobility", label_fr = "capacité à se déplacer", holder = "body", scale = "ratio", writer = ["derived"], visibility = "observable", dynamics = "jambes blessées, épuisement, charge, ivresse, âge", token = "SELF.body.mobility" },
+  { id = "manipulation", label_fr = "capacité à manier (mains et bras)", holder = "body", scale = "ratio", writer = ["derived"], visibility = "observable", dynamics = "mains et bras blessés, froid, tremblements, ivresse", token = "SELF.body.manipulation" },
+  # ─── Constitution ───
+  { id = "sex", label_fr = "sexe", holder = "body", scale = "enum", values = ["female", "male"], writer = ["birth"], visibility = "observable", token = "SELF.sex ; ENTITY.look.sex" },
+  { id = "height", label_fr = "taille", holder = "body", scale = "qty", unit = "m", writer = ["birth", "engine"], visibility = "observable", dynamics = "croissance pendant l'enfance", token = "ENTITY.look.build" },
+  { id = "body_mass", label_fr = "masse corporelle", holder = "body", scale = "qty", unit = "kg", writer = ["engine"], visibility = "observable", dynamics = "suit les réserves et la croissance", token = "ENTITY.look.build" },
+  { id = "strength", label_fr = "force", holder = "body", scale = "unipolar10", writer = ["birth", "engine"], visibility = "observable", dynamics = "monte avec le travail physique, baisse avec la maladie, la faim, la vieillesse", token = "SELF.body.strength ; ENTITY.look.build" },
+  { id = "endurance", label_fr = "endurance", holder = "body", scale = "unipolar10", writer = ["birth", "engine"], visibility = "private", dynamics = "comme la force", token = "SELF.body.endurance" },
+  { id = "agility", label_fr = "agilité", holder = "body", scale = "unipolar10", writer = ["birth", "engine"], visibility = "observable", dynamics = "baisse avec l'âge, les séquelles, la charge" },
+  { id = "robustness", label_fr = "robustesse (résistance aux coups et aux maladies)", holder = "body", scale = "unipolar10", writer = ["birth", "engine"], visibility = "private" },
+  { id = "vision", label_fr = "acuité visuelle", holder = "body", scale = "unipolar10", writer = ["birth", "engine"], visibility = "private", dynamics = "baisse avec l'âge, une blessure à l'œil ; la nuit réduit ce qu'elle permet", note = "Le moteur l'applique à la perception ; l'IA n'a pas à la voir." },
+  { id = "hearing", label_fr = "acuité auditive", holder = "body", scale = "unipolar10", writer = ["birth", "engine"], visibility = "private", note = "Appliquée par le moteur à la perception." },
+  # ─── Santé ───
+  { id = "illnesses", label_fr = "maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion", holder = "body", scale = "list", writer = ["engine"], visibility = "engine", dynamics = "incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent", token = "SELF.body.sickness (gravité ressentie)" },
+  { id = "symptoms", label_fr = "symptômes visibles (fièvre, toux, taches, pâleur, tremblements)", holder = "appearance", scale = "list", writer = ["derived"], visibility = "observable", token = "ENTITY.look.health" },
+  { id = "immunities", label_fr = "immunités acquises", holder = "body", scale = "list", writer = ["engine"], visibility = "engine" },
+  { id = "intoxication", label_fr = "ivresse, effet d'une substance (alcool, somnifère, poison)", holder = "body", scale = "unipolar10", writer = ["engine"], visibility = "observable", dynamics = "monte par la potency de ce qu'on ingère, redescend en heures", token = "SELF.body.intox ; ENTITY.look.drunk" },
+  # ─── Besoins ───
+  { id = "hunger", label_fr = "faim", holder = "needs", scale = "unipolar10", writer = ["engine"], visibility = "private", dynamics = "monte avec le temps et l'effort ; baisse en mangeant selon la nutrition", token = "SELF.need.hunger" },
+  { id = "thirst", label_fr = "soif", holder = "needs", scale = "unipolar10", writer = ["engine"], visibility = "private", dynamics = "monte plus vite au chaud et à l'effort", token = "SELF.need.thirst" },
+  { id = "reserves", label_fr = "réserves du corps (la faim de plusieurs jours)", holder = "needs", scale = "unipolar10", writer = ["engine"], visibility = "observable", dynamics = "baissent en jeûne prolongé ; à 0, famine : force et robustesse s'effondrent", token = "SELF.need.reserves ; ENTITY.look.build" },
+  { id = "exhaustion", label_fr = "épuisement (effort récent)", holder = "needs", scale = "unipolar10", writer = ["engine"], visibility = "observable", dynamics = "monte à l'effort (course, coups, port de charge), baisse au repos en minutes", token = "SELF.need.exhaustion" },
+  { id = "sleepiness", label_fr = "besoin de sommeil", holder = "needs", scale = "unipolar10", writer = ["engine"], visibility = "observable", dynamics = "dette de sommeil sur le jour ; seul le sommeil la rembourse", token = "SELF.need.sleep" },
+  { id = "thermal_comfort", label_fr = "confort thermique (−10 glacé, +10 étouffant)", holder = "needs", scale = "bipolar10", writer = ["derived"], visibility = "observable", dynamics = "écart entre température du corps et confort ; frissons et sueur visibles", token = "SELF.need.thermal" },
+  # ─── Âge et cycle de vie (charte § 25) ───
+  { id = "life_clock", label_fr = "temps vécu sur l'horloge de vie", holder = "lifecycle", scale = "time", writer = ["engine"], visibility = "engine", note = "Une vie ≈ 150 h de jeu, séparée du calendrier (D30) : enfance ≈ 15 h, adolescence ≈ 6 h, adulte ≈ 105 h, vieillesse ≈ 24 h." },
+  { id = "age_years", label_fr = "âge en années équivalentes", holder = "lifecycle", scale = "qty", unit = "ans", writer = ["derived"], visibility = "observable", dynamics = "suit l'horloge de vie (≈ 2,8 ans d'âge par année de calendrier à l'âge adulte, plus vite dans l'enfance) ; les autres n'en voient qu'un âge apparent, à quelques années près", token = "SELF.age ; ENTITY.look.age" },
+  { id = "life_stage", label_fr = "stade de vie", holder = "lifecycle", scale = "enum", values = ["infant", "child", "teen", "adult", "elder"], writer = ["derived"], visibility = "observable", dynamics = "infant < 3, child < 14, teen < 18, adult < 60, elder ; les règles dures se lisent ici", token = "SELF.age_stage" },
+  { id = "senescence", label_fr = "vieillissement (accélère les pertes de force, de vue, la mortalité)", holder = "lifecycle", scale = "unipolar10", writer = ["derived"], visibility = "observable" },
+  { id = "fecundity", label_fr = "fécondité", holder = "lifecycle", scale = "unipolar10", writer = ["engine"], visibility = "engine" },
+  { id = "pregnancy", label_fr = "grossesse (aucune, précoce, visible, avancée)", holder = "lifecycle", scale = "enum", values = ["none", "early", "visible", "late"], writer = ["engine"], visibility = "engine", dynamics = "précoce : personne ne le sait, pas même elle, avant des signes (nausées, ventre) ; ensuite c'est une croyance née de la perception", token = "SELF.body.pregnant (dès qu'elle le sait)" },
+  # ─── Apparence : la seule porte vers l'intérieur d'autrui (charte § 5) ───
+  { id = "expression", label_fr = "expression du visage", holder = "appearance", scale = "enum", values = ["neutral", "smile", "laugh", "frown", "anger", "fear", "sadness", "crying", "disgust", "surprise", "pain", "contempt", "boredom", "tenderness"], writer = ["derived"], visibility = "observable", dynamics = "tirée des émotions réelles, atténuée par la volonté de masquer (esprit mouvant, étape 5) et la maîtrise de soi", token = "ENTITY.look.expression" },
+  { id = "involuntary_signs", label_fr = "signes involontaires (rougir, pâlir, transpirer, trembler, larmes, voix qui tremble)", holder = "appearance", scale = "list", writer = ["derived"], visibility = "observable", dynamics = "on les masque mal : c'est par eux qu'un mensonge ou une peur se trahit", token = "ENTITY.look.signs" },
+  { id = "posture", label_fr = "posture", holder = "appearance", scale = "enum", values = ["standing", "walking", "running", "sitting", "kneeling", "crouching", "lying", "prone", "climbing", "swimming", "guard", "carrying"], writer = ["derived"], visibility = "observable", token = "SELF.posture ; ENTITY.look.posture" },
+  { id = "visible_injury", label_fr = "blessures visibles", holder = "appearance", scale = "unipolar10", writer = ["derived"], visibility = "observable", dynamics = "plaies des zones non couvertes, sang sur les vêtements, boiterie", token = "ENTITY.look.wounds" },
+  { id = "attire_seen", label_fr = "ce qu'on voit de la tenue (sobre ou riche, de fête, de deuil, de travail, armure)", holder = "appearance", scale = "list", writer = ["derived"], visibility = "observable", dynamics = "tiré des vêtements portés : matières, qualité, teintes, emplacements", token = "ENTITY.look.attire" },
+  { id = "held_seen", label_fr = "ce qu'il tient en main, vu par ses usages (armé, outil, objet de valeur)", holder = "appearance", scale = "list", writer = ["derived"], visibility = "observable", dynamics = "vecteur d'usages de l'objet en main : qu'il coupe ou perce, et non son nom", token = "ENTITY.look.held" },
+  { id = "grooming", label_fr = "propreté, cheveux, barbe, mouillé", holder = "appearance", scale = "unipolar10", writer = ["derived"], visibility = "observable", token = "ENTITY.look.grooming" },
+  { id = "gaze", label_fr = "ce qu'il regarde (une personne, une chose, un lieu)", holder = "appearance", scale = "id", writer = ["derived"], visibility = "observable", dynamics = "tiré de l'attention et de l'orientation ; on voit qu'on est regardé, ou qu'il regarde ailleurs", token = "ENTITY.look.gaze (pointeur)" },
+  # ─── Ce qu'on porte ───
+  { id = "hands", label_fr = "objets en main (gauche, droite)", holder = "carrier", scale = "list", writer = ["engine"], visibility = "observable", dynamics = "changent par les gestes saisir, lâcher, donner, prendre", token = "SELF.held (vecteur d'usages)" },
+  { id = "worn", label_fr = "vêtements portés, par emplacement et couche", holder = "carrier", scale = "list", writer = ["engine"], visibility = "observable" },
+  { id = "carried", label_fr = "contenants portés (sac, bourse, hotte) et leur contenu", holder = "carrier", scale = "list", writer = ["engine"], visibility = "private", dynamics = "le contenu d'une bourse ne se voit pas ; son poids, un peu", token = "INV (≤ 8 objets saillants)" },
+  { id = "load_ratio", label_fr = "charge portée / capacité", holder = "carrier", scale = "ratio", writer = ["derived"], visibility = "observable", token = "SELF.body.load" },
+  # ─── Position (toute entité physique) ───
+  { id = "position", label_fr = "position dans le monde", holder = "spatial", scale = "qty", unit = "m (x, y, z)", writer = ["engine"], visibility = "observable", token = "distance et direction relatives (sin, cos) dans chaque jeton perçu" },
+  { id = "orientation", label_fr = "orientation (où il regarde)", holder = "spatial", scale = "qty", unit = "rad", writer = ["engine"], visibility = "observable", dynamics = "détermine le champ de vision : on ne voit pas ce qui se passe dans son dos ; vu de dehors, c'est le regard (gaze)" },
+  { id = "velocity", label_fr = "vitesse", holder = "spatial", scale = "qty", unit = "m/s", writer = ["engine"], visibility = "observable", token = "ENTITY.look.approaching" },
+  { id = "place_in", label_fr = "lieu englobant réel (pièce, maison, place, village, région)", holder = "spatial", scale = "id", writer = ["engine"], visibility = "engine", note = "Le PNJ voit le lieu où il CROIT être (place_recognized, beliefs.toml)." },
+  { id = "inside_of", label_fr = "contenu dans (main, sac, coffre, eau)", holder = "spatial", scale = "id", writer = ["engine"], visibility = "observable" },
+]

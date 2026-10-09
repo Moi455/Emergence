@@ -1,0 +1,609 @@
+# properties.toml - étape 2 : propriétés des choses et ce qu'elles permettent.
+#
+# Trois axes :
+#   intrinsic  : ce qui se mesure sur la chose (masse, dureté, tranchant, valeur nutritive…) ;
+#   state      : ce qui change sur elle (intégrité, température, humidité, fraîcheur, allumé…) ;
+#   affordance : ce qu'elle PERMET, calculé par le moteur depuis les deux autres. Jamais une liste
+#                « cet objet sert à » écrite à la main : une pierre lourde peut assommer, caler une
+#                porte ou lester un filet, parce qu'elle est lourde, dure et saisissable.
+# Une affordance dit ce qui est physiquement possible ; ce que l'agent en fait, c'est lui qui le choisit.
+# La valeur marchande et la beauté ne sont pas ici : ce sont des croyances (étapes 6 et 10).
+
+# ─── Intrinsèques ───────────────────────────────────────────────────────────────────────────────
+[[property]]
+id = "mass"
+label_fr = "masse"
+applies_to = ["item", "structure", "agent", "animal", "plant"]
+scale = "qty"
+unit = "kg"
+
+[[property]]
+id = "size"
+label_fr = "encombrement (plus grande dimension)"
+applies_to = ["item", "structure", "agent", "animal", "plant"]
+scale = "qty"
+unit = "m"
+
+[[property]]
+id = "hardness"
+label_fr = "dureté (résiste à la rayure et à l'outil)"
+applies_to = ["item", "structure", "terrain"]
+scale = "unipolar10"
+rule = "moyenne pondérée des matières (materials.csv, 0..100 ramené à 0..10)"
+
+[[property]]
+id = "toughness"
+label_fr = "ténacité (résiste à la casse ; le verre est dur mais peu tenace)"
+applies_to = ["item", "structure", "terrain"]
+scale = "unipolar10"
+
+[[property]]
+id = "flammability"
+label_fr = "inflammabilité"
+applies_to = ["item", "structure", "plant", "terrain"]
+scale = "unipolar10"
+rule = "matières, multipliée par la sécheresse (1 − humidité)"
+
+[[property]]
+id = "edge"
+label_fr = "tranchant (lame)"
+applies_to = ["item"]
+scale = "unipolar10"
+
+[[property]]
+id = "point"
+label_fr = "pointe"
+applies_to = ["item"]
+scale = "unipolar10"
+
+[[property]]
+id = "handle"
+label_fr = "manche ou prise (se tient pour frapper, creuser, viser)"
+applies_to = ["item"]
+
+[[property]]
+id = "reach"
+label_fr = "allonge (longueur utile en main)"
+applies_to = ["item"]
+scale = "qty"
+unit = "m"
+
+[[property]]
+id = "capacity"
+label_fr = "capacité de contenance"
+applies_to = ["item", "structure", "place"]
+scale = "qty"
+unit = "l"
+
+[[property]]
+id = "sealable"
+label_fr = "se ferme hermétiquement (bouchon, couvercle)"
+applies_to = ["item", "structure"]
+
+[[property]]
+id = "nutrition"
+label_fr = "valeur nourrissante"
+applies_to = ["item", "plant", "animal"]
+scale = "unipolar10"
+
+[[property]]
+id = "hydration"
+label_fr = "désaltère"
+applies_to = ["item", "water_body"]
+scale = "unipolar10"
+
+[[property]]
+id = "toxicity"
+label_fr = "toxicité"
+applies_to = ["item", "plant", "water_body"]
+scale = "unipolar10"
+
+[[property]]
+id = "potency"
+label_fr = "effet sur le corps ou l'esprit (soin, ivresse, sommeil, douleur) : type et force"
+applies_to = ["item", "plant"]
+scale = "list"
+note = "ex. medicine:soin 6 ; ale:ivresse 3. Le moteur applique l'effet ; savoir qu'une plante soigne est une croyance."
+
+[[property]]
+id = "buoyancy"
+label_fr = "flotte"
+applies_to = ["item", "structure"]
+rule = "densité moyenne < densité de l'eau, ou coque creuse"
+
+[[property]]
+id = "insulation"
+label_fr = "protège du froid (vêtement, mur, toit)"
+applies_to = ["item", "structure"]
+scale = "unipolar10"
+
+[[property]]
+id = "light_emission"
+label_fr = "émet de la lumière"
+applies_to = ["item", "fire", "phenomenon"]
+scale = "unipolar10"
+
+[[property]]
+id = "opacity"
+label_fr = "opacité (cache ce qui est derrière)"
+applies_to = ["item", "structure", "plant", "terrain"]
+scale = "unipolar10"
+
+[[property]]
+id = "wearable_slot"
+label_fr = "se porte sur un emplacement du corps (tête, torse, jambes, pieds, mains, dos, ceinture…)"
+applies_to = ["item"]
+scale = "enum"
+
+[[property]]
+id = "fertility"
+label_fr = "fertilité d'un sol"
+applies_to = ["terrain"]
+scale = "unipolar10"
+
+[[property]]
+id = "seed_of"
+label_fr = "graine ou bouture de (espèce)"
+applies_to = ["item"]
+scale = "id"
+
+[[property]]
+id = "magic_power"
+label_fr = "puissance magique (ce qu'un outil peut transformer et à quelle vitesse)"
+applies_to = ["item", "phenomenon"]
+scale = "unipolar10"
+note = "Charte § 17 : une baguette faible pour l'apprenti, une forte pour le maître ; la puissance sans maîtrise est dangereuse."
+
+[[property]]
+id = "surface_writable"
+label_fr = "surface où l'on peut écrire ou graver"
+applies_to = ["item", "structure"]
+
+[[property]]
+id = "noise_on_impact"
+label_fr = "bruit quand on la frappe ou la fait tomber"
+applies_to = ["item", "structure"]
+scale = "unipolar10"
+
+[[property]]
+id = "odor"
+label_fr = "odeur (type et force)"
+applies_to = ["item", "fire", "plant", "animal", "agent"]
+scale = "list"
+
+[[property]]
+id = "divisible"
+label_fr = "se partage en quantités (grain, farine, pièces, eau)"
+applies_to = ["item"]
+
+# ─── États (changent avec le temps et les opérations) ──────────────────────────────────────────
+[[property]]
+id = "integrity"
+label_fr = "intégrité (100 = intact, 0 = détruit)"
+category = "state"
+applies_to = ["item", "structure", "terrain", "plant"]
+scale = "qty"
+unit = "0..100"
+rule = "baisse par les chocs (selon force, tranchant, ténacité), l'usure, le feu, la pourriture"
+
+[[property]]
+id = "temperature"
+label_fr = "température"
+category = "state"
+applies_to = ["item", "structure", "water_body", "agent", "animal", "place"]
+scale = "qty"
+unit = "°C"
+
+[[property]]
+id = "wetness"
+label_fr = "humidité"
+category = "state"
+applies_to = ["item", "structure", "terrain", "agent", "animal", "plant"]
+scale = "unipolar10"
+
+[[property]]
+id = "freshness"
+label_fr = "fraîcheur (périssables)"
+category = "state"
+applies_to = ["item"]
+scale = "unipolar10"
+rule = "baisse avec le temps, plus vite au chaud et à l'humide ; le sel et le séchage la gardent"
+
+[[property]]
+id = "burning"
+label_fr = "en feu"
+category = "state"
+applies_to = ["item", "structure", "plant", "terrain", "agent", "animal"]
+
+[[property]]
+id = "open"
+label_fr = "ouvert"
+category = "state"
+applies_to = ["item", "structure"]
+
+[[property]]
+id = "locked"
+label_fr = "verrouillé"
+category = "state"
+applies_to = ["item", "structure"]
+
+[[property]]
+id = "lit"
+label_fr = "allumé (lampe, torche, four)"
+category = "state"
+applies_to = ["item", "structure"]
+
+[[property]]
+id = "charge"
+label_fr = "charge magique restante"
+category = "state"
+applies_to = ["item"]
+scale = "unipolar10"
+
+[[property]]
+id = "dirtiness"
+label_fr = "saleté"
+category = "state"
+applies_to = ["item", "agent", "place"]
+scale = "unipolar10"
+
+[[property]]
+id = "quality"
+label_fr = "qualité de façon (le travail de l'artisan)"
+category = "state"
+applies_to = ["item", "structure"]
+scale = "unipolar10"
+rule = "fixée à la fabrication par la maîtrise, l'outil, la matière ; baisse avec l'usure"
+
+# ─── Affordances (calculées, jamais écrites à la main) ──────────────────────────────────────────
+[[property]]
+id = "graspable"
+label_fr = "se saisit à une ou deux mains"
+category = "affordance"
+applies_to = ["item", "agent", "animal"]
+derived_from = ["mass", "size"]
+rule = "masse ≤ force de l'agent et taille ≤ 1,5 m ; un corps (mort, blessé, enfant) se saisit aussi"
+
+[[property]]
+id = "carryable"
+label_fr = "se porte en se déplaçant"
+category = "affordance"
+applies_to = ["item", "agent", "animal"]
+derived_from = ["mass", "size"]
+rule = "masse ≤ capacité de charge restante"
+
+[[property]]
+id = "throwable"
+label_fr = "se lance"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["mass", "size"]
+
+[[property]]
+id = "cuts"
+label_fr = "coupe (tranche la matière tendre)"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["edge", "hardness", "handle"]
+
+[[property]]
+id = "pierces"
+label_fr = "perce"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["point", "hardness"]
+
+[[property]]
+id = "impacts"
+label_fr = "frappe fort (contondant)"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["mass", "hardness", "handle"]
+rule = "un poing, un bâton, une masse, une chope : la force du coup dépend de la masse et de l'allonge"
+
+[[property]]
+id = "digs"
+label_fr = "creuse (pioche, pelle, mains dans le sable)"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["point", "edge", "hardness", "handle"]
+rule = "dureté de l'outil > dureté de la matière visée"
+
+[[property]]
+id = "contains"
+label_fr = "contient (liquide si étanche)"
+category = "affordance"
+applies_to = ["item", "structure", "place"]
+derived_from = ["capacity", "sealable"]
+
+[[property]]
+id = "edible"
+label_fr = "se mange"
+category = "affordance"
+applies_to = ["item", "plant", "animal"]
+derived_from = ["nutrition", "toxicity"]
+rule = "nutrition > 0 ; la toxicité n'empêche pas de manger, elle a un effet"
+
+[[property]]
+id = "drinkable"
+label_fr = "se boit"
+category = "affordance"
+applies_to = ["item", "water_body"]
+derived_from = ["hydration", "toxicity"]
+
+[[property]]
+id = "fuel"
+label_fr = "combustible"
+category = "affordance"
+applies_to = ["item", "structure", "plant", "terrain"]
+derived_from = ["flammability"]
+
+[[property]]
+id = "ignites"
+label_fr = "allume un feu (braise, torche, briquet, foudre)"
+category = "affordance"
+applies_to = ["item", "fire", "phenomenon"]
+derived_from = ["temperature", "burning"]
+
+[[property]]
+id = "wearable"
+label_fr = "se porte"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["wearable_slot", "size"]
+
+[[property]]
+id = "supports_body"
+label_fr = "on peut s'y asseoir, s'y coucher, s'y tenir debout"
+category = "affordance"
+applies_to = ["item", "structure", "terrain"]
+derived_from = ["size", "toughness"]
+
+[[property]]
+id = "climbable"
+label_fr = "s'escalade (échelle, arbre, paroi avec prises)"
+category = "affordance"
+applies_to = ["structure", "terrain", "plant"]
+derived_from = ["size", "toughness"]
+
+[[property]]
+id = "openable"
+label_fr = "s'ouvre et se ferme"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["open"]
+
+[[property]]
+id = "lockable"
+label_fr = "se verrouille"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["locked"]
+
+[[property]]
+id = "conceals"
+label_fr = "permet de cacher quelque chose ou quelqu'un (derrière, dessous, dedans)"
+category = "affordance"
+applies_to = ["item", "structure", "plant", "terrain", "place"]
+derived_from = ["opacity", "capacity", "size"]
+
+[[property]]
+id = "blocks_passage"
+label_fr = "barre le passage"
+category = "affordance"
+applies_to = ["item", "structure", "terrain", "water_body", "fire"]
+derived_from = ["size", "toughness"]
+
+[[property]]
+id = "floats_carries"
+label_fr = "porte sur l'eau (radeau, barque)"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["buoyancy", "size"]
+
+[[property]]
+id = "shelters"
+label_fr = "abrite (de la pluie, du froid, des regards)"
+category = "affordance"
+applies_to = ["structure", "place", "terrain", "plant"]
+derived_from = ["insulation", "opacity"]
+
+[[property]]
+id = "writable"
+label_fr = "on peut y écrire"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["surface_writable"]
+
+[[property]]
+id = "plantable"
+label_fr = "se plante"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["seed_of"]
+
+[[property]]
+id = "cultivable"
+label_fr = "se cultive"
+category = "affordance"
+applies_to = ["terrain"]
+derived_from = ["fertility"]
+
+[[property]]
+id = "shapes_matter"
+label_fr = "transforme la matière par magie (bâtir, assembler, désassembler)"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["magic_power", "charge"]
+
+[[property]]
+id = "heats"
+label_fr = "chauffe (four, forge, foyer)"
+category = "affordance"
+applies_to = ["fire", "structure", "item"]
+derived_from = ["temperature", "lit"]
+
+[[property]]
+id = "light_source"
+label_fr = "éclaire"
+category = "affordance"
+applies_to = ["item", "fire", "structure", "phenomenon"]
+derived_from = ["light_emission", "lit"]
+
+[[property]]
+id = "binds"
+label_fr = "attache, lie (corde, chaîne)"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["toughness", "size"]
+
+[[property]]
+id = "mountable"
+label_fr = "se monte (cheval, âne)"
+category = "affordance"
+applies_to = ["animal"]
+derived_from = ["mass", "size"]
+
+# ─── Ajouts pour les objets composés de parties (forms.toml) ────────────────────────────────────
+[[property]]
+id = "protection"
+label_fr = "amortit les coups (armure, bouclier, cuir épais, rembourrage)"
+applies_to = ["item", "structure"]
+scale = "unipolar10"
+rule = "ténacité et épaisseur de la matière × surface couverte"
+
+[[property]]
+id = "elasticity"
+label_fr = "élasticité (se tend et revient : arc, corde d'arc, ressort)"
+applies_to = ["item"]
+scale = "unipolar10"
+
+[[property]]
+id = "resonance"
+label_fr = "produit un son musical quand on le frappe, le pince ou y souffle"
+applies_to = ["item", "structure"]
+scale = "unipolar10"
+
+[[property]]
+id = "reflectivity"
+label_fr = "reflète (métal poli, eau calme)"
+applies_to = ["item", "water_body"]
+scale = "unipolar10"
+
+[[property]]
+id = "absorbency"
+label_fr = "absorbe les liquides (chiffon, éponge, sciure)"
+applies_to = ["item", "terrain"]
+scale = "unipolar10"
+
+[[property]]
+id = "abrasiveness"
+label_fr = "abrasif (pierre à aiguiser, sable, lime)"
+applies_to = ["item", "terrain"]
+scale = "unipolar10"
+
+[[property]]
+id = "adhesion"
+label_fr = "colle, lie la matière (mortier, poix, cire, colle de peau)"
+applies_to = ["item"]
+scale = "unipolar10"
+
+[[property]]
+id = "rolls"
+label_fr = "roule (roue, rondin, tonneau couché)"
+applies_to = ["item", "structure"]
+
+[[property]]
+id = "measures"
+label_fr = "mesure (poids, longueur, volume, temps) avec une précision"
+applies_to = ["item", "structure"]
+scale = "list"
+note = "Une balance faussée mesure mal : la tricherie n'est pas une action, c'est un objet modifié et une parole."
+
+[[property]]
+id = "key_for"
+label_fr = "ouvre une serrure donnée"
+applies_to = ["item"]
+scale = "id"
+
+[[property]]
+id = "trigger"
+label_fr = "mécanisme qui se déclenche (piège, collet, arbalète)"
+applies_to = ["item", "structure"]
+
+[[property]]
+id = "protects"
+label_fr = "protège du coup qu'on reçoit"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["protection"]
+
+[[property]]
+id = "launches"
+label_fr = "lance un projectile (arc, fronde, arbalète)"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["elasticity", "size"]
+
+[[property]]
+id = "plays_music"
+label_fr = "permet de jouer de la musique"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["resonance"]
+
+[[property]]
+id = "reflects_image"
+label_fr = "renvoie une image (miroir)"
+category = "affordance"
+applies_to = ["item", "water_body"]
+derived_from = ["reflectivity"]
+
+[[property]]
+id = "wipes"
+label_fr = "essuie, éponge"
+category = "affordance"
+applies_to = ["item", "terrain"]
+derived_from = ["absorbency"]
+
+[[property]]
+id = "sharpens"
+label_fr = "aiguise, polit, lime"
+category = "affordance"
+applies_to = ["item", "terrain"]
+derived_from = ["abrasiveness", "hardness"]
+
+[[property]]
+id = "joins"
+label_fr = "colle, scelle, maçonne"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["adhesion"]
+
+[[property]]
+id = "rolls_load"
+label_fr = "fait rouler une charge (charrette, brouette)"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["rolls", "capacity"]
+
+[[property]]
+id = "weighs"
+label_fr = "pèse, mesure"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["measures"]
+
+[[property]]
+id = "unlocks"
+label_fr = "déverrouille"
+category = "affordance"
+applies_to = ["item"]
+derived_from = ["key_for"]
+
+[[property]]
+id = "traps"
+label_fr = "piège (retient ce qui déclenche)"
+category = "affordance"
+applies_to = ["item", "structure"]
+derived_from = ["trigger"]

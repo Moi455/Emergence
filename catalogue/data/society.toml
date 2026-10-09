@@ -1,0 +1,37 @@
+# society.toml - étape 10 : la société, qui émerge des individus (charte § 11).
+#
+# Rien ici n'est une créature autonome. Ce qui est STOCKÉ par le moteur est minimal et objectif :
+#   - le référent d'un groupe ou d'un rôle (un nom pour qu'on puisse en parler, qui l'a fondé, quand) ;
+#   - la parenté biologique (un fait, qui peut être ignoré ou caché : paternité secrète) ;
+#   - la détention des choses (has : qui la tient, où elle est) et les échanges qui ont eu lieu.
+# Tout le reste est CROYANCE ou ACCORD, tenu par chacun :
+#   propriété (owns), appartenance (member), direction (leads), rôle (holds), pouvoirs (may), lois
+#   (norm énoncée par un titulaire), coutumes (custom), réputation (has_trait), prix (worth), valeur
+#   de la monnaie (worth d'une pièce).
+# Les VUES CALCULÉES (writer derived, visibility engine) servent à la chronique, à l'affichage et
+# aux mesures ; elles ne sont JAMAIS dans un jeton : un PNJ ne connaît pas « la légitimité du chef »,
+# il connaît ce qu'il en croit et ce qu'il voit les autres faire.
+# Un chef est obéi dans la mesure où des gens croient qu'il a le droit de commander ET choisissent
+# d'obéir. Un décret ignoré par la moitié du village n'est qu'une parole (histoire decree_ignored).
+
+variable = [
+  # ─── Référents sociaux (groupe, rôle) ───
+  { id = "s_name", label_fr = "nom (pour l'affichage ; jamais dans l'état d'un PNJ)", holder = "social_referent", scale = "id", writer = ["engine"], visibility = "public", note = "Le texte libre n'entre pas dans la simulation : le nom est une étiquette générée, l'état n'utilise que l'identifiant." },
+  { id = "s_introduced_by", label_fr = "qui en a parlé le premier (tout agent peut créer un référent en le nommant ou le décrivant : « nous trois », « ceux de la forêt »)", holder = "social_referent", scale = "id", writer = ["engine"], visibility = "engine", note = "La catégorie (bande, guilde, culte…) n'est pas stockée : c'est une croyance is_a, tenue par chacun." },
+  { id = "s_introduced_at", label_fr = "quand on en a parlé la première fois", holder = "social_referent", scale = "time", writer = ["engine"], visibility = "engine" },
+  { id = "s_scope", label_fr = "pour un rôle : le groupe dans lequel il s'exerce (chef DU village de la forêt)", holder = "social_referent", scale = "id", writer = ["engine"], visibility = "public", token = "GROUP.scope (pointeur)" },
+  # ─── Faits objectifs que le moteur tient ───
+  { id = "biological_parents", label_fr = "parents biologiques (un fait ; on peut l'ignorer ou le cacher)", holder = "lifecycle", scale = "list", writer = ["birth"], visibility = "engine", note = "Les liens crus (link) peuvent différer : un enfant né d'un adultère croit que son père est le mari de sa mère." },
+  { id = "custody_log", label_fr = "historique de détention (objet, bête, terre, maison : qui l'a tenu ou occupé, comment il est passé)", holder = "ledger", scale = "list", writer = ["engine"], visibility = "engine", dynamics = "chaque passage est un fait objectif : de quelles mains à quelles mains, par quel geste (donné, posé, pris dans les mains, pris dans un contenant, trouvé, occupé) ; « vol » ou « cadeau » est ce que les témoins en concluent" },
+  # ─── Vues calculées (jamais vues par l'IA) ───
+  { id = "recognized_members", label_fr = "qui est reconnu membre d'un groupe, et par combien de gens", holder = "social_referent", scale = "list", writer = ["derived"], visibility = "engine", dynamics = "agrégat des croyances member" },
+  { id = "role_holder_support", label_fr = "qui est cru titulaire d'un rôle, et par combien (deux chefs peuvent coexister)", holder = "social_referent", scale = "list", writer = ["derived"], visibility = "engine", dynamics = "agrégat des croyances holds, pondéré par la familiarité au groupe" },
+  { id = "legitimacy", label_fr = "légitimité d'un titulaire (part des membres qui croient qu'il a le droit)", holder = "social_referent", scale = "ratio", writer = ["derived"], visibility = "engine" },
+  { id = "group_cohesion", label_fr = "cohésion d'un groupe (affection et confiance moyennes entre membres)", holder = "social_referent", scale = "unipolar10", writer = ["derived"], visibility = "engine" },
+  { id = "recognized_claims", label_fr = "à qui une chose, une terre, une maison, une bête est reconnue appartenir, et par combien de gens", holder = "ledger", scale = "list", writer = ["derived"], visibility = "engine", dynamics = "agrégat des croyances owns ; une maison contestée a deux colonnes de soutiens" },
+  { id = "reputation_aggregate", label_fr = "ce que les autres croient d'une personne, en moyenne", holder = "relations", scale = "list", writer = ["derived"], visibility = "engine", dynamics = "agrégat des croyances has_trait des autres ; la personne ne le voit pas, elle le devine à la façon dont on la traite" },
+  { id = "custom_aggregate", label_fr = "coutume d'un village (force moyenne des normes tenues par ses membres)", holder = "social_referent", scale = "list", writer = ["derived"], visibility = "engine", dynamics = "change en une génération quand les normes individuelles changent (histoire custom_shifts_slowly)" },
+  { id = "transactions", label_fr = "échanges qui ont eu lieu (quoi contre quoi, où, quand, entre qui)", holder = "chronicle", scale = "list", writer = ["engine"], visibility = "engine", dynamics = "les présents les perçoivent : c'est ainsi qu'un prix se sait au marché (croyance worth)" },
+  { id = "wealth_objective", label_fr = "richesse réelle (biens détenus, monnaie, terres crues à soi)", holder = "carrier", scale = "qty", writer = ["derived"], visibility = "engine", dynamics = "les autres n'en voient que des signes (tenue, maison, dépenses)" },
+  { id = "unrest", label_fr = "agitation d'un village (colère et peur moyennes, croyances que le chef est injuste)", holder = "social_referent", scale = "unipolar10", writer = ["derived"], visibility = "engine" },
+]

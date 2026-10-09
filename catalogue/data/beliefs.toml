@@ -1,0 +1,42 @@
+# beliefs.toml - étape 6 : les croyances. Le cœur de l'émergence sociale.
+#
+# Une croyance = une proposition (language_core.toml) + certitude + source + poids + date.
+# Elles portent : le savoir (où est la source, qui habite où, ce que vaut un cochon, comment on forge),
+# la théorie de l'esprit (« elle me hait », « il ment »), la réputation (has_trait), les liens crus
+# (link : on peut croire que X est son père et se tromper), la propriété (owns), les rôles et leurs
+# pouvoirs (holds, may), les normes (norm), les coutumes (custom), les légendes (exists), et les
+# secrets. Aucune variable ad hoc par situation.
+#
+# Qui écrit (règle centrale, pour qu'aucune crédulité ne soit écrite à la main) :
+#   - le MOTEUR enregistre ce qui est PERÇU (« j'ai vu X prendre le pain », certitude selon la vue,
+#     la lumière, l'attention) et ce qui est DIT (« Y m'a dit que P », source told, informateur noté) ;
+#     il fait oublier (capacité, saillance) ;
+#   - le TRANSFORMER décide d'adopter P, d'en douter, de déduire, de réviser, de garder secret.
+#   Les rumeurs, l'erreur, la crédulité, la méfiance naissent de là.
+# La vérité d'une croyance est connue du moteur seul (truth) : jamais montrée à l'IA ni au joueur.
+# Budget de l'IA : ≤ 12 jetons BELIEF par décision, choisis par pertinence (entités présentes, sujet
+# de la conversation, objectifs) ; une croyance = un jeton (prédicat, ≤ 3 pointeurs, polarité, temps,
+# certitude, source, poids, secret).
+
+variable = [
+  # ─── La croyance ───
+  { id = "b_proposition", label_fr = "ce qui est cru (proposition)", holder = "belief", scale = "proposition", writer = ["engine", "T_jump"], dynamics = "le moteur crée les perçues et les entendues ; le Transformer crée les déduites et adopte les entendues", token = "BELIEF.prop" },
+  { id = "b_polarity", label_fr = "cru vrai ou cru faux", holder = "belief", scale = "bool", writer = ["engine", "T_jump"], token = "BELIEF.polarity" },
+  { id = "b_certainty", label_fr = "certitude", holder = "belief", scale = "unipolar10", writer = ["engine", "T_jump"], dynamics = "le moteur la fixe pour une perception (vue, lumière, distance, attention, ivresse) ; le Transformer la révise d'un coup devant une preuve", token = "BELIEF.certainty" },
+  { id = "b_weight", label_fr = "poids : combien on y tient (force d'une norme, valeur qu'on donne à une chose)", holder = "belief", writer = ["T_step"], step = 0.3, rate = 0.3, dynamics = "une norme change lentement chez chacun, par de nombreuses décisions ; la coutume d'un village suit", token = "BELIEF.weight" },
+  { id = "b_source", label_fr = "d'où vient la croyance (vu, entendu, dit, lu, déduit, supposé, rêvé)", holder = "belief", scale = "enum", values_from = "source", writer = ["engine", "T_jump"], dynamics = "le moteur pour vu, entendu, dit, lu ; le Transformer pour déduit", token = "BELIEF.source" },
+  { id = "b_informant", label_fr = "qui l'a dit (ou l'auteur de l'écrit)", holder = "belief", scale = "id", writer = ["engine"], dynamics = "un billet anonyme n'a pas d'informateur connu", token = "BELIEF.informant (pointeur)" },
+  { id = "b_hops", label_fr = "de combien de bouches elle est passée (0 vu, 1 dit par un témoin, 2 et plus : ouï-dire)", holder = "belief", scale = "qty", writer = ["engine"], dynamics = "pris dans ce que dit l'informateur (« je l'ai vu », « on me l'a dit ») : il peut mentir dessus", token = "BELIEF.hops" },
+  { id = "b_acquired", label_fr = "depuis quand on le croit", holder = "belief", scale = "time", writer = ["engine"], token = "BELIEF.age" },
+  { id = "b_confirmed", label_fr = "dernière confirmation (revu, réentendu)", holder = "belief", scale = "time", writer = ["engine"], dynamics = "une croyance confirmée résiste à l'oubli" },
+  { id = "b_importance", label_fr = "importance pour soi (règle l'oubli et ce qui revient à l'esprit)", holder = "belief", scale = "unipolar10", writer = ["engine", "T_step"], step = 1.0, rate = 2.0, dynamics = "le moteur donne une valeur neutre à la création ; seul le Transformer juge ce qui compte", token = "BELIEF.importance" },
+  { id = "b_secret", label_fr = "à garder pour soi (choix de ne pas le répéter)", holder = "belief", scale = "bool", writer = ["T_jump"], dynamics = "un secret confié peut avoir été promis (accord) ; le trahir est un fait que d'autres jugeront", token = "BELIEF.secret" },
+  { id = "b_told_to", label_fr = "à qui on l'a déjà dit", holder = "belief", scale = "list", writer = ["engine"], dynamics = "rempli par les paroles réellement dites", token = "BELIEF.shared (déjà répété ou non)" },
+  { id = "b_truth", label_fr = "vrai ou faux en réalité (le moteur seul le sait)", holder = "belief", scale = "bool", writer = ["engine"], visibility = "engine", note = "Jamais dans un jeton : ni l'IA ni le joueur ne lisent la vérité (charte § 5). Sert à la chronique et aux mesures." },
+  { id = "b_origin_fact", label_fr = "le fait d'origine (pour une perception)", holder = "belief", scale = "id", writer = ["engine"], visibility = "engine" },
+  { id = "b_contradicted", label_fr = "démentie par ce qu'on voit (je croyais le marteau sur l'établi : il n'y est pas)", holder = "belief", scale = "bool", writer = ["engine"], dynamics = "le moteur compare une croyance de lieu ou d'état avec la perception directe, quand la chose devrait être en vue ; c'est ainsi qu'on remarque un objet disparu ou une absence", token = "BELIEF.contradicted" },
+  # ─── Le magasin de croyances ───
+  { id = "belief_capacity", label_fr = "nombre de croyances gardées", holder = "beliefs", scale = "qty", writer = ["derived"], visibility = "engine", dynamics = "de 128 à 384 selon la mémoire (memory_capacity) ; au-delà, la moins importante et la moins confirmée s'efface" },
+  { id = "heard_unprocessed", label_fr = "ce qu'on vient d'entendre et qu'on n'a pas encore jugé", holder = "beliefs", scale = "list", writer = ["engine"], dynamics = "« Y m'a dit que P » attend que le Transformer décide d'y croire ou non ; s'efface s'il n'en fait rien", token = "HEARD (≤ 2 jetons)" },
+  { id = "place_recognized", label_fr = "où l'on croit être (lieu reconnu par ses repères)", holder = "beliefs", scale = "id", writer = ["engine"], dynamics = "reconnu par la perception quand on connaît les repères ; hors des lieux connus : dernier lieu connu et direction approximative : on peut se perdre (charte § 19)", token = "SELF.place" },
+]

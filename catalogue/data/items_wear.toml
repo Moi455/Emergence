@@ -1,0 +1,76 @@
+# items_wear.toml - types connus : vêtements, coiffes, chaussures, parures.
+# Emplacements = docs/interfaces.md § 4 : underwear, legs, torso, over, outer, feet, hands, head, neck,
+# belt, back. Une tenue (everyday, work, travel, festive, mourning, cold, court, night) est un ensemble
+# de ces pièces ; porter du noir aux funérailles n'est pas une règle, c'est une coutume connue.
+
+item_type = [
+  # Dessous
+  { id = "undershirt", label_fr = "chemise de corps", category = "clothing", parts = ["garment:linen"], mass_kg = 0.3, properties = { wearable_slot = "underwear", insulation = 1 }, good = "cloth" },
+  { id = "braies", label_fr = "braies", category = "clothing", parts = ["garment:linen", "cord:linen"], mass_kg = 0.3, properties = { wearable_slot = "underwear", insulation = 1 }, good = "cloth" },
+  # Jambes
+  { id = "hose", label_fr = "chausses", category = "clothing", parts = ["garment:wool"], mass_kg = 0.4, properties = { wearable_slot = "legs", insulation = 3 }, good = "cloth" },
+  { id = "trousers", label_fr = "pantalon", category = "clothing", parts = ["garment:wool", "cord:linen"], mass_kg = 0.6, properties = { wearable_slot = "legs", insulation = 3 }, good = "cloth" },
+  { id = "skirt", label_fr = "jupe", category = "clothing", parts = ["garment:wool"], mass_kg = 0.6, properties = { wearable_slot = "legs", insulation = 3 }, good = "cloth" },
+  { id = "leather_leggings", label_fr = "jambières de cuir", category = "clothing", parts = ["garment:leather", "strap:leather"], mass_kg = 1, properties = { wearable_slot = "legs", insulation = 3, protection = 2 } },
+  # Torse
+  { id = "shirt", label_fr = "chemise", category = "clothing", parts = ["garment:linen"], mass_kg = 0.3, properties = { wearable_slot = "torso", insulation = 1 }, good = "cloth" },
+  { id = "tunic", label_fr = "tunique", category = "clothing", parts = ["garment:cloth"], mass_kg = 0.6, properties = { wearable_slot = "torso", insulation = 3 }, made_by = ["spin_weave", "bind"], good = "cloth" },
+  { id = "wool_tunic", label_fr = "tunique de laine", category = "clothing", parts = ["garment:wool"], mass_kg = 0.8, properties = { wearable_slot = "torso", insulation = 5 }, good = "cloth" },
+  { id = "dress", label_fr = "robe", category = "clothing", parts = ["garment:wool"], mass_kg = 1, properties = { wearable_slot = "torso", insulation = 4 }, good = "cloth" },
+  { id = "linen_dress", label_fr = "robe de lin (été)", category = "clothing", parts = ["garment:linen"], mass_kg = 0.6, properties = { wearable_slot = "torso", insulation = 2 }, good = "cloth" },
+  { id = "festive_gown", label_fr = "robe de fête teinte et brodée", category = "clothing", parts = ["garment:wool", "ornament:dye"], mass_kg = 1.2, properties = { wearable_slot = "torso", insulation = 4 }, good = "cloth" },
+  { id = "silk_gown", label_fr = "robe de soie (très rare)", category = "clothing", parts = ["garment:silk"], mass_kg = 0.5, properties = { wearable_slot = "torso", insulation = 2 }, good = "cloth" },
+  { id = "mourning_robe", label_fr = "robe de deuil (sombre)", category = "clothing", parts = ["garment:wool", "ornament:dye"], mass_kg = 1, properties = { wearable_slot = "torso", insulation = 4 }, good = "cloth" },
+  { id = "night_shirt", label_fr = "chemise de nuit", category = "clothing", parts = ["garment:linen"], mass_kg = 0.3, properties = { wearable_slot = "torso", insulation = 1 }, good = "cloth" },
+  { id = "court_robe", label_fr = "robe d'apparat (chef, juge, prêtre)", category = "clothing", parts = ["garment:wool", "ornament:dye", "ornament:silver"], mass_kg = 1.8, properties = { wearable_slot = "torso", insulation = 4 }, good = "cloth" },
+  { id = "priest_vestment", label_fr = "vêtement de prêtre", category = "clothing", parts = ["garment:linen", "ornament:dye"], mass_kg = 1, properties = { wearable_slot = "torso", insulation = 2 }, good = "cloth" },
+  # Par-dessus
+  { id = "vest", label_fr = "gilet, surcot", category = "clothing", parts = ["garment:wool"], mass_kg = 0.5, properties = { wearable_slot = "over", insulation = 3 }, good = "cloth" },
+  { id = "apron", label_fr = "tablier", category = "clothing", parts = ["garment:linen", "cord:linen"], mass_kg = 0.3, properties = { wearable_slot = "over", insulation = 1 }, good = "cloth" },
+  { id = "leather_apron", label_fr = "tablier de cuir (forge, tannerie)", category = "clothing", parts = ["garment:leather", "strap:leather"], mass_kg = 1.5, properties = { wearable_slot = "over", protection = 3 } },
+  { id = "work_smock", label_fr = "blouse de travail", category = "clothing", parts = ["garment:linen"], mass_kg = 0.5, properties = { wearable_slot = "over", insulation = 2 }, good = "cloth" },
+  # Dessus
+  { id = "cloak", label_fr = "cape", category = "clothing", parts = ["garment:wool", "fastener:bronze"], mass_kg = 1.5, properties = { wearable_slot = "outer", insulation = 7 }, good = "cloth" },
+  { id = "hooded_cloak", label_fr = "cape à capuche (voyage)", category = "clothing", parts = ["garment:wool", "fastener:bronze"], mass_kg = 1.8, properties = { wearable_slot = "outer", insulation = 7 }, good = "cloth" },
+  { id = "fur_coat", label_fr = "manteau de fourrure", category = "clothing", parts = ["garment:fur"], mass_kg = 3, properties = { wearable_slot = "outer", insulation = 9 }, good = "cloth" },
+  { id = "oilskin_coat", label_fr = "manteau huilé de pêcheur", category = "clothing", parts = ["garment:linen", "coating:oil"], mass_kg = 1.5, properties = { wearable_slot = "outer", insulation = 4 }, good = "cloth" },
+  { id = "shepherd_mantle", label_fr = "houppelande de berger", category = "clothing", parts = ["garment:wool"], mass_kg = 2.5, properties = { wearable_slot = "outer", insulation = 8 }, good = "cloth" },
+  # Pieds
+  { id = "boots", label_fr = "bottes", category = "footwear", parts = ["garment:leather", "sheet_rigid:leather"], mass_kg = 1, properties = { wearable_slot = "feet", insulation = 4 }, made_by = ["tan", "cut", "bind"], good = "cloth" },
+  { id = "shoes", label_fr = "souliers", category = "footwear", parts = ["garment:leather"], mass_kg = 0.6, properties = { wearable_slot = "feet", insulation = 2 }, good = "cloth" },
+  { id = "clogs", label_fr = "sabots de bois", category = "footwear", parts = ["vessel:oak_raw"], mass_kg = 1.2, properties = { wearable_slot = "feet", insulation = 3 }, made_by = ["carve"] },
+  { id = "sandals", label_fr = "sandales (désert)", category = "footwear", parts = ["sheet_rigid:leather", "strap:leather"], mass_kg = 0.4, properties = { wearable_slot = "feet", insulation = 0 } },
+  { id = "fur_boots", label_fr = "bottes fourrées (montagne)", category = "footwear", parts = ["garment:fur", "sheet_rigid:leather"], mass_kg = 1.5, properties = { wearable_slot = "feet", insulation = 7 } },
+  # Mains
+  { id = "gloves", label_fr = "gants de cuir", category = "clothing", parts = ["garment:leather"], mass_kg = 0.2, properties = { wearable_slot = "hands", insulation = 3, protection = 1 } },
+  { id = "mittens", label_fr = "moufles de laine", category = "clothing", parts = ["garment:wool"], mass_kg = 0.15, properties = { wearable_slot = "hands", insulation = 5 } },
+  { id = "smith_gauntlets", label_fr = "gros gants de forge", category = "clothing", parts = ["garment:leather", "padding:wool"], mass_kg = 0.5, properties = { wearable_slot = "hands", protection = 3 } },
+  # Tête
+  { id = "hood", label_fr = "capuche, chaperon", category = "headwear", parts = ["garment:wool"], mass_kg = 0.3, properties = { wearable_slot = "head", insulation = 4 }, good = "cloth" },
+  { id = "wool_cap", label_fr = "bonnet de laine", category = "headwear", parts = ["garment:wool"], mass_kg = 0.1, properties = { wearable_slot = "head", insulation = 4 }, good = "cloth" },
+  { id = "straw_hat", label_fr = "chapeau de paille", category = "headwear", parts = ["basket_weave:straw"], mass_kg = 0.15, properties = { wearable_slot = "head", insulation = 0 } },
+  { id = "coif", label_fr = "coiffe de lin", category = "headwear", parts = ["garment:linen"], mass_kg = 0.05, properties = { wearable_slot = "head", insulation = 1 }, good = "cloth" },
+  { id = "veil", label_fr = "voile, fichu", category = "headwear", parts = ["sheet_flexible:linen"], mass_kg = 0.05, properties = { wearable_slot = "head", insulation = 1 }, good = "cloth" },
+  { id = "headwrap", label_fr = "chèche (désert : sable et soleil)", category = "headwear", parts = ["sheet_flexible:linen"], mass_kg = 0.2, properties = { wearable_slot = "head", insulation = 2 } },
+  { id = "flower_crown", label_fr = "couronne de fleurs (fête, noces)", category = "headwear", parts = ["ornament:leaves", "cord:vine"], mass_kg = 0.1, properties = { wearable_slot = "head" } },
+  { id = "chief_circlet", label_fr = "bandeau ou chaîne de chef (insigne d'un rôle)", category = "insignia", parts = ["ring_band:silver"], mass_kg = 0.2, properties = { wearable_slot = "head" }, note = "Un insigne ne donne aucun pouvoir : il ne fait que montrer ce que les gens croient." },
+  # Cou, ceinture, dos
+  { id = "scarf", label_fr = "foulard, écharpe", category = "clothing", parts = ["sheet_flexible:wool"], mass_kg = 0.15, properties = { wearable_slot = "neck", insulation = 3 }, good = "cloth" },
+  { id = "belt", label_fr = "ceinture", category = "clothing", parts = ["strap:leather", "fastener:iron"], mass_kg = 0.3, properties = { wearable_slot = "belt" } },
+  { id = "belt_pouch", label_fr = "aumônière (bourse de ceinture)", category = "clothing", parts = ["bag:leather", "strap:leather"], mass_kg = 0.1, properties = { wearable_slot = "belt", capacity = 0.5 } },
+  { id = "backpack", label_fr = "besace, sac à dos", category = "carry", parts = ["bag:leather", "strap:leather"], mass_kg = 1, properties = { wearable_slot = "back", capacity = 25 } },
+  { id = "back_basket", label_fr = "hotte", category = "carry", parts = ["basket_weave:wicker", "strap:leather"], mass_kg = 2, properties = { wearable_slot = "back", capacity = 40 } },
+  { id = "quiver", label_fr = "carquois", category = "carry", parts = ["bag:leather", "strap:leather"], mass_kg = 0.5, properties = { wearable_slot = "back", capacity = 3 } },
+  # Parures
+  { id = "ring", label_fr = "bague", category = "jewel", parts = ["ring_band:gold", "ornament:gem"], mass_kg = 0.01, properties = { wearable_slot = "hands" }, good = "jewel" },
+  { id = "wedding_ring", label_fr = "anneau de mariage", category = "jewel", parts = ["ring_band:silver"], mass_kg = 0.005, properties = { wearable_slot = "hands" }, good = "jewel" },
+  { id = "copper_ring", label_fr = "bague de cuivre (modeste)", category = "jewel", parts = ["ring_band:copper"], mass_kg = 0.005, properties = { wearable_slot = "hands" }, good = "jewel" },
+  { id = "necklace", label_fr = "collier", category = "jewel", parts = ["cord:gold", "ornament:gem"], mass_kg = 0.03, properties = { wearable_slot = "neck" }, good = "jewel" },
+  { id = "bead_necklace", label_fr = "collier de perles de verre ou d'os", category = "jewel", parts = ["cord:linen", "granules:glass"], mass_kg = 0.03, properties = { wearable_slot = "neck" }, good = "jewel" },
+  { id = "bracelet", label_fr = "bracelet", category = "jewel", parts = ["ring_band:silver"], mass_kg = 0.02, properties = { wearable_slot = "hands" }, good = "jewel" },
+  { id = "brooch", label_fr = "fibule, broche", category = "jewel", parts = ["fastener:bronze", "ornament:bronze"], mass_kg = 0.02, properties = { wearable_slot = "outer" }, good = "jewel" },
+  { id = "earrings", label_fr = "boucles d'oreilles", category = "jewel", parts = ["ring_band:gold"], mass_kg = 0.005, properties = { wearable_slot = "head" }, good = "jewel" },
+  { id = "pendant", label_fr = "pendentif, médaillon (peut contenir une mèche, un portrait)", category = "jewel", parts = ["box:silver", "cord:silver"], mass_kg = 0.02, properties = { wearable_slot = "neck" }, good = "jewel" },
+  { id = "raw_gem", label_fr = "pierre précieuse brute", category = "jewel", parts = ["lump:gem"], mass_kg = 0.01, made_by = ["extract"], good = "jewel" },
+  { id = "cut_gem", label_fr = "pierre taillée", category = "jewel", parts = ["ornament:gem"], mass_kg = 0.005, made_by = ["carve"], good = "jewel" },
+]

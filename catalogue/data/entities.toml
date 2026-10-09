@@ -1,0 +1,385 @@
+# entities.toml - étape 1 : ce qui existe. Types d'entités et composants.
+#
+# Axe parcouru : « qu'est-ce qui peut exister dans le monde ? »
+#   1. le physique : ce qui a une position et une matière (êtres, objets, constructions, terrain,
+#      eau, feu, phénomènes) et les lieux qui les contiennent ;
+#   2. le factuel : ce qui s'est passé (faits enregistrés par le moteur, vérité objective) ;
+#   3. le social : ce qui n'existe que parce que des gens y croient (groupe, rôle, accord).
+#      Le moteur ne leur donne qu'un identifiant pour qu'on puisse en parler ; leur réalité
+#      (membres, légitimité, validité) se lit dans les croyances des agents (charte § 11).
+#
+# Peu de types, beaucoup de propriétés : un bateau, une charrette, un coffre ou une pièce de monnaie
+# sont des « item » ; ce sont leurs matières et propriétés (data/properties.toml) qui les distinguent.
+# Les variables de chaque composant sont définies aux étapes 3 à 11.
+
+# ─── Types d'entités ────────────────────────────────────────────────────────────────────────────
+[[entity]]
+id = "agent"
+label_fr = "personne (PNJ ou joueur)"
+driven_by = "transformer"
+components = ["identity", "spatial", "physical", "body", "needs", "mind_static", "mind_dynamic", "beliefs",
+              "relations", "memory", "goals", "skills", "activity", "carrier", "appearance", "lifecycle"]
+note = "Le joueur est un agent dont les décisions viennent de l'interface, pas du Transformer. Un mort reste la même entité (body.alive = faux), devient portable, et ses biens, liens et engagements restent référencés."
+
+[[entity]]
+id = "animal"
+label_fr = "animal (bétail, gibier, prédateur, chien)"
+driven_by = "engine"
+components = ["identity", "spatial", "physical", "body", "needs", "animal_behavior", "activity", "lifecycle", "appearance", "ledger"]
+note = "Comportement simple du moteur (décision de Monsieur, 9 oct.) : une loi de la nature, pas un Transformer."
+
+[[entity]]
+id = "plant"
+label_fr = "plante (arbre, culture, buisson, herbe)"
+driven_by = "engine"
+components = ["identity", "spatial", "physical", "growth", "lifecycle", "ledger"]
+
+[[entity]]
+id = "item"
+label_fr = "objet (tout ce qui se déplace sans être un être : outil, nourriture, pièce, coffre, bateau, document)"
+driven_by = "engine"
+components = ["identity", "spatial", "physical", "provenance", "container", "inscription", "access", "magic", "substance", "ledger"]
+note = "Les composants container, inscription, access, magic et substance sont facultatifs : présents seulement si l'objet en a l'usage."
+
+[[entity]]
+id = "structure"
+label_fr = "construction (mur, maison, pont, puits, porte, meuble fixe, étai)"
+driven_by = "engine"
+components = ["identity", "spatial", "physical", "provenance", "stability", "container", "access", "inscription", "ledger"]
+note = "Faite de voxels ou de modules ; sa destruction est une suite d'Operation."
+
+[[entity]]
+id = "terrain"
+label_fr = "terrain (sol, roche, gisement : une région de voxels non bâtie)"
+driven_by = "engine"
+components = ["identity", "spatial", "physical", "soil", "stability", "ledger"]
+note = "Pas une entité par voxel : une région repérable (champ, gisement, paroi) que la perception et la parole peuvent désigner."
+
+[[entity]]
+id = "water_body"
+label_fr = "masse d'eau (mer, rivière, étang, eau d'un puits, flaque)"
+driven_by = "engine"
+components = ["identity", "spatial", "substance", "flow"]
+note = "Hors des voxels (D24) : une quantité qui se prélève, s'écoule, déborde."
+
+[[entity]]
+id = "fire"
+label_fr = "feu"
+driven_by = "engine"
+components = ["identity", "spatial", "combustion"]
+
+[[entity]]
+id = "phenomenon"
+label_fr = "phénomène (zone magique, manifestation étrange, éboulement en cours)"
+driven_by = "engine"
+components = ["identity", "spatial", "magic", "phenomenon_field"]
+note = "Ce que les habitants ne comprennent pas forcément (charte § 18) : le moteur connaît sa loi, les agents seulement ses effets."
+
+[[entity]]
+id = "place"
+label_fr = "lieu (pièce, maison vue comme intérieur, place, champ, forêt, route, village, région)"
+driven_by = "engine"
+components = ["identity", "area", "container", "ledger"]
+note = "Les lieux s'emboîtent (pièce dans maison dans village dans région). Le propriétaire d'un lieu est une croyance, pas un attribut."
+
+[[entity]]
+id = "world"
+label_fr = "le monde (une seule instance : horloge, climat, graine)"
+driven_by = "engine"
+components = ["identity", "clock", "climate", "chronicle"]
+
+[[entity]]
+id = "trace"
+label_fr = "trace (empreintes, sang, cendre, branches cassées, place vide, odeur)"
+driven_by = "engine"
+components = ["identity", "spatial", "trace_record"]
+note = "Ce qu'un fait laisse derrière lui et qui s'efface avec le temps : on piste, on enquête, on déduit (charte § 5)."
+
+[[entity]]
+id = "fact"
+label_fr = "fait (ce qui s'est réellement passé : qui, quel geste, avec quelle manière, sur quoi, quand, où, résultat)"
+driven_by = "engine"
+components = ["identity", "fact_record"]
+note = "La vérité objective (charte § 29). Les souvenirs et les croyances y renvoient ; personne ne la lit directement, sauf le moteur."
+
+[[entity]]
+id = "group"
+label_fr = "groupe (famille, foyer, guilde, bande, culte, communauté d'un village, armée)"
+driven_by = "engine"
+components = ["identity", "social_referent"]
+note = "N'existe que par les croyances : qui en est membre, qui le dirige, ce qu'il fait, se lisent dans les agents. Le moteur tient le nom et la date de fondation."
+
+[[entity]]
+id = "role"
+label_fr = "rôle (chef, juge, trésorier, garde, prêtre, maître d'atelier, employeur…)"
+driven_by = "engine"
+components = ["identity", "social_referent"]
+note = "Un titre et ce qu'on croit qu'il permet. Un chef est légitime dans la mesure où des gens le croient."
+
+[[entity]]
+id = "agreement"
+label_fr = "accord (promesse, contrat, prêt, mariage, serment, emploi, alliance)"
+driven_by = "engine"
+components = ["identity", "social_referent", "agreement_terms"]
+note = "Naît d'une parole (proposition puis acceptation), pas d'une action dédiée. Le rompre est un fait que chacun interprète."
+
+# ─── Composants ─────────────────────────────────────────────────────────────────────────────────
+[[component]]
+id = "identity"
+label_fr = "identité (identifiant, type, nom propre éventuel, date de création)"
+holder = "*"
+
+[[component]]
+id = "spatial"
+engine_only = true
+label_fr = "position, orientation, vitesse, lieu englobant, contenu dans (main, sac, coffre)"
+holder = "physique"
+
+[[component]]
+id = "physical"
+engine_only = true
+label_fr = "matière : composition, masse, volume, forme, intégrité, température, humidité"
+holder = "physique"
+
+[[component]]
+id = "provenance"
+label_fr = "origine : qui l'a fait ou extrait, quand, avec quoi, qualité de façon"
+holder = "item, structure"
+note = "Fait objectif ; la propriété, elle, est une croyance."
+
+[[component]]
+id = "container"
+label_fr = "contenant : capacité, contenu, fermé ou ouvert"
+holder = "item, structure, place"
+
+[[component]]
+id = "access"
+label_fr = "accès : ouvert, fermé, verrouillé, clé ou secret qui ouvre"
+holder = "item, structure"
+
+[[component]]
+id = "inscription"
+label_fr = "inscription : une expression de la langue intérieure écrite ou gravée, auteur caché ou non"
+holder = "item, structure"
+note = "Un billet, une lettre, un registre, une enseigne. Lire = percevoir l'expression."
+
+[[component]]
+id = "magic"
+label_fr = "magie : puissance, charge, accord avec un porteur, stabilité"
+holder = "item, phenomenon"
+note = "Baguettes et outils magiques (charte § 17) ; zones étranges (§ 18)."
+
+[[component]]
+id = "substance"
+label_fr = "substance en quantité : type (eau, vin, farine, sel…), volume, pureté"
+holder = "item, water_body"
+note = "Un seau d'eau est un objet contenant une substance ; le niveau du puits baisse quand on y puise."
+
+[[component]]
+id = "flow"
+label_fr = "écoulement : niveau, débit, crue, potabilité"
+holder = "water_body"
+
+[[component]]
+id = "combustion"
+label_fr = "combustion : étendue, chaleur, combustible restant, propagation"
+holder = "fire"
+
+[[component]]
+id = "stability"
+label_fr = "stabilité : charge, appuis, marge avant effondrement"
+holder = "structure, terrain"
+
+[[component]]
+id = "soil"
+label_fr = "sol : fertilité, état (nu, labouré, semé), humidité, gisement"
+holder = "terrain"
+
+[[component]]
+id = "growth"
+label_fr = "croissance : espèce, stade, fruits, bois disponible, santé"
+holder = "plant"
+
+[[component]]
+id = "phenomenon_field"
+label_fr = "champ d'un phénomène : étendue, intensité, effets sur ce qui entre"
+holder = "phenomenon"
+
+[[component]]
+id = "area"
+label_fr = "étendue d'un lieu : limites, intérieur ou dehors, lieu parent, lumière, bruit ambiant"
+holder = "place"
+
+[[component]]
+id = "clock"
+label_fr = "horloge : temps de jeu, jour, saison, année ; horloge de vie (charte § 25)"
+holder = "world"
+
+[[component]]
+id = "climate"
+label_fr = "climat et météo : température, vent, nuages, précipitations par région"
+holder = "world"
+
+[[component]]
+id = "fact_record"
+label_fr = "fait : acteur, geste, paramètres de manière, cibles, instrument, lieu, instant, résultats objectifs, témoins possibles"
+holder = "fact"
+
+[[component]]
+id = "social_referent"
+label_fr = "référent social : nom, catégorie, fondateur, date ; le reste est dans les croyances"
+holder = "group, role, agreement"
+
+[[component]]
+id = "agreement_terms"
+label_fr = "termes : parties, ce qui est dû par qui (expression), échéance, témoins ; statut objectif (en cours, échu, rempli, rompu)"
+holder = "agreement"
+
+[[component]]
+id = "body"
+engine_only = true
+label_fr = "corps : anatomie par zones, blessures, douleur, conscience, vie"
+holder = "agent, animal"
+
+[[component]]
+id = "needs"
+engine_only = true
+label_fr = "besoins du corps : faim, soif, fatigue, froid, maladie"
+holder = "agent, animal"
+
+[[component]]
+id = "lifecycle"
+engine_only = true
+label_fr = "cycle de vie : âge sur l'horloge de vie, stade, fertilité, grossesse"
+holder = "agent, animal, plant"
+
+[[component]]
+id = "appearance"
+engine_only = true
+label_fr = "apparence : ce que les autres voient (tenue, propreté, blessures visibles, expression du visage, posture)"
+holder = "agent, animal"
+note = "La seule porte vers l'intérieur d'autrui : on voit un visage en colère, pas la variable colère (charte § 5)."
+
+[[component]]
+id = "carrier"
+engine_only = true
+label_fr = "porteur : mains, dos, ceinture, vêtements portés, charge"
+holder = "agent"
+
+[[component]]
+id = "activity"
+label_fr = "activité : geste en cours, séquence, progression, condition d'arrêt"
+holder = "agent, animal"
+
+[[component]]
+id = "mind_static"
+label_fr = "esprit stable : traits, valeurs, tempérament"
+holder = "agent"
+
+[[component]]
+id = "mind_dynamic"
+label_fr = "esprit mouvant : émotions, humeur, pulsions, stress"
+holder = "agent"
+
+[[component]]
+id = "beliefs"
+label_fr = "croyances : propositions tenues pour vraies, avec certitude et source ; normes ; théorie de l'esprit"
+holder = "agent"
+
+[[component]]
+id = "relations"
+label_fr = "attitudes envers chaque personne connue"
+holder = "agent"
+
+[[component]]
+id = "memory"
+label_fr = "mémoire épisodique : faits vécus avec leur appréciation"
+holder = "agent"
+
+[[component]]
+id = "goals"
+label_fr = "objectifs et intentions : propositions désirées, priorités"
+holder = "agent"
+
+[[component]]
+id = "skills"
+label_fr = "savoir-faire : maîtrise par technique, savoir comment faire"
+holder = "agent"
+
+[[component]]
+id = "animal_behavior"
+label_fr = "comportement animal : peur, agressivité, faim, attachement à un humain, troupeau"
+holder = "animal"
+
+[[component]]
+id = "ledger"
+label_fr = "registre : qui a tenu ou occupé la chose, comment elle est passée de main en main"
+holder = "item, structure, terrain, place, animal, plant"
+engine_only = true
+
+[[component]]
+id = "chronicle"
+label_fr = "chronique : les échanges et les faits du monde (pour le moteur, la chronique, les mesures)"
+holder = "world"
+engine_only = true
+
+[[component]]
+id = "trace_record"
+label_fr = "trace : sorte, fraîcheur, fait d'origine"
+holder = "trace"
+engine_only = true
+
+# ─── Enregistrements (sous-structures d'un composant) ───────────────────────────────────────────
+# max_count = combien la personne en GARDE (stockage, oubli par saillance) ; l'IA n'en voit que
+# quelques-uns par décision, choisis par pertinence (voir catalogue/README.md, budget).
+[[component]]
+id = "belief"
+label_fr = "une croyance : une proposition tenue pour vraie, avec sa certitude, sa source, son poids"
+holder = "agent"
+part_of = "beliefs"
+max_count = 384
+
+[[component]]
+id = "relation"
+label_fr = "une relation : attitudes envers une personne, un animal, un groupe ou un rôle"
+holder = "agent"
+part_of = "relations"
+max_count = 96
+note = "La cible peut être un groupe ou un rôle : on peut aimer son village et détester son chef (charte § 11)."
+
+[[component]]
+id = "episode"
+label_fr = "un souvenir : un fait vécu, vu ou appris, et ce qu'on en a pensé"
+holder = "agent"
+part_of = "memory"
+max_count = 128
+
+[[component]]
+id = "goal"
+label_fr = "un objectif : une proposition qu'on veut rendre vraie, garder vraie ou éviter"
+holder = "agent"
+part_of = "goals"
+max_count = 8
+
+[[component]]
+id = "intention"
+label_fr = "l'intention en cours : la suite de gestes choisie pour un objectif"
+holder = "agent"
+part_of = "goals"
+max_count = 1
+
+[[component]]
+id = "request"
+label_fr = "une demande reçue et pas encore traitée (qui, quoi, depuis quand)"
+holder = "agent"
+part_of = "goals"
+max_count = 8
+
+[[component]]
+id = "skill"
+label_fr = "une maîtrise : une technique et son niveau (la vraie compétence, tenue par le moteur)"
+holder = "agent"
+part_of = "skills"
+max_count = 26
+engine_only = true
+note = "Distincte de la croyance knows_how (ce qu'on croit savoir, de soi ou d'un autre)."

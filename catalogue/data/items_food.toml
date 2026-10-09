@@ -1,0 +1,68 @@
+# items_food.toml - types connus : nourriture et boisson.
+# Un type connu est un savoir commun, jamais une limite (voir forms.toml). Les espèces exactes
+# (pommier, blé, chèvre…) viendront avec le monde vivant (étape 11) ; ici, ce qu'on mange et boit.
+
+item_type = [
+  # Céréales et pains
+  { id = "wheat_sack", label_fr = "sac de blé", category = "grain", parts = ["granules:grain", "bag:cloth"], mass_kg = 25, good = "food" },
+  { id = "barley_sack", label_fr = "sac d'orge (bière, bouillie)", category = "grain", parts = ["granules:grain", "bag:cloth"], mass_kg = 25, good = "food" },
+  { id = "oats_sack", label_fr = "sac d'avoine", category = "grain", parts = ["granules:grain", "bag:cloth"], mass_kg = 25, good = "food" },
+  { id = "rye_sack", label_fr = "sac de seigle", category = "grain", parts = ["granules:grain", "bag:cloth"], mass_kg = 25, good = "food" },
+  { id = "flour_sack", label_fr = "sac de farine", category = "grain", parts = ["powder:flour", "bag:cloth"], mass_kg = 25, made_by = ["crush"], good = "food" },
+  { id = "bread_loaf", label_fr = "miche de pain", category = "bread", parts = ["food_body:bread"], mass_kg = 0.5, properties = { nutrition = 7 }, made_by = ["mix", "cook"], good = "food" },
+  { id = "flatbread", label_fr = "galette", category = "bread", parts = ["food_body:bread"], mass_kg = 0.2, properties = { nutrition = 5 }, made_by = ["mix", "cook"], good = "food" },
+  { id = "black_bread", label_fr = "pain noir de seigle (pain du pauvre)", category = "bread", parts = ["food_body:bread"], mass_kg = 0.6, properties = { nutrition = 6 }, made_by = ["mix", "cook"], good = "food" },
+  { id = "honey_cake", label_fr = "gâteau au miel (fêtes)", category = "bread", parts = ["food_body:bread", "food_body:honey", "food_body:egg"], mass_kg = 0.4, properties = { nutrition = 7 }, made_by = ["mix", "cook"], good = "food" },
+  { id = "pie", label_fr = "tourte (viande ou fruits)", category = "dish", parts = ["food_body:bread", "food_body:flesh"], mass_kg = 0.8, properties = { nutrition = 8 }, made_by = ["mix", "cook"], good = "food" },
+  { id = "porridge", label_fr = "bouillie de céréales", category = "dish", parts = ["food_body:grain", "liquid:water", "vessel:ceramic"], mass_kg = 0.5, properties = { nutrition = 5 }, made_by = ["mix", "cook"], good = "food" },
+  # Plats
+  { id = "stew", label_fr = "ragoût", category = "dish", parts = ["food_body:flesh", "food_body:vegetable", "liquid:water"], mass_kg = 0.6, properties = { nutrition = 8 }, made_by = ["cut", "cook"], good = "food" },
+  { id = "soup", label_fr = "soupe, potage", category = "dish", parts = ["food_body:vegetable", "liquid:water"], mass_kg = 0.5, properties = { nutrition = 5, hydration = 3 }, made_by = ["cut", "cook"], good = "food" },
+  { id = "roast_meat", label_fr = "viande rôtie", category = "dish", parts = ["food_body:flesh"], mass_kg = 0.5, properties = { nutrition = 8 }, made_by = ["cook"], good = "food" },
+  { id = "fish_grilled", label_fr = "poisson grillé", category = "dish", parts = ["food_body:flesh"], mass_kg = 0.4, properties = { nutrition = 7 }, made_by = ["cook"], good = "food" },
+  # Viandes et poissons
+  { id = "raw_meat", label_fr = "viande crue", category = "meat", parts = ["food_body:flesh"], mass_kg = 1.0, properties = { nutrition = 5 }, made_by = ["cut"], good = "food" },
+  { id = "raw_fish", label_fr = "poisson frais", category = "meat", parts = ["food_body:flesh"], mass_kg = 1.0, properties = { nutrition = 5 }, good = "food" },
+  { id = "shellfish", label_fr = "coquillages, crustacés", category = "meat", parts = ["food_body:flesh"], mass_kg = 0.5, properties = { nutrition = 3 }, good = "food" },
+  { id = "salted_fish", label_fr = "poisson salé", category = "meat", parts = ["food_body:flesh", "powder:salt"], mass_kg = 0.8, properties = { nutrition = 5 }, made_by = ["dry_preserve"], good = "food" },
+  { id = "smoked_fish", label_fr = "poisson fumé", category = "meat", parts = ["food_body:flesh"], mass_kg = 0.7, properties = { nutrition = 5 }, made_by = ["dry_preserve"], good = "food" },
+  { id = "dried_meat", label_fr = "viande séchée", category = "meat", parts = ["food_body:flesh"], mass_kg = 0.4, properties = { nutrition = 6 }, made_by = ["dry_preserve"], good = "food" },
+  { id = "sausage", label_fr = "saucisse, boudin", category = "meat", parts = ["food_body:flesh", "food_body:tallow"], mass_kg = 0.3, properties = { nutrition = 6 }, made_by = ["cut", "mix", "dry_preserve"], good = "food" },
+  { id = "ham", label_fr = "jambon", category = "meat", parts = ["food_body:flesh", "powder:salt"], mass_kg = 4, properties = { nutrition = 7 }, made_by = ["dry_preserve"], good = "food" },
+  { id = "egg_item", label_fr = "œuf", category = "animal_product", parts = ["food_body:egg"], mass_kg = 0.06, properties = { nutrition = 4 }, good = "food" },
+  # Laitages, graisses, douceurs
+  { id = "milk_jug", label_fr = "cruche de lait", category = "drink", parts = ["liquid:milk", "vessel:ceramic", "spout:ceramic"], mass_kg = 3, properties = { nutrition = 3, hydration = 5 }, good = "food" },
+  { id = "cheese_wheel", label_fr = "meule de fromage", category = "animal_product", parts = ["food_body:cheese"], mass_kg = 4, properties = { nutrition = 7 }, made_by = ["ferment"], good = "food" },
+  { id = "butter_pat", label_fr = "motte de beurre", category = "animal_product", parts = ["food_body:butter"], mass_kg = 0.5, properties = { nutrition = 6 }, good = "food" },
+  { id = "honey_pot", label_fr = "pot de miel", category = "animal_product", parts = ["liquid:honey", "vessel:ceramic", "lid:ceramic"], mass_kg = 1.0, properties = { nutrition = 6 }, good = "food" },
+  { id = "oil_jar", label_fr = "jarre d'huile", category = "household", parts = ["liquid:oil", "vessel:ceramic", "lid:ceramic"], mass_kg = 3 },
+  { id = "salt_bag", label_fr = "sac de sel", category = "preserve", parts = ["powder:salt", "bag:cloth"], mass_kg = 5, good = "salt" },
+  # Fruits, légumes, cueillette
+  { id = "apples", label_fr = "pommes", category = "produce", parts = ["food_body:vegetable"], mass_kg = 1.0, properties = { nutrition = 3 }, good = "food" },
+  { id = "pears", label_fr = "poires", category = "produce", parts = ["food_body:vegetable"], mass_kg = 1.0, properties = { nutrition = 3 }, good = "food" },
+  { id = "berries", label_fr = "baies (certaines sont toxiques)", category = "produce", parts = ["food_body:vegetable"], mass_kg = 0.3, properties = { nutrition = 2 }, good = "food" },
+  { id = "grapes", label_fr = "raisin", category = "produce", parts = ["food_body:vegetable"], mass_kg = 0.5, properties = { nutrition = 3 }, good = "food" },
+  { id = "nuts", label_fr = "noix, noisettes, châtaignes", category = "produce", parts = ["food_body:vegetable"], mass_kg = 0.5, properties = { nutrition = 5 }, good = "food" },
+  { id = "cabbage", label_fr = "chou", category = "produce", parts = ["food_body:vegetable"], mass_kg = 1.5, properties = { nutrition = 2 }, good = "food" },
+  { id = "turnips", label_fr = "navets, raves", category = "produce", parts = ["food_body:vegetable"], mass_kg = 1.0, properties = { nutrition = 3 }, good = "food" },
+  { id = "onions", label_fr = "oignons, poireaux, ail", category = "produce", parts = ["food_body:vegetable"], mass_kg = 0.5, properties = { nutrition = 2 }, good = "food" },
+  { id = "beans", label_fr = "pois, fèves, lentilles", category = "produce", parts = ["granules:vegetable", "bag:cloth"], mass_kg = 2, properties = { nutrition = 6 }, good = "food" },
+  { id = "roots", label_fr = "carottes, panais, racines", category = "produce", parts = ["food_body:vegetable"], mass_kg = 1.0, properties = { nutrition = 3 }, good = "food" },
+  { id = "mushrooms", label_fr = "champignons (certains mortels)", category = "produce", parts = ["food_body:vegetable"], mass_kg = 0.3, properties = { nutrition = 2 }, good = "food" },
+  { id = "herbs_bundle", label_fr = "bouquet d'herbes aromatiques ou médicinales", category = "produce", parts = ["fiber_bundle:herb"], mass_kg = 0.1, good = "medicine" },
+  { id = "seed_bag", label_fr = "sac de semences", category = "seed", parts = ["seed:grain", "bag:cloth"], mass_kg = 5, properties = { seed_of = "crop" }, good = "food" },
+  # Boissons
+  { id = "water_jug", label_fr = "cruche d'eau", category = "drink", parts = ["liquid:water", "vessel:ceramic", "spout:ceramic"], mass_kg = 4, properties = { hydration = 7 }, good = "water" },
+  { id = "waterskin", label_fr = "outre d'eau", category = "drink", parts = ["liquid:water", "bag:leather", "lid:wood_trim"], mass_kg = 2, properties = { hydration = 7 }, good = "water" },
+  { id = "ale_mug", label_fr = "chope de bière", category = "drink", parts = ["liquid:ale", "vessel:ceramic", "grip:ceramic"], mass_kg = 0.8, properties = { hydration = 4, potency = ["ivresse:3"] }, good = "ale" },
+  { id = "wine_bottle", label_fr = "bouteille de vin", category = "drink", parts = ["liquid:ale", "vessel:glass", "lid:bark"], mass_kg = 1.2, properties = { hydration = 3, potency = ["ivresse:5"] }, made_by = ["ferment"], good = "ale" },
+  { id = "mead_jug", label_fr = "cruche d'hydromel", category = "drink", parts = ["liquid:ale", "vessel:ceramic"], mass_kg = 2, properties = { potency = ["ivresse:5"] }, made_by = ["ferment"], good = "ale" },
+  { id = "cider_jug", label_fr = "cruche de cidre", category = "drink", parts = ["liquid:ale", "vessel:ceramic"], mass_kg = 2, properties = { hydration = 4, potency = ["ivresse:2"] }, made_by = ["ferment"], good = "ale" },
+  { id = "spirit_flask", label_fr = "flasque d'eau-de-vie", category = "drink", parts = ["liquid:ale", "vessel:glass", "lid:bark"], mass_kg = 0.4, properties = { potency = ["ivresse:8"] }, good = "ale" },
+  { id = "ale_barrel", label_fr = "tonneau de bière", category = "drink", parts = ["liquid:ale", "vessel:oak_planks", "ring_band:iron", "lid:oak_planks"], mass_kg = 160, properties = { capacity = 150 }, made_by = ["ferment"], good = "ale" },
+  # Remèdes et poisons
+  { id = "herbal_remedy", label_fr = "remède d'herbes", category = "medicine", parts = ["preparation:herb", "vessel:ceramic"], mass_kg = 0.3, properties = { potency = ["soin:5"] }, made_by = ["crush", "mix"], good = "medicine" },
+  { id = "salve", label_fr = "onguent, baume", category = "medicine", parts = ["preparation:herb", "preparation:tallow", "vessel:ceramic"], mass_kg = 0.2, properties = { potency = ["soin:4"] }, made_by = ["crush", "mix", "heat"], good = "medicine" },
+  { id = "sleeping_draught", label_fr = "potion qui fait dormir", category = "medicine", parts = ["preparation:herb", "liquid:water", "vessel:glass"], mass_kg = 0.3, properties = { potency = ["sommeil:6"] }, good = "medicine" },
+  { id = "poison_vial", label_fr = "fiole de poison (herbes ou champignons)", category = "medicine", parts = ["preparation:herb", "vessel:glass", "lid:bark"], mass_kg = 0.1, properties = { toxicity = 8 }, note = "Un objet comme un autre : empoisonner n'est pas une action, c'est verser une substance toxique dans ce qu'un autre boira." },
+]

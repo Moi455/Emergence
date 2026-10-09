@@ -38,10 +38,13 @@ Les images de `docs/style/` (`monde_type.png`, `maison_type.png`, `pnj_type.png`
 
 ## Sécurité et coûts
 
-- Aucun secret dans le dépôt. La clé Gemini se lit dans `GEMINI_API_KEY`, jamais dans un fichier, un log ou un commit.
+- Aucun secret dans le dépôt. La clé Gemini se lit dans `GEMINI_API_KEY` ; Monsieur a autorisé (9 oct.) qu'elle soit gardée **hors du dépôt** dans `~/.config/emergence/API_Keys` (droits 600), d'où les scripts la chargent. Jamais dans le dépôt, un log, une sortie affichée ou un commit ; ne jamais afficher ce fichier.
+- Monsieur a autorisé (9 oct.) l'usage de son quota gratuit Gemini pour produire les données d'entraînement (sortie JSON, changer de modèle quand un quota est épuisé). Tout autre appel payant demande toujours son accord.
 - **Aucun appel payant** (Gemini, autre API, Meshy ou autre service) sans l'accord explicite de Monsieur pour cet appel. `teacher_run.py pilot|run` est concerné.
 
 ## Économie de tokens
+
+**Focus au 9 oct. 2026 : moteur social, puis entraînement du Transformer.** Le monde, le rendu, les personnages 3D, les documents dépassés et le professeur Gemini sont mis de côté : la liste commentée, avec pour chaque bloc la condition pour le réintégrer, est dans `.claudeignore` (recopiée dans `.claude/settings.json`). GPU réel mesuré : **Quadro RTX 3000 6 Go (Turing)** — pas de bfloat16 natif, entraîner en float16.
 
 Monsieur trouve la consommation trop élevée. `.claudeignore` et `.claude/settings.json` (règles `permissions.deny`) écartent les données, binaires, modèles 3D, captures et builds. Ne contourne pas ces règles ; lis un fichier par morceaux quand il est long, et ne relis pas ce que tu viens d'écrire.
 
@@ -78,3 +81,15 @@ archive/          anciennes versions, en lecture seule
 - Les modules Python de `ai/npc_pipeline` sont des **oracles** : un portage C++ doit reproduire leurs sorties.
 - Toute décision va dans `docs/01_decisions.md` avec sa date ; quand un choix manque, prends un défaut raisonnable, dis lequel, et ajoute la question dans la section « Ouvert ».
 - Monsieur veut des solutions, pas des listes de blocages.
+
+## Règles de travail
+
+Vous avez l'obligation de séquencer au maximum vos taches, pour les faire mieux. Codez orienté objet, c'est très important. Planifiez le comment, par quoi vous commencez, décomposez les problèmes, pas en surface, mais en profondeur. Pas pour faire joli, mais parce que mécaniquement c'est désirable. Par exemple, pour créer le monde, vous ne lancez pas la création du monde comme une seule tache. Non, vous réflechissez à l'architecture, puis codez le relief, puis vous codez les biomes, mais pas en donnant la tache "coder les biomes" mais en codant des arbres paramétriques, PUIS des buissons paramétriques avec graine, PUIS des ruisseaux, PUIS etc. Séquencez pour vous concentrer et faire le meilleur travail possible. Assemblez ensuite. Le code n'en sera que plus solide, éditable, et surtout, réflechi et bien pensé.
+
+Utilisez des outils, cherchez ce qui existe en opensource total, autorisé commercial, plutôt que de tout recoder, utilisez des MPC. Réclamez moi des accès MCP si vous en voulez. Vous pouvez installer tout ce dont vous avez besoin, vous avez Blender installé. 
+
+Utilisez des venv ou dockers quand c'est utile, pour tester la réelle stabilité du jeu, et pour ne pas encombrer le pc.
+
+**Relecteur systématique (Monsieur, 9 oct.) : après chaque travail, TOUJOURS lancer un sous-agent relecteur adverse sur ce qui vient d'être fait, puis corriger ce qu'il trouve avant de présenter le résultat.**
+
+Vous lancez des sous-agents si besoin, mais ajustez toujours leur puissance. Pas besoin d'opus pour installer un MCP dont vous avez besoin, mais pour gérer l'architecture, ou ce qui demande du raisonnement spacial, n'hésitez pas à prendre opus 5.5 en mode extra.

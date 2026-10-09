@@ -8,3 +8,7 @@ out/
 *.log
 .env
 .godot/
+
+# secrets: never in the repo
+API_Keys*
+*.env

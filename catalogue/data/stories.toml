@@ -1,0 +1,754 @@
+# stories.toml - SONDES d'expressivité, pas la source du catalogue.
+#
+# Le catalogue vient des premiers principes (gestes et mots simples dont les combinaisons émergent).
+# Chaque histoire pose une seule question : « le catalogue permet-il d'exprimer ceci ? ».
+# status : todo | expressible | gap. Un manque se comble par une primitive GÉNÉRALE, jamais par une
+# entrée propre à l'histoire. Une histoire ne justifie aucune entrée et ne contraint aucun PNJ.
+# Règle dure (D10) : aucune histoire romantique ou sexuelle impliquant un enfant ou un adolescent.
+
+# ─── Violence physique : un seul geste, des manières différentes (Monsieur, 9 oct.) ────────────────
+[[story]]
+id = "slap_after_insult"
+charter = ["§6", "§8"]
+text_fr = "Après une remarque humiliante, une femme gifle un homme devant la taverne, puis s'en va."
+
+[[story]]
+id = "punch_in_brawl"
+charter = ["§8", "§27"]
+text_fr = "Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l'autre tombe, la bagarre s'arrête quand l'aubergiste les sépare."
+
+[[story]]
+id = "beating_near_death"
+charter = ["§6", "§25"]
+text_fr = "Un homme rancunier roue de coups son rival jusqu'à ce qu'il ne bouge plus, puis s'arrête et fuit ; le rival survit, blessé pour des semaines."
+
+[[story]]
+id = "killed_by_blows"
+charter = ["§25"]
+text_fr = "Une rixe dégénère : les coups continuent après la perte de connaissance et la victime meurt. Personne n'avait décidé de « tuer »."
+
+[[story]]
+id = "self_defense_kill"
+charter = ["§5", "§25"]
+text_fr = "Attaqué au couteau sur un chemin, un bûcheron frappe avec sa hache et tue son agresseur ; au village, certains parlent de légitime défense, d'autres de meurtre."
+
+[[story]]
+id = "knife_interrupts_drink"
+charter = ["§8"]
+text_fr = "Un PNJ boit tranquillement depuis deux minutes quand un homme entre avec un couteau ; il pose sa chope, se lève et recule vers la porte."
+
+[[story]]
+id = "restrain_drunk"
+charter = ["§8", "§12"]
+text_fr = "Un ami retient par les bras un homme ivre qui veut frapper, et lui parle pour le calmer."
+
+[[story]]
+id = "shove_in_queue"
+charter = ["§6"]
+text_fr = "Au puits, une femme impatiente bouscule un vieillard qui renverse son seau."
+
+[[story]]
+id = "throw_stone"
+charter = ["§16"]
+text_fr = "Un gamin lance une pierre sur la fenêtre de celui qui a battu son chien ; la vitre se brise."
+
+[[story]]
+id = "wolf_attack_rescue"
+charter = ["§19", "§12"]
+text_fr = "Un loup attaque un berger à la lisière ; son frère accourt avec un bâton, frappe la bête, qui s'enfuit."
+
+# ─── Parole : aucun verbe social dédié, tout est contenu composé ─────────────────────────────────
+[[story]]
+id = "blackmail_affair"
+charter = ["§5", "§10"]
+text_fr = "Un homme a vu la femme du forgeron embrasser un autre ; il lui dit qu'il se taira si elle lui donne de l'argent chaque mois."
+
+[[story]]
+id = "promise_and_break"
+charter = ["§9", "§12"]
+text_fr = "Un charpentier promet d'aider son voisin à refaire son toit au printemps, puis ne vient pas ; le voisin s'en souvient longtemps."
+
+[[story]]
+id = "lie_about_whereabouts"
+charter = ["§5"]
+text_fr = "Interrogé sur sa nuit, un homme affirme qu'il dormait chez lui alors qu'il était à la mine ; celui qui l'interroge le croit."
+
+[[story]]
+id = "false_rumor_spreads"
+charter = ["§5", "§10"]
+text_fr = "Une rumeur fausse (le meunier coupe sa farine avec du sable) passe de bouche en bouche et ses ventes chutent, alors que personne ne l'a vu faire."
+
+[[story]]
+id = "gossip_true_secret"
+charter = ["§5"]
+text_fr = "Une servante raconte à son amie, sous le sceau du secret, que la fille du chef est enceinte ; deux jours plus tard tout le marché le sait."
+
+[[story]]
+id = "invite_walk_refused"
+charter = ["§15"]
+text_fr = "« Salut Georgette, ça te dirait de venir te promener en forêt ? » Georgette, méfiante envers lui depuis un mensonge, refuse poliment."
+
+[[story]]
+id = "invite_walk_accepted_later"
+charter = ["§15", "§12"]
+text_fr = "Georgette, occupée à pétrir, répond qu'elle viendra après avoir fini sa fournée, et vient vraiment."
+
+[[story]]
+id = "threat_conditional"
+charter = ["§10"]
+text_fr = "Un créancier dit à un débiteur que s'il ne rembourse pas avant la fête, il brûlera sa grange."
+
+[[story]]
+id = "bribe_guard"
+charter = ["§10", "§24"]
+text_fr = "Un contrebandier propose à un garde trois pièces pour qu'il regarde ailleurs pendant la nuit."
+
+[[story]]
+id = "apology_accepted"
+charter = ["§12"]
+text_fr = "Après une dispute, un frère va voir sa sœur, reconnaît qu'il a eu tort et lui demande pardon ; elle hésite puis l'embrasse."
+
+[[story]]
+id = "negotiation_price"
+charter = ["§13"]
+text_fr = "Une marchande et un fermier marchandent le prix d'un cochon : elle offre 8, il demande 14, ils s'accordent à 11 avec un sac de sel en plus."
+
+[[story]]
+id = "seduction_courtship"
+charter = ["§6", "§12"]
+text_fr = "Deux adultes se plaisent : compliments, rires partagés, une promenade, puis un premier baiser au bord de la rivière."
+
+[[story]]
+id = "insult_without_word_insult"
+charter = ["§6"]
+text_fr = "Un homme dit à voix haute devant tous que le pain du boulanger ne nourrirait pas un rat ; le boulanger rougit de colère."
+
+[[story]]
+id = "ask_for_directions_wrong"
+charter = ["§5"]
+text_fr = "Un voyageur demande le chemin du village de la mer ; un PNJ qui se trompe sur la route l'envoie dans la mauvaise vallée."
+
+[[story]]
+id = "warn_danger"
+charter = ["§12"]
+text_fr = "Une femme crie aux enfants de s'écarter du mur qui se fissure ; ils courent, le mur s'effondre."
+
+[[story]]
+id = "call_for_help"
+charter = ["§12", "§21"]
+text_fr = "Blessé dans la mine, un homme appelle à l'aide ; ceux qui l'entendent hésitent, l'un descend."
+
+[[story]]
+id = "joke_falls_flat"
+charter = ["§27"]
+text_fr = "Un PNJ maladroit fait une plaisanterie sur la calvitie du chef pendant une assemblée ; personne ne rit, le chef s'en souvient."
+
+[[story]]
+id = "comfort_grieving"
+charter = ["§12", "§25"]
+text_fr = "Une voisine s'assoit près d'une veuve, lui prend la main et lui parle du défunt."
+
+[[story]]
+id = "teach_by_explaining"
+charter = ["§17"]
+text_fr = "Une potière explique à un apprenti comment tenir l'argile et lui montre le geste ; il réessaie, rate, recommence."
+
+[[story]]
+id = "order_refused"
+charter = ["§11"]
+text_fr = "Le chef ordonne à un jeune de monter la garde ; le jeune, qui ne reconnaît pas son autorité, refuse devant les autres."
+
+[[story]]
+id = "written_note_anonymous"
+charter = ["§5"]
+text_fr = "Quelqu'un cloue sur la porte du temple un billet anonyme accusant le trésorier de voler ; ceux qui savent lire le racontent aux autres."
+
+[[story]]
+id = "secret_kept_loyal"
+charter = ["§5", "§12"]
+text_fr = "Interrogée par le juge, une amie refuse de dire où se cache son ami, et prétend ne rien savoir."
+
+[[story]]
+id = "flattery_manipulation"
+charter = ["§7", "§27"]
+text_fr = "Un intrigant flatte sans cesse un chef très susceptible pour obtenir une charge ; le chef la lui donne."
+
+[[story]]
+id = "misunderstood_reference"
+charter = ["§15"]
+text_fr = "Le joueur parle à un PNJ d'« Aldric du moulin » ; le PNJ ne le connaît pas et demande de qui il s'agit."
+
+# ─── Interprétations : résultats de choix, jamais des choix ──────────────────────────────────────
+[[story]]
+id = "theft_seen"
+charter = ["§5", "§10"]
+text_fr = "Un enfant affamé prend une miche sur l'étal pendant que la boulangère a le dos tourné ; une passante l'a vu, la boulangère non."
+
+[[story]]
+id = "take_back_own"
+charter = ["§5"]
+text_fr = "Un homme reprend chez son voisin la hache qu'il lui avait prêtée ; le fils du voisin, qui l'ignore, croit à un vol."
+
+[[story]]
+id = "betrayal_emerges"
+charter = ["§6", "§10"]
+text_fr = "Un homme a promis à son associé de ne jamais vendre leur secret de teinture ; ruiné, il le vend à un rival. L'associé y voit une trahison, le rival une bonne affaire."
+
+[[story]]
+id = "adultery_discovered"
+charter = ["§5", "§12"]
+text_fr = "Une femme surprend son mari avec une autre ; elle se tait des semaines, puis le quitte."
+
+[[story]]
+id = "injustice_verdict"
+charter = ["§11"]
+text_fr = "Le chef condamne un pauvre pour un vol qu'il n'a pas commis ; une partie du village y voit une injustice et sa confiance dans le chef baisse."
+
+[[story]]
+id = "generosity_noticed"
+charter = ["§21"]
+text_fr = "Pendant la disette, une famille partage ses réserves avec les voisins ; on s'en souviendra à la génération suivante."
+
+[[story]]
+id = "absence_at_funeral"
+charter = ["§20", "§21"]
+text_fr = "Tout le village assiste aux funérailles d'une ancienne respectée ; le joueur ne vient pas ; plusieurs habitants le remarquent et le jugent."
+
+[[story]]
+id = "cowardice_judged"
+charter = ["§21"]
+text_fr = "Un homme fuit au lieu d'aider pendant l'attaque des loups ; ceux qui l'ont vu le méprisent, sa femme le défend."
+
+[[story]]
+id = "heroism_judged"
+charter = ["§24"]
+text_fr = "Une inconnue sort un enfant d'une maison en feu ; elle devient quelqu'un dont on parle et qu'on écoute."
+
+[[story]]
+id = "hypocrisy_exposed"
+charter = ["§5", "§27"]
+text_fr = "Le prêtre qui prêche la fidélité est vu sortant de chez une veuve à l'aube ; les fidèles se partagent entre déni et colère."
+
+# ─── Boucle cognitive, perception, interruption ───────────────────────────────────────────────────
+[[story]]
+id = "smell_smoke_wake"
+charter = ["§8", "§16"]
+text_fr = "La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle."
+
+[[story]]
+id = "hear_scream_investigate"
+charter = ["§8"]
+text_fr = "Un cri dans la ruelle : un PNJ curieux va voir, un autre ferme ses volets."
+
+[[story]]
+id = "rain_interrupts_harvest"
+charter = ["§8"]
+text_fr = "Une averse arrive pendant la moisson ; les moissonneurs rentrent les gerbes en hâte."
+
+[[story]]
+id = "notice_missing_item"
+charter = ["§5"]
+text_fr = "Un forgeron remarque que son meilleur marteau a disparu de l'établi et soupçonne son apprenti."
+
+[[story]]
+id = "mistaken_identity_dark"
+charter = ["§5"]
+text_fr = "Dans la pénombre, un homme prend son frère pour un voleur et le frappe avant de le reconnaître."
+
+[[story]]
+id = "eavesdrop_conspiracy"
+charter = ["§5", "§11"]
+text_fr = "Caché derrière un tonneau, un garçon entend deux hommes préparer le renversement du chef."
+
+# ─── Planification longue ─────────────────────────────────────────────────────────────────────────
+[[story]]
+id = "save_for_house"
+charter = ["§9", "§13"]
+text_fr = "Un jeune couple économise trois ans pour acheter la maison d'un vieux veuf ; une mauvaise récolte les retarde, ils y arrivent."
+
+[[story]]
+id = "long_revenge"
+charter = ["§9", "§6"]
+text_fr = "Un fils dont le père a été tué attend dix ans, devient garde, et fait condamner le meurtrier."
+
+[[story]]
+id = "leave_village_dream"
+charter = ["§9", "§19"]
+text_fr = "Une fille de pêcheur rêve de voir le village de la montagne ; elle part avec une caravane malgré sa mère."
+
+[[story]]
+id = "learn_trade_late"
+charter = ["§9", "§24"]
+text_fr = "Un paysan de quarante ans décide de devenir forgeron, trouve un maître qui accepte contre du travail aux champs, et y parvient lentement."
+
+[[story]]
+id = "find_lost_brother"
+charter = ["§9"]
+text_fr = "Une femme cherche son frère parti vers les marches ; elle interroge les voyageurs pendant des années."
+
+[[story]]
+id = "goal_paused_for_crisis"
+charter = ["§9"]
+text_fr = "Un homme qui préparait sa candidature à la charge de chef s'interrompt pour soigner sa femme malade, puis reprend."
+
+[[story]]
+id = "goal_abandoned"
+charter = ["§9", "§6"]
+text_fr = "Après deux refus, un homme renonce à séduire une femme et se tourne vers son travail."
+
+[[story]]
+id = "get_rich_scheme"
+charter = ["§9", "§24"]
+text_fr = "Un meunier achète tout le grain avant l'hiver pour le revendre cher pendant la disette ; il s'enrichit et se fait haïr."
+
+# ─── Émergence collective ─────────────────────────────────────────────────────────────────────────
+[[story]]
+id = "conflict_to_migration"
+charter = ["§10"]
+text_fr = "Une querelle entre deux familles pour un champ dure des années ; la famille perdante finit par émigrer vers le village du désert."
+
+[[story]]
+id = "migration_changes_economy"
+charter = ["§10"]
+text_fr = "Trois familles de potiers s'installent au bourg ; le prix des pots chute, le potier local doit changer de métier."
+
+[[story]]
+id = "economy_to_politics"
+charter = ["§10", "§11"]
+text_fr = "Les marchands enrichis par le sel soutiennent un candidat qui baissera la taxe du marché ; il est élu."
+
+[[story]]
+id = "village_war"
+charter = ["§10"]
+text_fr = "Après des vols de bétail répétés, les hommes du village de la forêt attaquent ceux du village de la montagne ; des morts, des rancunes pour des générations."
+
+[[story]]
+id = "war_property_change"
+charter = ["§10", "§25"]
+text_fr = "Après le conflit, les terres d'une famille décimée sont prises par un voisin ; personne n'ose contester."
+
+[[story]]
+id = "famine_riot"
+charter = ["§10", "§11"]
+text_fr = "Pendant la disette, une foule affamée force le grenier du chef ; le chef s'enfuit."
+
+[[story]]
+id = "epidemic_fear_exclusion"
+charter = ["§10"]
+text_fr = "Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole."
+
+[[story]]
+id = "festival_brings_couples"
+charter = ["§10", "§13"]
+text_fr = "Pendant la fête du village, on danse, on boit ; deux couples se forment et une vieille querelle se rallume."
+
+# ─── Les institutions sont des individus ─────────────────────────────────────────────────────────
+[[story]]
+id = "love_village_hate_mayor"
+charter = ["§11"]
+text_fr = "Un vieux pêcheur aime profondément son village, mais déteste le chef et le dit à qui veut l'entendre."
+
+[[story]]
+id = "loyal_person_hostile_group"
+charter = ["§11"]
+text_fr = "Une femme est l'amie fidèle d'un homme de la bande des collines tout en méprisant la bande elle-même."
+
+[[story]]
+id = "found_guild"
+charter = ["§11", "§24"]
+text_fr = "Quatre tisserandes s'accordent pour vendre au même prix et ne former d'apprentis qu'entre elles : une guilde est née."
+
+[[story]]
+id = "criminal_band_forms"
+charter = ["§11", "§24"]
+text_fr = "Trois exilés se retrouvent dans la forêt, partagent ce qu'ils volent aux voyageurs ; l'un s'impose comme chef par la peur."
+
+[[story]]
+id = "election_campaign"
+charter = ["§11", "§24"]
+text_fr = "Avant l'élection, deux candidats vont de maison en maison, promettent, rappellent les fautes de l'autre ; le moins riche gagne."
+
+[[story]]
+id = "decree_ignored"
+charter = ["§11"]
+text_fr = "Le chef décrète un couvre-feu ; la moitié du village l'ignore, et il n'a pas assez de gardes pour le faire respecter."
+
+[[story]]
+id = "coup_against_chief"
+charter = ["§11", "§24"]
+text_fr = "Un adjoint ambitieux rallie les gardes mécontents et chasse le chef de sa maison ; la moitié du village le reconnaît."
+
+[[story]]
+id = "employer_respected_policy_despised"
+charter = ["§11"]
+text_fr = "Un ouvrier respecte son maître de forge mais méprise sa façon de traiter les apprentis, et finit par le lui dire."
+
+[[story]]
+id = "ownership_contested"
+charter = ["§11", "§13"]
+text_fr = "Deux frères revendiquent la maison de leur père mort ; chacun a ses soutiens ; l'un s'y installe de force."
+
+[[story]]
+id = "money_trust_collapses"
+charter = ["§11"]
+text_fr = "On découvre que le trésorier a fondu des pièces avec du plomb ; les marchands refusent les pièces du village et reviennent au troc."
+
+[[story]]
+id = "custom_shifts_slowly"
+charter = ["§11", "§10"]
+text_fr = "En une génération, le mariage entre villages, mal vu autrefois, devient courant après que plusieurs couples heureux l'ont montré."
+
+# ─── Relations persistantes ──────────────────────────────────────────────────────────────────────
+[[story]]
+id = "friend_accompanies_mine"
+charter = ["§12"]
+text_fr = "Le joueur demande à un ami de l'accompagner à la mine ; l'ami vient, l'aide à porter, puis rentre en disant qu'il a peur du noir."
+
+[[story]]
+id = "guard_house_absence"
+charter = ["§12"]
+text_fr = "Le joueur demande à sa voisine de surveiller sa maison pendant son voyage ; elle le fait, et chasse un rôdeur."
+
+[[story]]
+id = "entrust_object"
+charter = ["§12"]
+text_fr = "Le joueur confie un collier précieux à un ami ; à son retour, l'ami l'a vendu pour payer une dette."
+
+[[story]]
+id = "friendship_decays_distance"
+charter = ["§12"]
+text_fr = "Deux amis d'enfance vivent dans des villages différents ; sans se voir, leur amitié s'éteint doucement."
+
+[[story]]
+id = "enemies_become_friends"
+charter = ["§12", "§6"]
+text_fr = "Deux rivaux bloqués ensemble dans une galerie effondrée s'entraident pour sortir et deviennent amis."
+
+[[story]]
+id = "never_neutral_again"
+charter = ["§12"]
+text_fr = "Le joueur a aidé un vieil homme une fois ; des années plus tard, l'homme le reconnaît et lui offre l'hospitalité."
+
+# ─── La vie ordinaire ────────────────────────────────────────────────────────────────────────────
+[[story]]
+id = "ordinary_day_farmer"
+charter = ["§13"]
+text_fr = "Un fermier se lève, mange, va aux champs, bavarde avec le voisin, rentre, répare un outil, dort."
+
+[[story]]
+id = "buy_house"
+charter = ["§13", "§11"]
+text_fr = "Le joueur achète une maison : il négocie avec le propriétaire, paie, et les voisins le reconnaissent désormais comme propriétaire."
+
+[[story]]
+id = "marriage_and_children"
+charter = ["§13", "§25"]
+text_fr = "Deux adultes se marient au temple, ont un enfant l'année suivante ; les deux familles se rapprochent."
+
+[[story]]
+id = "inheritance_split"
+charter = ["§13", "§25"]
+text_fr = "À la mort d'une fermière, ses trois enfants se partagent terres et outils ; la cadette, lésée, en veut aux aînés."
+
+[[story]]
+id = "change_profession"
+charter = ["§24"]
+text_fr = "Un pêcheur dont la barque a coulé devient porteur au marché, puis marchand de poisson séché."
+
+[[story]]
+id = "hire_worker"
+charter = ["§13", "§11"]
+text_fr = "Une veuve embauche un jeune pour ses champs contre le gîte, le couvert et une pièce par semaine."
+
+[[story]]
+id = "lend_and_debt"
+charter = ["§12", "§13"]
+text_fr = "Un homme prête deux sacs de grain à son cousin ; le cousin rembourse tard et en partie ; la dette reste dans les esprits."
+
+[[story]]
+id = "neighbor_noise_feud"
+charter = ["§13", "§27"]
+text_fr = "Un voisin martèle chaque nuit ; l'autre se plaint, puis finit par boucher sa cheminée en représailles."
+
+# ─── Liberté, langage du joueur, limites ─────────────────────────────────────────────────────────
+[[story]]
+id = "impossible_request"
+charter = ["§14", "§15"]
+text_fr = "Le joueur demande à un PNJ de voler jusqu'à la lune ; le PNJ le regarde bizarrement et lui demande s'il a bu."
+
+[[story]]
+id = "player_lies_npc_believes"
+charter = ["§5"]
+text_fr = "Le joueur affirme être le neveu du chef ; le garde, qui n'a aucune raison d'en douter, le laisse entrer."
+
+[[story]]
+id = "npc_lies_to_player"
+charter = ["§5"]
+text_fr = "Un marchand assure au joueur que sa corde est neuve ; elle casse le lendemain."
+
+[[story]]
+id = "player_ignored_busy"
+charter = ["§15"]
+text_fr = "Le joueur salue un PNJ qui court chercher le guérisseur ; celui-ci ne répond pas."
+
+# ─── Monde matériel, construction, magie ─────────────────────────────────────────────────────────
+[[story]]
+id = "dig_undermines_house"
+charter = ["§16"]
+text_fr = "Un mineur creuse trop près d'une maison ; le mur se fend puis s'effondre, le propriétaire exige réparation."
+
+[[story]]
+id = "pay_artisan_build"
+charter = ["§17", "§13"]
+text_fr = "Le joueur paie une bâtisseuse pour construire une grange ; elle rassemble pierre et bois et la bâtit avec sa baguette."
+
+[[story]]
+id = "lent_wand_apprentice"
+charter = ["§17"]
+text_fr = "Une bâtisseuse prête à son apprentie une baguette faible ; après des mois de pratique, elle lui confie la sienne."
+
+[[story]]
+id = "wand_lost"
+charter = ["§17"]
+text_fr = "Un artisan perd sa baguette dans la rivière ; il ne peut plus travailler et doit en racheter une très cher."
+
+[[story]]
+id = "smash_wall_hammer"
+charter = ["§17", "§16"]
+text_fr = "Un ouvrier démolit à la masse le mur d'une maison abandonnée et récupère les pierres pour son enclos."
+
+[[story]]
+id = "fetch_water_well_dry"
+charter = ["§2", "§16"]
+text_fr = "Pendant l'été sec, chacun puise au puits ; le niveau baisse, puis le puits tarit ; on se dispute la source."
+
+[[story]]
+id = "set_fire_barn"
+charter = ["§16"]
+text_fr = "Un homme vexé met le feu à la grange de son rival ; le feu gagne la maison voisine ; on fait la chaîne avec des seaux."
+
+[[story]]
+id = "bridge_destroyed_offscreen"
+charter = ["§3", "§16"]
+text_fr = "Loin du joueur, une crue emporte le pont ; quand il arrive, le pont n'existe plus et les voyageurs passent par le gué."
+
+[[story]]
+id = "craft_tool"
+charter = ["§17", "§13"]
+text_fr = "Un forgeron transforme du minerai et du charbon en une pioche, qu'il vend à un mineur."
+
+[[story]]
+id = "farm_cycle"
+charter = ["§13"]
+text_fr = "Une paysanne laboure, sème, désherbe, récolte, et garde des graines pour l'année suivante."
+
+[[story]]
+id = "cook_meal_share"
+charter = ["§13", "§12"]
+text_fr = "Un père cuisine une soupe avec les légumes du jardin et la partage avec une voisine malade."
+
+[[story]]
+id = "chop_tree_forest_shrinks"
+charter = ["§16", "§2"]
+text_fr = "Des années de coupe éclaircissent la forêt près du village ; il faut aller de plus en plus loin pour le bois."
+
+[[story]]
+id = "hide_object"
+charter = ["§5"]
+text_fr = "Une femme cache ses économies sous une pierre du foyer ; son fils les trouve en cherchant autre chose."
+
+[[story]]
+id = "lock_door"
+charter = ["§16"]
+text_fr = "Après un vol dans le quartier, une famille pose un verrou ; le voisin s'en offusque."
+
+# ─── Fantasy mystérieuse, exploration ─────────────────────────────────────────────────────────────
+[[story]]
+id = "strange_zone_legend"
+charter = ["§18", "§19"]
+text_fr = "Une clairière où les oiseaux se taisent : ceux qui y dorment rêvent de choses étranges ; une légende naît, chacun la raconte à sa façon."
+
+[[story]]
+id = "magic_accident"
+charter = ["§18"]
+text_fr = "Une apprentie trop ambitieuse utilise une baguette puissante et fait s'écrouler son atelier ; elle est blessée."
+
+[[story]]
+id = "hermit_in_mountains"
+charter = ["§19", "§7"]
+text_fr = "Un vieil homme vit seul dans la montagne ; il connaît les plantes et refuse de parler aux gens du village, sauf aux enfants."
+
+[[story]]
+id = "lost_in_marches"
+charter = ["§19", "§3"]
+text_fr = "Un chasseur part trop loin dans la forêt profonde ; on ne le revoit jamais ; son histoire devient un avertissement."
+
+[[story]]
+id = "isolated_family_found"
+charter = ["§19"]
+text_fr = "Le joueur trouve une famille dans une ferme éloignée, qui ne sait rien des querelles du bourg et se méfie des étrangers."
+
+[[story]]
+id = "belief_in_beyond"
+charter = ["§18"]
+text_fr = "Un conteur jure qu'au-delà du désert il existe une cité d'or ; certains le croient, d'autres rient, un jeune part la chercher."
+
+# ─── Personnalités marquées, humour émergent ─────────────────────────────────────────────────────
+[[story]]
+id = "touchy_mayor_disaster"
+charter = ["§27", "§7"]
+text_fr = "Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant."
+
+[[story]]
+id = "clumsy_npc_chain"
+charter = ["§27"]
+text_fr = "Un maladroit renverse un tonneau qui roule jusqu'au marché, effraie un âne, qui piétine l'étal du chef."
+
+[[story]]
+id = "eccentric_collector"
+charter = ["§7"]
+text_fr = "Une vieille ramasse toutes les pierres bleues qu'elle trouve et en remplit sa maison ; les enfants l'adorent, les voisins s'agacent."
+
+[[story]]
+id = "shy_becomes_confident"
+charter = ["§6"]
+text_fr = "Un garçon timide, félicité pour son travail plusieurs fois, ose peu à peu parler à l'assemblée ; adulte, il est porte-parole."
+
+[[story]]
+id = "becomes_bitter"
+charter = ["§6"]
+text_fr = "Une femme trompée trois fois devient rancunière et méfiante envers tous, puis se radicalise contre le chef."
+
+[[story]]
+id = "isolation_spiral"
+charter = ["§6"]
+text_fr = "Après la mort de sa femme, un homme sort de moins en moins, boit, et ses amis cessent de venir."
+
+[[story]]
+id = "same_event_different_reactions"
+charter = ["§7"]
+text_fr = "Un ours entre au village : l'un fuit, l'autre attrape une fourche, une troisième court sauver les poules, un quatrième rit."
+
+# ─── Temps, vie, mort ────────────────────────────────────────────────────────────────────────────
+[[story]]
+id = "child_grows_up"
+charter = ["§25", "§3"]
+text_fr = "Le joueur part cinq ans ; à son retour, l'enfant à qui il apprenait à pêcher est un jeune adulte marié."
+
+[[story]]
+id = "elder_dies_naturally"
+charter = ["§25"]
+text_fr = "Une vieille tisserande meurt dans son sommeil ; ses apprentis reprennent l'atelier, sa voisine prend son chat."
+
+[[story]]
+id = "chief_death_succession"
+charter = ["§25", "§11"]
+text_fr = "Le chef meurt sans successeur désigné ; trois prétendants s'affrontent, le village est divisé tout un hiver."
+
+[[story]]
+id = "isolated_death_unnoticed"
+charter = ["§25"]
+text_fr = "Un ermite meurt seul ; personne ne le sait pendant des semaines ; sa mort ne change presque rien."
+
+[[story]]
+id = "orphan_adopted"
+charter = ["§25", "§12"]
+text_fr = "Deux enfants perdent leurs parents ; une tante en prend un, un voisin sans enfant l'autre."
+
+[[story]]
+id = "knowledge_lost_with_death"
+charter = ["§25", "§17"]
+text_fr = "Le seul verrier du village meurt sans apprenti ; plus personne ne sait faire le verre, il faut l'acheter ailleurs."
+
+[[story]]
+id = "illness_and_care"
+charter = ["§25", "§12"]
+text_fr = "Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement."
+
+[[story]]
+id = "pregnancy_birth"
+charter = ["§25"]
+text_fr = "Une femme mariée attend un enfant, ralentit son travail ; la sage-femme l'aide à accoucher."
+
+# ─── Le joueur dans le monde ─────────────────────────────────────────────────────────────────────
+[[story]]
+id = "player_inaction_noticed"
+charter = ["§20", "§21"]
+text_fr = "Le joueur voit une rixe et ne fait rien ; la victime le lui reproche ensuite."
+
+[[story]]
+id = "stranger_integration"
+charter = ["§22", "§5"]
+text_fr = "Le joueur arrive en étranger ; d'abord ignoré et méfié, il travaille aux champs, se fait des amis et devient « du village »."
+
+[[story]]
+id = "player_becomes_criminal"
+charter = ["§22", "§24"]
+text_fr = "Le joueur vole, se fait connaître des malfrats, gagne leur confiance et finit par diriger la bande."
+
+[[story]]
+id = "player_runs_for_chief"
+charter = ["§23", "§24"]
+text_fr = "Le joueur se présente comme chef ; il doit convaincre, faire des promesses et affronter les rumeurs."
+
+[[story]]
+id = "player_reputation_travels"
+charter = ["§21", "§5"]
+text_fr = "Le joueur a escroqué un marchand au bourg ; dans le village de la mer, on le regarde déjà de travers."
+
+[[story]]
+id = "start_as_existing_villager"
+charter = ["§4", "§22"]
+text_fr = "Le joueur incarne une tisserande existante : il hérite de ses relations, de ses dettes et de ses souvenirs (ce qu'elle sait, pas la vérité)."
+
+# ─── Économie et travail ─────────────────────────────────────────────────────────────────────────
+[[story]]
+id = "price_rises_shortage"
+charter = ["§10"]
+text_fr = "Le bois manque après un hiver rigoureux ; les vendeurs montent leurs prix, les pauvres brûlent leurs meubles."
+
+[[story]]
+id = "trade_caravan"
+charter = ["§10", "§19"]
+text_fr = "Une marchande organise une caravane de sel vers le village de la montagne, engage deux gardes, revient avec du minerai."
+
+[[story]]
+id = "barter_without_money"
+charter = ["§13"]
+text_fr = "Un pêcheur échange trois poissons contre une réparation de filet."
+
+[[story]]
+id = "tax_evasion"
+charter = ["§11"]
+text_fr = "Un fermier cache une partie de sa récolte pour payer moins d'impôt ; le percepteur s'en doute."
+
+[[story]]
+id = "strike_workers"
+charter = ["§11", "§10"]
+text_fr = "Les mineurs, mal payés, s'accordent pour ne plus descendre tant que le maître ne double pas leur paie."
+
+# ─── Faune, nature, phénomènes (pilotés par le moteur) ───────────────────────────────────────────
+[[story]]
+id = "livestock_care"
+charter = ["§13"]
+text_fr = "Une bergère mène ses moutons au pré, en trait une, et rentre le troupeau avant l'orage."
+
+[[story]]
+id = "hunt_deer"
+charter = ["§13", "§19"]
+text_fr = "Deux chasseurs pistent un cerf, le blessent, le suivent jusqu'au ruisseau et le ramènent au village."
+
+[[story]]
+id = "dog_loyal"
+charter = ["§12"]
+text_fr = "Le chien d'un berger mort reste des jours sur la tombe ; un enfant le nourrit et l'adopte."
+
+[[story]]
+id = "flood_village"
+charter = ["§3", "§16"]
+text_fr = "La rivière déborde, inonde les caves ; les familles montent leurs réserves à l'étage et certaines perdent tout."
+
+[[story]]
+id = "storm_cold_death"
+charter = ["§19", "§25"]
+text_fr = "Un voyageur surpris par la tempête de neige dans la montagne s'abrite dans une grotte ; sans feu, il meurt de froid."

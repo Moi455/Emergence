@@ -1,0 +1,28 @@
+# materials_more.toml - matières proposées en plus (num = -1 : à ajouter en fin de materials.csv).
+# Une ligne par matière. Champs : voir la classe Material de schema.py.
+
+material = [
+  { id = "flint", label_fr = "silex", category = "mineral", density_kg_m3 = 2600, hardness = 70, toughness = 15, cohesion = "natural", color = "5a5a58", note = "Frappé contre le fer, il fait des étincelles ; taillé, il coupe." },
+  { id = "tin", label_fr = "étain", category = "metal", density_kg_m3 = 7300, hardness = 15, toughness = 40, cohesion = "built", conductivity = 65, melting_c = 232, color = "b4b4b0" },
+  { id = "bronze", label_fr = "bronze", category = "metal", density_kg_m3 = 8800, hardness = 55, toughness = 70, cohesion = "built", conductivity = 70, melting_c = 950, color = "a8783c" },
+  { id = "wax", label_fr = "cire d'abeille", category = "organic", density_kg_m3 = 960, hardness = 3, toughness = 10, flammability = 85, cohesion = "built", melting_c = 63, color = "e8d070" },
+  { id = "tallow", label_fr = "suif", category = "organic", density_kg_m3 = 900, hardness = 2, flammability = 85, cohesion = "built", melting_c = 45, edible = 3, color = "efe6c8" },
+  { id = "horn", label_fr = "corne", category = "organic", density_kg_m3 = 1300, hardness = 25, toughness = 50, cohesion = "natural", color = "6a5a40" },
+  { id = "feather", label_fr = "plume", category = "organic", density_kg_m3 = 50, flammability = 70, cohesion = "loose", color = "f0f0ea" },
+  { id = "straw", label_fr = "paille, foin", category = "plant", density_kg_m3 = 100, hardness = 1, toughness = 5, flammability = 95, cohesion = "loose", color = "d8c070" },
+  { id = "reed", label_fr = "roseau, jonc", category = "plant", density_kg_m3 = 300, hardness = 4, toughness = 20, flammability = 80, cohesion = "natural", color = "a8a060" },
+  { id = "wicker", label_fr = "osier", category = "plant", density_kg_m3 = 500, hardness = 6, toughness = 45, flammability = 70, cohesion = "built", color = "a88a50" },
+  { id = "linen", label_fr = "lin (toile)", category = "textile", density_kg_m3 = 350, hardness = 2, toughness = 45, flammability = 85, cohesion = "built", color = "e4dcc8" },
+  { id = "silk", label_fr = "soie (rare, venue d'ailleurs)", category = "textile", density_kg_m3 = 300, hardness = 1, toughness = 55, flammability = 70, cohesion = "built", color = "e8d8e0" },
+  { id = "fur", label_fr = "fourrure", category = "textile", density_kg_m3 = 250, hardness = 1, toughness = 40, flammability = 70, cohesion = "built", color = "6a4a30" },
+  { id = "hide", label_fr = "peau brute (pourrit si on ne la tanne pas)", category = "organic", density_kg_m3 = 1000, hardness = 3, toughness = 50, cohesion = "natural", color = "8a6a50" },
+  { id = "honey", label_fr = "miel", category = "fluid", density_kg_m3 = 1400, cohesion = "fluid", edible = 6, color = "d89a20" },
+  { id = "cheese", label_fr = "fromage", category = "organic", density_kg_m3 = 1100, hardness = 4, cohesion = "built", edible = 7, color = "e8c860" },
+  { id = "butter", label_fr = "beurre", category = "organic", density_kg_m3 = 910, hardness = 1, cohesion = "built", melting_c = 35, edible = 7, color = "f4e090" },
+  { id = "egg", label_fr = "œuf", category = "organic", density_kg_m3 = 1030, hardness = 6, toughness = 2, cohesion = "natural", edible = 5, color = "efe4cc" },
+  { id = "pitch", label_fr = "poix, résine, goudron", category = "organic", density_kg_m3 = 1100, hardness = 3, flammability = 90, cohesion = "fluid", color = "2a1a10" },
+  { id = "lime_mortar", label_fr = "chaux, mortier", category = "building", density_kg_m3 = 1800, hardness = 30, toughness = 20, cohesion = "built", color = "dcd8cc" },
+  { id = "chalk", label_fr = "craie", category = "rock", density_kg_m3 = 2100, hardness = 8, toughness = 5, cohesion = "natural", color = "f2f0e8" },
+  { id = "soap", label_fr = "savon", category = "organic", density_kg_m3 = 1050, hardness = 3, cohesion = "built", color = "e0d8b8" },
+  { id = "ink", label_fr = "encre", category = "fluid", density_kg_m3 = 1050, cohesion = "fluid", color = "101018" },
+]

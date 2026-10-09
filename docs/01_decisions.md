@@ -33,6 +33,10 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | D25 | 2026-10-08 | Personnages en style voxel (maillage à facettes, cubes de 1,8 à 2,2 cm, avec des angles), pas en voxels stricts | Monsieur |
 | D26 | 2026-10-08 | Frontières : aucune limite visible, jamais d'évanouissement ni de retour au village ; la difficulté tue avant le bord. Monde physique de 50 km au total : **remplacé par D27** (20 × 20 km). Remplace le « sauvetage narratif » de P9 | Monsieur |
 | D27 | 2026-10-08 | **`CHARTE_DU_JEU.md` (racine) est la charte fonctionnelle et de design ; elle prime sur tout ce qui précède.** Elle fixe notamment : monde physique d'environ 20 × 20 km (§ 2) ; variables psychologiques de −10 à +10 (§ 6) ; traits qui évoluent progressivement (§ 6) ; le Transformer modifie état, souvenirs, perceptions, émotions, relations et objectifs puis choisit une action ou une séquence d'actions (§ 8) ; profondeur de simulation variable selon les PNJ, sans règle qui interdise un rôle (§ 24) ; vie d'un PNJ d'environ 150 h de jeu (§ 25) | Monsieur |
+| D28 | 2026-10-09 | **Trois couches jamais mélangées** : gestes physiques paramétrés par la manière (une claque, un coup de poing, un passage à tabac, des coups mortels = un seul geste) ; parole = un geste dont le contenu est une expression de la langue intérieure composée par le Transformer (faire chanter, menacer, promettre ne sont pas des actions) ; interprétations (vol, trahison, meurtre) = jugements des témoins sur des faits objectifs, jamais des options. Le catalogue vient des premiers principes ; les histoires ne sont que des sondes ou des rails légers. Tout doit rester gérable par l'IA (vue compacte et factorisée). Source unique : `catalogue/` | Monsieur |
+| D29 | 2026-10-09 | Faune et phénomènes magiques : catalogués, pilotés par des lois simples du moteur, pas par un Transformer | Monsieur |
+| D30 | 2026-10-09 | Calendrier : 1 jour = 1 h 30 réelle (jour 1 h, nuit 30 min) ; 1 an = 7 h réelles (≈ 4 jours ⅔, saison 1 h 45 ; Monsieur a d'abord dit 20 h puis corrigé : « sinon cela va être dur »). Avec une vie d'environ 150 h (charte § 25), une vie ≈ 21 années de calendrier ; le vieillissement suit une horloge de vie séparée (enfance ≈ 15 h, adolescence ≈ 6 h, adulte ≈ 105 h, vieillesse ≈ 24 h). Remplace P25 | Monsieur |
+| D31 | 2026-10-09 | Le moteur social est écrit en C++20 dans `engine/`, à côté du monde ; ses énumérations, structures et bornes du gouverneur sont générées depuis `catalogue/` (une seule source de vérité). Python reste pour les outils, les références (`sim/`, `ai/npc_pipeline`) et l'entraînement (PyTorch) | Monsieur |
 
 ## Proposé (à valider par Monsieur)
 
@@ -63,6 +67,12 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | P23 | Générateur 0.4 : couche village (5 villages, problème commun, frontières, commerce), foyer, contenu des souvenirs, garde-robe et `dress(outfit)` en fin de contrat | `ai/CONTRAT_PNJ.md` ; `docs/npc/audit/report_v04.md` |
 | P24 | Élève `small` (5,3 M paramètres) par défaut pour la RTX de Monsieur ; `tiny` (0,8 M) en repli | `ai/student/ENTRAINEMENT.md` |
 
+| P25 | (remplacée par D30) Calendrier compressé : 1 jour ≈ 18 min réelles, 1 an = 8 jours (2 par saison), âge apparent compressé (enfance ×2, adolescence ×1,33, vieillesse ×1,5) : une vie ≈ 150 h (charte § 25) | `catalogue/data/world.toml` |
+| P26 | Bornes d'écriture du Transformer : par décision (`step`), par jour de jeu (`rate`), par année vécue pour les traits (1), valeurs (0,5), tempérament (0,3) ; l'ancienne borne « 0,1 par jour » est caduque ; au plus 4 écritures par décision | `catalogue/README.md`, revue du 9 oct. |
+| P27 | Esprit stable en 31 dimensions : 18 traits HEXACO, 5 aptitudes, 2 de tempérament, 8 valeurs, attirance, goûts singuliers (attitudes envers un concept) ; les normes précises sont des croyances | `catalogue/data/mind_static.toml` |
+| P28 | Les objets sont des assemblages de parties (forme × matière) ; les 421 types sont un savoir commun, jamais une limite | `catalogue/data/forms.toml`, `items_*.toml` |
+| P29 | Les jetons ne contiennent aucune vérité : dossiers mentaux, événements remémorés, lieux reconnus, accords tels que crus | règle `no_truth_in_tokens`, `catalogue/data/hard_rules.toml` |
+
 ## Ouvert
 
 | N° | Question | Défaut en attendant |
@@ -80,4 +90,5 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | O11 | ~~Échelle de temps~~ tranché par D27 : vie d'environ 150 h de jeu, soit environ 2 h par année ; P14 (1 jour = 4 h) caduque | — |
 | O12 | ~~Traits figés ou non~~ tranché par D27 : ils évoluent progressivement | — |
 | O13 | Enseignant bon marché : quel modèle, quel budget | Gemini Flash-Lite, rien lancé sans accord |
+| O15 | ~~Durée du jour et calendrier~~ tranché par D30 | — |
 | O14 | Textures bitmap sur les voxels. Monsieur les a demandées (D20) ; l'essai du prototype village (9 oct., `prototypes/village-web/RENDU.md`) s'en passe : grain procédural, biseau des arêtes, éclairage PRT et grille de ciel, sur le modèle de Teardown (affirmation du fil, non vérifiée ici) | textures maintenues tant que Monsieur n'a pas tranché ; comparer les deux sur captures |

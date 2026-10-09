@@ -1,8 +1,28 @@
-# Fichiers que Claude n'a pas à lire (économie de tokens). Claude Code ne lit pas ce fichier
-# à ce jour : les mêmes motifs sont appliqués par .claude/settings.json (permissions.deny).
+# .claudeignore — ce que Claude ne lit pas, et quand le réintégrer
+#
+# Mis à jour le 9 oct. 2026. Focus actuel : architecture et construction du MOTEUR SOCIAL,
+# puis ENTRAÎNEMENT DU TRANSFORMER. Tout ce qui ne sert pas à ces deux chantiers est mis de côté
+# pour économiser les tokens.
+#
+# IMPORTANT : Claude Code n'applique pas ce fichier à lui seul. Les mêmes motifs sont recopiés
+# dans .claude/settings.json (permissions.deny) : c'est là qu'ils agissent. Quand vous enlevez
+# une ligne ici, enlevez la règle correspondante là-bas.
+#
+# « Mis de côté » ne veut pas dire « supprimé » : les fichiers restent, les scripts peuvent
+# toujours être EXÉCUTÉS (ex. generate_states.py), seule leur LECTURE par Claude est bloquée.
+#
+# Légende : [RÉINTÉGRER QUAND …] = condition pour retirer la ligne.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# A. Toujours ignorés (binaires, données lourdes, sorties générées). Ne jamais retirer.
+# ─────────────────────────────────────────────────────────────────────────────
 archive/
 assets/
-**/data/*.jsonl
+build/
+out/
+**/__pycache__/
+**/.venv/
+**/node_modules/
 **/*.jsonl
 **/*.glb
 **/*.gltf
@@ -12,6 +32,7 @@ assets/
 **/*.vxb
 **/*.vxb3
 **/*.vxi
+**/*.vxp
 **/*.gz
 **/*.zip
 **/*.pt
@@ -19,17 +40,112 @@ assets/
 **/*.so
 **/*.dll
 **/*.dylib
-**/__pycache__/
-**/.venv/
-**/node_modules/
-build/
-out/
-game/.godot/
-game/bin/
-prototypes/village-web/captures/
-characters/thumbs/
-docs/reference/schemas/
+**/*.png
+**/*.jpg
+**/*.b64.txt
 **/captures/
-tools/voxelizer/testdata/
-ai/student/runs/
+**/runs/
 docs/npc/audit/
+# fiches.json (9,8 Mo), villagers.json (4,9 Mo)
+characters/data/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B. Monde, rendu, voxels, personnages 3D
+# [RÉINTÉGRER QUAND] on attaque le chantier 1 (mesure GPU du rendu), 5 (bus d'opérations
+# appliqué aux chunks), 6 (rendu au niveau de docs/style/) ou 7 (eau, feu, frontières).
+# Exception : quand le moteur social aura besoin de la PERCEPTION spatiale ou du bus
+# d'opérations, réintégrer seulement engine/core/world/include/ et docs/interfaces.md § 1-2.
+# ─────────────────────────────────────────────────────────────────────────────
+# cœur C++ voxels/maillage/terrain + GDExtension (engine/data/materials.csv reste lisible : source des matières du catalogue)
+engine/core/
+engine/gdext/
+engine/sim/
+engine/terrain/
+engine/cmake/
+engine/scripts/
+engine/CMakeLists.txt
+engine/README.md
+engine/ETAT.md
+engine/CLAUDE.md
+# génération déterministe du monde
+worldgen/
+# projet Godot (scène jouable)
+game/
+# village web (rendu 10 cm, lumière)
+prototypes/
+# générateur des villageois 3D (à refaire en style voxel)
+characters/
+# convertisseur 3D → voxels
+tools/voxelizer/
+# images de la barre visuelle (rendu seulement)
+docs/style/
+# anciens docs d'archi : rendu iGPU, horizon, archi v1 (dépassés par 06)
+docs/reference/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# C. Documents dépassés ou historiques (remplacés par la charte, 06, CHANTIERS, catalogue v0.3)
+# [RÉINTÉGRER QUAND] on réécrit l'un d'eux, ou si on doute de l'origine d'une décision.
+# ─────────────────────────────────────────────────────────────────────────────
+# remplacé par CHARTE_DU_JEU.md (parle encore de 2 cm et d'iGPU)
+docs/00_vision.md
+# dépassé, 06 fait foi ; à réécrire un jour
+docs/02_architecture_cible.md
+# historique : inventaire des ZIP des devs
+docs/03_confrontation.md
+# remplacé par CHANTIERS.md
+docs/04_feuille_de_route.md
+# réserve d'idées, rien d'actif
+docs/05_idees.md
+# surtout voxels ; réintégrer avec le bloc B
+docs/glossaire.md
+# remplacé par variables_v0.3_catalogue_unique.md
+docs/npc/variables_v0.1_catalogue.md
+# remplacé par v0.3
+docs/npc/variables_v0.2_noyau.md
+# remplacé par npc_architecture_v0.4.md + catalogue v0.3
+docs/npc/npc_model_spec_v0.3.md
+# passation des devs, résumée dans ai/ETAT.md
+docs/npc/README_devs_npc_2026-10-06.md
+# remplacé par le catalogue v0.3 (il le dit lui-même)
+ai/CATALOGUE_modele.md
+
+# ─────────────────────────────────────────────────────────────────────────────
+# D. Professeur LLM (Gemini) — en pause tant que Monsieur n'a pas validé modèle et budget (O13)
+# [RÉINTÉGRER QUAND] Monsieur donne son accord pour un enseignant (Gemini, modèle local…).
+# ─────────────────────────────────────────────────────────────────────────────
+ai/npc_pipeline/gemini_client.py
+ai/npc_pipeline/mock_gemini_server.py
+ai/npc_pipeline/teacher_run.py
+ai/npc_pipeline/teacher_tools.py
+ai/npc_pipeline/teacher_prompt.md
+ai/npc_pipeline/HOWTO_GEMINI.md
+ai/npc_pipeline/run_pipeline.py
+ai/npc_pipeline/selftest_pipeline.py
+ai/npc_pipeline/selftest_quota_stress.py
+ai/npc_pipeline/gold_tool.py
+# rapports d'audit du corpus
+ai/npc_pipeline/corpus_report.py
+
+# ─────────────────────────────────────────────────────────────────────────────
+# E. Couche langage du joueur (charte § 15) et construction — après le moteur social de base
+# [RÉINTÉGRER QUAND] on branche le dialogue joueur ↔ PNJ, ou les chantiers de construction.
+# ─────────────────────────────────────────────────────────────────────────────
+ai/npc_pipeline/utterance_parser.py
+ai/npc_pipeline/dialogue_protocols.py
+ai/npc_pipeline/build_site.py
+
+# ─────────────────────────────────────────────────────────────────────────────
+# F. Gros fichiers à EXÉCUTER mais pas à lire (amorçage de l'entraînement)
+# [RÉINTÉGRER QUAND] on doit modifier le générateur de situations ou le décideur à règles
+# (en principe jamais : on veut s'en éloigner, D17/D18). Lire par morceaux si besoin.
+# ─────────────────────────────────────────────────────────────────────────────
+# 112 Ko, générateur de situations 0.4
+ai/npc_pipeline/generate_states.py
+# 42 Ko, décideur à règles (étiquettes d'amorçage, témoin)
+ai/npc_pipeline/reference_decider.py
+# échantillons et ancien schéma
+ai/npc_pipeline/samples/
+# ancien décideur à règles de sim/, figé comme étalon
+sim/emergence_sim/decide.py
+# visionneuse HTML de la chronique
+sim/viewer/

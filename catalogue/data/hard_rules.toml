@@ -1,0 +1,27 @@
+# hard_rules.toml - règles dures : jamais apprises, appliquées par le moteur et le gouverneur quoi
+# que dise le modèle. Elles se vérifient sur la VÉRITÉ (âge réel), pas sur les croyances.
+
+[[hard_rule]]
+id = "D10_minors"
+label_fr = "Aucun acte romantique ou sexuel impliquant un enfant ou un adolescent"
+text_fr = "Refusé dès qu'un argument a un life_stage réel inférieur à adult : tout geste marqué intimate, toute expression contenant un concept intimate (attirance, liens conjoint, fiancé, amant), tout objectif ou croyance écrite par le modèle qui en contient, tout accord de mariage ou de fiançailles, toute montée de r_attraction ou de need_intimacy. need_intimacy vaut 0 avant l'âge adulte."
+applies_to = ["action", "concept", "variable", "agreement"]
+note = "Les tests de refus déjà prévus restent les seuls contenus de test ; rien n'est généré ni étiqueté de tel."
+
+[[hard_rule]]
+id = "engine_owns_body"
+label_fr = "Le corps, les besoins, les biens et la maîtrise appartiennent au moteur"
+text_fr = "Le Transformer n'écrit jamais une variable d'un composant engine_only (corps, besoins, cycle de vie, apparence, porteur, registre, maîtrise) : il agit par des gestes, la physique en fait les effets."
+applies_to = ["variable"]
+
+[[hard_rule]]
+id = "no_truth_in_tokens"
+label_fr = "Aucune vérité objective dans ce que l'IA lit"
+text_fr = "Les jetons pointent vers des dossiers mentaux, des événements remémorés ou décrits, des lieux connus ; jamais vers un identifiant objectif, l'état réel d'un accord, la vraie identité, la vraie santé ou la vérité d'une croyance (charte § 5)."
+applies_to = ["variable", "concept"]
+
+[[hard_rule]]
+id = "sparse_writes"
+label_fr = "Une décision écrit peu"
+text_fr = "Au plus 4 écritures (pointeur, variable, valeur) par décision, en plus du geste choisi ; chacune bornée par le pas par décision et le taux par jour de jeu. Le reste suit les lois de retour du moteur."
+applies_to = ["variable"]

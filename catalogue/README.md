@@ -1,0 +1,52 @@
+# catalogue/ — la source unique des variables et des actions
+
+Tout ce qui existe dans le monde simulé est déclaré ici **avant** d'être codé (D20). Remplace `ai/CATALOGUE_modele.md` et `docs/npc/variables_v0.3_catalogue_unique.md`. Plan de travail : étapes 0 à 18 (`~/.claude/plans/allez-y-planifiez-le-structured-engelbart.md`).
+
+## Trois couches, jamais mélangées (Monsieur, 9 oct. 2026)
+
+1. **Gestes physiques** (`[[action]]`) : ce que le corps fait, paramétré par la manière. Une claque, un coup de poing, un passage à tabac et des coups mortels sont **un seul geste** avec une force, une zone, une répétition et une condition d'arrêt.
+2. **Parole** (`[[concept]]`, `[[grammar]]`) : parler est un geste ; ce qui est dit est une expression de la **langue intérieure** composée par le Transformer. « Faire chanter », « menacer », « promettre » ne sont pas des actions.
+3. **Interprétations** (`[[interpretation]]`) : vol, trahison, meurtre, injustice… sont ce que les témoins concluent de **faits objectifs**. Jamais une option. Le validateur refuse un geste qui porte un de ces noms.
+
+## D'où viennent les entrées
+
+**Des premiers principes, pas des exemples.** Le gros du catalogue est fait de gestes et de mots très simples, obtenus en parcourant des axes complets (tout ce qu'un corps peut faire, tout ce que la matière peut subir, tout ce que la langue peut dire). Leurs combinaisons ne sont prévues par personne : c'est le Transformer qui les fait émerger (Monsieur, 9 oct.).
+
+Les **histoires** (`data/stories.toml`) ne sont que des **sondes** : « le catalogue permet-il d'exprimer ceci ? ». Une sonde qui échoue révèle un manque, comblé par une primitive générale, jamais par une entrée propre à l'histoire. Une histoire ne justifie aucune entrée et ne contraint aucun comportement. Plus tard, des **rails légers** (coutumes connues des PNJ : faire la cour, marchander, funérailles) pourront aider l'entraînement ; un PNJ peut les suivre, les dévier ou les ignorer, le moteur ne les impose jamais.
+
+## Ce que l'IA peut gérer (contrainte permanente, Monsieur, 9 oct.)
+
+La richesse vit dans le moteur et les données ; le Transformer (≈ 5 M de paramètres, 500 PNJ en un lot) n'en reçoit qu'une **vue compacte et factorisée**. Chaque étape vérifie ces budgets :
+
+| Quoi | Budget | Comment |
+|---|---|---|
+| Entrée d'une décision | ≤ 128 jetons (cible ≈ 96) | le moteur choisit les choses, personnes, souvenirs et croyances les plus saillants |
+| Un objet | vecteur fixe d'usages et de propriétés (≤ 48) + type connu (≤ 512) + matière dominante (≤ 128) | un assemblage jamais vu est compris par ses propriétés : il généralise |
+| Le corps | un résumé (douleur, saignement, conscience, mobilité, pire blessure) | les 16 zones et le volume de sang restent au moteur |
+| Les autres | seulement ce qui se voit (apparence) | jamais leurs variables internes (charte § 5) |
+| Un geste en sortie | ≤ 64 gestes × cible par pointeur × manière en ≤ 5 niveaux par paramètre | têtes de sortie séparées, masques de faisabilité du moteur |
+| Une parole | ≤ 512 mots de grammaire (prédicats, liens, modes, émotions, techniques…) + une table de **sortes** à part (types d'objets, matières, espèces, formes : ≤ 1 024, factorisée par catégorie), ≤ 16 symboles | décodage contraint par la grammaire |
+| Une proposition imbriquée | un jeton de plus par niveau, ≤ 2 niveaux | comptée dans les 12 jetons BELIEF |
+| Les absents | un absent saillant (un proche, quelqu'un attendu) garde son jeton ENTITY avec present = faux | on remarque l'absence (charte § 20) |
+| Ce qu'une décision écrit | geste choisi + **≤ 4 écritures** (pointeur, variable, valeur) | chacune bornée par le pas par décision et le taux par jour ; le reste suit les lois de retour du moteur (revue du 9 oct.) |
+| Rythme | gestes rapides, objectifs lents | tout ne se décide pas à chaque pas |
+
+**Unités de temps.** `step` = au plus par décision ; `rate` = au plus par **jour de jeu** (1 h 30 réelle, D30) ; `slow_rate` = au plus par **année de vie** (≈ 2 h 30 réelles à l'âge adulte : l'horloge de vie est séparée du calendrier, dont l'année dure 7 h). Une décision tombe plusieurs fois par seconde : sans `rate`, un pas par décision deviendrait un saut.
+
+**Rien de vrai dans ce que l'IA lit** (règle dure `no_truth_in_tokens`) : les jetons pointent vers les dossiers mentaux du PNJ, les événements qu'il se rappelle ou qu'on lui décrit, les lieux tels qu'il les connaît ; jamais vers un identifiant objectif, l'état réel d'un accord ou la vérité d'une croyance.
+
+Champ `token` d'une variable : où l'IA la voit (`SELF.body.pain`, `ENTITY.look.wounds`…), ou vide si elle ne la voit pas (moteur seul). Une variable non vue peut quand même agir sur le monde : c'est le moteur qui l'applique.
+
+## Commandes
+
+```
+python3 catalogue/tools/check.py            # structure, références, séparation des couches
+python3 catalogue/tools/check.py --strict   # + toutes les sondes exprimables
+python3 catalogue/tools/render.py           # écrit catalogue/CATALOGUE.md (pour Monsieur)
+python3 catalogue/tools/budget.py           # ce que l'IA voit, compté (budget)
+python3 -m unittest discover -s catalogue/tests
+```
+
+## Ajouter une entrée
+
+Une table TOML dans le fichier de son domaine (`data/body.toml`, `data/beliefs.toml`…). Les champs permis sont ceux des classes de `schema.py` ; un champ inconnu est une erreur. Échelles de la charte : `bipolar10` (−10..+10) et `unipolar10` (0..10), stockées en dixièmes par le moteur. Écrivains : `engine`, `T_jump` (le Transformer peut sauter), `T_step` (pas borné par `step`), `T_slow` (au plus `slow_rate` par année vécue : l'ancienne borne de 0,1 par jour de jeu est caduque : avec une vie de 150 h, un jour de jeu dure 1 h 30 réelle (D30)), `birth`, `action`, `derived` (vue calculée, jamais écrite).

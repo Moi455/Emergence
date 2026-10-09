@@ -1,0 +1,507 @@
+# matter.toml - étape 2 (suite) : matières, processus de transformation, types d'objets.
+#
+# Matières : les classes de voxels viennent de engine/data/materials.csv (lues, jamais recopiées ;
+# numéros figés). Ici : (a) des compléments pour quelques matières du moteur (ténacité, cohésion…),
+# (b) des matières PROPOSÉES (num = -1) dont les objets ont besoin ; à ajouter en fin de
+# materials.csv par le fil du moteur.
+#
+# Processus : les LOIS de transformation de la matière, appliquées par le moteur quand leurs
+# conditions physiques sont réunies (outil qui coupe, chaleur suffisante, temps écoulé…). Personne ne
+# « choisit un processus » : un agent fait des gestes (étape 12), et le processus se produit si la
+# physique le permet. Le pain naît de moudre + pétrir + cuire, pas d'une action « faire du pain ».
+# Une recette est un SAVOIR (une croyance sur quels gestes produisent quoi), pas une règle du moteur.
+#
+# Les objets sont des assemblages de parties (forms.toml) ; les types connus sont dans items_*.toml.
+
+# ─── Compléments de matières du moteur ──────────────────────────────────────────────────────────
+[[material]]
+id = "glass"
+toughness = 5
+cohesion = "built"
+conductivity = 20
+melting_c = 1400
+
+[[material]]
+id = "iron"
+toughness = 85
+cohesion = "built"
+conductivity = 80
+melting_c = 1538
+
+[[material]]
+id = "iron_ore"
+toughness = 60
+cohesion = "natural"
+melting_c = 1538
+note = "La fonte du minerai demande un bas fourneau (chaleur > 1 200 °C et charbon)."
+
+[[material]]
+id = "clay"
+cohesion = "natural"
+note = "Façonnée humide, cuite au-delà de 900 °C elle devient ceramic."
+
+[[material]]
+id = "oak_raw"
+toughness = 60
+cohesion = "natural"
+conductivity = 10
+
+# ─── Matières proposées (à ajouter en fin de materials.csv) ─────────────────────────────────────
+[[material]]
+id = "ceramic"
+label_fr = "céramique (terre cuite)"
+category = "building"
+density_kg_m3 = 2000
+hardness = 50
+toughness = 15
+cohesion = "built"
+conductivity = 30
+color = "b0603c"
+
+[[material]]
+id = "charcoal"
+label_fr = "charbon de bois"
+category = "mineral"
+density_kg_m3 = 400
+hardness = 5
+flammability = 95
+cohesion = "loose"
+color = "222222"
+
+[[material]]
+id = "ash"
+label_fr = "cendre"
+category = "soil"
+density_kg_m3 = 600
+cohesion = "loose"
+color = "9a9a96"
+
+[[material]]
+id = "copper"
+label_fr = "cuivre"
+category = "metal"
+density_kg_m3 = 8900
+hardness = 40
+toughness = 70
+cohesion = "built"
+conductivity = 95
+melting_c = 1085
+color = "b87333"
+
+[[material]]
+id = "silver"
+label_fr = "argent"
+category = "metal"
+density_kg_m3 = 10500
+hardness = 30
+toughness = 60
+cohesion = "built"
+conductivity = 95
+melting_c = 962
+color = "c0c0c4"
+
+[[material]]
+id = "gold"
+label_fr = "or"
+category = "metal"
+density_kg_m3 = 19300
+hardness = 25
+toughness = 60
+cohesion = "built"
+conductivity = 90
+melting_c = 1064
+color = "d4af37"
+
+[[material]]
+id = "lead"
+label_fr = "plomb"
+category = "metal"
+density_kg_m3 = 11300
+hardness = 15
+toughness = 40
+cohesion = "built"
+conductivity = 35
+melting_c = 327
+color = "6e6e74"
+note = "Permet une fausse monnaie : une pièce d'argent coupée de plomb se trahit au poids, au son, à la morsure."
+
+[[material]]
+id = "leather"
+label_fr = "cuir"
+category = "textile"
+density_kg_m3 = 900
+hardness = 8
+toughness = 70
+flammability = 30
+cohesion = "built"
+color = "7a5230"
+
+[[material]]
+id = "wool"
+label_fr = "laine"
+category = "textile"
+density_kg_m3 = 200
+hardness = 1
+toughness = 30
+flammability = 60
+cohesion = "built"
+color = "e8e0cc"
+
+[[material]]
+id = "bone"
+label_fr = "os"
+category = "organic"
+density_kg_m3 = 1900
+hardness = 35
+toughness = 40
+cohesion = "natural"
+color = "e6dcc4"
+
+[[material]]
+id = "flesh"
+label_fr = "chair (viande, poisson, corps)"
+category = "organic"
+density_kg_m3 = 1050
+hardness = 2
+toughness = 20
+cohesion = "natural"
+edible = 6
+color = "a0453c"
+
+[[material]]
+id = "grain"
+label_fr = "grain"
+category = "organic"
+density_kg_m3 = 750
+hardness = 10
+flammability = 40
+cohesion = "loose"
+edible = 3
+color = "d8b860"
+
+[[material]]
+id = "flour"
+label_fr = "farine"
+category = "organic"
+density_kg_m3 = 600
+flammability = 50
+cohesion = "loose"
+edible = 2
+color = "f2ecdc"
+
+[[material]]
+id = "bread"
+label_fr = "pain"
+category = "organic"
+density_kg_m3 = 300
+hardness = 3
+flammability = 30
+cohesion = "built"
+edible = 7
+color = "c08a48"
+
+[[material]]
+id = "vegetable"
+label_fr = "légume ou fruit"
+category = "organic"
+density_kg_m3 = 900
+hardness = 4
+cohesion = "natural"
+edible = 4
+color = "7aa040"
+
+[[material]]
+id = "herb"
+label_fr = "herbe médicinale ou aromatique"
+category = "organic"
+density_kg_m3 = 150
+flammability = 50
+cohesion = "natural"
+edible = 1
+color = "5a8a3a"
+
+[[material]]
+id = "water"
+label_fr = "eau"
+category = "fluid"
+density_kg_m3 = 1000
+cohesion = "fluid"
+conductivity = 60
+color = "3a6a8a"
+
+[[material]]
+id = "ale"
+label_fr = "bière, vin, alcool"
+category = "fluid"
+density_kg_m3 = 1010
+flammability = 10
+cohesion = "fluid"
+edible = 1
+color = "a87a30"
+
+[[material]]
+id = "milk"
+label_fr = "lait"
+category = "fluid"
+density_kg_m3 = 1030
+cohesion = "fluid"
+edible = 3
+color = "f4f2ea"
+
+[[material]]
+id = "oil"
+label_fr = "huile, graisse"
+category = "fluid"
+density_kg_m3 = 920
+flammability = 80
+cohesion = "fluid"
+edible = 4
+color = "c8a840"
+
+[[material]]
+id = "dye"
+label_fr = "teinture"
+category = "fluid"
+density_kg_m3 = 1050
+cohesion = "fluid"
+color = "6a2a7a"
+
+[[material]]
+id = "paper"
+label_fr = "papier, parchemin"
+category = "textile"
+density_kg_m3 = 700
+hardness = 1
+toughness = 10
+flammability = 95
+cohesion = "built"
+color = "ede4cc"
+
+[[material]]
+id = "rope_fiber"
+label_fr = "fibre de corde (chanvre, lin)"
+category = "textile"
+density_kg_m3 = 500
+hardness = 2
+toughness = 60
+flammability = 70
+cohesion = "built"
+color = "b8a070"
+
+[[material]]
+id = "gem"
+label_fr = "pierre précieuse"
+category = "mineral"
+density_kg_m3 = 3500
+hardness = 90
+toughness = 30
+cohesion = "natural"
+color = "3a7ab0"
+
+[[material]]
+id = "arcane_crystal"
+label_fr = "cristal arcanique (cœur d'une baguette)"
+category = "mineral"
+density_kg_m3 = 2600
+hardness = 70
+toughness = 20
+cohesion = "natural"
+color = "9a7ad8"
+note = "Charte § 17-18 : la magie est une technologie rare ; d'où vient ce cristal reste en partie mystérieux."
+
+# ─── Processus (lois de transformation, jamais choisis) ─────────────────────────────────────────
+# Séparer
+[[process]]
+id = "cut"
+label_fr = "couper, trancher"
+inputs = "matière tendre (bois, chair, tissu, plante, corde)"
+conditions = ["cuts"]
+effect = "sépare en morceaux selon la force et l'angle ; l'outil s'use"
+
+[[process]]
+id = "split"
+label_fr = "fendre (le bois dans le fil, la pierre litée)"
+inputs = "bois, ardoise, calcaire"
+conditions = ["impacts", "edge"]
+effect = "éclats et planches grossières"
+
+[[process]]
+id = "fracture"
+label_fr = "casser, briser"
+inputs = "toute matière"
+conditions = ["impacts"]
+effect = "si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse"
+
+[[process]]
+id = "crush"
+label_fr = "écraser, moudre, broyer"
+inputs = "grain, minerai, herbe, os"
+conditions = ["impacts"]
+effect = "grain → farine ; minerai → minerai broyé ; herbe → pâte"
+
+[[process]]
+id = "extract"
+label_fr = "extraire (arracher du terrain : creuser, piocher)"
+inputs = "terrain"
+conditions = ["digs"]
+effect = "retire des voxels ; la matière extraite devient objet ; la stabilité voisine change"
+
+# Assembler
+[[process]]
+id = "assemble"
+label_fr = "assembler (empiler, emboîter, clouer, maçonner)"
+inputs = "pièces de bois, pierres, briques, mortier"
+conditions = ["graspable"]
+effect = "crée ou agrandit une structure ; la stabilité dépend des appuis"
+
+[[process]]
+id = "bind"
+label_fr = "lier, nouer, coudre"
+inputs = "corde, fil, cuir, tissu"
+conditions = ["binds"]
+effect = "attache deux choses ; tient tant que la ténacité du lien n'est pas dépassée"
+
+[[process]]
+id = "mix"
+label_fr = "mélanger, pétrir, dissoudre"
+inputs = "farine + eau, argile + eau, teinture + eau, sel + eau"
+conditions = ["contains"]
+effect = "produit un mélange (pâte, mortier, saumure, bain de teinture)"
+
+[[process]]
+id = "spin_weave"
+label_fr = "filer et tisser (fibre → fil → étoffe)"
+inputs = "laine, lin, chanvre"
+effect = "étoffe, dont la qualité suit la maîtrise"
+
+# Façonner
+[[process]]
+id = "carve"
+label_fr = "tailler, sculpter, graver"
+inputs = "bois, pierre, os"
+conditions = ["cuts"]
+effect = "change la forme ; peut produire une inscription"
+
+[[process]]
+id = "forge"
+label_fr = "forger (déformer le métal chaud par des coups)"
+inputs = "métal chaud"
+conditions = ["impacts", "heats"]
+effect = "outils, lames, clous, serrures ; qualité selon maîtrise, chaleur, outil"
+
+[[process]]
+id = "mold_cast"
+label_fr = "mouler, couler (argile façonnée, métal fondu dans un moule)"
+inputs = "argile humide, métal fondu"
+conditions = ["contains"]
+effect = "forme imposée par le moule ou la main"
+
+[[process]]
+id = "magic_shape"
+label_fr = "façonner par magie (bâtir, assembler ou désassembler la matière)"
+inputs = "matières présentes"
+conditions = ["shapes_matter"]
+effect = "transforme des matières disponibles en construction ou objet, sans en créer ; consomme la charge ; échec ou accident si la puissance dépasse la maîtrise"
+note = "Charte § 17 : la baguette ne crée rien gratuitement."
+
+# Thermique
+[[process]]
+id = "heat"
+label_fr = "chauffer"
+conditions = ["heats"]
+effect = "la température monte selon la source, la masse, la conduction"
+
+[[process]]
+id = "combust"
+label_fr = "brûler"
+conditions = ["fuel", "ignites"]
+effect = "consomme le combustible, crée un feu qui se propage selon l'inflammabilité, l'humidité, le vent ; produit cendre et fumée"
+
+[[process]]
+id = "melt"
+label_fr = "fondre"
+conditions = ["heats"]
+effect = "au-delà du point de fusion, la matière devient fluide"
+
+[[process]]
+id = "smelt"
+label_fr = "réduire le minerai (bas fourneau)"
+inputs = "minerai broyé + charbon"
+conditions = ["heats"]
+effect = "minerai → métal brut, scories"
+
+[[process]]
+id = "fire_clay"
+label_fr = "cuire l'argile"
+inputs = "argile façonnée sèche"
+conditions = ["heats"]
+effect = "argile → céramique (pots, tuiles, briques)"
+
+[[process]]
+id = "cook"
+label_fr = "cuire un aliment"
+inputs = "pâte, chair, légumes, grain"
+conditions = ["heats"]
+effect = "pâte → pain ; chair crue → cuite (plus nourrissante, moins de maladie) ; trop cuit → brûlé"
+
+[[process]]
+id = "cool_freeze"
+label_fr = "refroidir, geler"
+effect = "la température baisse vers celle du lieu ; l'eau gèle sous 0 °C"
+
+# Chimique et vivant
+[[process]]
+id = "ferment"
+label_fr = "fermenter"
+inputs = "grain, fruit, lait + eau, dans un récipient fermé"
+conditions = ["contains"]
+effect = "bière, vin, fromage, après des jours"
+
+[[process]]
+id = "rot"
+label_fr = "pourrir, se gâter"
+effect = "la fraîcheur baisse ; à zéro, l'aliment devient toxique ; le bois mouillé perd son intégrité"
+
+[[process]]
+id = "dry_preserve"
+label_fr = "sécher, saler, fumer (conserver)"
+inputs = "chair, poisson, herbe, grain"
+effect = "la fraîcheur baisse beaucoup plus lentement"
+
+[[process]]
+id = "tan"
+label_fr = "tanner"
+inputs = "peau + écorce + eau"
+effect = "peau → cuir, après des jours"
+
+[[process]]
+id = "dye_process"
+label_fr = "teindre"
+inputs = "étoffe + bain de teinture"
+effect = "change la teinte"
+
+[[process]]
+id = "heal_tissue"
+label_fr = "cicatriser"
+effect = "les blessures se referment avec le temps, plus vite si propres, soignées et au repos ; l'infection les aggrave"
+
+[[process]]
+id = "wear"
+label_fr = "s'user"
+effect = "l'usage et le temps baissent l'intégrité et la qualité ; le fer rouille à l'humidité"
+
+[[process]]
+id = "grow"
+label_fr = "pousser, mûrir, se reproduire (plantes, animaux)"
+effect = "selon saison, eau, sol, lumière ; les graines tombent, les troupeaux s'agrandissent"
+
+# Fluides
+[[process]]
+id = "flow"
+label_fr = "couler, s'écouler"
+effect = "un liquide versé ou libéré descend et s'étale ; un seau renversé mouille"
+
+[[process]]
+id = "absorb_evaporate"
+label_fr = "absorber, s'évaporer"
+effect = "le sol boit l'eau, la chaleur l'évapore ; un puits se remplit par la nappe"

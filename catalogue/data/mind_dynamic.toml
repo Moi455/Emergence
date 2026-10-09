@@ -1,0 +1,53 @@
+# mind_dynamic.toml - étape 5 : l'esprit mouvant (ce que la personne RESSENT et VEUT maintenant).
+#
+# Émotions : tirées de la théorie de l'évaluation (on ressent selon la façon dont on juge ce qui
+# arrive) : les émotions de base et les émotions sociales qui font les histoires (honte, culpabilité,
+# jalousie, envie, gratitude, mépris). Le Transformer peut les faire SAUTER (D18, charte § 6) : c'est
+# lui qui juge ce qui arrive. Le moteur n'écrit que la physiologie, pas l'évaluation :
+#   - le retour vers l'humeur de fond, à la vitesse du tempérament (resilience) ;
+#   - les effets du corps (la douleur, la faim, le manque de sommeil, l'ivresse rendent irritable) ;
+#   - jamais « il a été insulté donc colère + 3 » : c'est au modèle de le décider.
+# Besoins psychologiques (drives) : montent tout seuls selon la situation (le moteur, une loi), le
+# Transformer les déplace par petits pas (0,5) ; ils pèsent sur ce qu'il cherche.
+# Budget de l'IA : un jeton SELF_STATE (≈ 34 valeurs) ; les autres ne voient que l'apparence.
+
+variable = [
+  # ─── Émotions (0 absent, 10 submergé) ───
+  { id = "fear", label_fr = "peur (menace présente)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe vers 0 selon la résilience ; la douleur et la blessure l'entretiennent", token = "SELF_STATE.emo.fear" },
+  { id = "anxiety", label_fr = "inquiétude (menace à venir)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe lentement selon la résilience ; la douleur et la maladie ressenties l'entretiennent (le corps, pas un jugement)", token = "SELF_STATE.emo.anxiety" },
+  { id = "anger", label_fr = "colère", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe selon la résilience ; la douleur, la faim, le manque de sommeil, l'ivresse la font monter plus vite", token = "SELF_STATE.emo.anger" },
+  { id = "joy", label_fr = "joie", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe vers l'humeur de fond", token = "SELF_STATE.emo.joy" },
+  { id = "sadness", label_fr = "tristesse", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe lentement", token = "SELF_STATE.emo.sadness" },
+  { id = "grief", label_fr = "deuil (perte d'un proche)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_step", "engine"], step = 1.0, rate = 1.0, dynamics = "s'installe (au plus 1 par jour de jeu) ; le moteur ne fait que le faire retomber très lentement", token = "SELF_STATE.emo.grief" },
+  { id = "disgust", label_fr = "dégoût (physique ou moral)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe vite", token = "SELF_STATE.emo.disgust" },
+  { id = "surprise", label_fr = "surprise, choc", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe en secondes", token = "SELF_STATE.emo.surprise" },
+  { id = "shame", label_fr = "honte (devant les autres)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe lentement ; trahie par la rougeur", token = "SELF_STATE.emo.shame" },
+  { id = "guilt", label_fr = "culpabilité (devant sa conscience)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe lentement selon la résilience ; seul le Transformer juge s'il y a faute et s'il la ravive", token = "SELF_STATE.emo.guilt" },
+  { id = "pride", label_fr = "fierté", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], token = "SELF_STATE.emo.pride" },
+  { id = "jealousy", label_fr = "jalousie (peur de perdre quelqu'un au profit d'un autre)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], token = "SELF_STATE.emo.jealousy" },
+  { id = "envy", label_fr = "envie (vouloir ce qu'a l'autre)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], token = "SELF_STATE.emo.envy" },
+  { id = "tenderness", label_fr = "tendresse, élan affectueux du moment", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], token = "SELF_STATE.emo.tenderness" },
+  { id = "gratitude", label_fr = "gratitude", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], token = "SELF_STATE.emo.gratitude" },
+  { id = "contempt", label_fr = "mépris", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], token = "SELF_STATE.emo.contempt" },
+  { id = "boredom", label_fr = "ennui", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "monte avec la répétition et l'inaction", token = "SELF_STATE.emo.boredom" },
+  { id = "confusion", label_fr = "confusion (ne pas comprendre ce qui se passe ou ce qu'on dit)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump", "engine"], dynamics = "retombe en minutes ; l'ivresse, les coups à la tête, la fièvre et certains phénomènes l'augmentent (le corps)", token = "SELF_STATE.emo.confusion" },
+  # ─── Humeur et tension ───
+  { id = "mood_valence", label_fr = "humeur (−10 sombre, +10 radieuse)", holder = "mind_dynamic", writer = ["derived"], dynamics = "moyenne glissante des émotions sur des heures de vie, tirée vers l'humeur de fond", token = "SELF_STATE.mood.valence" },
+  { id = "mood_energy", label_fr = "entrain du moment (0 abattu, 10 survolté)", holder = "mind_dynamic", scale = "unipolar10", writer = ["derived"], dynamics = "émotions, sommeil, faim, ivresse", token = "SELF_STATE.mood.energy" },
+  { id = "stress", label_fr = "tension accumulée", holder = "mind_dynamic", scale = "unipolar10", writer = ["derived"], dynamics = "s'accumule par la peur, l'inquiétude, la colère et les besoins non satisfaits qui durent ; se vide par le repos, le plaisir, la compagnie ; haute, elle use la santé et la patience", token = "SELF_STATE.stress" },
+  { id = "self_regard", label_fr = "estime de soi du moment (−10 se sent nul, +10 se sent fort)", holder = "mind_dynamic", writer = ["T_step", "engine"], step = 0.5, rate = 1.0, dynamics = "le Transformer la déplace (réussite, éloge, humiliation : c'est lui qui juge) ; le moteur la ramène lentement vers le trait d’assurance (assurance) ; c'est aussi le Transformer qui fait évoluer ce trait, lentement", token = "SELF_STATE.self_regard" },
+  # ─── Besoins psychologiques (0 comblé, 10 pressant) ───
+  { id = "need_company", label_fr = "besoin de compagnie (solitude)", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : monte avec le temps passé sans personne à portée de voix, plus vite si sociable ; baisse avec le temps passé à se parler (compte objectif) ; ce qui fait une bonne compagnie, le Transformer en juge", token = "SELF_STATE.drive.company" },
+  { id = "need_intimacy", label_fr = "désir d'intimité amoureuse (adultes seulement)", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "toujours 0 avant l'âge adulte (règle dure D10, appliquée par le moteur) ; le moteur : lente dérive avec le temps ; le reste, le Transformer", token = "SELF_STATE.drive.intimacy" },
+  { id = "need_esteem", label_fr = "besoin de reconnaissance", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : lente montée avec le temps ; ce qui la comble ou la blesse (éloge, humiliation) se juge : le Transformer", token = "SELF_STATE.drive.esteem" },
+  { id = "need_autonomy", label_fr = "besoin d'autonomie", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : monte quand on reçoit une parole au mode impératif, qu'on est retenu de force ou enfermé (faits objectifs)", token = "SELF_STATE.drive.autonomy" },
+  { id = "need_achievement", label_fr = "besoin d'accomplir", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : monte avec le temps passé sans geste de travail, baisse quand une intention se termine ; réussite et échec se jugent : le Transformer", token = "SELF_STATE.drive.achievement" },
+  { id = "need_novelty", label_fr = "besoin de nouveauté", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : monte avec la routine (mêmes lieux, mêmes gestes : compte objectif), plus vite si curieux", token = "SELF_STATE.drive.novelty" },
+  { id = "need_security", label_fr = "besoin de sécurité", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : le corps seulement (faim, froid, douleur, pas d'abri la nuit) ; une menace se juge : le Transformer", token = "SELF_STATE.drive.security" },
+  { id = "need_acquisition", label_fr = "envie d'amasser, de posséder", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : lente dérive selon l'avidité ; l'envie devant ce qu'ont les autres se juge : le Transformer", token = "SELF_STATE.drive.acquisition" },
+  { id = "need_play", label_fr = "besoin de jeu, de rire, de fête", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : monte avec le temps de travail ; d'où viennent les farces (charte § 27)", token = "SELF_STATE.drive.play" },
+  { id = "need_meaning", label_fr = "besoin de sens, de foi", holder = "mind_dynamic", scale = "unipolar10", writer = ["engine", "T_step"], step = 0.5, rate = 2.0, dynamics = "le moteur : très lente dérive ; un deuil, une catastrophe, un mystère se jugent : le Transformer", token = "SELF_STATE.drive.meaning" },
+  # ─── Contrôle et attention ───
+  { id = "masking", label_fr = "volonté de cacher ce qu'on ressent (0 rien, 10 visage de marbre)", holder = "mind_dynamic", scale = "unipolar10", writer = ["T_jump"], dynamics = "le moteur l'applique à l'expression, selon la maîtrise de soi ; les signes involontaires passent quand même", token = "SELF_STATE.masking" },
+  { id = "attention", label_fr = "ce sur quoi l'attention est fixée (une personne, une chose, un bruit)", holder = "mind_dynamic", scale = "id", writer = ["T_jump"], dynamics = "le moteur perçoit plus finement ce qui est au centre de l'attention, moins bien le reste", token = "SELF_STATE.attention (pointeur)" },
+]

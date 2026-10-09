@@ -1,0 +1,181 @@
+# language_core.toml - le cœur de la langue intérieure : ce qu'on peut croire, désirer, promettre, dire.
+#
+# Une PROPOSITION = un prédicat + ses arguments (pointeurs vers des entités, concepts, quantités,
+# ou une proposition imbriquée), avec polarité (vrai / faux) et temps (passé, maintenant, futur,
+# habituel). Les arguments ne pointent JAMAIS vers la vérité (revue du 9 oct.) : une personne est un
+# DOSSIER MENTAL du PNJ (« celui que je crois être Aldric », identifié avec une certitude, ou « un
+# certain Aldric du moulin » dont il n'a qu'entendu parler) ; un événement est un événement qu'il se
+# rappelle ou qu'on lui décrit ; un lieu est un lieu tel qu'il le connaît. D'où : se tromper de
+# personne dans le noir, accuser d'un fait inventé, ignorer qui est Aldric, se perdre.
+# Un ÉVÉNEMENT se décrit par un cadre : did(agent, geste, cible) puis des rôles qui s'y attachent
+# (with, to, into, how, says), chacun un jeton de ≤ 3 pointeurs.
+# La même forme sert partout :
+#   croyance = proposition tenue pour vraie (étape 6) ; objectif = proposition désirée (étape 9) ;
+#   norme = proposition déontique (« il est interdit que… ») ; accord = proposition qu'on s'engage
+#   à rendre vraie ; parole = proposition dite avec un mode (affirmer, demander…) (étape 13).
+# Le mensonge n'a pas de prédicat : c'est affirmer une proposition qu'on croit fausse.
+# Le chantage n'a pas de prédicat : « si tu ne me donnes pas 3 pièces, je dirai à ton mari que tu as
+# embrassé X » = une condition + une parole future + un fait passé.
+# Budget de l'IA : un jeton par proposition (prédicat + ≤ 3 pointeurs + polarité + temps) ;
+# l'imbrication est limitée à 2 niveaux (« je crois qu'elle croit que… », pas plus).
+# L'étape 13 complète : modes, logique, quantités, temps, et le vocabulaire tiré du catalogue.
+
+concept = [
+  # ─── Le monde et les choses ───
+  { id = "at", category = "predicate", args = ["entity", "place"], label_fr = "se trouve à" },
+  { id = "located", category = "predicate", args = ["entity", "concept", "entity"], label_fr = "est (dans, sur, sous, derrière, près de, à côté de, au-dessus de) …" },
+  { id = "lives_at", category = "predicate", args = ["agent", "place"], label_fr = "habite à" },
+  { id = "has", category = "predicate", args = ["entity", "item"], label_fr = "tient, garde, a sur soi (la détention)" },
+  { id = "owns", category = "predicate", args = ["entity", "entity"], label_fr = "est à (la propriété : une croyance sociale) ; vaut pour objets, terres, maisons, bêtes" },
+  { id = "made", category = "predicate", args = ["agent", "item"], label_fr = "a fabriqué" },
+  { id = "is_a", category = "predicate", args = ["entity", "kind"], label_fr = "est un (type connu, espèce, catégorie de groupe…)" },
+  { id = "named", category = "predicate", args = ["entity", "name"], label_fr = "s'appelle (un nom de la table des noms, jamais du texte libre)" },
+  { id = "state", category = "predicate", args = ["entity", "variable", "quantity"], label_fr = "a tel état, à tel degré : une propriété (« le pont est cassé »), une quantité (« il reste peu de grain »), un trait (« il est malhonnête »), une émotion (« elle a peur »), un état du corps (« elle est enceinte », « il est malade »)" },
+  { id = "attitude", category = "predicate", args = ["agent", "variable", "entity", "quantity"], label_fr = "a telle attitude ou émotion envers (affection, confiance, crainte, colère contre…)" },
+  { id = "worth", category = "predicate", args = ["entity", "quantity"], label_fr = "vaut tant (prix, valeur)" },
+  { id = "route", category = "predicate", args = ["place", "place"], label_fr = "on va de … à … (par là)" },
+  { id = "exists", category = "predicate", args = ["concept", "place"], label_fr = "il existe … à / au-delà de … (savoirs, légendes : « une cité d'or au-delà du désert »)" },
+  { id = "dead", category = "predicate", args = ["entity"], label_fr = "est mort (personne ou bête)" },
+  # ─── Ce qui s'est passé : le cadre d'événement ───
+  { id = "did", category = "predicate", args = ["agent", "gesture", "entity"], label_fr = "a fait (geste, sur qui ou quoi) : ouvre un événement" },
+  { id = "with", category = "event_role", args = ["event", "entity"], label_fr = "avec (l'instrument)" },
+  { id = "to", category = "event_role", args = ["event", "entity"], label_fr = "à, pour (le destinataire)" },
+  { id = "into", category = "event_role", args = ["event", "entity"], label_fr = "dans, vers (le lieu ou le contenant visé)" },
+  { id = "how", category = "event_role", args = ["event", "concept"], label_fr = "de telle manière (fort, en cachette, à voix basse…)" },
+  { id = "says", category = "event_role", args = ["event", "proposition"], label_fr = "en disant que (une parole : « X a dit à Y que P »)" },
+  { id = "caused", category = "predicate", args = ["entity", "event"], label_fr = "est responsable de" },
+  { id = "qualifies", category = "predicate", args = ["event", "interpretation"], label_fr = "c'était un … (vol, trahison, accident, générosité) : le jugement qu'on porte" },
+  # ─── Les esprits (théorie de l'esprit, charte § 5) ───
+  { id = "believes", category = "predicate", args = ["agent", "proposition"], label_fr = "croit que" },
+  { id = "wants", category = "predicate", args = ["agent", "proposition"], label_fr = "veut que" },
+  { id = "intends", category = "predicate", args = ["agent", "proposition"], label_fr = "a l'intention de" },
+  { id = "knows_how", category = "predicate", args = ["agent", "technique"], label_fr = "sait faire (une croyance sur soi ou sur un autre ; la vraie maîtrise est au moteur)" },
+  { id = "recipe", category = "predicate", args = ["concept", "proposition"], label_fr = "pour obtenir …, il faut … (savoir-faire : quels gestes, sur quelles matières)" },
+  { id = "able", category = "predicate", args = ["agent", "gesture"], label_fr = "est capable de" },
+  # ─── Les liens et la société ───
+  { id = "link", category = "predicate", args = ["agent", "concept", "agent"], label_fr = "est le … de (parent, conjoint, ami, maître, employeur… : un lien cru)" },
+  { id = "works_as", category = "predicate", args = ["agent", "concept"], label_fr = "est (métier) : une étiquette tirée de ce qu'on le voit faire" },
+  { id = "member", category = "predicate", args = ["agent", "group"], label_fr = "fait partie de" },
+  { id = "leads", category = "predicate", args = ["agent", "group"], label_fr = "mène, dirige" },
+  { id = "holds", category = "predicate", args = ["agent", "role"], label_fr = "occupe le rôle de" },
+  { id = "may", category = "predicate", args = ["entity", "proposition"], label_fr = "a le droit de (les pouvoirs d'un rôle, une permission donnée)" },
+  { id = "owes", category = "predicate", args = ["agent", "entity", "proposition"], label_fr = "doit à (une personne, un groupe, un rôle : l'impôt) de …" },
+  { id = "party_to", category = "predicate", args = ["agent", "agreement"], label_fr = "est engagé dans tel accord (tel qu'on s'en souvient)" },
+  { id = "norm", category = "predicate", args = ["concept", "proposition"], label_fr = "il est (interdit, obligatoire, permis, admirable, honteux) que …" },
+  { id = "custom", category = "predicate", args = ["group", "proposition"], label_fr = "chez …, on fait … (une coutume : un rail léger, jamais imposé)" },
+  # ─── Normes : modalités ───
+  { id = "forbidden", category = "deontic", label_fr = "interdit" },
+  { id = "obligatory", category = "deontic", label_fr = "obligatoire" },
+  { id = "permitted", category = "deontic", label_fr = "permis" },
+  { id = "admirable", category = "deontic", label_fr = "admirable" },
+  { id = "shameful", category = "deontic", label_fr = "honteux" },
+  # ─── D'où vient une croyance ───
+  { id = "seen", category = "source", label_fr = "vu de ses yeux" },
+  { id = "heard", category = "source", label_fr = "entendu (surpris, sans qu'on s'adresse à lui)" },
+  { id = "told", category = "source", label_fr = "on le lui a dit (l'informateur est noté)" },
+  { id = "read", category = "source", label_fr = "lu" },
+  { id = "inferred", category = "source", label_fr = "déduit" },
+  { id = "assumed", category = "source", label_fr = "supposé, tenu pour acquis (ce que tout le monde croit)" },
+  { id = "dreamt", category = "source", label_fr = "rêvé, vision (les zones étranges, charte § 18)" },
+  # ─── Modes d'un objectif ───
+  { id = "achieve", category = "goal_mode", label_fr = "rendre vrai" },
+  { id = "maintain", category = "goal_mode", label_fr = "garder vrai" },
+  { id = "avoid", category = "goal_mode", label_fr = "empêcher" },
+  # ─── Liens ───
+  { id = "parent", category = "link", label_fr = "parent" },
+  { id = "child", category = "link", label_fr = "enfant" },
+  { id = "sibling", category = "link", label_fr = "frère, sœur" },
+  { id = "grandparent", category = "link", label_fr = "grand-parent" },
+  { id = "grandchild", category = "link", label_fr = "petit-enfant" },
+  { id = "aunt_uncle", category = "link", label_fr = "oncle, tante" },
+  { id = "niece_nephew", category = "link", label_fr = "neveu, nièce" },
+  { id = "cousin", category = "link", label_fr = "cousin" },
+  { id = "in_law", category = "link", label_fr = "belle-famille" },
+  { id = "spouse", category = "link", intimate = true, label_fr = "conjoint" },
+  { id = "betrothed", category = "link", intimate = true, label_fr = "fiancé" },
+  { id = "lover", category = "link", intimate = true, label_fr = "amant, amante" },
+  { id = "former_spouse", category = "link", intimate = true, label_fr = "ancien conjoint" },
+  { id = "friend", category = "link", label_fr = "ami" },
+  { id = "enemy", category = "link", label_fr = "ennemi" },
+  { id = "neighbor", category = "link", label_fr = "voisin" },
+  { id = "colleague", category = "link", label_fr = "compagnon de travail" },
+  { id = "employer", category = "link", label_fr = "employeur" },
+  { id = "employee", category = "link", label_fr = "employé" },
+  { id = "master", category = "link", label_fr = "maître (d'apprentissage)" },
+  { id = "apprentice", category = "link", label_fr = "apprenti" },
+  { id = "guest", category = "link", label_fr = "hôte (reçu chez soi)" },
+  { id = "stranger", category = "link", label_fr = "étranger, inconnu" },
+  # ─── Relations dans l'espace ───
+  { id = "in", category = "spatial", label_fr = "dans" },
+  { id = "on", category = "spatial", label_fr = "sur" },
+  { id = "under", category = "spatial", label_fr = "sous" },
+  { id = "behind", category = "spatial", label_fr = "derrière" },
+  { id = "near", category = "spatial", label_fr = "près de" },
+  { id = "beside", category = "spatial", label_fr = "à côté de" },
+  { id = "above", category = "spatial", label_fr = "au-dessus de" },
+  # ─── Émotions (mots : renvoient aux variables de l'esprit mouvant) ───
+  { id = "e_fear", category = "emotion", refers = "fear", label_fr = "peur" },
+  { id = "e_anxiety", category = "emotion", refers = "anxiety", label_fr = "inquiétude" },
+  { id = "e_anger", category = "emotion", refers = "anger", label_fr = "colère" },
+  { id = "e_joy", category = "emotion", refers = "joy", label_fr = "joie" },
+  { id = "e_sadness", category = "emotion", refers = "sadness", label_fr = "tristesse" },
+  { id = "e_grief", category = "emotion", refers = "grief", label_fr = "deuil" },
+  { id = "e_disgust", category = "emotion", refers = "disgust", label_fr = "dégoût" },
+  { id = "e_surprise", category = "emotion", refers = "surprise", label_fr = "surprise" },
+  { id = "e_shame", category = "emotion", refers = "shame", label_fr = "honte" },
+  { id = "e_guilt", category = "emotion", refers = "guilt", label_fr = "culpabilité" },
+  { id = "e_pride", category = "emotion", refers = "pride", label_fr = "fierté" },
+  { id = "e_jealousy", category = "emotion", refers = "jealousy", label_fr = "jalousie" },
+  { id = "e_envy", category = "emotion", refers = "envy", label_fr = "envie" },
+  { id = "e_tenderness", category = "emotion", refers = "tenderness", label_fr = "tendresse", intimate = false },
+  { id = "e_gratitude", category = "emotion", refers = "gratitude", label_fr = "gratitude" },
+  { id = "e_contempt", category = "emotion", refers = "contempt", label_fr = "mépris" },
+  { id = "e_boredom", category = "emotion", refers = "boredom", label_fr = "ennui" },
+  { id = "e_confusion", category = "emotion", refers = "confusion", label_fr = "confusion" },
+  # ─── Techniques (ce qu'on maîtrise : enregistrement skill, moteur) ───
+  { id = "t_woodwork", category = "technique", label_fr = "travail du bois (couper, fendre, tailler, assembler)" },
+  { id = "t_stonework", category = "technique", label_fr = "travail de la pierre, maçonnerie" },
+  { id = "t_digging", category = "technique", label_fr = "creuser, extraire, miner" },
+  { id = "t_smithing", category = "technique", label_fr = "forge, fonte, métal" },
+  { id = "t_pottery", category = "technique", label_fr = "poterie, cuisson de l'argile" },
+  { id = "t_glass", category = "technique", label_fr = "verrerie" },
+  { id = "t_textile", category = "technique", label_fr = "filer, tisser, coudre, teindre" },
+  { id = "t_leather", category = "technique", label_fr = "tanner, travailler le cuir" },
+  { id = "t_cooking", category = "technique", label_fr = "cuisine, boulangerie, conserves" },
+  { id = "t_brewing", category = "technique", label_fr = "brasser, fermenter" },
+  { id = "t_farming", category = "technique", label_fr = "labour, semis, soins des cultures, récolte" },
+  { id = "t_husbandry", category = "technique", label_fr = "soins des bêtes, traite, tonte, dressage" },
+  { id = "t_fishing", category = "technique", label_fr = "pêche, navigation" },
+  { id = "t_hunting", category = "technique", label_fr = "chasse, pistage, pièges" },
+  { id = "t_foraging", category = "technique", label_fr = "cueillette, reconnaître les plantes" },
+  { id = "t_healing", category = "technique", label_fr = "soigner les plaies et les maladies, remèdes" },
+  { id = "t_fighting", category = "technique", label_fr = "se battre (frapper, parer, saisir)" },
+  { id = "t_archery", category = "technique", label_fr = "tirer, lancer" },
+  { id = "t_stealth", category = "technique", label_fr = "se cacher, se déplacer sans bruit, prendre sans être vu, crocheter" },
+  { id = "t_climbing", category = "technique", label_fr = "grimper" },
+  { id = "t_swimming", category = "technique", label_fr = "nager" },
+  { id = "t_riding", category = "technique", label_fr = "monter, conduire un attelage" },
+  { id = "t_literacy", category = "technique", label_fr = "lire et écrire" },
+  { id = "t_reckoning", category = "technique", label_fr = "compter, mesurer, tenir des comptes" },
+  { id = "t_music", category = "technique", label_fr = "chanter, jouer d'un instrument, danser" },
+  { id = "t_magic", category = "technique", label_fr = "manier une baguette (façonner la matière)" },
+  # ─── Catégories de groupes (une croyance is_a, pas un classement du moteur) ───
+  { id = "g_household", category = "group_kind", label_fr = "foyer" },
+  { id = "g_lineage", category = "group_kind", label_fr = "lignée, famille" },
+  { id = "g_guild", category = "group_kind", label_fr = "guilde, corporation" },
+  { id = "g_band", category = "group_kind", label_fr = "bande" },
+  { id = "g_cult", category = "group_kind", label_fr = "culte, confrérie" },
+  { id = "g_community", category = "group_kind", label_fr = "communauté d'un village" },
+  { id = "g_militia", category = "group_kind", label_fr = "milice, garde" },
+  { id = "g_crew", category = "group_kind", label_fr = "équipage, équipe, caravane" },
+  { id = "g_workshop", category = "group_kind", label_fr = "atelier" },
+  # ─── Désigner sans nommer ───
+  { id = "me", category = "deictic", label_fr = "moi" },
+  { id = "you", category = "deictic", label_fr = "toi, vous (celui à qui l'on parle)" },
+  { id = "anyone", category = "quantifier", label_fr = "n'importe qui" },
+  { id = "everyone", category = "quantifier", label_fr = "tout le monde" },
+  { id = "someone", category = "quantifier", label_fr = "quelqu'un (inconnu)" },
+  { id = "no_one", category = "quantifier", label_fr = "personne" },
+  { id = "this", category = "deictic", label_fr = "ceci (ce qu'on montre, ce qu'on tient)" },
+  { id = "here", category = "deictic", label_fr = "ici" },
+]

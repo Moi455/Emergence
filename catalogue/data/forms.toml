@@ -1,0 +1,90 @@
+# forms.toml - les formes de parties : la grammaire des objets.
+#
+# Un objet = des parties ; une partie = une FORME faite d'une MATIÈRE (« lame:fer », « manche:chêne »).
+# Ses propriétés se déduisent : une lame de fer coupe mieux qu'une lame de silex et casse moins ; une
+# lame de verre coupe mais casse. Une forme donne une propriété POSSIBLE ; sa force dépend de la
+# matière (dureté, ténacité, densité) et de la taille. Toute combinaison est permise par le moteur :
+# un couteau attaché au bout d'un bâton est une lance, même si personne ne l'avait prévue.
+#
+# Axes parcourus : couper/percer/frapper ; tenir/allonger ; contenir/fermer ; couvrir/porter/protéger ;
+# attacher/assembler ; rouler/flotter ; supporter ; tendre/lancer ; faire du son/de la lumière ;
+# mesurer/ouvrir ; matière sans forme (bloc, morceau, poudre, liquide) ; vivant (organe d'une plante).
+
+form = [
+  # Couper, percer, frapper
+  { id = "blade", label_fr = "lame (bord tranchant)", gives = ["edge"], rule = "tranchant = dureté de la matière × finesse ; casse si ténacité faible" },
+  { id = "curved_blade", label_fr = "lame courbe (faucille, faux, serpe)", gives = ["edge"] },
+  { id = "point", label_fr = "pointe, pique", gives = ["point"] },
+  { id = "needle", label_fr = "aiguille, alêne (pointe fine)", gives = ["point"] },
+  { id = "hook", label_fr = "crochet, hameçon", gives = ["point"] },
+  { id = "teeth", label_fr = "dents (scie, peigne, râteau)", gives = ["edge"] },
+  { id = "tines", label_fr = "dents longues (fourche, trident)", gives = ["point"] },
+  { id = "wedge", label_fr = "coin, tête de hache (tranchant épais)", gives = ["edge"] },
+  { id = "pick_head", label_fr = "tête de pioche (pointe lourde)", gives = ["point"] },
+  { id = "spade_head", label_fr = "fer de pelle, de bêche, de houe", gives = ["edge"] },
+  { id = "blunt_head", label_fr = "tête contondante (marteau, masse, massue)", gives = [], rule = "concentre la masse au bout d'un manche : le coup frappe fort (affordance impacts)" },
+  { id = "abrasive_face", label_fr = "face abrasive (pierre à aiguiser, lime, meule)", gives = ["abrasiveness"] },
+  # Tenir, allonger
+  { id = "grip", label_fr = "poignée, manche court", gives = ["handle"] },
+  { id = "shaft", label_fr = "manche long, hampe", gives = ["handle", "reach"], rule = "allonge = longueur" },
+  { id = "rod", label_fr = "tige, barre, perche (rigide)", gives = ["reach"] },
+  # Contenir, fermer
+  { id = "vessel", label_fr = "récipient rigide (pot, tonneau, bol, seau)", gives = ["capacity"], rule = "étanche si matière non poreuse ou enduite" },
+  { id = "bag", label_fr = "contenant souple (sac, bourse, outre)", gives = ["capacity"] },
+  { id = "box", label_fr = "boîte, caisse, coffre (contenant rigide à couvercle)", gives = ["capacity"] },
+  { id = "basket_weave", label_fr = "vannerie (panier, nasse)", gives = ["capacity"] },
+  { id = "lid", label_fr = "couvercle, bouchon", gives = ["sealable"] },
+  { id = "spout", label_fr = "bec, goulot (verser)", gives = [] },
+  # Couvrir, porter, protéger
+  { id = "sheet_flexible", label_fr = "feuille souple (étoffe, cuir, papier, voile)", gives = ["surface_writable"], rule = "on écrit sur papier, parchemin, cuir ; pas sur la laine" },
+  { id = "sheet_rigid", label_fr = "planche, plaque, panneau, tablette", gives = ["surface_writable"] },
+  { id = "garment", label_fr = "pièce taillée pour le corps (vêtement)", gives = ["wearable_slot", "insulation"], rule = "isolation selon la matière (laine, fourrure > lin)" },
+  { id = "strap", label_fr = "sangle, courroie, ceinture, lanière", gives = ["binds", "wearable_slot"] },
+  { id = "armor_plate", label_fr = "plaque de protection (casque, bouclier, plastron)", gives = ["protection"] },
+  { id = "mail", label_fr = "maille d'anneaux", gives = ["protection"] },
+  { id = "padding", label_fr = "rembourrage, matelassé", gives = ["protection", "insulation"] },
+  { id = "ornament", label_fr = "ornement, bijou, figurine, sculpture", gives = [], rule = "sans usage physique : sa valeur est une croyance (beauté, rareté, symbole)" },
+  { id = "ring_band", label_fr = "anneau, bracelet, maillon", gives = ["wearable_slot"] },
+  # Attacher, assembler
+  { id = "cord", label_fr = "corde, fil, ficelle, chaîne (souple et long)", gives = ["binds"] },
+  { id = "mesh", label_fr = "filet, maillage souple", gives = ["binds"] },
+  { id = "fastener", label_fr = "clou, cheville, boucle, broche, agrafe", gives = ["binds"] },
+  { id = "hinge", label_fr = "charnière, gond", gives = ["open"] },
+  { id = "lock_mechanism", label_fr = "serrure, verrou, cadenas", gives = ["locked"] },
+  { id = "key_bit", label_fr = "panneton de clé", gives = ["key_for"] },
+  # Rouler, flotter
+  { id = "wheel", label_fr = "roue", gives = ["rolls"] },
+  { id = "hull", label_fr = "coque", gives = ["buoyancy", "capacity"] },
+  { id = "paddle", label_fr = "pale (rame, pagaie, pelle à enfourner)", gives = [] },
+  { id = "sail", label_fr = "voile (prend le vent)", gives = [] },
+  # Supporter
+  { id = "frame", label_fr = "bâti, cadre, armature", gives = [] },
+  { id = "platform", label_fr = "plateau, siège, couchette (porte un corps ou des objets)", gives = [] },
+  { id = "leg", label_fr = "pied, patte de meuble", gives = [] },
+  # Tendre, lancer, piéger
+  { id = "elastic_limb", label_fr = "branche élastique (arc)", gives = ["elasticity"] },
+  { id = "tension_string", label_fr = "corde tendue (corde d'arc, d'instrument)", gives = ["elasticity", "resonance"] },
+  { id = "trigger_mechanism", label_fr = "déclencheur (piège, arbalète)", gives = ["trigger"] },
+  # Son, lumière, image
+  { id = "resonator", label_fr = "caisse de résonance, tuyau, cloche", gives = ["resonance"] },
+  { id = "membrane", label_fr = "peau tendue (tambour)", gives = ["resonance"] },
+  { id = "wick", label_fr = "mèche", gives = ["light_emission"], rule = "brûle si la matière qui l'entoure est combustible (cire, suif, huile)" },
+  { id = "polished_face", label_fr = "face polie (miroir)", gives = ["reflectivity"] },
+  # Mesurer, absorber, coller
+  { id = "scale_marks", label_fr = "graduations, fléau de balance, poids étalons", gives = ["measures"] },
+  { id = "absorbent_pad", label_fr = "chiffon, éponge, tampon", gives = ["absorbency"] },
+  { id = "coating", label_fr = "enduit, couche (poix, cire, mortier, peinture)", gives = ["adhesion"] },
+  # Magie
+  { id = "magic_core", label_fr = "cœur magique (cristal serti)", gives = ["magic_power", "charge"], rule = "puissance selon la taille et la pureté du cristal ; inconnue en partie" },
+  # Matière sans forme
+  { id = "block", label_fr = "bloc, lingot, brique, pierre de taille", gives = [] },
+  { id = "lump", label_fr = "morceau, motte, bûche, pièce brute", gives = [] },
+  { id = "powder", label_fr = "poudre, farine, sable, cendre", gives = ["divisible"] },
+  { id = "granules", label_fr = "grains, graines en vrac", gives = ["divisible"] },
+  { id = "liquid", label_fr = "liquide (dans un récipient)", gives = ["divisible"] },
+  { id = "fiber_bundle", label_fr = "botte, toison, écheveau, fagot", gives = ["divisible"] },
+  # Vivant
+  { id = "seed", label_fr = "graine, noyau, bouture", gives = ["seed_of"] },
+  { id = "food_body", label_fr = "aliment (fruit, racine, feuille, morceau de chair, plat)", gives = ["nutrition"] },
+  { id = "preparation", label_fr = "préparation (remède, onguent, potion)", gives = ["potency"] },
+]
