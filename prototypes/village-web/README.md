@@ -24,6 +24,11 @@ de la boucle de rendu ».
   sur le CPU (160 directions de Fibonacci, quelques microsecondes). Le cycle jour/nuit est donc
   gratuit.
 - **Une shadow map solaire** de 2048², le seul élément vraiment dynamique.
+- **Couleur par voxel et par pierre**, mousse, crasse dans les recoins, fenêtres éclairées le
+  soir, prairies et touffes d'herbe fleuries jusqu'à 20 m : tout est décidé par voxel depuis la
+  graine, rien n'est stocké.
+- **Rayons de soleil** à contre-jour (passe au quart de la résolution) et feuillage traversé
+  par la lumière. Étalonnage : ombres froides, lumières chaudes. La page s'ouvre à l'heure dorée.
 - **Grain procédural et biseau par voxel**, atténués avec la distance pour ne pas scintiller.
 - **Braziers** : le feu n'est pas voxelisé. Six lumières ponctuelles chaudes et des cubes
   émissifs, allumés quand le soleil passe sous l'horizon.
@@ -71,18 +76,18 @@ sont justes.
 | Modules uniques / instances | 40 / 2 032 | 47 / 2 032 |
 | Voxels du village | 4 M, dont 0,2 M stockés une seule fois | 230 M, dont 9,5 M |
 | Mémoire voxels CPU | **1,2 Mo** | 41 Mo |
-| Mémoire GPU totale | 150 Mo | ~170 Mo |
-| dont maillages | 120 Mo | ~100 Mo |
+| Mémoire GPU totale | 190 Mo (avec l'herbe) | ~170 Mo |
+| dont maillages | 160 Mo | ~100 Mo |
 | dont shadow map 2048² | 16 Mo | 16 Mo |
 | dont **grille de ciel du village** | **781 ko** | — |
 | dont cible HDR + bloom | 11,4 Mo | — |
 | Villageois (fil intégration) | 48 villageois, 132 k triangles, 28,8 Mo | — |
-| Triangles, vue de rue | 5,3 M, dont 2,2 M de terrain | — |
-| Appels de dessin, vue de rue | 369 | — |
+| Triangles, vue de rue | 5,5 à 6,1 M selon la vue, dont 2,7 à 3,3 M de terrain et d'herbe | — |
+| Appels de dessin | ~300 | — |
 | Précalcul, maillage + PRT des modules | 3,9 s | — |
 | Précalcul, terrain (1 024 m) | 19,3 s de temps worker, réparti sur 3 workers | — |
 | Précalcul, grille de ciel du village | **0,65 s** | — |
-| Remaillage après une destruction | 180 ms pour une maison entière, dans un worker | — |
+| Remaillage après une destruction | 180 à 200 ms pour une maison entière, dans un worker | — |
 | Rayon de l'outil de destruction | 20 à 110 cm | 4 à 22 cm |
 
 Les temps de précalcul sont mesurés sur la machine de build, **sans GPU et avec un CPU partagé** :

@@ -902,6 +902,40 @@ if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScop
         if (top > hn) side(out, x0 + i * s, z0 + j * s, s, face, hn, top, 17 << 7 | tint(17, x0 + i * s, z0 + j * s), h);
       }
     }
+    // grass tufts and wild flowers on the finest leaves only. They are drawn, not solid: the
+    // player walks through them, and they come from the seed like the rest of the ground.
+    if (s === 1) {
+      const step = Math.max(1, Math.round(0.1 / VX.VS));          // tufts are 10 cm wide whatever the voxel
+      const capTop = (x, y, z, vid) => {
+        out.v(x, y, z, 2, 255, 0, 127, 0, vid); out.v(x, y, z + step, 2, 255, 0, 127, 0, vid);
+        out.v(x + step, y, z + step, 2, 255, 0, 127, 0, vid); out.v(x + step, y, z, 2, 255, 0, 127, 0, vid);
+      };
+      for (let j = 0; j < n; j += step) for (let i = 0; i < n; i += step) {
+        if (K[at(i, j)] !== 16) continue;
+        const x = x0 + i, z = z0 + j;
+        const patch = VX.hash2(Math.floor(x * VX.VS / 2.3), Math.floor(z * VX.VS / 2.3), 93) * 0.55
+                    + VX.hash2(Math.floor(x * VX.VS / 0.7), Math.floor(z * VX.VS / 0.7), 94) * 0.45;
+        if (VX.hash2(x, z, 91) >= 0.02 + 0.45 * Math.max(0, patch - 0.44)) continue;
+        const h = H[at(i, j)], r2 = VX.hash2(x, z, 92);
+        const tall = step * (2 + Math.floor(r2 * (patch > 0.6 ? 3.6 : 2.4)));       // 20 to 50 cm
+        const gvid = 16 << 7 | (56 + Math.floor(VX.hash2(x, z, 95) * 50));          // stalk
+        const tvid = 16 << 7 | (82 + Math.floor(VX.hash2(x, z, 96) * 26));          // lighter tip
+        const flower = r2 > 0.935;
+        const fvid = r2 > 0.955 ? (1 << 7 | 118) : (16 << 7 | 127);   // white daisies, yellow buttercups
+        const stem = h + tall;
+        for (let q = 0; q < 4; q++) side(out, x, z, step, dirs[q][2], h, stem - step, gvid, stem);
+        const cap = flower ? fvid : tvid;
+        const ctop = flower ? stem + step : stem;
+        for (let q = 0; q < 4; q++) side(out, x, z, step, dirs[q][2], stem - step, ctop, cap, ctop);
+        capTop(x, ctop, z, cap);
+        // a shorter blade beside it in the thick patches, so a tuft reads as a clump and not as a post
+        if (patch < 0.5) continue;
+        const sx = x + (r2 > 0.5 ? step : -step), sz = z + (VX.hash2(x, z, 97) > 0.5 ? step : 0);
+        const short = h + Math.max(step, tall - 2 * step);
+        for (let q = 0; q < 4; q++) side(out, sx, sz, step, dirs[q][2], h, short, tvid, short);
+        capTop(sx, short, sz, tvid);
+      }
+    }
     return out.n ? { buf: out.result(), quads: out.n / 4 } : null;
   };
   // vertical face of a terrain column; darkens towards the bottom, where little sky reaches

@@ -76,6 +76,30 @@ jour à chaud — un trou dans un mur n'éclaire pas encore l'intérieur. C'est 
 prochaine amélioration, et elle est locale : il suffit de relancer la propagation sur
 la boîte touchée.
 
+## 3 bis. Ce qui remplace la texture, et les rayons de soleil (ajouté après les images de référence)
+
+Les images de référence de Monsieur montrent ce que « texture » veut dire dans un monde en
+voxels : **chaque voxel et chaque pierre a sa propre teinte**. C'est donc décidé par voxel, dans le
+shader, à partir de la position du voxel, sans rien stocker :
+
+- une teinte par voxel, et une teinte par **pierre**, les pierres étant des blocs de 3 × 2 voxels
+  posés en assises décalées ;
+- de la **mousse** sur la pierre, les tuiles et le vieux bois, là où la face regarde le ciel et
+  là où l'occlusion dit que l'humidité reste ;
+- de la **crasse** dans les recoins, d'après la même occlusion ;
+- des **fenêtres éclairées** de l'intérieur à partir de la fin d'après-midi ;
+- des **prairies** alternant herbe grasse et herbe sèche à l'échelle du mètre, des touffes
+  d'herbe et des fleurs dans les 20 m autour de la caméra.
+
+Coût : une vingtaine d'opérations par pixel, zéro octet. Dans le moteur cible, ces règles iront
+plutôt dans le voxeliseur, qui écrira directement la bonne teinte dans chaque voxel.
+
+**Rayons de soleil.** Le ciel s'écrit dans l'image avec une marque qui le distingue de la matière.
+Une passe au quart de la résolution part de chaque pixel vers le soleil et ramasse le ciel
+rencontré : là où un toit, un tronc ou des feuilles le cachent, le rayon est coupé, ce qui dessine
+les faisceaux. 32 lectures par pixel, désactivée quand le soleil est haut ou hors du champ.
+Le feuillage, lui, laisse passer la lumière quand on regarde vers le soleil.
+
 ## 4. Les 1 Go que vous autorisez
 
 Nous n'en utilisons presque rien, et c'est voulu. Le monde est déterministe : tout ce
@@ -99,4 +123,6 @@ Vous avez raison, ni l'un ni l'autre en voxels.
 1. Mise à jour locale de la grille de ciel après une destruction.
 2. Cascades d'ombres (une seule carte pour tout le village limite la finesse).
 3. Reprojection temporelle, si la mesure sur votre machine le justifie.
-4. Le feu.
+4. Une lumière indirecte colorée à bas coût : faire porter à la grille de 2 m une couleur de
+   rebond, mise à jour par morceaux.
+5. Le feu qui se propage.

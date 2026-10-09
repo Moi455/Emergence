@@ -99,7 +99,7 @@ uniform vec3 u_shL0, u_shL1r, u_shL1g, u_shL1b;   // sky irradiance, order 1
 uniform vec3 u_cam; uniform float u_vs; uniform float u_fog; uniform int u_shadows; uniform int u_ao;
 uniform vec4 u_mat[21];                  // roughness, metalness, grain scale, grain amount
 uniform vec4 u_fires[6];                 // xyz camera-relative, w radiant power (0 = off)
-uniform float u_exposure;
+uniform float u_exposure; uniform float u_glow;
 out vec4 o;
 ` + SKY_COMMON + NOISE + `
 float shadowAt(vec4 ls){
@@ -132,17 +132,43 @@ void main(){
   float edge = min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));
   float bevel = mix(1.0, smoothstep(0.0, 0.14, edge) * 0.22 + 0.78, det);
   float g = vn3(v_vox * mt.z) * 0.6 + vn3(v_vox * mt.z * 3.1) * 0.4;
-  float grain = 1.0 + (g - 0.5) * mt.w * det;
-  float seed = h31(floor(v_vox) + 0.5);
+  float grain = 1.0 + (g - 0.5) * mt.w * 0.5 * det;
   // a slow stain over metres, which survives distance and breaks up the large flat areas
   float macro = vn3(wpos * 0.33) * 0.62 + vn3(wpos * 0.097) * 0.38;
-  alb *= grain * bevel * (0.94 + 0.12 * seed * det) * (0.84 + 0.32 * macro);
+  alb *= grain * bevel * (0.88 + 0.24 * macro);
+
+  // --- what reads as texture in a voxel world is colour per voxel: every voxel and every stone
+  // has its own shade, moss gathers where the sky falls and the damp stays, grime where it does not.
+  // All of it is decided per voxel, so it stays blocky, and none of it is stored.
+  float det2 = 1.0 - smoothstep(45.0, 130.0, dist);
+  vec3 vc = floor(v_vox - n * 0.5);                  // the voxel this face belongs to
+  float hvx = h31(vc + 0.5);
+  float row = floor(vc.y / 2.0), off = mod(row, 2.0);
+  float hs = h31(vec3(floor((vc.x + off) / 3.0), row, floor((vc.z + off) / 3.0)) + 7.31);   // stones in courses
+  bool stony = cls == 4 || cls == 5 || cls == 6 || cls == 7 || cls == 18 || cls == 19 || cls == 20;
+  bool woody = cls == 2 || cls == 3 || cls == 13;
+  bool tiles = cls == 8;
+  bool plant = cls == 11 || cls == 12 || cls == 16;
+  float vVox = stony ? 0.10 : woody ? 0.13 : tiles ? 0.16 : plant ? 0.17 : 0.06;
+  float vStone = stony ? 0.30 : woody ? 0.12 : tiles ? 0.12 : 0.0;
+  float shade = 1.0 + (hvx - 0.5) * 2.0 * vVox + (hs - 0.5) * 2.0 * vStone;
+  vec3 hue = vec3(1.0 + (hs - 0.5) * 0.12, 1.0, 1.0 - (hs - 0.5) * 0.12);
+  if (plant) hue = mix(vec3(0.82, 1.0, 0.80), vec3(1.25, 1.10, 0.66), hvx * hvx);   // dark blades and dry ones
+  alb *= mix(vec3(1.0), shade * hue, det2);
+  if (cls == 16) alb *= mix(vec3(0.74, 0.92, 0.66), vec3(1.18, 1.06, 0.66), smoothstep(0.30, 0.75, macro));
+  float mossy = (stony || tiles || cls == 3 || cls == 13) ? 1.0 : 0.0;
+  float mn = vn3((vc + 0.5) * 0.13) * 0.7 + hvx * 0.3;
+  float moss = mossy * smoothstep(0.60, 0.80, mn + max(n.y, 0.0) * 0.16 + (1.0 - v_ao) * 0.30 - 0.08);
+  alb = mix(alb, vec3(0.050, 0.082, 0.020) * (0.7 + 0.6 * hvx), moss * 0.85 * det2);
+  float grime = clamp((1.0 - v_ao) * 1.2 - 0.12, 0.0, 1.0);
+  alb *= mix(vec3(1.0), vec3(0.60, 0.53, 0.45), grime * 0.6);
   float rough = clamp(mt.x * (0.85 + 0.3 * g), 0.04, 1.0);
 
   // --- ambient: baked openness at the vertex, times how much sky reaches this spot in the village
   vec3 vp = (wpos + n * 1.4 - u_volMin) * u_volScale;
   float vol = all(greaterThan(vp, vec3(0.0))) && all(lessThan(vp, vec3(1.0))) ? texture(u_skyvol, vp).r : 1.0;
   float ao = u_ao == 1 ? v_ao : 1.0;
+  if (cls == 12) ao = mix(ao, 1.0, 0.35);
   vec3 amb = skyIrr(b) * alb * (ao * mix(0.25, 1.0, vol));
 
   // --- sun
@@ -150,6 +176,10 @@ void main(){
   float sh = (u_shadows == 1 && ndl > 0.0) ? shadowAt(v_ls) : 1.0;
   vec3 dir = u_sunCol * 0.3183099 * ndl * sh;
   vec3 col = amb + dir * alb;
+  if (cls == 12 || cls == 16 && dist < 40.0) {          // light through leaves and blades, towards the viewer
+    float back = pow(max(dot(normalize(v_rel), u_sun), 0.0), 3.0);
+    col += alb * u_sunCol * 0.3183099 * back * (cls == 12 ? 0.9 : 0.35) * (0.4 + 0.6 * v_ao);
+  }
 
   // --- specular: the sun as a rough highlight, plus the sky seen in the surface
   vec3 vdir = normalize(-v_rel);
@@ -164,6 +194,9 @@ void main(){
   col += u_sunCol * sh * ndl * spec * fres * tintSpec * 0.9;
   vec3 refl = reflect(-vdir, n);
   col += skyCol(normalize(mix(refl, b, rough * 0.85))) * fres * mix(0.25, 1.0, mt.y) * mix(0.35, 1.0, vol) * (1.0 - rough * 0.65) * tintSpec;
+
+  // --- lit windows: from late afternoon the glass glows with the hearth behind it
+  if (cls == 10) col += vec3(1.0, 0.50, 0.17) * u_glow * (0.55 + 0.45 * hvx) * 2.2;
 
   // --- braziers: a few warm point lights, the only lighting that is not precomputed
   for (int i = 0; i < 6; i++) {
@@ -206,7 +239,7 @@ void main(){
     vec3 lit = mix(u_hor * 1.05, u_sunCol * 0.55 + u_zen * 0.6, 0.55 + 0.45 * max(mu, 0.0));
     c = mix(c, lit, cov * 0.88);
   }
-  o = vec4(c * u_exposure, 1.0);
+  o = vec4(c * u_exposure, 0.0);    // alpha 0 = open sky, read by the sun-shaft pass
 }`;
 
 const WATER_VERT = `#version 300 es
@@ -259,13 +292,33 @@ void main(){ vec3 c = texture(u_src, v_uv).rgb * 0.227;
   c += (texture(u_src, v_uv + u_dir * 1.3846).rgb + texture(u_src, v_uv - u_dir * 1.3846).rgb) * 0.316;
   c += (texture(u_src, v_uv + u_dir * 3.2308).rgb + texture(u_src, v_uv - u_dir * 3.2308).rgb) * 0.070;
   o = vec4(c, 1.0); }`;
+// sun shafts: march from each pixel towards the sun and gather the open sky met on the way.
+// Where a roof, a trunk or leaves hide the sky, the ray is cut, which is what draws the beams.
+// 32 taps at quarter resolution: about the cost of the bloom, and nothing is precomputed or stored.
+const RAY_FRAG = `#version 300 es
+precision highp float; in vec2 v_uv; uniform sampler2D u_src; uniform vec2 u_sunUV; out vec4 o;
+void main(){
+  vec2 d = (u_sunUV - v_uv) * (1.0 / 32.0);
+  vec2 uv = v_uv; float w = 1.0; vec3 acc = vec3(0.0);
+  for (int i = 0; i < 32; i++) {
+    vec4 s = texture(u_src, uv);
+    acc += min(s.rgb, vec3(6.0)) * (1.0 - s.a) * w;
+    w *= 0.955; uv += d;
+  }
+  float fall = exp(-length((v_uv - u_sunUV) * vec2(1.6, 1.0)) * 2.2);
+  o = vec4(acc * (fall / 32.0), 1.0);
+}`;
+
 const POST_FRAG = `#version 300 es
-precision highp float; in vec2 v_uv; uniform sampler2D u_src; uniform sampler2D u_bloom; uniform float u_bloomAmt; out vec4 o;
+precision highp float; in vec2 v_uv; uniform sampler2D u_src; uniform sampler2D u_bloom; uniform float u_bloomAmt;
+uniform sampler2D u_rays; uniform vec3 u_rayCol; out vec4 o;
 vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
 void main(){
-  vec3 c = texture(u_src, v_uv).rgb + texture(u_bloom, v_uv).rgb * u_bloomAmt;
+  vec3 c = texture(u_src, v_uv).rgb + texture(u_bloom, v_uv).rgb * u_bloomAmt + texture(u_rays, v_uv).rgb * u_rayCol;
   c = aces(c);
-  c = mix(vec3(dot(c, vec3(0.2126, 0.7152, 0.0722))), c, 1.10);       // a touch more colour
+  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  c = mix(vec3(l), c, 1.14);                                          // a touch more colour
+  c *= mix(vec3(0.94, 0.99, 1.07), vec3(1.05, 1.0, 0.91), smoothstep(0.08, 0.65, l));   // cool shade, warm light
   c = pow(c, vec3(1.0 / 2.2));
   vec2 q = v_uv - 0.5;
   c *= 1.0 - dot(q, q) * 0.28;                                        // gentle vignette
@@ -274,7 +327,7 @@ void main(){
 
 const P_MAIN = prog(VERT, FRAG), PS = prog(VERT, SHADOW_FRAG), PK = prog(SKY_VERT, SKY_FRAG);
 const PW = prog(WATER_VERT, WATER_FRAG), PP = prog(PART_VERT, PART_FRAG);
-const PBRIGHT = prog(POST_VERT, BRIGHT_FRAG), PBLUR = prog(POST_VERT, BLUR_FRAG), PPOST = prog(POST_VERT, POST_FRAG);
+const PRAY = prog(POST_VERT, RAY_FRAG), PBRIGHT = prog(POST_VERT, BRIGHT_FRAG), PBLUR = prog(POST_VERT, BLUR_FRAG), PPOST = prog(POST_VERT, POST_FRAG);
 
 // ======================= load data =======================
 status('Téléchargement du village voxélisé…');
@@ -627,7 +680,10 @@ await new Promise((res) => { const t = setInterval(() => { if (modsDone >= usedM
 workers.forEach((w) => w.postMessage({ type: 'drop' }));
 
 // ======================= terrain quadtree =======================
-const WORLD = 1024 * M, ROOT = 256 * M;   // 1024 m of terrain, quadtree roots of 256 m
+// 1024 m of terrain. The roots are a power of two times 128 voxels, so the finest leaves are exactly
+// 128 voxels wide and meshed one cell per voxel (with roots of 256 m, the leaves came out 80 voxels
+// wide and the ground near the camera was meshed at 0.625 voxel per cell: 2.5 times too many quads).
+const WORLD = 1024 * M, ROOT = 128 * Math.pow(2, Math.round(Math.log2(256 * M / 128)));
 const TNODES = new Map();     // key -> {mesh, state, used}
 const tkey = (x, z, S) => x + ',' + z + ',' + S;
 const editedTiles = new Set();   // 128-tiles with removed voxels
@@ -669,7 +725,10 @@ function selectTerrain(now) {
     const dx = Math.max(Math.abs(camX - cxm) - S * VS / 2, 0), dz = Math.max(Math.abs(camZ - czm) - S * VS / 2, 0);
     const hy = Math.abs(camY - heightAt(Math.min(Math.max(Math.round(camX / VS), x0), x0 + S - 1), Math.min(Math.max(Math.round(camZ / VS), z0), z0 + S - 1)) * VS);
     const d = Math.hypot(dx, dz, hy * 0.5);
-    let split = S > 128 && (d < K * S * VS || (d < 60 && nodeHasEdits(x0, z0, S)));
+    // the finest leaves (one cell per voxel, with grass tufts) only near the camera: that level
+    // alone holds most of the terrain triangles, and beyond twenty metres a tuft is a few pixels
+    const lim = S === 256 ? 20 * Q.dist : K * S * VS;
+    let split = S > 128 && (d < lim || (d < 60 && nodeHasEdits(x0, z0, S)));
     if (split) {
       const h = S / 2, kids = [[x0, z0], [x0 + h, z0], [x0, z0 + h], [x0 + h, z0 + h]];
       const nodes = kids.map(([a, b]) => requestNode(a, b, h));
@@ -1138,10 +1197,10 @@ MEM.shadow = SH * SH * 4;
 // high dynamic range target, so the sun can be brighter than white and bloom has something to catch
 const floatRT = gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float');
 const HDRFMT = floatRT ? gl.RGBA16F : gl.RGBA8;
-let hdrTex = null, hdrDepth = null, hdrFB = null, bloomTex = [null, null], bloomFB = [null, null], bloomW = 0, bloomH = 0;
+let hdrTex = null, hdrDepth = null, hdrFB = null, bloomTex = [null, null, null], bloomFB = [null, null, null], bloomW = 0, bloomH = 0;
 function makeTargets(w, h) {
-  for (const t of [hdrTex, hdrDepth, bloomTex[0], bloomTex[1]]) if (t) gl.deleteTexture(t);
-  for (const f of [hdrFB, bloomFB[0], bloomFB[1]]) if (f) gl.deleteFramebuffer(f);
+  for (const t of [hdrTex, hdrDepth, bloomTex[0], bloomTex[1], bloomTex[2]]) if (t) gl.deleteTexture(t);
+  for (const f of [hdrFB, bloomFB[0], bloomFB[1], bloomFB[2]]) if (f) gl.deleteFramebuffer(f);
   hdrTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, hdrTex);
   gl.texStorage2D(gl.TEXTURE_2D, 1, HDRFMT, w, h);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -1152,7 +1211,7 @@ function makeTargets(w, h) {
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, hdrTex, 0);
   gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, hdrDepth);
   bloomW = Math.max(1, w >> 2); bloomH = Math.max(1, h >> 2);
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 3; i++) {
     bloomTex[i] = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, bloomTex[i]);
     gl.texStorage2D(gl.TEXTURE_2D, 1, HDRFMT, bloomW, bloomH);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -1161,7 +1220,7 @@ function makeTargets(w, h) {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, bloomTex[i], 0);
   }
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  MEM.hdr = (w * h + bloomW * bloomH * 2) * (floatRT ? 8 : 4) + w * h * 4;
+  MEM.hdr = (w * h + bloomW * bloomH * 3) * (floatRT ? 8 : 4) + w * h * 4;
 }
 const instBuf = gl.createBuffer(); let instCap = 0;
 const cubeBuf = gl.createBuffer(); {
@@ -1188,12 +1247,12 @@ const vao = gl.createVertexArray();
 const SKY_KEY = [   // by sun elevation (sin of the altitude)
   { e: -0.35, sun: [0.030, 0.042, 0.085], zen: [0.011, 0.018, 0.042], hor: [0.030, 0.042, 0.072], haze: 0.3 },
   { e: -0.06, sun: [0.42, 0.26, 0.22], zen: [0.045, 0.062, 0.145], hor: [0.26, 0.17, 0.19], haze: 1.5 },
-  { e: 0.035, sun: [3.30, 1.30, 0.42], zen: [0.085, 0.135, 0.400], hor: [0.92, 0.50, 0.30], haze: 2.1 },
-  { e: 0.18, sun: [4.30, 2.85, 1.70], zen: [0.130, 0.235, 0.620], hor: [0.80, 0.70, 0.62], haze: 1.4 },
+  { e: 0.035, sun: [3.30, 1.30, 0.42], zen: [0.070, 0.125, 0.420], hor: [0.92, 0.50, 0.30], haze: 1.55 },
+  { e: 0.18, sun: [4.40, 2.80, 1.55], zen: [0.110, 0.225, 0.660], hor: [0.78, 0.66, 0.56], haze: 1.05 },
   { e: 0.50, sun: [4.60, 4.25, 3.80], zen: [0.165, 0.330, 0.760], hor: [0.620, 0.715, 0.870], haze: 1.0 },
   { e: 0.90, sun: [4.70, 4.45, 4.10], zen: [0.175, 0.350, 0.800], hor: [0.640, 0.740, 0.900], haze: 0.9 },
 ];
-let TOD = 0.70;                       // 0.25 sunrise, 0.5 noon, 0.75 sunset
+let TOD = 0.728;                      // 0.25 sunrise, 0.5 noon, 0.75 sunset; we open on the golden hour
 let skyAuto = false;
 const SKY = { sun: [0, 1, 0], el: 1, sunCol: [1, 1, 1], zen: [0, 0, 0], hor: [0, 0, 0], grnd: [0, 0, 0], haze: 1, exposure: 1, fog: 0.0018, L0: [0, 0, 0], L1r: [0, 0, 0], L1g: [0, 0, 0], L1b: [0, 0, 0] };
 const GROUND_ALBEDO = [0.26, 0.30, 0.19];
@@ -1279,6 +1338,7 @@ function setCommon(pr, vp, lvp) {
     gl.uniform1i(u.u_ao, Q.ao ? 1 : 0); gl.uniform1i(u.u_shadows, Q.shadows ? 1 : 0);
     gl.uniform4fv(u.u_mat, MAT);
     gl.uniform4fv(u.u_fires, fireUni);
+    gl.uniform1f(u.u_glow, Math.max(0, Math.min(1, 0.32 - SKY.el * 1.6)));
     gl.uniform3f(u.u_volMin, VOL_ORG[0] * VS, VOL_ORG[1] * VS, VOL_ORG[2] * VS);
     gl.uniform3f(u.u_volScale, 1 / (VOLN[0] * VOL_C * VS), 1 / (VOLN[1] * VOL_C * VS), 1 / (VOLN[2] * VOL_C * VS));
     setSkyUniforms(pr);
@@ -1536,8 +1596,28 @@ function frame(now) {
       gl.bindTexture(gl.TEXTURE_2D, bloomTex[1]); gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   }
+  // --- sun shafts, only when the sun is low enough to matter and somewhere ahead of the camera
+  let rayAmt = 0, sunUV = [0.5, 0.5];
+  {
+    const S = SKY.sun, p = [0, 0, 0, 0];
+    for (let r = 0; r < 4; r++) p[r] = vp[r] * S[0] + vp[4 + r] * S[1] + vp[8 + r] * S[2];   // direction: w = 0
+    if (p[3] > 0.05 && SKY.el > -0.02) {
+      sunUV = [p[0] / p[3] * 0.5 + 0.5, p[1] / p[3] * 0.5 + 0.5];
+      const out = Math.max(0, Math.max(Math.abs(sunUV[0] - 0.5), Math.abs(sunUV[1] - 0.5)) - 0.5);
+      rayAmt = Math.max(0, 1 - out * 1.6) * Math.max(0, Math.min(1, (0.55 - SKY.el) * 2.2)) * Math.min(1, (SKY.el + 0.02) * 12);
+    }
+  }
+  if (rayAmt > 0.01) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, bloomFB[2]); gl.viewport(0, 0, bloomW, bloomH);
+    gl.useProgram(PRAY.p); gl.uniform1i(PRAY.u.u_src, 0); gl.uniform2f(PRAY.u.u_sunUV, sunUV[0], sunUV[1]);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
   gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, canvas.width, canvas.height);
   gl.useProgram(PPOST.p);
+  gl.uniform1i(PPOST.u.u_rays, 2);
+  { const k = rayAmt * 0.55 / Math.max(0.3, SKY.sunCol[0]); gl.uniform3f(PPOST.u.u_rayCol, SKY.sunCol[0] * k, SKY.sunCol[1] * k * 0.92, SKY.sunCol[2] * k * 0.8); }
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, bloomTex[2]);
   gl.uniform1i(PPOST.u.u_src, 0); gl.uniform1i(PPOST.u.u_bloom, 1);
   gl.uniform1f(PPOST.u.u_bloomAmt, Q.bloom ? 0.42 : 0.0);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, hdrTex);
