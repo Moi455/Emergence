@@ -1,3 +1,15 @@
+# Chantiers ouverts (mis à jour le 10 octobre 2026)
+
+**En cours (9-10 oct.) : moteur social, puis entraînement.** Fait : le catalogue unique (`catalogue/`, chantier 3 ci-dessous), la conception de l'IA mesurée (`docs/07`), le gouverneur C++. Suite, dans l'ordre :
+1. mémoire des PNJ en C++ (variables et enregistrements générés depuis le catalogue) ;
+2. langue intérieure en C++ (analyseur typé, oracle `catalogue/tools/language.py`) ;
+3. perception par observateur et tokeniseur unique C++ exposé à Python ;
+4. exécution des gestes et processus, faits, ordonnanceur ;
+5. professeur Gemini (quota gratuit autorisé) sur le nouveau format, après un pilote qui mesure refus et taille des requêtes ;
+6. entraînement en float16 sur la Quadro RTX 3000, puis DAgger sur le moteur C++.
+
+---
+
 # Chantiers ouverts (8 octobre 2026, passage sur Claude Code)
 
 `CHARTE_DU_JEU.md` prime sur tout ; en cas de contradiction avec ce fichier, elle gagne.

@@ -1,4 +1,17 @@
-# État du dépôt (8 octobre 2026)
+# État du dépôt (10 octobre 2026)
+
+**Depuis le 9 oct. (Claude Code sur la machine de Monsieur)** : branche `claude/moteur-social` poussée sur GitHub. Focus : moteur social et Transformer (le reste est mis de côté, `.claudeignore`).
+
+| Nouveau | État |
+|---|---|
+| `catalogue/` | source unique des variables et des gestes, étapes 0 à 17 faites, 45 tests verts ; voir `catalogue/ETAT.md` |
+| `engine/social/` | moteur social C++20 (D31) : tables générées depuis le catalogue, gouverneur porté, d'accord avec son oracle Python sur 4 650 cas ; ctest 7/7 vert sur la machine de Monsieur |
+| `docs/07_conception_ia.md` | conception du cerveau des PNJ, mesures réelles sur la Quadro RTX 3000 : 200 décisions/s ≈ 4 à 6 % du GPU en `small` |
+| `ai/research/` | bancs d'essai GPU et simulation de l'ordonnanceur |
+
+L'ancien état ci-dessous date du 8 oct.
+
+## Ancien état (8 octobre 2026)
 
 Branche `claude/integration-5q5447`, PR #1 (brouillon, à fusionner par Monsieur). La CI (`.github/workflows/ci.yml`) lance cinq tâches : pipeline PNJ et convertisseur (`scripts/test_all.sh`), moteur C++ (ctest), génération du monde (`test_worldgen`), simulation sociale (unittest). Elle est verte sur 7b970f6 ; chaque commit suivant passe tous les tests en local avant d'être poussé. Vérifiez le résultat du dernier commit sur GitHub.
 
