@@ -70,6 +70,22 @@ class TestCatalogue(unittest.TestCase):
                 self.assertNotEqual(v.scale, "id", v.id)
                 self.assertNotEqual(v.visibility, "engine", v.id)
 
+    def test_violence_is_one_gesture(self):
+        # Monsieur, 9 Oct: a slap, a punch, a beating and blows until death are ONE gesture with a manner
+        force = {a.id for a in self.cat["action"].values() if a.family == "force"}
+        for sid in ("slap_after_insult", "punch_in_brawl", "beating_near_death", "killed_by_blows"):
+            st = self.cat["story"][sid]
+            self.assertEqual(st.status, "expressible", sid)
+            self.assertIn("strike", st.actions, sid)
+            hitting = [a for a in st.actions if a in force and a not in ("grab", "push", "guard")]
+            self.assertEqual(hitting, ["strike"], sid)
+
+    def test_touch_is_intimate_only_by_manner(self):
+        touch = self.cat["action"]["touch"]
+        self.assertFalse(touch.intimate)
+        manner = [p for p in touch.params if p.name == "manner"][0]
+        self.assertEqual(sorted(manner.intimate_values), ["intimate", "romantic"])
+
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()
         cat._add("action", {"id": "blackmail", "family": "communicate"}, "test")

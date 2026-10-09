@@ -39,7 +39,8 @@ STORY_STATUS = ("todo", "expressible", "gap")      # probe result
 ACTION_FAMILIES = ("move", "posture", "grasp", "force", "tool", "transform", "consume", "care",
                    "perceive", "communicate", "meta")
 PARAM_TYPES = ("entity", "place", "item", "bodypart", "enum", "qty", "ratio", "duration", "condition",
-               "expression", "direction", "material", "recipe", "bool")
+               "expression", "direction", "material", "recipe", "bool", "kind")
+# entity / place / item params are the NPC's OWN mental files (mref), never objective ids
 # Arguments never point to an objective id: 'entity' = one of the NPC's own mental files (identified with a
 # certainty), 'event' = an event the NPC remembers or describes, 'place' = a place as the NPC knows it.
 ARG_TYPES = ("agent", "entity", "item", "place", "group", "role", "agreement", "event", "concept", "proposition",
@@ -170,6 +171,8 @@ class Param:
     values: list[str] = field(default_factory=list)
     optional: bool = False
     note: str = ""
+    intimate_values: list[str] = field(default_factory=list)   # D10: these values are refused with a minor
+    ordinal: bool = False                # a manner scale (force, pace...): at most 5 bins (AI budget)
 
 
 @dataclass
@@ -182,6 +185,7 @@ class Action(Entry):
     duration: str = ""
     animation: list[str] = field(default_factory=list)
     intimate: bool = False               # D10: refused whenever an argument's true life_stage is below adult
+    uses: list[str] = field(default_factory=list)            # technique concepts whose mastery shapes the outcome
     status: str = "N"
 
 
@@ -399,6 +403,17 @@ class Catalogue:
                     p.append(f"action {a.id}: param {prm.name} type '{prm.type}' not in {PARAM_TYPES}")
                 if prm.type == "enum" and not prm.values:
                     p.append(f"action {a.id}: enum param {prm.name} without values")
+                if prm.ordinal and len(prm.values) > 5:
+                    p.append(f"action {a.id}: ordinal param {prm.name} has more than 5 bins")
+                for iv in prm.intimate_values:
+                    if iv not in prm.values:
+                        p.append(f"action {a.id}: intimate value '{iv}' not among {prm.name} values")
+            for t in a.uses:
+                if t not in self["concept"] or self["concept"][t].category != "technique":
+                    p.append(f"action {a.id}: uses unknown technique '{t}'")
+            for r in a.requires:
+                if r not in self["property"]:
+                    p.append(f"action {a.id}: requires unknown property '{r}'")
         for s in self["story"].values():
             if s.status not in STORY_STATUS:
                 p.append(f"story {s.id}: status '{s.status}'")

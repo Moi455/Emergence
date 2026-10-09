@@ -9,21 +9,37 @@
 # ─── Violence physique : un seul geste, des manières différentes (Monsieur, 9 oct.) ────────────────
 [[story]]
 id = "slap_after_insult"
+status = "expressible"
+actions = ["strike", "go"]
+variables = ["pain", "expression", "involuntary_signs", "anger", "shame"]
+note = "strike(tête, main ouverte, light, once) puis go : une gifle"
 charter = ["§6", "§8"]
 text_fr = "Après une remarque humiliante, une femme gifle un homme devant la taverne, puis s'en va."
 
 [[story]]
 id = "punch_in_brawl"
+status = "expressible"
+actions = ["strike", "grab", "push"]
+variables = ["pain", "wounds", "condition", "intoxication", "anger"]
+note = "strike(tête, poing, firm, once) ; l'aubergiste : grab + push pour séparer"
 charter = ["§8", "§27"]
 text_fr = "Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l'autre tombe, la bagarre s'arrête quand l'aubergiste les sépare."
 
 [[story]]
 id = "beating_near_death"
+status = "expressible"
+actions = ["strike", "keep_away"]
+variables = ["wounds", "consciousness", "bleeding", "condition", "r_resentment"]
+note = "strike(any, poing, hard, until_still) puis keep_away ; le rival survit, inconscient"
 charter = ["§6", "§25"]
 text_fr = "Un homme rancunier roue de coups son rival jusqu'à ce qu'il ne bouge plus, puis s'arrête et fuit ; le rival survit, blessé pour des semaines."
 
 [[story]]
 id = "killed_by_blows"
+status = "expressible"
+actions = ["strike"]
+variables = ["wounds", "consciousness", "blood_volume", "alive", "condition"]
+note = "strike(tête, pied, full, until_still) prolongé après la perte de conscience : la mort vient du corps, personne n'a choisi « tuer »"
 charter = ["§25"]
 text_fr = "Une rixe dégénère : les coups continuent après la perte de connaissance et la victime meurt. Personne n'avait décidé de « tuer »."
 

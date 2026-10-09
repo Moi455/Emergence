@@ -2,16 +2,16 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_rule 4, story 146, material 84, process 30, form 63, item_type 421, species 79
+Compte : entity 16, component 47, variable 295, property 89, action 46, concept 164, hard_rule 4, story 146, material 84, process 30, form 63, item_type 421, species 79
 
 ## Histoires (tests d'acceptation)
 
 | id | charte | état | histoire |
 |---|---|---|---|
-| slap_after_insult | §6, §8 | todo | Après une remarque humiliante, une femme gifle un homme devant la taverne, puis s'en va. |
-| punch_in_brawl | §8, §27 | todo | Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l'autre tombe, la bagarre s'arrête quand l'aubergiste les sépare. |
-| beating_near_death | §6, §25 | todo | Un homme rancunier roue de coups son rival jusqu'à ce qu'il ne bouge plus, puis s'arrête et fuit ; le rival survit, blessé pour des semaines. |
-| killed_by_blows | §25 | todo | Une rixe dégénère : les coups continuent après la perte de connaissance et la victime meurt. Personne n'avait décidé de « tuer ». |
+| slap_after_insult | §6, §8 | expressible | Après une remarque humiliante, une femme gifle un homme devant la taverne, puis s'en va. |
+| punch_in_brawl | §8, §27 | expressible | Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l'autre tombe, la bagarre s'arrête quand l'aubergiste les sépare. |
+| beating_near_death | §6, §25 | expressible | Un homme rancunier roue de coups son rival jusqu'à ce qu'il ne bouge plus, puis s'arrête et fuit ; le rival survit, blessé pour des semaines. |
+| killed_by_blows | §25 | expressible | Une rixe dégénère : les coups continuent après la perte de connaissance et la victime meurt. Personne n'avait décidé de « tuer ». |
 | self_defense_kill | §5, §25 | todo | Attaqué au couteau sur un chemin, un bûcheron frappe avec sa hache et tue son agresseur ; au village, certains parlent de légitime défense, d'autres de meurtre. |
 | knife_interrupts_drink | §8 | todo | Un PNJ boit tranquillement depuis deux minutes quand un homme entre avec un couteau ; il pose sa chope, se lève et recule vers la porte. |
 | restrain_drunk | §8, §12 | todo | Un ami retient par les bras un homme ivre qui veut frapper, et lui parle pour le calmer. |
@@ -226,6 +226,7 @@ Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_r
 | request | une demande reçue et pas encore traitée (qui, quoi, depuis quand) | agent |
 | skill | une maîtrise : une technique et son niveau (la vraie compétence, tenue par le moteur) | agent |
 | percept | une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité | agent |
+| event_seen | un geste d'autrui perçu récemment (vu ou entendu) : qui, quel geste, sur quoi, comment | agent |
 
 ## Variables d'état
 
@@ -262,10 +263,10 @@ Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit | ENTITY.look.condition | 0 |
+| condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit | ENTITY.look.condition | 3 |
 | symptoms | symptômes visibles (fièvre, toux, taches, pâleur, tremblements) | list | calculé |  | observable |  | ENTITY.look.health | 0 |
-| expression | expression du visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | tirée des émotions réelles, atténuée par la volonté de masquer (esprit mouvant, étape 5) et la maîtrise de soi | ENTITY.look.expression | 0 |
-| involuntary_signs | signes involontaires (rougir, pâlir, transpirer, trembler, larmes, voix qui tremble) | list | calculé |  | observable | on les masque mal : c'est par eux qu'un mensonge ou une peur se trahit | ENTITY.look.signs | 0 |
+| expression | expression du visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | tirée des émotions réelles, atténuée par la volonté de masquer (esprit mouvant, étape 5) et la maîtrise de soi | ENTITY.look.expression | 1 |
+| involuntary_signs | signes involontaires (rougir, pâlir, transpirer, trembler, larmes, voix qui tremble) | list | calculé |  | observable | on les masque mal : c'est par eux qu'un mensonge ou une peur se trahit | ENTITY.look.signs | 1 |
 | posture | posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  | SELF.posture ; ENTITY.look.posture | 0 |
 | visible_injury | blessures visibles | unipolar10 | calculé |  | observable | plaies des zones non couvertes, sang sur les vêtements, boiterie | ENTITY.look.wounds | 0 |
 | attire_seen | ce qu'on voit de la tenue (sobre ou riche, de fête, de deuil, de travail, armure) | list | calculé |  | observable | tiré des vêtements portés : matières, qualité, teintes, emplacements | ENTITY.look.attire | 0 |
@@ -320,15 +321,15 @@ Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| alive | vivant (la vérité) | bool | moteur |  | moteur seul |  |  | 0 |
-| consciousness | conscience (10 éveillé et lucide, 0 inconscient) | unipolar10 | moteur |  | observable | baisse avec coups à la tête, douleur extrême, sang perdu, ivresse, sommeil ; remonte au repos | SELF.body.consciousness | 0 |
-| blood_volume | volume de sang (100 = plein) | qty | moteur |  | moteur seul | baisse selon le saignement ; < 60 % faiblesse, < 40 % mort ; remonte lentement |  | 0 |
-| bleeding | saignement | unipolar10 | moteur |  | observable | somme des plaies ouvertes ; un bandage ou la pression le réduisent | SELF.body.bleeding | 0 |
-| pain | douleur | unipolar10 | moteur |  | privé | saute au coup, décroît ; les blessures en entretiennent une part ; certaines potions l'atténuent | SELF.body.pain | 0 |
+| alive | vivant (la vérité) | bool | moteur |  | moteur seul |  |  | 1 |
+| consciousness | conscience (10 éveillé et lucide, 0 inconscient) | unipolar10 | moteur |  | observable | baisse avec coups à la tête, douleur extrême, sang perdu, ivresse, sommeil ; remonte au repos | SELF.body.consciousness | 2 |
+| blood_volume | volume de sang (100 = plein) | qty | moteur |  | moteur seul | baisse selon le saignement ; < 60 % faiblesse, < 40 % mort ; remonte lentement |  | 1 |
+| bleeding | saignement | unipolar10 | moteur |  | observable | somme des plaies ouvertes ; un bandage ou la pression le réduisent | SELF.body.bleeding | 1 |
+| pain | douleur | unipolar10 | moteur |  | privé | saute au coup, décroît ; les blessures en entretiennent une part ; certaines potions l'atténuent | SELF.body.pain | 2 |
 | breath | souffle (asphyxie : noyade, fumée, étranglement) | unipolar10 | moteur |  | observable | baisse sous l'eau, dans la fumée, la gorge serrée ; à 0, perte de conscience puis mort | SELF.body.breath | 0 |
 | body_temperature | température du corps | qty | moteur |  | moteur seul | suit le lieu, la tenue (isolation), l'humidité, le feu ; fièvre par infection ; < 33 °C ou > 41 °C : danger |  | 0 |
 | zones | zones du corps | enum (head, neck, upper_torso, lower_torso, upper_arm_l, upper_arm_r, forearm_l, forearm_r, hand_l, hand_r, pelvis, thigh_l, thigh_r, calf_l, calf_r, feet) | naissance |  | moteur seul |  |  | 0 |
-| wounds | blessures : zone, type (contusion, coupure, perforation, brûlure, fracture, gelure, morsure), gravité, infectée, soignée, âge | list | moteur |  | observable | processus heal_tissue ; l'infection les aggrave ; une fracture non réduite laisse une séquelle | SELF.wound (les 2 pires : région grossière tête/torse/bras/jambes, type, gravité) | 0 |
+| wounds | blessures : zone, type (contusion, coupure, perforation, brûlure, fracture, gelure, morsure), gravité, infectée, soignée, âge | list | moteur |  | observable | processus heal_tissue ; l'infection les aggrave ; une fracture non réduite laisse une séquelle | SELF.wound (les 2 pires : région grossière tête/torse/bras/jambes, type, gravité) | 3 |
 | permanent_marks | séquelles et marques (cicatrice, boiterie, œil perdu, doigts manquants) | list | moteur |  | observable |  | ENTITY.look.marks | 0 |
 | mobility | capacité à se déplacer | ratio | calculé |  | observable | jambes blessées, épuisement, charge, ivresse, âge | SELF.body.mobility | 0 |
 | manipulation | capacité à manier (mains et bras) | ratio | calculé |  | observable | mains et bras blessés, froid, tremblements, ivresse | SELF.body.manipulation | 0 |
@@ -343,7 +344,7 @@ Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_r
 | hearing | acuité auditive | unipolar10 | naissance, moteur |  | privé |  |  | 0 |
 | illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent |  | 0 |
 | immunities | immunités acquises | list | moteur |  | moteur seul |  |  | 0 |
-| intoxication | ivresse, effet d'une substance (alcool, somnifère, poison) | unipolar10 | moteur |  | observable | monte par la potency de ce qu'on ingère, redescend en heures | SELF.body.intox ; ENTITY.look.drunk | 0 |
+| intoxication | ivresse, effet d'une substance (alcool, somnifère, poison) | unipolar10 | moteur |  | observable | monte par la potency de ce qu'on ingère, redescend en heures | SELF.body.intox ; ENTITY.look.drunk | 1 |
 | sickness_felt | malaise ressenti (fièvre, nausée, faiblesse) : les symptômes, pas la maladie | unipolar10 | calculé |  | privé | tiré des symptômes ; l'incubation ne se sent pas | SELF.body.sickness | 0 |
 
 ### carrier
@@ -412,6 +413,18 @@ Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_r
 | m_secret | souvenir qu'on cache | bool | T saut |  | privé |  | MEMORY.secret | 0 |
 | m_vividness | netteté (les détails s'estompent) | unipolar10 | moteur |  | privé | baisse avec le temps selon la mémoire de la personne ; les rappels et les récits la remontent ; basse, les détails (qui exactement, combien) deviennent incertains ou glissent | MEMORY.vividness | 0 |
 | m_rehearsals | combien de fois on y a repensé ou l'a raconté | qty | moteur |  | privé | consolide le souvenir ; un souvenir trop raconté s'embellit |  | 0 |
+
+### event_seen
+
+| id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
+|---|---|---|---|---|---|---|---|---|
+| ev_actor | qui (dossier mental, ou « quelqu'un » si on ne l'a pas reconnu) | mref | calculé |  | observable |  | EVENT.actor | 0 |
+| ev_gesture | quel geste (tel qu'on l'a vu : on voit « prendre », pas « voler ») | word | calculé |  | observable |  | EVENT.gesture | 0 |
+| ev_target | sur qui ou quoi (dossier mental) | mref | calculé |  | observable |  | EVENT.target | 0 |
+| ev_manner_seen | la manière vue (force, discrétion, ton, volume), en niveaux grossiers | list | calculé |  | observable |  | EVENT.manner | 0 |
+| ev_with | avec quoi (dossier de l'objet, ou ses usages vus) | mref | calculé |  | observable |  | EVENT.with | 0 |
+| ev_sense | vu ou seulement entendu | enum (seen, heard) | calculé |  | observable |  | EVENT.sense | 0 |
+| ev_age | il y a combien de temps | time | calculé |  | observable |  | EVENT.age | 0 |
 
 ### flow
 
@@ -497,13 +510,13 @@ Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_r
 |---|---|---|---|---|---|---|---|---|
 | fear | peur (menace présente) | unipolar10 | T saut, moteur |  | privé | retombe vers 0 selon la résilience ; la douleur et la blessure l'entretiennent | SELF_STATE.emo.fear | 0 |
 | anxiety | inquiétude (menace à venir) | unipolar10 | T saut, moteur |  | privé | retombe lentement selon la résilience ; la douleur et la maladie ressenties l'entretiennent (le corps, pas un jugement) | SELF_STATE.emo.anxiety | 0 |
-| anger | colère | unipolar10 | T saut, moteur |  | privé | retombe selon la résilience ; la douleur, la faim, le manque de sommeil, l'ivresse la font monter plus vite | SELF_STATE.emo.anger | 0 |
+| anger | colère | unipolar10 | T saut, moteur |  | privé | retombe selon la résilience ; la douleur, la faim, le manque de sommeil, l'ivresse la font monter plus vite | SELF_STATE.emo.anger | 2 |
 | joy | joie | unipolar10 | T saut, moteur |  | privé | retombe vers l'humeur de fond | SELF_STATE.emo.joy | 0 |
 | sadness | tristesse | unipolar10 | T saut, moteur |  | privé | retombe lentement | SELF_STATE.emo.sadness | 0 |
 | grief | deuil (perte d'un proche) | unipolar10 | T saut, moteur |  | privé | peut saisir d'un coup (une émotion) ; le moteur le fait retomber très lentement, sur des jours de jeu | SELF_STATE.emo.grief | 0 |
 | disgust | dégoût (physique ou moral) | unipolar10 | T saut, moteur |  | privé | retombe vite | SELF_STATE.emo.disgust | 0 |
 | surprise | surprise, choc | unipolar10 | T saut, moteur |  | privé | retombe en secondes | SELF_STATE.emo.surprise | 0 |
-| shame | honte (devant les autres) | unipolar10 | T saut, moteur |  | privé | retombe lentement ; trahie par la rougeur | SELF_STATE.emo.shame | 0 |
+| shame | honte (devant les autres) | unipolar10 | T saut, moteur |  | privé | retombe lentement ; trahie par la rougeur | SELF_STATE.emo.shame | 1 |
 | guilt | culpabilité (devant sa conscience) | unipolar10 | T saut, moteur |  | privé | retombe lentement selon la résilience ; seul le Transformer juge s'il y a faute et s'il la ravive | SELF_STATE.emo.guilt | 0 |
 | pride | fierté | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.pride | 0 |
 | jealousy | jalousie (peur de perdre quelqu'un au profit d'un autre) | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.jealousy | 0 |
@@ -615,7 +628,7 @@ Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_r
 | r_respect | respect, admiration (−10 mépris, +10 admiration) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.respect ; GROUP.rel.respect | 0 |
 | r_attraction | attirance amoureuse (adultes seulement) | unipolar10 | T pas, moteur | 0.5 | privé | règle dure D10 appliquée par le gouverneur ; le moteur ne fait que l'effacement | ENTITY.rel.attraction | 0 |
 | r_fear | crainte de cette personne | unipolar10 | T saut, moteur |  | privé | peut sauter (il a sorti un couteau) ; retombe lentement | ENTITY.rel.fear ; GROUP.rel.fear | 0 |
-| r_resentment | rancune | unipolar10 | T pas, moteur | 0.5 | privé | le moteur l'efface très lentement, d'autant plus lentement que la personne est peu portée au pardon | ENTITY.rel.resentment ; GROUP.rel.resentment | 0 |
+| r_resentment | rancune | unipolar10 | T pas, moteur | 0.5 | privé | le moteur l'efface très lentement, d'autant plus lentement que la personne est peu portée au pardon | ENTITY.rel.resentment ; GROUP.rel.resentment | 1 |
 | r_obligation | dette morale ressentie (on lui doit quelque chose, sans contrat) | bipolar10 | T pas, moteur | 0.5 | privé | + : je lui dois ; − : il me doit | ENTITY.rel.obligation | 0 |
 | r_rivalry | rivalité (en concurrence pour une même chose : une place, une personne, un marché) | unipolar10 | T pas, moteur | 0.5 | privé |  | ENTITY.rel.rivalry | 0 |
 | r_familiarity | familiarité (combien on le connaît) | unipolar10 | moteur |  | privé | monte avec le temps passé ensemble et les échanges, baisse lentement sans contact | ENTITY.rel.familiarity | 0 |
@@ -1540,10 +1553,81 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | grave_marker | croix ou stèle de bois | funeral | sheet_rigid:oak_planks, rod:oak_raw | 6 | reach, surface_writable |  |
 | memento | souvenir d'un défunt (mèche, objet gardé) | funeral | ornament:cloth | 0.01 |  |  |
 
+## Gestes physiques
+
+| id | famille | libellé | paramètres | effets | perception | histoires |
+|---|---|---|---|---|---|---|
+| go | move | aller (vers un lieu, une personne, une direction) | target:place; pace:enum=slow/walk/brisk/run/sneak; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; la course épuise ; la marche discrète fait moins de bruit (furtivité) | vu ; pas entendus selon l'allure et le sol | 1 |
+| follow | move | suivre quelqu'un | target:entity; distance:enum=close/near/far; discreet:bool? | garde la distance ; discret : reste hors de son regard quand c'est possible | vu par la cible si elle regarde | 0 |
+| keep_away | move | s'éloigner, garder ses distances, fuir | target:entity; distance:enum=near/far/out_of_sight; pace:enum=walk/brisk/run | déplacement qui maximise la distance | vu | 1 |
+| climb | move | grimper, escalader, descendre | target:place; pace:enum=careful/normal/fast | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu | 0 |
+| swim | move | nager | target:place; pace:enum=float/steady/hard | épuise ; le courant emporte ; sans maîtrise ou trop chargé, on se noie (souffle) | vu, entendu | 0 |
+| jump | move | sauter | target:place; force:enum=hop/jump/leap | franchit un fossé, descend d'un toit ; mauvaise réception : blessure aux jambes | vu | 0 |
+| mount | move | monter sur une bête ou un véhicule, en descendre | target:entity; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner | vu | 0 |
+| steer | move | conduire (une monture, une charrette, une barque : diriger, ramer) | target:place; speed:enum=slow/steady/fast | déplace le véhicule et sa charge ; la mer et le vent s'en mêlent | vu | 0 |
+| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie | accroupi derrière ce qui cache : on est caché ; à genoux : prier, travailler au sol, se soumettre (ce que les autres en pensent) | vu | 0 |
+| take | grasp | prendre (au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:item; from:enum=ground/container/hand_of/worn_by; manner:enum=openly/quickly/discreetly | l'objet passe dans la main ; le registre note de quelles mains, par quel geste ; dans les mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti par celui qu'on dépouille selon la maîtrise | 0 |
+| put | grasp | poser, ranger, déposer, mettre en place (au sol, dans, sur, sous, dans un mur) | item:item; where:place; manner:enum=openly/carefully/discreetly | poser une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 0 |
+| give | grasp | tendre, donner en main propre | item:item; to:entity; manner:enum=offer/press | l'objet passe de main en main (registre : donné) ; offert et refusé, il reste dans la main | vu | 0 |
+| throw | grasp | lancer, jeter | item:item; at:place; force:enum=toss/throw/hurl | projectile : touche selon l'adresse et la distance ; casse ce qui est fragile ; un coup s'il touche quelqu'un | vu, entendu à l'impact | 0 |
+| pour | grasp | verser, vider | from:item; into:place; amount:enum=drop/some/half/all | le liquide passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | 0 |
+| wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure | item:item; mode:enum=put_on/take_off | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu | 0 |
+| operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège) | target:item; mode:enum=open/close/lock/unlock/activate; with:item? | déverrouille si la clé correspond (clé de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : fait tourner le rouet, sonner la cloche, armer le piège | vu ; entendu (grincements, cloche) | 0 |
+| strike | force | frapper (une personne, une bête, un arbre, une pierre, un mur, du métal chaud) | target:entity; zone:enum=head/torso/arms/legs/any; with:enum=held_item/open_hand/fist/foot/head; force:enum=tap/light/firm/hard/full; repeat:enum=once/until_down/until_still/until_yields/until_stopped | énergie = force × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière | vu, entendu (bruit selon l'impact) | 4 |
+| push | force | pousser, bousculer, renverser | target:entity; force:enum=nudge/push/shove/slam; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu | 1 |
+| pull | force | tirer (une personne par le bras, une charrette, une corde, un filet) | target:entity; force:enum=gentle/firm/hard/full; toward:place? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu | 0 |
+| grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et tenir | target:entity; zone:enum=arm/collar/hair/neck/waist; force:enum=light/firm/hard/full; hold:enum=brief/until_released/until_yields/until_still | retient (l'autre lutte selon sa force) ; au cou, la force serre le souffle : retenir jusqu'à l'immobilité étrangle | vu | 1 |
+| guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:entity; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec un objet qui protège, absorbe | vu | 0 |
+| shoot | force | tirer avec un arc, une fronde, une arbalète | at:entity; zone:enum=head/torso/arms/legs/any; aim:enum=quick/steady/careful | projectile ; touche selon la maîtrise, la visée, la distance, le vent | vu ; entendu (claquement) | 0 |
+| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:place; with:item?; amount:enum=handful/load/fill; into:place? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | 0 |
+| rub | tool | frotter, scier, aiguiser, polir, gratter, trancher en va-et-vient | target:item; with:item; force:enum=light/firm/hard | selon ce qui frotte : coupe (lame), scie (dents), aiguise (abrasif), polit, écharne, nettoie (chiffon) | vu, entendu | 0 |
+| stir | tool | remuer, pétrir, mélanger, baratter | target:item; with:item?; duration:enum=brief/a_while/long | processus mélanger : pâte, mortier, bain de teinture, beurre | vu | 0 |
+| tie | tool | lier, nouer, ligoter, coudre, attacher (une chose à une autre, quelqu'un) | target:entity; to:entity?; mode:enum=knot/lash/sew/bind; tightness:enum=loose/firm/tight | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) | vu | 0 |
+| apply | tool | appliquer ce qu'on tient sur une cible (une torche au chaume, un onguent sur une plaie, une clé, un sceau dans la cire, une braise à l'amadou) | item:item; target:entity; zone:enum=head/torso/arms/legs/any?; duration:enum=touch/a_while/long | le moteur tire l'effet des propriétés de l'objet : il allume (ignites), soigne (potency), marque (sceau), réchauffe, mouille, salit ; c'est le seul geste générique de contact | vu | 0 |
+| squeeze | tool | presser, essorer, traire, tondre aux forces, écraser à la main | target:entity; with:item?; force:enum=gentle/firm/hard | traire donne du lait ; presser le raisin du jus ; essorer un linge ; tondre donne la toison | vu | 0 |
+| shape | transform | façonner de ses mains une matière malléable (argile, cire, pâte, métal chaud au marteau) | target:item; into:kind; care:enum=rough/careful/masterly | la qualité suit la maîtrise et le soin ; un objet jamais vu peut en sortir | vu | 0 |
+| channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:entity; intent:enum=assemble/disassemble/mend/shape; power:enum=faint/low/medium/high/full; into:kind? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu | 0 |
+| eat | consume | manger | item:item; amount:enum=bite/portion/all | faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté | vu | 0 |
+| drink | consume | boire | item:item; amount:enum=sip/drink/all | soif ; ivresse ou poison selon ce qu'il y a dedans | vu | 0 |
+| sleep | consume | dormir | where:place; until:enum=rested/dawn/woken | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu | 0 |
+| rest | consume | se reposer, souffler | duration:enum=moment/a_while/long | l'épuisement baisse | vu | 0 |
+| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:entity; with:enum=hand/arms/lips/forehead/body; zone:enum=hand/shoulder/head/face/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | 0 |
+| look | perceive | regarder, observer, fixer, guetter | target:entity; manner:enum=glance/watch/stare/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | 0 |
+| listen | perceive | écouter, tendre l'oreille, épier | target:entity?; manner:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché | 0 |
+| search | perceive | fouiller, chercher (une pièce, un coffre, un tas, quelqu'un) | target:entity; thoroughness:enum=quick/careful/thorough | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu | 0 |
+| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:entity; how:enum=look/touch/weigh/smell/taste | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche ; jamais une propriété invisible par nature | vu | 0 |
+| read | perceive | lire | target:item | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu | 0 |
+| speak | communicate | parler (à quelqu'un, à un groupe, à la cantonade, à soi-même) | to:entity?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur enregistre « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | 0 |
+| sign | communicate | faire un signe (montrer du doigt, hocher, secouer la tête, saluer, faire signe de venir, hausser les épaules, s'incliner, applaudir, geste grossier, lever la main) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/rude/raise_hand; at:entity? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu | 0 |
+| write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:item; content:expression; signature:enum=own/none/other | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu | 0 |
+| perform | communicate | chanter, jouer d'un instrument, danser, raconter une histoire à voix haute | with:item?; mood:enum=joyful/sad/solemn/lively/eerie; content:expression? | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu | 0 |
+| wait | meta | attendre (rester, ne rien faire, guetter un moment) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu | 0 |
+| stop | meta | s'arrêter, interrompre ce qu'on fait |  | interrompt l'intention en cours ; le PNJ repasse au Transformer | vu | 0 |
+
 ## Langue intérieure : concepts
 
 | id | catégorie | arguments | libellé | renvoie à |
 |---|---|---|---|---|
+| c_done | condition |  | le geste est fini |  |
+| c_reached | condition | place | arrivé à |  |
+| c_target_down | condition | entity | la cible paraît à terre |  |
+| c_target_still | condition | entity | la cible paraît immobile |  |
+| c_target_yields | condition | entity | la cible paraît céder (se protège sans riposter, supplie, fuit) |  |
+| c_target_gone | condition | entity | la cible n'est plus en vue |  |
+| c_attacked | condition |  | on me frappe ou me saisit |  |
+| c_sees | condition | entity | je vois (quelqu'un, quelque chose) |  |
+| c_hears | condition | entity | j'entends (un cri, mon nom, un bruit) |  |
+| c_addressed | condition |  | on m'adresse la parole |  |
+| c_pain_above | condition | quantity | ma douleur dépasse |  |
+| c_hunger_above | condition | quantity | ma faim dépasse |  |
+| c_thirst_above | condition | quantity | ma soif dépasse |  |
+| c_exhausted | condition | quantity | mon épuisement dépasse |  |
+| c_tool_broken | condition |  | l'outil en main a cassé |  |
+| c_hands_full | condition |  | je ne peux plus rien porter |  |
+| c_blocked | condition |  | le passage est bloqué |  |
+| c_time | condition | time | il est (l'heure ressentie) |  |
+| c_elapsed | condition | quantity | il s'est passé (durée) |  |
+| c_stopped | condition |  | quelqu'un m'arrête (me retient, me crie d'arrêter) |  |
 | at | predicate | entity, place | se trouve à |  |
 | located | predicate | entity, concept, entity | est (dans, sur, sous, derrière, près de, à côté de, au-dessus de) … |  |
 | lives_at | predicate | agent, place | habite à |  |

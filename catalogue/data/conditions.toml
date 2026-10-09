@@ -1,0 +1,27 @@
+# conditions.toml - étape 12 (suite) : ce que le moteur surveille pendant qu'une intention s'exécute
+# (champ until et interrupt_if des étapes ; paramètre « repeat » et « until » des gestes).
+# Toutes se lisent dans la PERCEPTION du PNJ, jamais dans la vérité : « until_still » = la cible
+# PARAÎT immobile, « target_down » = elle paraît à terre.
+
+concept = [
+  { id = "c_done", category = "condition", label_fr = "le geste est fini" },
+  { id = "c_reached", category = "condition", args = ["place"], label_fr = "arrivé à" },
+  { id = "c_target_down", category = "condition", args = ["entity"], label_fr = "la cible paraît à terre" },
+  { id = "c_target_still", category = "condition", args = ["entity"], label_fr = "la cible paraît immobile" },
+  { id = "c_target_yields", category = "condition", args = ["entity"], label_fr = "la cible paraît céder (se protège sans riposter, supplie, fuit)" },
+  { id = "c_target_gone", category = "condition", args = ["entity"], label_fr = "la cible n'est plus en vue" },
+  { id = "c_attacked", category = "condition", label_fr = "on me frappe ou me saisit" },
+  { id = "c_sees", category = "condition", args = ["entity"], label_fr = "je vois (quelqu'un, quelque chose)" },
+  { id = "c_hears", category = "condition", args = ["entity"], label_fr = "j'entends (un cri, mon nom, un bruit)" },
+  { id = "c_addressed", category = "condition", label_fr = "on m'adresse la parole" },
+  { id = "c_pain_above", category = "condition", args = ["quantity"], label_fr = "ma douleur dépasse" },
+  { id = "c_hunger_above", category = "condition", args = ["quantity"], label_fr = "ma faim dépasse" },
+  { id = "c_thirst_above", category = "condition", args = ["quantity"], label_fr = "ma soif dépasse" },
+  { id = "c_exhausted", category = "condition", args = ["quantity"], label_fr = "mon épuisement dépasse" },
+  { id = "c_tool_broken", category = "condition", label_fr = "l'outil en main a cassé" },
+  { id = "c_hands_full", category = "condition", label_fr = "je ne peux plus rien porter" },
+  { id = "c_blocked", category = "condition", label_fr = "le passage est bloqué" },
+  { id = "c_time", category = "condition", args = ["time"], label_fr = "il est (l'heure ressentie)" },
+  { id = "c_elapsed", category = "condition", args = ["quantity"], label_fr = "il s'est passé (durée)" },
+  { id = "c_stopped", category = "condition", label_fr = "quelqu'un m'arrête (me retient, me crie d'arrêter)" },
+]

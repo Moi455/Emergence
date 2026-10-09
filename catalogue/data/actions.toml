@@ -1,0 +1,637 @@
+# actions.toml - étape 12 : les gestes du corps. La seule chose qu'un PNJ « fait ».
+#
+# Axe parcouru : tout ce qu'un corps humain peut faire au monde, en primitives générales, chacune
+# paramétrée par la MANIÈRE (D28). Aucun geste ne porte un sens social : voler = take (discrètement,
+# dans ce qui est cru à autrui) ; tuer = strike répété jusqu'à l'immobilité ; soigner = apply un
+# bandage ; faire chanter = speak (la menace est dans le contenu) ; bâtir = put ou channel ;
+# empoisonner = pour une fiole dans une chope. Le moteur applique les PROCESSUS (matter.toml) que la
+# physique permet : un geste n'a pas d'effet « écrit », il a des conséquences.
+#
+# Budget de l'IA : ≤ 64 gestes (ici 46) ; sortie factorisée = un geste + des pointeurs (vers les
+# dossiers mentaux du PNJ, jamais des identifiants objectifs) + des manières en ≤ 5 niveaux
+# (ordinal = true). Les listes non ordinales (sortes de signes) sont des mots.
+# D10 : intimate_values = valeurs refusées dès qu'un des deux est mineur (âge réel, cru ou apparent)
+# ou que le dossier de la cible n'est pas résolu. Le geste toucher n'est pas intime en soi (une main
+# sur l'épaule, tenir la main d'un enfant pour traverser) ; la manière romantique ou intime l'est.
+# Animations : noms de docs/interfaces.md § 7 ; « + » = clip à ajouter.
+
+# ─── Déplacement ────────────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "go"
+family = "move"
+label_fr = "aller (vers un lieu, une personne, une direction)"
+params = [
+  { name = "target", type = "place", note = "lieu connu, dossier d'une personne ou d'une chose, ou direction" },
+  { name = "pace", type = "enum", values = ["slow", "walk", "brisk", "run", "sneak"], ordinal = true },
+  { name = "stop_at", type = "enum", values = ["touch", "near", "talk", "sight"], ordinal = true, optional = true },
+]
+requires = []
+uses = ["t_stealth"]
+effects = "déplacement sur la navigation ; la course épuise ; la marche discrète fait moins de bruit (furtivité)"
+perceptibility = "vu ; pas entendus selon l'allure et le sol"
+duration = "jusqu'à l'arrivée ou l'interruption"
+animation = ["walk", "run", "sneak", "turn_l", "turn_r"]
+
+[[action]]
+id = "follow"
+family = "move"
+label_fr = "suivre quelqu'un"
+params = [
+  { name = "target", type = "entity" },
+  { name = "distance", type = "enum", values = ["close", "near", "far"], ordinal = true },
+  { name = "discreet", type = "bool", optional = true },
+]
+uses = ["t_stealth"]
+effects = "garde la distance ; discret : reste hors de son regard quand c'est possible"
+perceptibility = "vu par la cible si elle regarde"
+duration = "jusqu'à l'arrêt"
+animation = ["walk", "sneak"]
+
+[[action]]
+id = "keep_away"
+family = "move"
+label_fr = "s'éloigner, garder ses distances, fuir"
+params = [
+  { name = "target", type = "entity" },
+  { name = "distance", type = "enum", values = ["near", "far", "out_of_sight"], ordinal = true },
+  { name = "pace", type = "enum", values = ["walk", "brisk", "run"], ordinal = true },
+]
+effects = "déplacement qui maximise la distance"
+perceptibility = "vu"
+duration = "jusqu'à la distance voulue"
+animation = ["walk", "run"]
+
+[[action]]
+id = "climb"
+family = "move"
+label_fr = "grimper, escalader, descendre"
+params = [{ name = "target", type = "place" }, { name = "pace", type = "enum", values = ["careful", "normal", "fast"], ordinal = true }]
+requires = ["climbable"]
+uses = ["t_climbing"]
+effects = "chute possible selon la maîtrise, l'allure, la charge, la prise mouillée"
+perceptibility = "vu"
+duration = "selon la hauteur"
+animation = ["climb_ladder", "+climb_wall"]
+
+[[action]]
+id = "swim"
+family = "move"
+label_fr = "nager"
+params = [{ name = "target", type = "place" }, { name = "pace", type = "enum", values = ["float", "steady", "hard"], ordinal = true }]
+uses = ["t_swimming"]
+effects = "épuise ; le courant emporte ; sans maîtrise ou trop chargé, on se noie (souffle)"
+perceptibility = "vu, entendu"
+duration = "selon la distance"
+animation = ["swim"]
+
+[[action]]
+id = "jump"
+family = "move"
+label_fr = "sauter"
+params = [{ name = "target", type = "place" }, { name = "force", type = "enum", values = ["hop", "jump", "leap"], ordinal = true }]
+effects = "franchit un fossé, descend d'un toit ; mauvaise réception : blessure aux jambes"
+perceptibility = "vu"
+duration = "un instant"
+animation = ["jump"]
+
+[[action]]
+id = "mount"
+family = "move"
+label_fr = "monter sur une bête ou un véhicule, en descendre"
+params = [{ name = "target", type = "entity" }, { name = "mode", type = "enum", values = ["get_on", "get_off"] }]
+requires = ["mountable"]
+uses = ["t_riding"]
+effects = "une bête mal dressée peut refuser ou désarçonner"
+perceptibility = "vu"
+duration = "quelques secondes"
+animation = ["+mount"]
+
+[[action]]
+id = "steer"
+family = "move"
+label_fr = "conduire (une monture, une charrette, une barque : diriger, ramer)"
+params = [{ name = "target", type = "place" }, { name = "speed", type = "enum", values = ["slow", "steady", "fast"], ordinal = true }]
+uses = ["t_riding", "t_fishing"]
+effects = "déplace le véhicule et sa charge ; la mer et le vent s'en mêlent"
+perceptibility = "vu"
+duration = "jusqu'à l'arrivée"
+animation = ["+ride", "+row"]
+
+# ─── Posture ────────────────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "set_posture"
+family = "posture"
+label_fr = "se tenir (debout, assis, à genoux, accroupi, couché)"
+params = [{ name = "posture", type = "enum", values = ["stand", "sit", "kneel", "crouch", "lie"] }]
+effects = "accroupi derrière ce qui cache : on est caché ; à genoux : prier, travailler au sol, se soumettre (ce que les autres en pensent)"
+perceptibility = "vu"
+duration = "un instant"
+animation = ["sit_down", "stand_up", "lie_down", "get_up", "kneel_work"]
+
+# ─── Saisir, poser, donner ──────────────────────────────────────────────────────────────────────
+[[action]]
+id = "take"
+family = "grasp"
+label_fr = "prendre (au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un)"
+params = [
+  { name = "target", type = "item" },
+  { name = "from", type = "enum", values = ["ground", "container", "hand_of", "worn_by"], note = "worn_by : à la ceinture, dans la bourse, sur le corps" },
+  { name = "manner", type = "enum", values = ["openly", "quickly", "discreetly"], ordinal = true },
+]
+requires = ["graspable"]
+uses = ["t_stealth"]
+effects = "l'objet passe dans la main ; le registre note de quelles mains, par quel geste ; dans les mains de quelqu'un qui serre : lutte de force"
+perceptibility = "vu selon la discrétion, la maîtrise, l'attention des présents ; senti par celui qu'on dépouille selon la maîtrise"
+duration = "un instant"
+animation = ["pick_up", "store_crouch"]
+
+[[action]]
+id = "put"
+family = "grasp"
+label_fr = "poser, ranger, déposer, mettre en place (au sol, dans, sur, sous, dans un mur)"
+params = [
+  { name = "item", type = "item" },
+  { name = "where", type = "place", note = "le sol, un contenant, un endroit précis (sous la pierre du foyer), un ouvrage en construction" },
+  { name = "manner", type = "enum", values = ["openly", "carefully", "discreetly"], ordinal = true },
+]
+uses = ["t_woodwork", "t_stonework", "t_farming"]
+effects = "poser une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher"
+perceptibility = "vu selon la discrétion"
+duration = "un instant à quelques secondes"
+animation = ["put_down", "trowel_place", "store_crouch"]
+
+[[action]]
+id = "give"
+family = "grasp"
+label_fr = "tendre, donner en main propre"
+params = [
+  { name = "item", type = "item" },
+  { name = "to", type = "entity" },
+  { name = "manner", type = "enum", values = ["offer", "press"], note = "offer : tendre, l'autre prend s'il veut ; press : mettre de force dans la main" },
+]
+effects = "l'objet passe de main en main (registre : donné) ; offert et refusé, il reste dans la main"
+perceptibility = "vu"
+duration = "un instant"
+animation = ["give"]
+
+[[action]]
+id = "throw"
+family = "grasp"
+label_fr = "lancer, jeter"
+params = [
+  { name = "item", type = "item" },
+  { name = "at", type = "place", note = "une personne, une chose, un lieu" },
+  { name = "force", type = "enum", values = ["toss", "throw", "hurl"], ordinal = true },
+]
+requires = ["throwable"]
+uses = ["t_archery"]
+effects = "projectile : touche selon l'adresse et la distance ; casse ce qui est fragile ; un coup s'il touche quelqu'un"
+perceptibility = "vu, entendu à l'impact"
+duration = "un instant"
+animation = ["+throw"]
+
+[[action]]
+id = "pour"
+family = "grasp"
+label_fr = "verser, vider"
+params = [
+  { name = "from", type = "item" },
+  { name = "into", type = "place", note = "un récipient, une chope, le sol, un feu, une personne" },
+  { name = "amount", type = "enum", values = ["drop", "some", "half", "all"], ordinal = true },
+]
+requires = ["contains"]
+effects = "le liquide passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange"
+perceptibility = "vu selon la discrétion et la lumière ; entendu"
+duration = "quelques secondes"
+animation = ["+pour", "draw_water"]
+
+[[action]]
+id = "wear"
+family = "grasp"
+label_fr = "mettre ou ôter un vêtement, un bijou, un masque, une armure"
+params = [{ name = "item", type = "item" }, { name = "mode", type = "enum", values = ["put_on", "take_off"] }]
+requires = ["wearable"]
+effects = "change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification)"
+perceptibility = "vu"
+duration = "quelques secondes à une minute de jeu"
+animation = ["+change_clothes"]
+
+[[action]]
+id = "operate"
+family = "grasp"
+label_fr = "manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège)"
+params = [
+  { name = "target", type = "item" },
+  { name = "mode", type = "enum", values = ["open", "close", "lock", "unlock", "activate"] },
+  { name = "with", type = "item", optional = true, note = "une clé, un crochet de serrurier" },
+]
+uses = ["t_stealth", "t_textile"]
+effects = "déverrouille si la clé correspond (clé de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : fait tourner le rouet, sonner la cloche, armer le piège"
+perceptibility = "vu ; entendu (grincements, cloche)"
+duration = "un instant à longtemps (tisser)"
+animation = ["kneel_work", "+use_mechanism"]
+
+# ─── Force (frapper, pousser, saisir quelqu'un) ─────────────────────────────────────────────────
+[[action]]
+id = "strike"
+family = "force"
+label_fr = "frapper (une personne, une bête, un arbre, une pierre, un mur, du métal chaud)"
+params = [
+  { name = "target", type = "entity" },
+  { name = "zone", type = "enum", values = ["head", "torso", "arms", "legs", "any"], note = "la zone fine est tirée par le moteur selon l'adresse" },
+  { name = "with", type = "enum", values = ["held_item", "open_hand", "fist", "foot", "head"] },
+  { name = "force", type = "enum", values = ["tap", "light", "firm", "hard", "full"], ordinal = true },
+  { name = "repeat", type = "enum", values = ["once", "until_down", "until_still", "until_yields", "until_stopped"] },
+]
+uses = ["t_fighting", "t_woodwork", "t_stonework", "t_digging", "t_smithing"]
+effects = "énergie = force × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière"
+perceptibility = "vu, entendu (bruit selon l'impact)"
+duration = "un coup ≈ une seconde ; répété jusqu'à la condition"
+animation = ["punch", "+slap", "+kick", "swing_axe", "swing_pickaxe", "hammer"]
+note = "Une gifle = (head, open_hand, light, once) ; un coup de poing = (head, fist, firm, once) ; un passage à tabac = (any, fist, hard, until_yields) ; des coups jusqu'à la mort = (head, foot, full, until_still). Un seul geste (D28)."
+
+[[action]]
+id = "push"
+family = "force"
+label_fr = "pousser, bousculer, renverser"
+params = [
+  { name = "target", type = "entity" },
+  { name = "force", type = "enum", values = ["nudge", "push", "shove", "slam"], ordinal = true },
+  { name = "direction", type = "enum", values = ["away", "down", "aside", "into"] },
+]
+effects = "déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade"
+perceptibility = "vu"
+duration = "un instant"
+animation = ["shove"]
+
+[[action]]
+id = "pull"
+family = "force"
+label_fr = "tirer (une personne par le bras, une charrette, une corde, un filet)"
+params = [
+  { name = "target", type = "entity" },
+  { name = "force", type = "enum", values = ["gentle", "firm", "hard", "full"], ordinal = true },
+  { name = "toward", type = "place", optional = true },
+]
+effects = "déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte"
+perceptibility = "vu"
+duration = "selon la charge"
+animation = ["+pull"]
+
+[[action]]
+id = "grab"
+family = "force"
+label_fr = "saisir quelqu'un (bras, col, cheveux, cou, taille) et tenir"
+params = [
+  { name = "target", type = "entity" },
+  { name = "zone", type = "enum", values = ["arm", "collar", "hair", "neck", "waist"] },
+  { name = "force", type = "enum", values = ["light", "firm", "hard", "full"], ordinal = true },
+  { name = "hold", type = "enum", values = ["brief", "until_released", "until_yields", "until_still"] },
+]
+uses = ["t_fighting"]
+effects = "retient (l'autre lutte selon sa force) ; au cou, la force serre le souffle : retenir jusqu'à l'immobilité étrangle"
+perceptibility = "vu"
+duration = "jusqu'à la condition"
+animation = ["grab_restrain"]
+
+[[action]]
+id = "guard"
+family = "force"
+label_fr = "se protéger (parer, esquiver, se couvrir d'un bouclier)"
+params = [{ name = "against", type = "entity" }, { name = "stance", type = "enum", values = ["block", "dodge", "cover"] }]
+uses = ["t_fighting"]
+effects = "réduit ou évite le prochain coup ; avec un objet qui protège, absorbe"
+perceptibility = "vu"
+duration = "tant qu'on garde"
+animation = ["block"]
+
+[[action]]
+id = "shoot"
+family = "force"
+label_fr = "tirer avec un arc, une fronde, une arbalète"
+params = [
+  { name = "at", type = "entity" },
+  { name = "zone", type = "enum", values = ["head", "torso", "arms", "legs", "any"] },
+  { name = "aim", type = "enum", values = ["quick", "steady", "careful"], ordinal = true },
+]
+requires = ["launches"]
+uses = ["t_archery", "t_hunting"]
+effects = "projectile ; touche selon la maîtrise, la visée, la distance, le vent"
+perceptibility = "vu ; entendu (claquement)"
+duration = "une à quelques secondes"
+animation = ["+shoot_bow"]
+
+# ─── Outils et matière ──────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "scoop"
+family = "tool"
+label_fr = "pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau)"
+params = [
+  { name = "target", type = "place", note = "le terrain, un tas, une masse d'eau, un sac" },
+  { name = "with", type = "item", optional = true, note = "pelle, seau, mains" },
+  { name = "amount", type = "enum", values = ["handful", "load", "fill"], ordinal = true },
+  { name = "into", type = "place", optional = true },
+]
+uses = ["t_digging", "t_farming"]
+effects = "retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité"
+perceptibility = "vu, entendu"
+duration = "quelques secondes par charge"
+animation = ["dig_shovel", "draw_water"]
+
+[[action]]
+id = "rub"
+family = "tool"
+label_fr = "frotter, scier, aiguiser, polir, gratter, trancher en va-et-vient"
+params = [
+  { name = "target", type = "item" },
+  { name = "with", type = "item" },
+  { name = "force", type = "enum", values = ["light", "firm", "hard"], ordinal = true },
+]
+uses = ["t_woodwork", "t_smithing", "t_cooking", "t_leather"]
+effects = "selon ce qui frotte : coupe (lame), scie (dents), aiguise (abrasif), polit, écharne, nettoie (chiffon)"
+perceptibility = "vu, entendu"
+duration = "selon la tâche"
+animation = ["saw", "kneel_work"]
+
+[[action]]
+id = "stir"
+family = "tool"
+label_fr = "remuer, pétrir, mélanger, baratter"
+params = [{ name = "target", type = "item" }, { name = "with", type = "item", optional = true }, { name = "duration", type = "enum", values = ["brief", "a_while", "long"], ordinal = true }]
+uses = ["t_cooking", "t_brewing", "t_pottery"]
+effects = "processus mélanger : pâte, mortier, bain de teinture, beurre"
+perceptibility = "vu"
+duration = "selon la tâche"
+animation = ["kneel_work", "+stir"]
+
+[[action]]
+id = "tie"
+family = "tool"
+label_fr = "lier, nouer, ligoter, coudre, attacher (une chose à une autre, quelqu'un)"
+params = [
+  { name = "target", type = "entity" },
+  { name = "to", type = "entity", optional = true },
+  { name = "mode", type = "enum", values = ["knot", "lash", "sew", "bind"] },
+  { name = "tightness", type = "enum", values = ["loose", "firm", "tight"], ordinal = true },
+]
+requires = ["binds"]
+uses = ["t_textile", "t_woodwork", "t_fishing"]
+effects = "processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité)"
+perceptibility = "vu"
+duration = "quelques secondes à quelques minutes de jeu"
+animation = ["kneel_work", "grab_restrain"]
+
+[[action]]
+id = "apply"
+family = "tool"
+label_fr = "appliquer ce qu'on tient sur une cible (une torche au chaume, un onguent sur une plaie, une clé, un sceau dans la cire, une braise à l'amadou)"
+params = [
+  { name = "item", type = "item" },
+  { name = "target", type = "entity" },
+  { name = "zone", type = "enum", values = ["head", "torso", "arms", "legs", "any"], optional = true },
+  { name = "duration", type = "enum", values = ["touch", "a_while", "long"], ordinal = true },
+]
+uses = ["t_healing", "t_cooking", "t_smithing"]
+effects = "le moteur tire l'effet des propriétés de l'objet : il allume (ignites), soigne (potency), marque (sceau), réchauffe, mouille, salit ; c'est le seul geste générique de contact"
+perceptibility = "vu"
+duration = "un instant à longtemps"
+animation = ["kneel_tend", "kneel_work"]
+
+[[action]]
+id = "squeeze"
+family = "tool"
+label_fr = "presser, essorer, traire, tondre aux forces, écraser à la main"
+params = [{ name = "target", type = "entity" }, { name = "with", type = "item", optional = true }, { name = "force", type = "enum", values = ["gentle", "firm", "hard"], ordinal = true }]
+uses = ["t_husbandry", "t_cooking"]
+effects = "traire donne du lait ; presser le raisin du jus ; essorer un linge ; tondre donne la toison"
+perceptibility = "vu"
+duration = "selon la tâche"
+animation = ["kneel_work"]
+
+# ─── Transformer ────────────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "shape"
+family = "transform"
+label_fr = "façonner de ses mains une matière malléable (argile, cire, pâte, métal chaud au marteau)"
+params = [
+  { name = "target", type = "item" },
+  { name = "into", type = "kind", note = "la forme visée (une forme de forms.toml, un type connu)" },
+  { name = "care", type = "enum", values = ["rough", "careful", "masterly"], ordinal = true },
+]
+uses = ["t_pottery", "t_smithing", "t_cooking", "t_woodwork"]
+effects = "la qualité suit la maîtrise et le soin ; un objet jamais vu peut en sortir"
+perceptibility = "vu"
+duration = "minutes à heures de jeu"
+animation = ["kneel_work", "hammer"]
+
+[[action]]
+id = "channel"
+family = "transform"
+label_fr = "manier une baguette sur la matière (assembler, désassembler, réparer, façonner)"
+params = [
+  { name = "target", type = "entity", note = "un tas de matériaux, une construction, un objet" },
+  { name = "intent", type = "enum", values = ["assemble", "disassemble", "mend", "shape"] },
+  { name = "power", type = "enum", values = ["faint", "low", "medium", "high", "full"], ordinal = true },
+  { name = "into", type = "kind", optional = true },
+]
+requires = ["shapes_matter"]
+uses = ["t_magic"]
+effects = "processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability)"
+perceptibility = "vu (lueur), entendu"
+duration = "secondes à minutes de jeu"
+animation = ["+channel_wand"]
+
+# ─── Le corps ───────────────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "eat"
+family = "consume"
+label_fr = "manger"
+params = [{ name = "item", type = "item" }, { name = "amount", type = "enum", values = ["bite", "portion", "all"], ordinal = true }]
+requires = ["graspable"]
+effects = "faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté"
+perceptibility = "vu"
+duration = "selon la quantité"
+animation = ["eat"]
+
+[[action]]
+id = "drink"
+family = "consume"
+label_fr = "boire"
+params = [{ name = "item", type = "item", note = "un récipient ou une masse d'eau" }, { name = "amount", type = "enum", values = ["sip", "drink", "all"], ordinal = true }]
+effects = "soif ; ivresse ou poison selon ce qu'il y a dedans"
+perceptibility = "vu"
+duration = "quelques secondes"
+animation = ["drink"]
+
+[[action]]
+id = "sleep"
+family = "consume"
+label_fr = "dormir"
+params = [{ name = "where", type = "place" }, { name = "until", type = "enum", values = ["rested", "dawn", "woken"] }]
+effects = "rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille)"
+perceptibility = "vu"
+duration = "selon la dette de sommeil"
+animation = ["lie_down", "sleep", "get_up"]
+
+[[action]]
+id = "rest"
+family = "consume"
+label_fr = "se reposer, souffler"
+params = [{ name = "duration", type = "enum", values = ["moment", "a_while", "long"], ordinal = true }]
+effects = "l'épuisement baisse"
+perceptibility = "vu"
+duration = "selon le choix"
+animation = ["sit_idle"]
+
+[[action]]
+id = "touch"
+family = "care"
+label_fr = "toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser)"
+params = [
+  { name = "target", type = "entity" },
+  { name = "with", type = "enum", values = ["hand", "arms", "lips", "forehead", "body"] },
+  { name = "zone", type = "enum", values = ["hand", "shoulder", "head", "face", "body"] },
+  { name = "manner", type = "enum", values = ["gentle", "firm", "playful", "romantic", "intimate"], intimate_values = ["romantic", "intimate"] },
+  { name = "duration", type = "enum", values = ["brief", "a_while", "long"], ordinal = true },
+]
+effects = "aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10)"
+perceptibility = "vu"
+duration = "selon le choix"
+animation = ["hold_hands", "embrace", "kiss", "lean_in", "support_walk"]
+
+# ─── Percevoir ──────────────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "look"
+family = "perceive"
+label_fr = "regarder, observer, fixer, guetter"
+params = [{ name = "target", type = "entity" }, { name = "manner", type = "enum", values = ["glance", "watch", "stare", "discreet"] }]
+effects = "met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit"
+perceptibility = "vu (le regard)"
+duration = "selon le choix"
+animation = ["look_around", "idle"]
+
+[[action]]
+id = "listen"
+family = "perceive"
+label_fr = "écouter, tendre l'oreille, épier"
+params = [{ name = "target", type = "entity", optional = true }, { name = "manner", type = "enum", values = ["open", "discreet"] }]
+uses = ["t_stealth"]
+effects = "entend plus loin et plus bas ; discret derrière ce qui cache : épier"
+perceptibility = "vu si l'on n'est pas caché"
+duration = "selon le choix"
+animation = ["listen"]
+
+[[action]]
+id = "search"
+family = "perceive"
+label_fr = "fouiller, chercher (une pièce, un coffre, un tas, quelqu'un)"
+params = [{ name = "target", type = "entity" }, { name = "thoroughness", type = "enum", values = ["quick", "careful", "thorough"], ordinal = true }]
+uses = ["t_foraging", "t_hunting"]
+effects = "révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille"
+perceptibility = "vu, entendu"
+duration = "selon le soin"
+animation = ["search_bend"]
+
+[[action]]
+id = "examine"
+family = "perceive"
+label_fr = "examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces)"
+params = [{ name = "target", type = "entity" }, { name = "how", type = "enum", values = ["look", "touch", "weigh", "smell", "taste"] }]
+uses = ["t_healing", "t_foraging", "t_hunting", "t_reckoning", "t_smithing"]
+effects = "le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche ; jamais une propriété invisible par nature"
+perceptibility = "vu"
+duration = "quelques secondes"
+animation = ["kneel_tend", "search_bend"]
+
+[[action]]
+id = "read"
+family = "perceive"
+label_fr = "lire"
+params = [{ name = "target", type = "item" }]
+uses = ["t_literacy"]
+effects = "perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes"
+perceptibility = "vu"
+duration = "selon la longueur"
+animation = ["read_paper"]
+
+# ─── Communiquer ────────────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "speak"
+family = "communicate"
+label_fr = "parler (à quelqu'un, à un groupe, à la cantonade, à soi-même)"
+params = [
+  { name = "to", type = "entity", optional = true, note = "une personne, un groupe présent, personne" },
+  { name = "volume", type = "enum", values = ["whisper", "low", "normal", "loud", "shout"], ordinal = true },
+  { name = "tone", type = "enum", values = ["warm", "calm", "cold", "angry", "pleading"] },
+  { name = "content", type = "expression", note = "une expression de la langue intérieure (étape 13), ≤ 16 symboles, composée par le Transformer" },
+]
+effects = "les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur enregistre « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide"
+perceptibility = "entendu ; vu (lèvres, gestes)"
+duration = "selon la longueur"
+animation = ["talk_calm", "talk_angry", "talk_pleading", "talk_joyful", "address_crowd"]
+note = "Promettre, menacer, mentir, faire chanter, demander en mariage, insulter, flatter : tout est dans le contenu, rien dans le geste (D28)."
+
+[[action]]
+id = "sign"
+family = "communicate"
+label_fr = "faire un signe (montrer du doigt, hocher, secouer la tête, saluer, faire signe de venir, hausser les épaules, s'incliner, applaudir, geste grossier, lever la main)"
+params = [
+  { name = "kind", type = "enum", values = ["point", "nod", "shake_head", "wave", "beckon", "shrug", "bow", "applaud", "rude", "raise_hand"] },
+  { name = "at", type = "entity", optional = true },
+]
+effects = "aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages"
+perceptibility = "vu"
+duration = "un instant"
+animation = ["point", "nod", "shake_head", "wave", "raise_hand"]
+
+[[action]]
+id = "write"
+family = "communicate"
+label_fr = "écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur)"
+params = [
+  { name = "on", type = "item" },
+  { name = "content", type = "expression" },
+  { name = "signature", type = "enum", values = ["own", "none", "other"], note = "other : signer d'un autre nom, c'est-à-dire un faux" },
+]
+requires = ["writable"]
+uses = ["t_literacy"]
+effects = "crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non)"
+perceptibility = "vu"
+duration = "selon la longueur"
+animation = ["write"]
+
+[[action]]
+id = "perform"
+family = "communicate"
+label_fr = "chanter, jouer d'un instrument, danser, raconter une histoire à voix haute"
+params = [
+  { name = "with", type = "item", optional = true, note = "un instrument ; rien : la voix ou le corps" },
+  { name = "mood", type = "enum", values = ["joyful", "sad", "solemn", "lively", "eerie"] },
+  { name = "content", type = "expression", optional = true, note = "les paroles d'un chant, l'histoire racontée" },
+]
+uses = ["t_music"]
+effects = "s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent"
+perceptibility = "entendu, vu"
+duration = "selon le choix"
+animation = ["dance", "tell_story", "+play_instrument"]
+
+# ─── Méta ───────────────────────────────────────────────────────────────────────────────────────
+[[action]]
+id = "wait"
+family = "meta"
+label_fr = "attendre (rester, ne rien faire, guetter un moment)"
+params = [{ name = "until", type = "condition", note = "une condition de la liste (arrivée de quelqu'un, une heure, un bruit) ou une durée" }]
+effects = "rien ; ne rien faire est aussi un comportement observable (charte § 20)"
+perceptibility = "vu"
+duration = "jusqu'à la condition"
+animation = ["idle", "sit_idle"]
+
+[[action]]
+id = "stop"
+family = "meta"
+label_fr = "s'arrêter, interrompre ce qu'on fait"
+params = []
+effects = "interrompt l'intention en cours ; le PNJ repasse au Transformer"
+perceptibility = "vu"
+duration = "un instant"
+animation = ["idle"]

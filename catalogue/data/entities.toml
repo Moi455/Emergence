@@ -391,3 +391,11 @@ holder = "agent"
 part_of = "beliefs"
 max_count = 16
 note = "Reconstruit à chaque décision par le moteur depuis la scène, la lumière, la distance, l'attention et l'œil (maîtrise) du PNJ."
+
+[[component]]
+id = "event_seen"
+label_fr = "un geste d'autrui perçu récemment (vu ou entendu) : qui, quel geste, sur quoi, comment"
+holder = "agent"
+part_of = "beliefs"
+max_count = 6
+note = "Tel que perçu : dans le noir, « quelqu'un » a frappé ; caché derrière un tonneau, on a entendu sans voir."
