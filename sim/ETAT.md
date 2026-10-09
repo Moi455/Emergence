@@ -80,7 +80,7 @@ Pas d'algorithme de décision : un Transformer dans la boucle de chaque PNJ, qui
 
 ## Remarques du fil des données (8 oct., 20:48), à reprendre
 
-- Il a validé les parties « modèle » du catalogue avant son alignement sur la charte. L'échelle −10..+10 et les objectifs écrits par le cerveau restent à relire de son côté.
+- Il a validé le catalogue, alignement sur la charte compris (9 oct., 01:43). Pour tok-2, le modèle lira les dixièmes stockés par le moteur au lieu de l'entier arrondi ; la tête de sortie aura cinq parties (état, relations, souvenirs, objectifs, score des options) ; 7 types d'objectifs de la charte entrent au vocabulaire. Le tout est noté aux § 1, 2.12 et 6 du catalogue et dans `ai/ETAT.md`, pour la reprise sur Claude Code.
 - Pour lui, la romance entre adultes apparentés relève de la valeur de tabou du PNJ et de l'interrupteur de la décision D11 ; seuls les mineurs relèvent de la règle dure. Aujourd'hui, `rules.romance_ok` retire la cour envers un parent des options tant que l'interrupteur `kin_romance_taboo` est actif. Il refuse aussi un écart d'âge de plus de 20 ans, qui est une règle et non une règle dure. À trancher : le moteur filtre-t-il, ou laisse-t-il le modèle décider ?
 - Jetons de perception (`tok-2`) :
   - 17 types de jetons ;
