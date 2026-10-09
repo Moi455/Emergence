@@ -56,17 +56,16 @@ characters/data/
 # Exception : quand le moteur social aura besoin de la PERCEPTION spatiale ou du bus
 # d'opérations, réintégrer seulement engine/core/world/include/ et docs/interfaces.md § 1-2.
 # ─────────────────────────────────────────────────────────────────────────────
-# cœur C++ voxels/maillage/terrain + GDExtension (engine/data/materials.csv reste lisible : source des matières du catalogue)
-engine/core/
+# cœur C++ voxels/maillage/terrain + GDExtension. Restent lisibles (10 oct., le moteur social C++ s'installe dans
+# engine/social, D31) : engine/data/materials.csv, engine/CMakeLists.txt, engine/README.md, engine/ETAT.md, engine/CLAUDE.md
+engine/core/base/
+engine/core/mesh/
+engine/core/world/
 engine/gdext/
 engine/sim/
 engine/terrain/
 engine/cmake/
 engine/scripts/
-engine/CMakeLists.txt
-engine/README.md
-engine/ETAT.md
-engine/CLAUDE.md
 # génération déterministe du monde
 worldgen/
 # projet Godot (scène jouable)

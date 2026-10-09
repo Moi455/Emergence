@@ -90,9 +90,12 @@ class TestCatalogue(unittest.TestCase):
 
     def test_every_contact_gesture_has_a_minor_whitelist(self):
         for a in self.cat["action"].values():
-            if any(p.type == "ref" and "agent" in p.accepts for p in a.params) and a.family in ("care", "force", "tool"):
-                if a.id != "guard":
-                    self.assertTrue(a.contact and a.minor_whitelist, a.id)
+            if any(p.type == "ref" and "agent" in p.accepts for p in a.params):
+                self.assertIsNotNone(a.contact, a.id)                      # D10: contact must be declared
+            if a.contact and a.minor_person_ok and a.family != "force":
+                self.assertTrue(a.minor_whitelist, a.id)
+                zones = set(a.minor_whitelist.get("contact_zone", []))
+                self.assertTrue(zones <= {"head", "shoulder", "arms", "hands", "back", "legs"}, a.id)
 
     def test_speech_probes_need_no_social_verb(self):
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))

@@ -9,8 +9,9 @@ from schema import Catalogue  # noqa: E402
 from governor import Governor, Party, WriteLedger  # noqa: E402
 import language  # noqa: E402
 
-ADULT = Party(real_age=30, believed_age=30, apparent_age=31)
-CHILD = Party(real_age=9, believed_age=9, apparent_age=9)
+ADULT = Party(real_age=30, believed_age=30, apparent_age=31, resolved=True)
+ADULT2 = Party(real_age=40, believed_age=38, apparent_age=41, resolved=True)
+CHILD = Party(real_age=9, believed_age=9, apparent_age=9, resolved=True)
 
 
 class TestGovernor(unittest.TestCase):
@@ -54,26 +55,64 @@ class TestGovernor(unittest.TestCase):
                                            intimate_target=ADULT, actor=ADULT).allowed)
 
     def test_d10_any_of_real_believed_apparent_or_unresolved(self):
-        looks_young = Party(real_age=25, believed_age=25, apparent_age=16)
-        believed_young = Party(real_age=25, believed_age=15, apparent_age=25)
-        unknown_age = Party(real_age=25, believed_age=None, apparent_age=25)
+        looks_young = Party(real_age=25, believed_age=25, apparent_age=16, resolved=True)
+        believed_young = Party(real_age=25, believed_age=15, apparent_age=25, resolved=True)
+        unknown_age = Party(real_age=25, believed_age=None, apparent_age=25, resolved=True)
         name_only = Party(real_age=25, believed_age=25, apparent_age=25, resolved=False)
-        romantic = {"with": "lips", "zone": "face", "manner": "romantic", "duration": "brief"}
-        self.assertTrue(self.g.check_gesture("touch", romantic, ADULT, ADULT).allowed)
-        for p in (CHILD, looks_young, believed_young, unknown_age, name_only):
-            self.assertFalse(self.g.check_gesture("touch", romantic, ADULT, p).allowed)
+        nan_age = Party(real_age=25, believed_age=float("nan"), apparent_age=25, resolved=True)
+        romantic = {"target": "@E1", "with": "lips", "contact_zone": "face", "manner": "romantic", "duration": "brief"}
+        self.assertTrue(self.g.check_gesture("touch", romantic, ADULT, {"target": ADULT2}).allowed)
+        for p in (CHILD, looks_young, believed_young, unknown_age, name_only, nan_age):
+            self.assertFalse(self.g.check_gesture("touch", romantic, ADULT, {"target": p}).allowed)
 
-    def test_d10_whitelist_lets_care_through(self):
-        hold_hand = {"with": "hand", "zone": "hand", "manner": "gentle", "duration": "a_while"}
-        self.assertTrue(self.g.check_gesture("touch", hold_hand, ADULT, CHILD).allowed)
-        lips = {"with": "lips", "zone": "face", "manner": "gentle", "duration": "brief"}
-        self.assertFalse(self.g.check_gesture("touch", lips, ADULT, CHILD).allowed)
+    def test_d10_deny_by_default(self):
+        romantic = {"target": "@E1", "with": "lips", "contact_zone": "face", "manner": "romantic"}
+        self.assertFalse(self.g.check_gesture("touch", romantic, ADULT, {}).allowed)          # party not given
+        self.assertFalse(self.g.check_gesture("touch", romantic, None, {"target": ADULT2}).allowed)
+        self.assertFalse(self.g.check_write("r_attraction", 0, 0.5, WriteLedger(), "f9").allowed)   # no parties
+        self.assertFalse(self.g.check_write("r_attraction", 0, float("nan"), WriteLedger(), "f9",
+                                            intimate_target=ADULT2, actor=ADULT).allowed)
 
-    def test_d10_utterance(self):
+    def test_d10_whitelist_lets_care_through_and_needs_every_param(self):
+        hold_hand = {"target": "@E1", "with": "hand", "contact_zone": "hands", "manner": "gentle", "duration": "a_while"}
+        self.assertTrue(self.g.check_gesture("touch", hold_hand, ADULT, {"target": CHILD}).allowed)
+        lips = dict(hold_hand, **{"with": "lips", "contact_zone": "face"})
+        self.assertFalse(self.g.check_gesture("touch", lips, ADULT, {"target": CHILD}).allowed)
+        missing_zone = {k: v for k, v in hold_hand.items() if k != "contact_zone"}
+        self.assertFalse(self.g.check_gesture("touch", missing_zone, ADULT, {"target": CHILD}).allowed)
+        self.assertFalse(self.g.check_gesture("search", {"target": "@E1", "thoroughness": "brief"}, ADULT, {"target": CHILD}).allowed)
+        rub = {"target": "@E1", "motion": "rub", "intensity": "light", "duration": "long", "contact_zone": "back"}
+        self.assertFalse(self.g.check_gesture("work", rub, ADULT, {"target": CHILD}).allowed)
+        bandage = {"target": "@E1", "motion": "press", "intensity": "light", "duration": "brief", "contact_zone": "arms"}
+        self.assertTrue(self.g.check_gesture("work", bandage, ADULT, {"target": CHILD}).allowed)
+        undress = {"item": "@T1", "mode": "take_off", "on": "@E1", "contact_zone": "arms"}
+        self.assertFalse(self.g.check_gesture("wear", undress, ADULT, {"on": CHILD}).allowed)
+
+    def test_d10_every_party_param_is_checked(self):
+        # tie (target, to): the minor is the 'to' party
+        tie = {"target": "@T1", "to": "@E1", "mode": "bind", "with": "@T2", "tightness": "hard", "contact_zone": "body"}
+        self.assertFalse(self.g.check_gesture("tie", tie, ADULT, {"to": CHILD}).allowed)
+
+    def test_d10_utterance_and_described_gestures(self):
         vocab = language.Vocabulary(self.cat)
         e = language.Expression("(request (did you touch me (how romantic)))", vocab)
-        self.assertFalse(self.g.check_utterance(e, ADULT, [CHILD]).allowed)
-        self.assertTrue(self.g.check_utterance(e, ADULT, [ADULT]).allowed)
+        self.assertFalse(self.g.check_utterance(e, ADULT, {"you": CHILD, "me": ADULT}, [CHILD]).allowed)
+        self.assertTrue(self.g.check_utterance(e, ADULT, {"you": ADULT2, "me": ADULT}, [ADULT2]).allowed)
+        # a refused gesture described without any intimate word (lips on a child's face)
+        f = language.Expression("(request (did me touch you (how lips) (how face)))", vocab)
+        self.assertFalse(self.g.check_utterance(f, ADULT, {"you": CHILD, "me": ADULT}, [CHILD]).allowed)
+
+    def test_d10_records(self):
+        vocab = language.Vocabulary(self.cat)
+        goal = language.Expression("(offer (did me touch @E1 (how romantic)))", vocab)
+        self.assertFalse(self.g.check_record("goal", goal, ADULT, {"@E1": CHILD, "me": ADULT}).allowed)
+        self.assertFalse(self.g.check_record("goal", goal, ADULT, {"me": ADULT}).allowed)      # @E1 unknown
+        self.assertTrue(self.g.check_record("goal", goal, ADULT, {"@E1": ADULT2, "me": ADULT}).allowed)
+
+    def test_memory_is_free_at_creation_then_steps(self):
+        led = WriteLedger()
+        self.assertEqual(self.g.check_write("m_valence", 0, -9, led, "m1", creating=True).value, -9)
+        self.assertEqual(self.g.check_write("m_valence", -9, 0, led, "m1").value, -8)
 
 
 if __name__ == "__main__":

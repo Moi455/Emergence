@@ -36,6 +36,7 @@ CLOCKS = ("real", "day", "life", "none")
 # own_mind: its own feelings and dispositions; interoception: what its body feels (SELF only);
 # perception: what it sees/hears/smells now (apparent values); belief: what it holds true, remembers, wants.
 CHANNELS = ("own_mind", "interoception", "perception", "belief")
+TOKEN_PART = re.compile(r"^([A-Z][A-Z_]*)(?:\.[a-z_][a-z0-9_.]*)?(?: \(.*\))?(?: [/a-zA-Z_.]+)*$")
 TOKEN_CHANNELS = {"SELF": ("own_mind", "interoception", "belief", "perception"), "SELF_MIND": ("own_mind",),
                   "SELF_STATE": ("own_mind",), "TASTE": ("own_mind",), "SKILL": ("belief",),
                   "ENTITY": ("perception", "belief"), "GROUP": ("belief",), "THING": ("perception", "belief"),
@@ -49,6 +50,8 @@ STORY_STATUS = ("todo", "expressible", "gap")      # probe result
 ACTION_FAMILIES = ("move", "posture", "grasp", "force", "tool", "transform", "consume", "care",
                    "perceive", "communicate", "meta")
 PARAM_TYPES = ("ref", "enum", "qty", "duration", "condition", "expression", "bool")
+CONTACT_ZONES = ("head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body")
+MINOR_ZONES = ("head", "shoulder", "arms", "hands", "back", "legs")   # the only zones ever touched on a minor (D10)
 REF_TARGETS = ("agent", "animal", "item", "structure", "terrain", "voxel", "water", "fire", "place", "trace",
                "belief", "form", "group", "direction", "plant")
 # entity / place / item params are the NPC's OWN mental files (mref), never objective ids
@@ -201,8 +204,11 @@ class Action(Entry):
     animation: list[str] = field(default_factory=list)
     intimate: bool = False               # D10: refused when actor or target is a minor by real, believed or apparent age
     uses: list[str] = field(default_factory=list)            # technique concepts whose mastery shapes the outcome
-    contact: bool = False                # touches a body: must declare minor_whitelist (D10)
-    minor_whitelist: dict = field(default_factory=dict)      # param -> values allowed when actor or target is a minor
+    contact: bool | None = None          # MUST be declared when a ref param accepts an agent (D10)
+    party_params: list[str] = field(default_factory=list)    # params that may designate a person involved (D10)
+    minor_person_ok: bool = False        # may this gesture involve a minor at all? then minor_whitelist applies
+    minor_whitelist: dict = field(default_factory=dict)      # param -> values allowed when a minor is involved;
+                                                             # with a minor, every whitelisted param is REQUIRED
     status: str = "N"
 
 
@@ -412,11 +418,17 @@ class Catalogue:
                 p.append(f"variable {v.id}: an objective id cannot carry a token (use scale mref)")
             if v.token and v.visibility == "engine":
                 p.append(f"variable {v.id}: engine-only visibility cannot carry a token")
+            if v.token and not v.holder:
+                p.append(f"variable {v.id}: a token needs a holder component")
             if v.token and v.holder in self["component"]:
                 ch = self._channel(v.holder)
                 for part in v.token.split(";"):
-                    m = re.match(r"\s*([A-Z_]+)", part)
+                    m = TOKEN_PART.match(part.strip())
                     if not m:
+                        p.append(f"variable {v.id}: token part '{part.strip()}' is not TYPE[.field] [(note)]")
+                        continue
+                    if m.group(1) not in TOKEN_CHANNELS:
+                        p.append(f"variable {v.id}: unknown token type '{m.group(1)}'")
                         continue
                     allowed = TOKEN_CHANNELS.get(m.group(1))
                     if not ch:
@@ -466,8 +478,26 @@ class Catalogue:
                 if r not in self["property"]:
                     p.append(f"action {a.id}: requires unknown property '{r}'")
             touches_agent = any(prm.type == "ref" and "agent" in prm.accepts for prm in a.params)
-            if a.contact and not a.minor_whitelist:
-                p.append(f"action {a.id}: contact gesture without minor_whitelist (D10)")
+            if touches_agent and a.contact is None:
+                p.append(f"action {a.id}: a ref accepts an agent, contact must be declared (D10)")
+            if a.contact and not a.party_params:
+                p.append(f"action {a.id}: contact gesture without party_params (D10)")
+            for pp in a.party_params:
+                if pp not in pnames:
+                    p.append(f"action {a.id}: party param '{pp}' unknown")
+            if a.contact and a.minor_person_ok and not a.minor_whitelist and a.family != "force":
+                p.append(f"action {a.id}: allowed with a minor but no minor_whitelist (D10)")
+            for pn, vals in a.minor_whitelist.items():
+                prm = next((x for x in a.params if x.name == pn), None)
+                if prm is not None and set(vals) == set(prm.values) and not prm.intimate_values:
+                    p.append(f"action {a.id}: minor_whitelist on '{pn}' lists every value, it filters nothing")
+            zp = next((x for x in a.params if x.name == "contact_zone"), None)
+            if a.contact and a.minor_person_ok and a.family in ("care", "tool", "perceive", "grasp") and zp is None:
+                p.append(f"action {a.id}: contact gesture allowed with a minor needs a contact_zone param (D10)")
+            if zp is not None and a.minor_person_ok:
+                allowed = set(a.minor_whitelist.get("contact_zone", []))
+                if not allowed or not allowed <= set(MINOR_ZONES):
+                    p.append(f"action {a.id}: contact_zone whitelist must be within {MINOR_ZONES} (D10)")
             for pn, vals in a.minor_whitelist.items():
                 prm = next((x for x in a.params if x.name == pn), None)
                 if prm is None or any(v not in prm.values for v in vals):

@@ -15,9 +15,11 @@
 #   until      : une condition de conditions.toml (c_done = une fois)
 #   ref        : un pointeur vers les dossiers mentaux du PNJ (personne, bête, chose, construction,
 #                terrain, voxel visé, eau, feu, lieu, trace, croyance, forme…), accepts = ce qu'il vise.
-# D10 : un geste de contact (contact = true) déclare minor_whitelist : les seules valeurs permises
-# quand l'acteur ou la cible est mineur (âge réel, cru ou apparent) ; les valeurs intimes n'y sont
-# jamais. Animations : docs/interfaces.md § 7 ; « + » = clip à ajouter.
+# D10 (table unique, revue du 10 oct.) : tout geste dont un pointeur peut viser une personne déclare
+# contact ; un geste de contact déclare party_params (qui est touché), minor_person_ok (permis ou non
+# avec un mineur) et minor_whitelist (les seules valeurs permises alors ; chaque paramètre listé devient
+# OBLIGATOIRE). Les zones touchées sur un mineur ne sortent jamais de : tête, épaule, bras, mains, dos,
+# jambes. Mineur = âge réel, cru ou apparent, ou dossier non résolu. Les valeurs intimes n'y sont jamais. Animations : docs/interfaces.md § 7 ; « + » = clip à ajouter.
 
 # ─── Déplacement ────────────────────────────────────────────────────────────────────────────────
 [[action]]
@@ -32,6 +34,7 @@ params = [
   { name = "stop_at", type = "enum", values = ["touch", "near", "talk", "sight"], ordinal = true, optional = true },
 ]
 uses = ["t_stealth", "t_riding", "t_fishing", "t_hunting"]
+contact = false
 effects = "déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible"
 perceptibility = "vu ; pas entendus selon l'allure, le sol, la discrétion"
 duration = "jusqu'à l'arrivée, la distance voulue ou l'interruption"
@@ -114,11 +117,14 @@ params = [
   { name = "from", type = "enum", values = ["ground", "container", "hand_of", "worn_by"], note = "worn_by : à la ceinture, dans la bourse, sur le corps" },
   { name = "hold", type = "enum", values = ["in_hand", "in_arms", "on_back", "by_arm"], note = "by_arm : soutenir quelqu'un qui marche" },
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
+  { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
 requires = { target = "graspable" }
 uses = ["t_stealth"]
 contact = true
-minor_whitelist = { from = ["ground", "container", "hand_of", "worn_by"], hold = ["in_hand", "in_arms", "on_back", "by_arm"], stealth = ["open", "discreet"] }
+party_params = ["target"]
+minor_person_ok = true
+minor_whitelist = { contact_zone = ["arms", "hands", "back"] }
 effects = "la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force"
 perceptibility = "vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise"
 duration = "un instant"
@@ -132,8 +138,13 @@ params = [
   { name = "item", type = "ref", accepts = ["item", "agent", "animal"], note = "un objet ; un corps qu'on porte (le coucher, l'ensevelir)" },
   { name = "where", type = "ref", accepts = ["place", "item", "structure", "terrain", "voxel", "water"] },
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
+  { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
 uses = ["t_woodwork", "t_stonework", "t_farming"]
+contact = true
+party_params = ["item"]
+minor_person_ok = true
+minor_whitelist = { contact_zone = ["arms", "back"] }
 effects = "une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher"
 perceptibility = "vu selon la discrétion"
 duration = "un instant à quelques secondes"
@@ -148,6 +159,7 @@ params = [
   { name = "to", type = "ref", accepts = ["agent", "animal"] },
   { name = "mode", type = "enum", values = ["offer", "press"], note = "offer : tendre, l'autre prend s'il veut ; press : mettre de force dans la main" },
 ]
+contact = false
 effects = "la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste"
 perceptibility = "vu"
 duration = "un instant"
@@ -166,6 +178,7 @@ params = [
 ]
 requires = { item = "throwable" }
 uses = ["t_archery", "t_hunting", "t_fishing"]
+contact = false
 effects = "projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson"
 perceptibility = "vu ; entendu (claquement, impact)"
 duration = "un instant à quelques secondes (viser)"
@@ -182,6 +195,7 @@ params = [
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
 ]
 requires = { from = "contains" }
+contact = false
 effects = "le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange"
 perceptibility = "vu selon la discrétion et la lumière ; entendu"
 duration = "quelques secondes"
@@ -195,10 +209,13 @@ params = [
   { name = "item", type = "ref", accepts = ["item"] },
   { name = "mode", type = "enum", values = ["put_on", "take_off"] },
   { name = "on", type = "ref", accepts = ["agent"], optional = true, note = "absent : soi-même" },
+  { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
 requires = { item = "wearable" }
 contact = true
-minor_whitelist = { mode = ["put_on", "take_off"] }
+party_params = ["on"]
+minor_person_ok = true
+minor_whitelist = { mode = ["put_on"], contact_zone = ["head", "shoulder", "arms", "hands", "legs"] }
 effects = "change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification)"
 perceptibility = "vu"
 duration = "quelques secondes à une minute de jeu"
@@ -235,7 +252,8 @@ params = [
 ]
 uses = ["t_fighting", "t_woodwork", "t_stonework", "t_digging", "t_smithing"]
 contact = true
-minor_whitelist = { zone = ["head", "torso", "arms", "legs", "any"], with = ["held", "open_hand", "fist", "foot", "head", "mouth"], motion = ["swing", "thrust"], intensity = ["faint", "light", "firm", "hard", "full"] }
+party_params = ["target"]
+minor_person_ok = true
 effects = "énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles"
 perceptibility = "vu, entendu (bruit selon l'impact)"
 duration = "un coup ≈ une seconde ; répété jusqu'à la condition"
@@ -252,7 +270,8 @@ params = [
   { name = "direction", type = "enum", values = ["away", "down", "aside", "into"] },
 ]
 contact = true
-minor_whitelist = { intensity = ["faint", "light", "firm", "hard", "full"], direction = ["away", "down", "aside", "into"] }
+party_params = ["target"]
+minor_person_ok = true
 effects = "déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade"
 perceptibility = "vu"
 duration = "un instant"
@@ -268,7 +287,8 @@ params = [
   { name = "toward", type = "ref", accepts = ["place", "direction"], optional = true },
 ]
 contact = true
-minor_whitelist = { intensity = ["faint", "light", "firm", "hard", "full"] }
+party_params = ["target"]
+minor_person_ok = true
 effects = "déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte"
 perceptibility = "vu"
 duration = "selon la charge"
@@ -286,7 +306,9 @@ params = [
 ]
 uses = ["t_fighting"]
 contact = true
-minor_whitelist = { hold_zone = ["arm", "collar", "hair", "neck", "waist"], intensity = ["faint", "light", "firm", "hard", "full"] }
+party_params = ["target"]
+minor_person_ok = true
+minor_whitelist = { hold_zone = ["arm", "collar", "hair"] }
 effects = "retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle"
 perceptibility = "vu"
 duration = "jusqu'à la condition"
@@ -301,6 +323,7 @@ params = [
   { name = "stance", type = "enum", values = ["block", "dodge", "cover"] },
 ]
 uses = ["t_fighting"]
+contact = false
 effects = "réduit ou évite le prochain coup ; avec ce qui protège, absorbe"
 perceptibility = "vu"
 duration = "tant qu'on garde"
@@ -333,10 +356,13 @@ params = [
   { name = "motion", type = "enum", values = ["press", "rub", "stir", "squeeze", "saw"] },
   { name = "intensity", type = "enum", values = ["faint", "light", "firm", "hard", "full"], ordinal = true },
   { name = "duration", type = "enum", values = ["brief", "a_while", "long"], ordinal = true },
+  { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
 uses = ["t_healing", "t_cooking", "t_smithing", "t_woodwork", "t_leather", "t_husbandry", "t_brewing", "t_pottery"]
 contact = true
-minor_whitelist = { motion = ["press", "rub"], intensity = ["faint", "light", "firm"], duration = ["brief", "a_while", "long"] }
+party_params = ["target"]
+minor_person_ok = true
+minor_whitelist = { motion = ["press"], intensity = ["faint", "light", "firm"], duration = ["brief", "a_while"], contact_zone = ["head", "shoulder", "arms", "hands", "back", "legs"] }
 effects = "le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase"
 perceptibility = "vu, entendu"
 duration = "selon la tâche"
@@ -352,11 +378,14 @@ params = [
   { name = "mode", type = "enum", values = ["knot", "lash", "sew", "bind"] },
   { name = "with", type = "ref", accepts = ["item"], note = "corde, fil et aiguille, bandage, chaîne" },
   { name = "tightness", type = "enum", values = ["light", "firm", "hard"], ordinal = true },
+  { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
 requires = { with = "binds" }
 uses = ["t_textile", "t_woodwork", "t_fishing", "t_healing"]
 contact = true
-minor_whitelist = { mode = ["knot", "lash", "sew", "bind"], tightness = ["light", "firm", "hard"] }
+party_params = ["target", "to"]
+minor_person_ok = true
+minor_whitelist = { mode = ["knot"], tightness = ["light", "firm"], contact_zone = ["head", "arms", "hands", "legs"] }
 effects = "processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang"
 perceptibility = "vu"
 duration = "quelques secondes à quelques minutes de jeu"
@@ -419,6 +448,7 @@ params = [
   { name = "amount", type = "enum", values = ["little", "some", "all"], ordinal = true },
   { name = "to", type = "ref", accepts = ["agent", "animal"], optional = true, note = "absent : soi-même" },
 ]
+contact = false
 effects = "faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté"
 perceptibility = "vu"
 duration = "selon la quantité"
@@ -434,6 +464,7 @@ params = [
   { name = "to", type = "ref", accepts = ["agent", "animal"], optional = true },
 ]
 requires = { item = "contains" }
+contact = false
 effects = "soif ; ivresse ou poison selon ce qu'il y a dedans"
 perceptibility = "vu"
 duration = "quelques secondes"
@@ -469,12 +500,14 @@ label_fr = "toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans s
 params = [
   { name = "target", type = "ref", accepts = ["agent", "animal"] },
   { name = "with", type = "enum", values = ["hand", "arms", "lips", "forehead", "body"] },
-  { name = "zone", type = "enum", values = ["hand", "shoulder", "head", "face", "body"] },
+  { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"] },
   { name = "manner", type = "enum", values = ["gentle", "firm", "playful", "romantic", "intimate"], intimate_values = ["romantic", "intimate"] },
   { name = "duration", type = "enum", values = ["brief", "a_while", "long"], ordinal = true },
 ]
 contact = true
-minor_whitelist = { with = ["hand", "arms"], zone = ["hand", "shoulder", "head"], manner = ["gentle", "firm", "playful"], duration = ["brief", "a_while", "long"] }
+party_params = ["target"]
+minor_person_ok = true
+minor_whitelist = { with = ["hand", "arms"], contact_zone = ["head", "shoulder", "arms", "hands", "back"], manner = ["gentle", "firm", "playful"] }
 effects = "aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10)"
 perceptibility = "vu"
 duration = "selon le choix"
@@ -491,6 +524,7 @@ params = [
   { name = "mode", type = "enum", values = ["glance", "watch", "stare"], ordinal = true },
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
 ]
+contact = false
 effects = "met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit"
 perceptibility = "vu (le regard)"
 duration = "selon le choix"
@@ -505,6 +539,7 @@ params = [
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
 ]
 uses = ["t_stealth"]
+contact = false
 effects = "entend plus loin et plus bas ; discret derrière ce qui cache : épier"
 perceptibility = "vu si l'on n'est pas caché"
 duration = "selon le choix"
@@ -520,7 +555,8 @@ params = [
 ]
 uses = ["t_foraging", "t_hunting", "t_stealth"]
 contact = true
-minor_whitelist = { thoroughness = ["brief", "a_while", "long"] }
+party_params = ["target"]
+minor_person_ok = false
 effects = "révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille"
 perceptibility = "vu, entendu"
 duration = "selon le soin"
@@ -533,10 +569,13 @@ label_fr = "examiner de près (tâter un pouls, mordre une pièce, soupeser, sen
 params = [
   { name = "target", type = "ref", accepts = ["agent", "animal", "item", "structure", "terrain", "voxel", "water", "trace", "plant"] },
   { name = "sense", type = "enum", values = ["look", "touch", "weigh", "smell", "taste"] },
+  { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
 uses = ["t_healing", "t_foraging", "t_hunting", "t_reckoning", "t_smithing"]
 contact = true
-minor_whitelist = { sense = ["look", "touch", "smell"] }
+party_params = ["target"]
+minor_person_ok = true
+minor_whitelist = { sense = ["look", "touch", "smell"], contact_zone = ["head", "shoulder", "arms", "hands", "back", "legs"] }
 effects = "le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature"
 perceptibility = "vu"
 duration = "quelques secondes"
@@ -564,6 +603,7 @@ params = [
   { name = "tone", type = "enum", values = ["warm", "calm", "cold", "angry", "pleading"] },
   { name = "content", type = "expression", note = "une expression de la langue intérieure (≤ 20 symboles), composée par le Transformer" },
 ]
+contact = false
 effects = "les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide"
 perceptibility = "entendu ; vu (lèvres, gestes)"
 duration = "selon la longueur"
@@ -578,6 +618,7 @@ params = [
   { name = "kind", type = "enum", values = ["point", "nod", "shake_head", "wave", "beckon", "shrug", "bow", "applaud", "raise_hand", "show", "spit", "fist"] },
   { name = "at", type = "ref", accepts = ["agent", "animal", "item", "place", "direction", "group"], optional = true },
 ]
+contact = false
 effects = "aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages"
 perceptibility = "vu"
 duration = "un instant"

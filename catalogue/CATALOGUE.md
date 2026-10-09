@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 47, variable 308, property 89, action 40, concept 246, grammar 8, interpretation 34, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
+Compte : entity 16, component 49, variable 333, property 89, action 40, concept 246, grammar 8, interpretation 34, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
 
 ## Histoires (tests d'acceptation)
 
@@ -227,6 +227,8 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | skill | une maîtrise : une technique et son niveau (la vraie compétence, tenue par le moteur) | agent |
 | percept | une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité | agent |
 | event_seen | un geste d'autrui perçu récemment (vu ou entendu) : qui, quel geste, sur quoi, comment | agent |
+| entity_percept | une personne (ou une bête) perçue par CET observateur : ce qu'il en voit d'où il est, avec sa lumière, son attention, son œil | agent |
+| place_percept | le lieu tel que CET observateur le perçoit (lumière, bruit, gens qu'il voit, air, temps qu'il fait, signes étranges) | agent |
 
 ## Variables d'état
 
@@ -263,37 +265,37 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit | ENTITY.look.condition | 3 |
-| symptoms | symptômes visibles (fièvre, toux, taches, pâleur, tremblements) | list | calculé |  | observable |  | ENTITY.look.health | 0 |
-| expression | expression du visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | tirée des émotions réelles, atténuée par la volonté de masquer (esprit mouvant, étape 5) et la maîtrise de soi | ENTITY.look.expression | 1 |
-| involuntary_signs | signes involontaires (rougir, pâlir, transpirer, trembler, larmes, voix qui tremble) | list | calculé |  | observable | on les masque mal : c'est par eux qu'un mensonge ou une peur se trahit | ENTITY.look.signs | 1 |
-| posture | posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  | SELF.posture ; ENTITY.look.posture | 0 |
-| visible_injury | blessures visibles | unipolar10 | calculé |  | observable | plaies des zones non couvertes, sang sur les vêtements, boiterie | ENTITY.look.wounds | 0 |
-| attire_seen | ce qu'on voit de la tenue (sobre ou riche, de fête, de deuil, de travail, armure) | list | calculé |  | observable | tiré des vêtements portés : matières, qualité, teintes, emplacements | ENTITY.look.attire | 0 |
-| held_seen | ce qu'il tient en main, vu par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable | vecteur d'usages de l'objet en main : qu'il coupe ou perce, et non son nom | ENTITY.look.held | 0 |
-| grooming | propreté, cheveux, barbe, mouillé | unipolar10 | calculé |  | observable |  | ENTITY.look.attire | 0 |
-| gaze | ce qu'il regarde (une personne, une chose, un lieu) | mref | calculé |  | observable | tiré de l'attention et de l'orientation ; on voit qu'on est regardé, ou qu'il regarde ailleurs | ENTITY.look.gaze (pointeur) | 0 |
-| look_build_seen | carrure apparente (taille, corpulence, force qu'on devine, maigreur) | list | calculé |  | observable | tirée du corps vu, en niveaux grossiers ; un manteau épais trompe | ENTITY.look.build | 0 |
-| look_sex_seen | sexe apparent | enum (female, male, unclear) | calculé |  | observable | unclear de loin, de dos, sous une cape | ENTITY.look.sex | 0 |
-| look_age_seen | âge apparent (à quelques années près ; incertain de loin, dans le noir, sous un capuchon) | qty | calculé |  | observable | âge vrai brouillé par la distance, la lumière, ce qui couvre le visage, l'usure du corps ; la règle D10 le lit aussi | ENTITY.look.age | 0 |
-| look_marks_seen | marques visibles (cicatrice, boiterie, œil perdu) | list | calculé |  | observable |  | ENTITY.look.marks | 0 |
-| look_drunk_seen | signes d'ivresse ou de drogue (titube, yeux vitreux, parle fort) | unipolar10 | calculé |  | observable | tirés de l'ivresse ; un poison ne se voit que par ses symptômes | ENTITY.look.signs | 0 |
-| seen_distance | distance apparente | qty | calculé |  | observable | absent saillant : pas de distance (present = faux) | ENTITY.dist | 0 |
-| seen_direction | direction apparente (sinus, cosinus relatifs au PNJ) | qty | calculé |  | observable |  | ENTITY.dir | 0 |
-| seen_motion | mouvement vu (immobile, s'approche, s'éloigne, court) | enum (still, approaching, leaving, running) | calculé |  | observable |  | ENTITY.look.motion | 0 |
+| condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit |  | 3 |
+| symptoms | symptômes visibles (fièvre, toux, taches, pâleur, tremblements) | list | calculé |  | observable |  |  | 0 |
+| expression | expression du visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | tirée des émotions réelles, atténuée par la volonté de masquer (esprit mouvant, étape 5) et la maîtrise de soi |  | 1 |
+| involuntary_signs | signes involontaires (rougir, pâlir, transpirer, trembler, larmes, voix qui tremble) | list | calculé |  | observable | on les masque mal : c'est par eux qu'un mensonge ou une peur se trahit |  | 1 |
+| posture | posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  |  | 0 |
+| visible_injury | blessures visibles | unipolar10 | calculé |  | observable | plaies des zones non couvertes, sang sur les vêtements, boiterie |  | 0 |
+| attire_seen | ce qu'on voit de la tenue (sobre ou riche, de fête, de deuil, de travail, armure) | list | calculé |  | observable | tiré des vêtements portés : matières, qualité, teintes, emplacements |  | 0 |
+| held_seen | ce qu'il tient en main, vu par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable | vecteur d'usages de l'objet en main : qu'il coupe ou perce, et non son nom |  | 0 |
+| grooming | propreté, cheveux, barbe, mouillé | unipolar10 | calculé |  | observable |  |  | 0 |
+| gaze | ce qu'il regarde (une personne, une chose, un lieu) | id | calculé |  | observable | tiré de l'attention et de l'orientation ; on voit qu'on est regardé, ou qu'il regarde ailleurs |  | 0 |
+| look_build_seen | carrure apparente (taille, corpulence, force qu'on devine, maigreur) | list | calculé |  | observable | tirée du corps vu, en niveaux grossiers ; un manteau épais trompe |  | 0 |
+| look_sex_seen | sexe apparent | enum (female, male, unclear) | calculé |  | observable | unclear de loin, de dos, sous une cape |  | 0 |
+| look_age_seen | âge apparent (à quelques années près ; incertain de loin, dans le noir, sous un capuchon) | qty | calculé |  | observable | âge vrai brouillé par la distance, la lumière, ce qui couvre le visage, l'usure du corps ; la règle D10 le lit aussi |  | 0 |
+| look_marks_seen | marques visibles (cicatrice, boiterie, œil perdu) | list | calculé |  | observable |  |  | 0 |
+| look_drunk_seen | signes d'ivresse ou de drogue (titube, yeux vitreux, parle fort) | unipolar10 | calculé |  | observable | tirés de l'ivresse ; un poison ne se voit que par ses symptômes |  | 0 |
+| seen_distance | distance apparente | qty | calculé |  | observable | absent saillant : pas de distance (present = faux) |  | 0 |
+| seen_direction | direction apparente (sinus, cosinus relatifs au PNJ) | qty | calculé |  | observable |  |  | 0 |
+| seen_motion | mouvement vu (immobile, s'approche, s'éloigne, court) | enum (still, approaching, leaving, running) | calculé |  | observable |  |  | 0 |
 
 ### area
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| phenomenon_signs | signes d'un phénomène (lumières errantes, silence soudain, sons, froid brutal, odeur) | list | calculé |  | observable | ce qui se voit et s'entend ; jamais « ici, il y a de la magie » | PLACE.signs | 0 |
+| phenomenon_signs | signes d'un phénomène (lumières errantes, silence soudain, sons, froid brutal, odeur) | list | calculé |  | observable | ce qui se voit et s'entend ; jamais « ici, il y a de la magie » |  | 0 |
 | hostility_drivers | ce qui empire dans les marches (froid, densité de prédateurs, tempêtes, relief, rareté de l'eau et du gibier) | list | calculé |  | moteur seul | tiré de la profondeur dans les marches ; chaque élément agit par la physique (froid sur le corps, loups plus nombreux, terrain plus dur) |  | 0 |
 | underground_depth | profondeur sous terre (noir, air vicié, éboulements) | qty | calculé |  | moteur seul | plus profond : plus noir, l'air manque (souffle), les galeries s'effondrent plus facilement ; on meurt de ces causes (P9 : valable sous terre) |  | 0 |
 | place_bounds | étendue d'un lieu, lieu parent | list | moteur |  | observable |  |  | 0 |
-| indoors | intérieur ou dehors | bool | moteur |  | observable |  | PLACE.indoors | 0 |
-| light_level | lumière (soleil, lune, nuages, feux, lampes, fenêtres) | unipolar10 | calculé |  | observable | calculée en temps réel (D23) ; règle ce qu'on voit et à quelle distance, et la certitude de ce qu'on perçoit | PLACE.light | 0 |
-| ambient_noise | bruit ambiant (couvre les paroles, les pas) | unipolar10 | calculé |  | observable | foule, forge, pluie, rivière ; un murmure ne s'entend pas dans le bruit | PLACE.noise | 0 |
-| crowding | nombre de gens présents | qty | calculé |  | observable |  | PLACE.crowd | 0 |
+| indoors | intérieur ou dehors | bool | moteur |  | observable |  |  | 0 |
+| light_level | lumière (soleil, lune, nuages, feux, lampes, fenêtres) | unipolar10 | calculé |  | observable | calculée en temps réel (D23) ; règle ce qu'on voit et à quelle distance, et la certitude de ce qu'on perçoit |  | 0 |
+| ambient_noise | bruit ambiant (couvre les paroles, les pas) | unipolar10 | calculé |  | observable | foule, forge, pluie, rivière ; un murmure ne s'entend pas dans le bruit |  | 0 |
+| crowding | nombre de gens présents | qty | calculé |  | observable |  |  | 0 |
 | frontier_depth | profondeur dans les marches, mesurée depuis leur bord intérieur (les marches sont la bande au bord de la carte, P9) | qty | calculé |  | moteur seul | pilote des variables PHYSIQUES qui empirent avec la profondeur (froid, prédateurs, tempêtes, relief, rareté de l'eau et du gibier), environ ×2 tous les 300 m (500 m en montagne) ; on meurt de ces causes, jamais d'une formule ; aucune limite visible (D26) |  | 0 |
 
 ### belief
@@ -323,6 +325,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | belief_capacity | nombre de croyances gardées | qty | calculé |  | moteur seul | de 128 à 384 selon la mémoire (memory_capacity) ; au-delà, la moins importante et la moins confirmée s'efface |  | 0 |
 | heard_unprocessed | ce qu'on vient d'entendre et qu'on n'a pas encore jugé | list | moteur |  | privé | « Y m'a dit que P » attend que le Transformer décide d'y croire ou non ; s'efface s'il n'en fait rien | HEARD (≤ 2 jetons) | 0 |
 | place_recognized | où l'on croit être (lieu reconnu par ses repères) | mref | moteur |  | privé | reconnu par la perception quand on connaît les repères ; hors des lieux connus : dernier lieu connu et direction approximative : on peut se perdre (charte § 19) | SELF.place | 0 |
+| season_felt | saison qu'il croit (neige, feuilles, récoltes) | enum (spring, summer, autumn, winter) | calculé |  | privé |  | SELF.season | 0 |
 | time_felt | heure du jour ressentie (soleil, lumière, cloches, faim) ; incertaine sous terre ou à l'intérieur | qty | calculé |  | privé | exacte à peu près dehors au soleil ; dérive dans le noir, sous terre, par temps couvert | SELF.time (sin, cos, certitude) | 0 |
 
 ### body
@@ -353,6 +356,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent |  | 0 |
 | immunities | immunités acquises | list | moteur |  | moteur seul |  |  | 0 |
 | intoxication | ivresse, effet d'une drogue (alcool, pavot, somnifère : ce qu'on ressent) ; le poison est une maladie (illnesses), dont on ne sent que les symptômes | unipolar10 | moteur |  | observable | monte par la potency de ce qu'on ingère, redescend en heures | SELF.body.intox | 1 |
+| posture_felt | sa propre posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | privé |  | SELF.posture | 0 |
 | sickness_felt | malaise ressenti (fièvre, nausée, faiblesse) : les symptômes, pas la maladie | unipolar10 | calculé |  | privé | tiré des symptômes ; l'incubation ne se sent pas | SELF.body.sickness | 0 |
 
 ### carrier
@@ -375,11 +379,11 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| air_temperature | température de l'air | qty | moteur |  | observable | saison, heure, altitude, côté de la carte (désert, montagne, mer) | PLACE.air_felt (glacial, froid, frais, doux, chaud, brûlant : le ressenti, pas les degrés) | 0 |
-| wind | vent (direction, force) | qty | moteur |  | observable | pousse le feu, les voiles, la pluie ; vent dominant venu de la mer | PLACE.wind | 0 |
+| air_temperature | température de l'air | qty | moteur |  | observable | saison, heure, altitude, côté de la carte (désert, montagne, mer) |  | 0 |
+| wind | vent (direction, force) | qty | moteur |  | observable | pousse le feu, les voiles, la pluie ; vent dominant venu de la mer |  | 0 |
 | cloud_cover | nuages | ratio | moteur |  | observable |  |  | 0 |
-| precipitation | pluie, neige, grêle (type, intensité) | list | moteur |  | observable | mouille (wetness), remplit les puits, gonfle les rivières, éteint les feux | PLACE.weather (pluie, neige, orage, vent fort : ce qui se voit et s'entend) | 0 |
-| fog | brume, brouillard | ratio | moteur |  | observable | réduit la portée de la vue (perception) | PLACE.visibility | 0 |
+| precipitation | pluie, neige, grêle (type, intensité) | list | moteur |  | observable | mouille (wetness), remplit les puits, gonfle les rivières, éteint les feux |  | 0 |
+| fog | brume, brouillard | ratio | moteur |  | observable | réduit la portée de la vue (perception) |  | 0 |
 | storm | orage, tempête (foudre, coups de vent) | unipolar10 | moteur |  | observable | la foudre peut allumer un feu ; la tempête tue en montagne et en mer ; elle se voit et s'entend (PLACE.weather) |  | 0 |
 | snow_cover | neige au sol | qty | moteur |  | observable | ralentit, efface les traces, isole les villages |  | 0 |
 
@@ -389,7 +393,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 |---|---|---|---|---|---|---|---|---|
 | game_time | temps de jeu écoulé | time | moteur |  | public |  |  | 0 |
 | time_of_day | heure du jour | qty | calculé |  | public |  |  | 0 |
-| day_of_year | jour de l'année, saison | qty | calculé |  | public |  | SELF.season | 0 |
+| day_of_year | jour de l'année, saison | qty | calculé |  | public |  |  | 0 |
 | year | année du calendrier | qty | calculé |  | public |  |  | 0 |
 | moon_phase | phase de la lune (lumière la nuit, croyances) | ratio | calculé |  | public |  |  | 0 |
 | calendar_params | réglage du calendrier et de l'horloge de vie | list | moteur |  | moteur seul |  |  | 0 |
@@ -403,6 +407,27 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | fire_fuel | combustible restant | qty | moteur |  | observable |  |  | 0 |
 | fire_spread | propagation (selon inflammabilité, humidité, vent) | ratio | moteur |  | observable | l'eau versée, la terre jetée, l'absence de combustible l'arrêtent |  | 0 |
 | smoke | fumée (cache la vue, étouffe, se sent de loin) | unipolar10 | moteur |  | observable | baisse le souffle de ceux qui la respirent ; s'entend et se sent avant de se voir |  | 0 |
+
+### entity_percept
+
+| id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
+|---|---|---|---|---|---|---|---|---|
+| ep_condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | tiré de l'apparence, brouillé par la distance et la lumière ; immobile ne dit pas mort | ENTITY.look.condition | 0 |
+| ep_expression | expression qu'il lit sur le visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | invisible de dos, de loin, dans le noir ; ce que l'autre masque reste masqué | ENTITY.look.expression | 0 |
+| ep_signs | signes involontaires qu'il remarque (rougit, tremble, transpire, larmes, titube) | list | calculé |  | observable | plus il est fin (perceptiveness) et attentif, plus il en voit | ENTITY.look.signs | 0 |
+| ep_health | santé apparente (pâle, fiévreux, tousse, maigre) | list | calculé |  | observable |  | ENTITY.look.health | 0 |
+| ep_wounds | blessures qu'il voit (zones découvertes, sang sur les habits, boiterie) | unipolar10 | calculé |  | observable |  | ENTITY.look.wounds | 0 |
+| ep_posture | posture vue | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  | ENTITY.look.posture | 0 |
+| ep_attire | tenue et mise vues (sobre ou riche, de fête, de deuil, de travail, armure, soignée ou sale) | list | calculé |  | observable |  | ENTITY.look.attire | 0 |
+| ep_held | ce qu'il lui voit en main, par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable |  | ENTITY.look.held | 0 |
+| ep_build | carrure apparente (taille, corpulence, force devinée) | list | calculé |  | observable |  | ENTITY.look.build | 0 |
+| ep_sex | sexe apparent | enum (female, male, unclear) | calculé |  | observable |  | ENTITY.look.sex | 0 |
+| ep_age | âge apparent pour cet observateur | qty | calculé |  | observable | âge vrai brouillé par la distance, la lumière, ce qui couvre le visage ; D10 le lit aussi | ENTITY.look.age | 0 |
+| ep_marks | marques qu'il voit (cicatrice, boiterie, œil perdu) | list | calculé |  | observable |  | ENTITY.look.marks | 0 |
+| ep_dist | distance apparente | qty | calculé |  | observable |  | ENTITY.dist | 0 |
+| ep_dir | direction apparente (sinus, cosinus) | qty | calculé |  | observable |  | ENTITY.dir | 0 |
+| ep_motion | mouvement vu (immobile, s'approche, s'éloigne, court) | enum (still, approaching, leaving, running) | calculé |  | observable |  | ENTITY.look.motion | 0 |
+| ep_gaze | ce qu'il le voit regarder (un de SES dossiers : moi, un autre, une chose), si on voit son regard | mref | calculé |  | observable |  | ENTITY.look.gaze | 0 |
 
 ### episode
 
@@ -556,41 +581,41 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| sincerity | sincérité (−10 manipule et ment sans gêne, +10 ne peut pas mentir) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.sincerity | 0 |
-| fairness | équité (−10 triche et vole volontiers, +10 refuse tout gain injuste) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.fairness | 0 |
-| greed_avoidance | désintérêt pour la richesse (−10 avide, +10 indifférent au luxe) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.greed_avoidance | 0 |
-| modesty | modestie (−10 vaniteux, se croit au-dessus, +10 humble) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.modesty | 0 |
-| fearfulness | craintivité (−10 intrépide, prend des risques, +10 peureux, cherche la sécurité) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.fearfulness | 0 |
-| anxiousness | anxiété (−10 serein, +10 se fait du souci pour tout) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.anxiousness | 0 |
-| sentimentality | sensibilité affective (−10 froid et indépendant, +10 s'attache, s'émeut, a besoin des autres) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.sentimentality | 0 |
-| assurance | assurance (−10 timide, se sent nul devant les autres, +10 sûr de lui, prend la parole, mène) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.assurance | 0 |
-| sociability | sociabilité (−10 solitaire, +10 recherche la compagnie) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.sociability | 0 |
-| forgiveness | pardon (−10 rancunier à vie, +10 pardonne vite) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.forgiveness | 0 |
-| gentleness | douceur (−10 dur, cassant, têtu, +10 indulgent, accommodant) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.gentleness | 0 |
-| patience | patience (−10 s'emporte au moindre mot, +10 garde son calme) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.patience | 0 |
-| diligence | application (−10 paresseux, désordonné, bâcle, +10 acharné, méthodique, perfectionniste) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.diligence | 0 |
-| prudence | prudence (−10 impulsif, agit sans réfléchir, +10 pèse tout) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.prudence | 0 |
-| inquisitiveness | curiosité (−10 sans curiosité, +10 veut tout voir, tout savoir, attiré par l'inconnu) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.inquisitiveness | 0 |
-| creativity | inventivité et sens du beau (−10 suit les recettes, indifférent, +10 invente, ému par la beauté) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.creativity | 0 |
-| unconventionality | originalité (−10 conformiste, attaché aux usages, +10 excentrique) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.unconventionality | 0 |
-| altruism | altruisme (−10 indifférent à la souffrance d'autrui, +10 ne supporte pas de voir souffrir) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.altruism | 0 |
+| sincerity | sincérité (−10 manipule et ment sans gêne, +10 ne peut pas mentir) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.sincerity | 0 |
+| fairness | équité (−10 triche et vole volontiers, +10 refuse tout gain injuste) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.fairness | 0 |
+| greed_avoidance | désintérêt pour la richesse (−10 avide, +10 indifférent au luxe) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.greed_avoidance | 0 |
+| modesty | modestie (−10 vaniteux, se croit au-dessus, +10 humble) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.modesty | 0 |
+| fearfulness | craintivité (−10 intrépide, prend des risques, +10 peureux, cherche la sécurité) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.fearfulness | 0 |
+| anxiousness | anxiété (−10 serein, +10 se fait du souci pour tout) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.anxiousness | 0 |
+| sentimentality | sensibilité affective (−10 froid et indépendant, +10 s'attache, s'émeut, a besoin des autres) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.sentimentality | 0 |
+| assurance | assurance (−10 timide, se sent nul devant les autres, +10 sûr de lui, prend la parole, mène) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.assurance | 0 |
+| sociability | sociabilité (−10 solitaire, +10 recherche la compagnie) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.sociability | 0 |
+| forgiveness | pardon (−10 rancunier à vie, +10 pardonne vite) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.forgiveness | 0 |
+| gentleness | douceur (−10 dur, cassant, têtu, +10 indulgent, accommodant) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.gentleness | 0 |
+| patience | patience (−10 s'emporte au moindre mot, +10 garde son calme) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.patience | 0 |
+| diligence | application (−10 paresseux, désordonné, bâcle, +10 acharné, méthodique, perfectionniste) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.diligence | 0 |
+| prudence | prudence (−10 impulsif, agit sans réfléchir, +10 pèse tout) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.prudence | 0 |
+| inquisitiveness | curiosité (−10 sans curiosité, +10 veut tout voir, tout savoir, attiré par l'inconnu) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.inquisitiveness | 0 |
+| creativity | inventivité et sens du beau (−10 suit les recettes, indifférent, +10 invente, ému par la beauté) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.creativity | 0 |
+| unconventionality | originalité (−10 conformiste, attaché aux usages, +10 excentrique) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.unconventionality | 0 |
+| altruism | altruisme (−10 indifférent à la souffrance d'autrui, +10 ne supporte pas de voir souffrir) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.altruism | 0 |
 | intellect | intelligence (raisonnement, prévoyance) | unipolar10 | naissance, moteur |  | privé | monte un peu avec l'étude et l'âge adulte, baisse au grand âge ; c'est un trait du personnage, pas la profondeur de simulation (sim_depth) | SELF_MIND.ability.intellect | 0 |
 | memory_capacity | mémoire (combien et combien de temps on retient) | unipolar10 | naissance, moteur |  | moteur seul | le moteur l'applique : nombre de souvenirs gardés, vitesse d'oubli |  | 0 |
 | perceptiveness | finesse de perception sociale (lire un visage, un trouble) | unipolar10 | naissance, moteur |  | moteur seul | le moteur l'applique : plus elle est haute, plus il montre de signes involontaires fins |  | 0 |
-| self_control | maîtrise de soi (masquer ses émotions, résister à une envie) | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.ability.self_control | 0 |
+| self_control | maîtrise de soi (masquer ses émotions, résister à une envie) | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.ability.self_control | 0 |
 | coordination | adresse du corps (−10 maladroit, renverse tout, +10 adroit) | bipolar10 | naissance, moteur |  | observable | le moteur l'applique à la précision des gestes : un maladroit rate, renverse, fait tomber (charte § 27) | SELF_MIND.ability.coordination | 0 |
-| resilience | retour au calme (vitesse à laquelle les émotions retombent) | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.temper.resilience | 0 |
-| baseline_mood | humeur de fond (−10 sombre et morne, +10 radieux, enjoué, blagueur) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.temper.baseline_mood | 0 |
-| v_loyalty | valeur : fidélité aux siens (famille, amis, village) | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.loyalty | 0 |
-| v_authority | valeur : respect de l'autorité, de l'ordre, de la loi | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.authority | 0 |
-| v_sanctity | valeur : le sacré, la pureté, les tabous | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.sanctity | 0 |
-| v_liberty | valeur : liberté, ne pas être dominé | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.liberty | 0 |
-| v_achievement | valeur : réussir, être compétent, accomplir | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.achievement | 0 |
-| v_power | valeur : pouvoir, rang, commander, posséder | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.power | 0 |
-| v_honor | valeur : l'honneur, la réputation, ne pas perdre la face | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.honor | 0 |
-| v_pleasure | valeur : le plaisir, le confort, la bonne chère | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.pleasure | 0 |
+| resilience | retour au calme (vitesse à laquelle les émotions retombent) | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.temper.resilience | 0 |
+| baseline_mood | humeur de fond (−10 sombre et morne, +10 radieux, enjoué, blagueur) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.temper.baseline_mood | 0 |
+| v_loyalty | valeur : fidélité aux siens (famille, amis, village) | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.loyalty | 0 |
+| v_authority | valeur : respect de l'autorité, de l'ordre, de la loi | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.authority | 0 |
+| v_sanctity | valeur : le sacré, la pureté, les tabous | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.sanctity | 0 |
+| v_liberty | valeur : liberté, ne pas être dominé | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.liberty | 0 |
+| v_achievement | valeur : réussir, être compétent, accomplir | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.achievement | 0 |
+| v_power | valeur : pouvoir, rang, commander, posséder | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.power | 0 |
+| v_honor | valeur : l'honneur, la réputation, ne pas perdre la face | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.honor | 0 |
+| v_pleasure | valeur : le plaisir, le confort, la bonne chère | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.pleasure | 0 |
 | attracted_to | attirance (par quel sexe la personne peut être attirée) | list (female, male) | naissance |  | privé |  | SELF_MIND.attracted_to | 0 |
-| tastes | goûts singuliers : attitude (−10..+10) envers un concept (une couleur, un aliment, un lieu, une activité, une sorte de gens, la nuit, l'eau…) | list | naissance, T lent | 0.05 | privé | quelques goûts marqués par personne, tirés à la naissance ; d'autres naissent de l'expérience | TASTE (≤ 2 jetons saillants, pointeur vers le concept) | 0 |
+| tastes | goûts singuliers : attitude (−10..+10) envers un concept (une couleur, un aliment, un lieu, une activité, une sorte de gens, la nuit, l'eau…) | list | naissance, T lent | 0.1 | privé | quelques goûts marqués par personne, tirés à la naissance ; d'autres naissent de l'expérience | TASTE (≤ 2 jetons saillants, pointeur vers le concept) | 0 |
 
 ### needs
 
@@ -627,6 +652,18 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | phenomenon_kind | nature (zone de silence, lumières errantes, sol qui chante, vents contraires, sommeil étrange…) | id | naissance |  | moteur seul |  |  | 0 |
 | phenomenon_intensity | intensité, rayon, cycle (actif la nuit, à la pleine lune…) | list | moteur |  | moteur seul |  |  | 0 |
 | phenomenon_effects | effets sur ce qui entre (rêves, peur, confusion, objets qui changent, boussole folle) | list | moteur |  | moteur seul | le moteur n'applique que des effets physiques ou physiologiques (confusion, envie de dormir, perception brouillée, froid, sons) ; les rêves deviennent des souvenirs de source « rêvé » ; ce qu'on ressent (peur, émerveillement) se juge : le Transformer |  | 0 |
+
+### place_percept
+
+| id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
+|---|---|---|---|---|---|---|---|---|
+| pp_indoors | dedans ou dehors | bool | calculé |  | observable |  | PLACE.indoors | 0 |
+| pp_light | lumière autour de lui | unipolar10 | calculé |  | observable |  | PLACE.light | 0 |
+| pp_noise | bruit qu'il entend | unipolar10 | calculé |  | observable |  | PLACE.noise | 0 |
+| pp_crowd_seen | gens qu'il voit (pas ceux qui sont cachés) | qty | calculé |  | observable |  | PLACE.crowd | 0 |
+| pp_air_felt | air ressenti (glacial, froid, frais, doux, chaud, brûlant) | enum (freezing, cold, cool, mild, warm, hot) | calculé |  | observable |  | PLACE.air_felt | 0 |
+| pp_weather_seen | temps qu'il voit et entend (pluie, neige, orage, vent fort, brouillard) | list | calculé |  | observable |  | PLACE.weather | 0 |
+| pp_signs | signes étranges qu'il perçoit (lumières errantes, silence soudain, froid brutal) | list | calculé |  | observable |  | PLACE.signs | 0 |
 
 ### relation
 
@@ -1577,12 +1614,12 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu | 0 |
 | mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu | 0 |
 | set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | 0 |
-| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 2 |
-| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 0 |
+| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 2 |
+| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 0 |
 | give | grasp | tendre, donner en main propre, nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | 1 |
 | throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) | 0 |
 | pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | 1 |
-| wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref? | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu | 0 |
+| wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref?; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu | 0 |
 | operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) | 0 |
 | strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) | 4 |
 | push | force | pousser, bousculer, renverser | target:ref; intensity:enum=faint/light/firm/hard/full; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu | 1 |
@@ -1590,8 +1627,8 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu | 1 |
 | guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu | 0 |
 | scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | 1 |
-| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | 1 |
-| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu | 0 |
+| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | 1 |
+| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu | 0 |
 | blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu | 0 |
 | shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu | 0 |
 | channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:ref; intent:enum=assemble/disassemble/mend/shape; intensity:enum=faint/light/firm/hard/full; into:ref? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu | 0 |
@@ -1599,11 +1636,11 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | drink | consume | boire, ou faire boire | item:ref; amount:enum=little/some/all; to:ref? | soif ; ivresse ou poison selon ce qu'il y a dedans | vu | 0 |
 | sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu | 0 |
 | rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu | 0 |
-| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; zone:enum=hand/shoulder/head/face/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | 0 |
+| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | 0 |
 | look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | 1 |
 | listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché | 0 |
 | search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu | 0 |
-| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu | 0 |
+| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu | 0 |
 | read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu | 0 |
 | speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | 15 |
 | sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu | 0 |

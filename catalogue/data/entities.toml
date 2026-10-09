@@ -207,19 +207,16 @@ holder = "phenomenon"
 
 [[component]]
 id = "area"
-channel = "perception"
 label_fr = "étendue d'un lieu : limites, intérieur ou dehors, lieu parent, lumière, bruit ambiant"
 holder = "place"
 
 [[component]]
 id = "clock"
-channel = "perception"
 label_fr = "horloge : temps de jeu, jour, saison, année ; horloge de vie (charte § 25)"
 holder = "world"
 
 [[component]]
 id = "climate"
-channel = "perception"
 label_fr = "climat et météo : température, vent, nuages, précipitations par région"
 holder = "world"
 
@@ -261,7 +258,6 @@ holder = "agent, animal, plant"
 
 [[component]]
 id = "appearance"
-channel = "perception"
 engine_only = true
 label_fr = "apparence : ce que les autres voient (tenue, propreté, blessures visibles, expression du visage, posture)"
 holder = "agent, animal"
@@ -416,3 +412,20 @@ holder = "agent"
 part_of = "beliefs"
 max_count = 6
 note = "Tel que perçu : dans le noir, « quelqu'un » a frappé ; caché derrière un tonneau, on a entendu sans voir."
+
+[[component]]
+id = "entity_percept"
+label_fr = "une personne (ou une bête) perçue par CET observateur : ce qu'il en voit d'où il est, avec sa lumière, son attention, son œil"
+holder = "agent"
+part_of = "beliefs"
+channel = "perception"
+max_count = 10
+note = "L'apparence de la personne observée (appearance) est un fait du moteur ; ceci est ce qu'un observateur précis en perçoit. Deux témoins ne voient pas la même chose."
+
+[[component]]
+id = "place_percept"
+label_fr = "le lieu tel que CET observateur le perçoit (lumière, bruit, gens qu'il voit, air, temps qu'il fait, signes étranges)"
+holder = "agent"
+part_of = "beliefs"
+channel = "perception"
+max_count = 1
