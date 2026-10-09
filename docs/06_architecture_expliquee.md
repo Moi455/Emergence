@@ -203,6 +203,6 @@ Avec le Transformer partout, **la simulation ne peut pas aller beaucoup plus vit
 
 Tranchées par la charte : la taille du monde (20 × 20 km), l'échelle de temps (une vie d'environ 150 h de jeu) et l'évolution des traits (progressive). Il reste :
 
-1. **Taille des voxels du monde** : la charte dit « quelques centimètres » ; défaut proposé 5 cm ; le prototype village a essayé 10 cm et un rendu sans texture bitmap (son `RENDU.md`, 9 oct.) : résultats d'essai, la taille et les textures (O14) restent à trancher.
+1. **Taille des voxels du monde** : la charte dit « quelques centimètres » ; défaut proposé 5 cm ; le prototype village a essayé 10 cm et un rendu sans texture bitmap (`prototypes/village-web/RENDU.md`, 9 oct.) : résultats d'essai, la taille et les textures (O14) restent à trancher.
 2. **Fréquence du Transformer** : combien d'appels par PNJ, à exprimer par jour de jeu (voir limite 2) ?
 3. **Enseignant bon marché** : quel modèle (Gemini Flash-Lite, un modèle local) et quel budget ?

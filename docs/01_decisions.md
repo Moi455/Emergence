@@ -75,9 +75,9 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | O6 | ~~Clé Gemini exposée~~ révoquée, voir D16 | — |
 | O7 | Déclaration Steam du contenu IA « live-generated » (verbaliseur LLM local) et description des garde-fous contre le contenu illégal ; aucun contenu sexuel adulte généré en direct | à rédiger avant la sortie ; les règles dures I6 et I7 en sont la base |
 | O8 | ~~Monde de 50 km~~ tranché par D27 : 20 × 20 km | — |
-| O9 | Taille des voxels du monde. Essai du prototype village (9 oct., son `RENDU.md`) : à 2 cm la maille devient du bruit au-delà de dix mètres ; il est passé à 10 cm. Résultat d'essai, pas décision : la charte dit « quelques cm » | 5 cm proposé, 10 cm essayé ; à trancher par Monsieur |
+| O9 | Taille des voxels du monde. Essai du prototype village (9 oct., `prototypes/village-web/RENDU.md`) : à 2 cm la maille devient du bruit au-delà de dix mètres ; il est passé à 10 cm. Résultat d'essai, pas décision : la charte dit « quelques cm » | 5 cm proposé, 10 cm essayé ; à trancher par Monsieur |
 | O10 | Fréquence du Transformer par PNJ | 2 à 4 appels par seconde |
 | O11 | ~~Échelle de temps~~ tranché par D27 : vie d'environ 150 h de jeu, soit environ 2 h par année ; P14 (1 jour = 4 h) caduque | — |
 | O12 | ~~Traits figés ou non~~ tranché par D27 : ils évoluent progressivement | — |
 | O13 | Enseignant bon marché : quel modèle, quel budget | Gemini Flash-Lite, rien lancé sans accord |
-| O14 | Textures bitmap sur les voxels. Monsieur les a demandées (D20) ; l'essai du prototype village (9 oct., `RENDU.md`) s'en passe : grain procédural, biseau des arêtes, éclairage PRT et grille de ciel, sur le modèle de Teardown (affirmation du fil, non vérifiée ici) | textures maintenues tant que Monsieur n'a pas tranché ; comparer les deux sur captures |
+| O14 | Textures bitmap sur les voxels. Monsieur les a demandées (D20) ; l'essai du prototype village (9 oct., `prototypes/village-web/RENDU.md`) s'en passe : grain procédural, biseau des arêtes, éclairage PRT et grille de ciel, sur le modèle de Teardown (affirmation du fil, non vérifiée ici) | textures maintenues tant que Monsieur n'a pas tranché ; comparer les deux sur captures |

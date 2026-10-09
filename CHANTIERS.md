@@ -34,7 +34,7 @@ Ordre conseillé. Chaque chantier se termine par une mesure sur la machine de Mo
 **Écart actuel (constaté le 8 oct.)** : voxels de 2 cm à couleurs unies, sans texture ; lumière simple, sans brume ni rayons ; feuillage lointain lourd ; personnages en voxels stricts. Monsieur a jugé le rendu « très moche ». Les images de `docs/style/` sont la barre, pas moins.
 
 À faire :
-- Taille des voxels (O9) : 5 cm proposé ; le prototype village a essayé 10 cm (son `RENDU.md`). À trancher par Monsieur sur captures, puis constante `kVoxelMm`, extension Godot, empreintes, contrat d'interfaces.
+- Taille des voxels (O9) : 5 cm proposé ; le prototype village a essayé 10 cm (`prototypes/village-web/RENDU.md`). À trancher par Monsieur sur captures, puis constante `kVoxelMm`, extension Godot, empreintes, contrat d'interfaces.
 - Textures par matière (O14) : demandées par Monsieur ; le prototype village s'en passe (grain procédural, biseau, PRT, grille de ciel). Montrer les deux sur captures avant de choisir.
 - Lumière en temps réel (soleil, ciel, nuages, météo) avec données rééclairables précalculées (occlusion, visibilité du ciel, sondes d'irradiance), brume de hauteur, rayons de soleil ; pas d'upscaling.
 - Personnages en style voxel à facettes (`characters/`), cubes de 1,8 à 2,2 cm.
