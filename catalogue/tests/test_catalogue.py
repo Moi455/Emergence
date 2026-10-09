@@ -162,6 +162,9 @@ class TestCatalogue(unittest.TestCase):
         import gen_cpp
         self.assertEqual(gen_cpp.OUT.read_text(encoding="utf-8"), gen_cpp.CppGenerator(self.cat).generate(),
                          "regenerate: python3 catalogue/tools/gen_cpp.py")
+        sg = gen_cpp.StateGenerator(self.cat)
+        self.assertEqual(gen_cpp.STATE_OUT.read_text(encoding="utf-8"), sg.generate_state())
+        self.assertEqual(gen_cpp.VOCAB_OUT.read_text(encoding="utf-8"), sg.generate_vocab())
 
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()

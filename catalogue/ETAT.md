@@ -13,7 +13,7 @@ Source unique de tout ce qui existe dans la simulation (D20, D28) : TOML dans `d
 | Jugements | 45 interprétations (faits physiques, indices perceptibles, normes dans la langue) |
 | Règles | 4 règles dures dont D10 (refus par défaut, liste blanche par geste) ; gouverneur de référence |
 | Interface IA | `generated/model_interface.json` : jetons d'entrée, têtes de sortie, écritures |
-| C++ | `tools/gen_cpp.py` → `engine/social/generated/…/catalogue_gen.h` ; vecteurs partagés du gouverneur |
+| C++ | `tools/gen_cpp.py` → `engine/social/generated/…/` : `catalogue_gen.h` (gestes, conditions, variables et bornes), `npc_state_gen.h` (une structure par composant, 11 réserves d'enregistrements), `vocab_gen.h` (mots et sortes) ; vecteurs partagés du gouverneur. Mesuré : 95,5 Ko par PNJ, 45,5 Mo pour 500 (estimation de docs/06 : 32 Mo ; à compacter : les propositions des croyances et souvenirs) |
 | Ancien contrat | 112 fonctions et 20 conditions migrées (`data/migration.toml`) |
 
 ## Commandes
