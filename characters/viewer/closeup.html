@@ -3,13 +3,14 @@
 </head><body><script type="module">
 import * as THREE from 'three';
 import { generateVillager, composeOutfit, meshOutfit } from '../gen/villager.js';
-import { population } from '../gen/population.js';
 import { villagerObject } from './build3d.js';
 const qs = new URLSearchParams(location.search);
 const cat = await (await fetch('../data/catalog.json')).json();
-const from = +qs.get('from'), to = +qs.get('to'), cols = +(qs.get('cols') || 10);
-const TW = +(qs.get('tw') || 200), TH = +(qs.get('th') || 300), occ = qs.get('occ') || 'everyday';
-const pop = population(cat).slice(from, to);
+// Close-ups of heads (or busts with ?bust) for checking faces and hair: ?ids=5,120,513&cols=4
+const all = (await (await fetch('../data/villagers.json')).json()).villagers;
+const pop = (qs.get('ids') || '5,120,240,372,513,72,490,176').split(',').map(i => all[+i]);
+const cols = +(qs.get('cols') || 4), TW = +(qs.get('tw') || 340), TH = +(qs.get('th') || 340), occ = qs.get('occ') || 'everyday';
+const bust = qs.has('bust'), full = qs.has('full'), turn = +(qs.get('turn') ?? 0.42);
 const rows = Math.ceil(pop.length / cols);
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setSize(TW * cols, TH * rows); renderer.setPixelRatio(1);
@@ -17,13 +18,11 @@ renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.A
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.setScissorTest(true);
 renderer.setClearColor('#efe3cf');
 document.body.appendChild(renderer.domElement);
-const cam = new THREE.PerspectiveCamera(17, TW / TH, 0.1, 50);
-cam.position.set(0, 1.05, 7.4); cam.lookAt(0, 0.98, 0);
 const log = [];
 for (let k = 0; k < pop.length; k++) {
   const p = pop[k];
-  const v = generateVillager(p.seed, cat, { village: p.village });
-  const mesh = meshOutfit(v.base, composeOutfit(v, occ, cat));
+  const v = generateVillager(p.seed, cat, { village: p.village, voxel: +(qs.get('vox') || 0.0125) });
+  const mesh = meshOutfit(v.base, composeOutfit(v, occ, cat), +(qs.get('lod') || 0), { strict: qs.has('strict'), bevel: qs.has('bevel') ? +qs.get('bevel') : undefined });
   const scene = new THREE.Scene();
   scene.add(new THREE.HemisphereLight('#c8d6ff', '#7a5a40', 0.85));
   const sun = new THREE.DirectionalLight('#ffcf94', 3.1); sun.position.set(-3, 2.8, 2.6); sun.castShadow = true;
@@ -33,10 +32,13 @@ for (let k = 0; k < pop.length; k++) {
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.2 }));
   ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
   const o = villagerObject(v.base, { [occ]: mesh });
-  o.group.rotation.y = 0.42;
+  o.group.rotation.y = turn;
+  const hy = v.bp.height * (full ? 0.5 : bust ? 0.8 : 0.9);
+  const cam = new THREE.PerspectiveCamera(17, TW / TH, 0.1, 50);
+  cam.position.set(0, hy + (full ? 0.9 : 0.05), full ? 7.2 : bust ? 2.4 : 1.6); cam.lookAt(0, hy, 0);
   scene.add(o.group);
   const mixer = new THREE.AnimationMixer(o.group);
-  mixer.clipAction(o.clips.find(c => c.name === 'idle')).play(); mixer.update(0.6 + (k % 7) * 0.3);
+  mixer.clipAction(o.clips.find(c => c.name === 'idle')).play(); mixer.update(0.0001);
   const cx = (k % cols) * TW, cy = (rows - 1 - Math.floor(k / cols)) * TH;
   renderer.setViewport(cx, cy, TW, TH); renderer.setScissor(cx, cy, TW, TH);
   renderer.render(scene, cam);

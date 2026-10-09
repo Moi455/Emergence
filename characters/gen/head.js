@@ -20,7 +20,7 @@ export function fillBody(grid, field, bp, seed) {
 // Finger creases: darken skin where two different finger bones touch, lighter nails at the tips.
 export function hands(grid, sk) {
   const isF = sk.bones.map(b => /Index|Middle|Ring|Little/.test(b.name));
-  const isTip = sk.bones.map(b => /Intermediate/.test(b.name));
+  const isTip = sk.bones.map(b => /Intermediate|Distal/.test(b.name));
   const { nx, ny, nz } = grid;
   const mark = [];
   for (let zk = 1; zk < nz - 1; zk++) for (let yj = 1; yj < ny - 1; yj++) for (let xi = 1; xi < nx - 1; xi++) {
@@ -43,7 +43,9 @@ function frontZ(grid, xi, yj, boneOK) {
 }
 
 // Face: painted voxels plus a few relief voxels (brow, nose, lips, ears).
-export function face(grid, sk, P, bp, U, rng) {
+// block: block size of the style mesh in voxels (0 for strict voxels). With blocks, relief is
+// made in whole blocks (nose, ears) and half-block relief (brow ridge, chin) is left to paint.
+export function face(grid, sk, P, bp, U, rng, block = 0) {
   const head = sk.byName.Head;
   const isHead = b => b === head;
   const HU = P.headH * U;
@@ -60,6 +62,8 @@ export function face(grid, sk, P, bp, U, rng) {
     set(xi, yj, z + dz, c, mat); return z;
   };
   const yE = Math.round(cyv - HU * (P.child ? 0.07 : 0.045));
+  // face plane between the eyes, before any relief: the style mesh lines its blocks up on it
+  const zFace = frontZ(grid, X(0), yE, isHead);
   // eye socket: remove the surface voxel, paint the one behind it
   const sock = (xi, yj, c) => {
     const z = frontZ(grid, xi, yj, isHead); if (z < 0) return;
@@ -82,6 +86,21 @@ export function face(grid, sk, P, bp, U, rng) {
       if (bp.freckles && yj < yE - 1 && yj > yE - HU * 0.2 && ax < eyeX + 2 && h3(xi, yj, z, 77) < 0.18) grid.col[i] = ramp(cur, 0.82) | 0x1000000;
       if (bp.stubble && yj < yE - HU * 0.25 && (ax > HU * 0.12 || yj < yE - HU * 0.38)) grid.col[i] = mix(cur, bp.stubbleColor, 0.32 + h3(xi, yj, z, 5) * 0.12) | 0x1000000;
     }
+  }
+  // brow ridge: the forehead overhangs the eyes by one voxel, so the sockets sit in shadow
+  const ridgeW = eyeX + ew + 1;
+  for (let yj = yE + 2; !block && yj <= yE + 3 + (P.child ? 0 : 1); yj++) for (let x = -ridgeW; x <= ridgeW; x++) {
+    if (Math.abs(x) === ridgeW && yj === yE + 2) continue;
+    const xi = X(x), z = frontZ(grid, xi, yj, isHead); if (z < 0) continue;
+    const cur = grid.col[grid.idx(xi, yj, z)] & 0xffffff;
+    set(xi, yj, z + 1, ramp(cur, 1.03));
+  }
+  // chin: the jaw comes forward a little under the mouth
+  const yMouth = yE - bp.noseL - (P.child ? 2 : 3);
+  for (let yj = yMouth - 4; !block && yj <= yMouth - 2; yj++) for (let x = -(bp.mouthW + 1); x <= bp.mouthW + 1; x++) {
+    if (Math.abs(x) === bp.mouthW + 1 && yj !== yMouth - 3) continue;
+    const xi = X(x), z = frontZ(grid, xi, yj, isHead); if (z < 0) continue;
+    set(xi, yj, z + 1, ramp(grid.col[grid.idx(xi, yj, z)] & 0xffffff, 1.0));
   }
   // eyes (set into the face: paint on surface; brow row protrudes)
   for (const s of [-1, 1]) {
@@ -120,24 +139,49 @@ export function face(grid, sk, P, bp, U, rng) {
       if (z >= 0) { const i = grid.idx(xi, yE - 1, z); grid.col[i] = ramp(grid.col[i] & 0xffffff, bp.age > 45 ? 0.86 : 0.94) | 0x1000000; }
     }
   }
-  // nose: bridge +1, lower half +2, tip +3 for long noses
-  const nw = bp.noseW, nl = bp.noseL, nyTop = yE + 1, nyBot = yE - nl;
-  for (let yj = nyBot; yj <= nyTop; yj++) {
-    const fromBot = yj - nyBot;
-    const tip = fromBot <= 1;
-    const half = tip ? nw : Math.max(0, nw - 1);
-    const depth = fromBot === 0 ? bp.noseD : fromBot <= nl / 2 ? bp.noseD : 1;
-    for (let x = -half; x <= half; x++) {
-      const xi = X(x);
-      const z = frontZ(grid, xi, yj, isHead); if (z < 0) continue;
-      let c = mix(skin, blush, tip ? 0.8 : 0.3);
-      if (bp.noseRed) c = mix(c, hex('#d06050'), tip ? 0.35 : 0.12);
-      const dd = Math.abs(x) === half && half > 0 ? Math.max(1, depth - 1) : depth;
-      for (let k = 1; k <= dd; k++) set(xi, yj, z + k, ramp(c, 0.98 + k * 0.025));
+  // nose: a sculpted wedge. Narrow bridge between the eyes, widening to a rounded tip
+  // that stands out 2 to 4 voxels, with wings and dark nostrils underneath.
+  const nl = bp.noseL + 1, nyTop = yE + 1, nyBot = yE - nl + 1, nw = bp.noseW;
+  // nose depth is set for 1.25 cm voxels (head about 26 voxels tall); coarser voxels shrink it
+  const tipD = Math.max(2, Math.round((bp.noseD + (P.child ? 0 : 1)) * Math.min(1, HU / 26)));
+  if (block) {
+    // nose in whole blocks: the middle block column of the face (3 voxels wide), out by 0 at
+    // the eyes, then one block, then the tip; the mesh bevel turns the steps into a wedge
+    const tipB = P.child ? 1 : tipD >= 3 ? 2 : 1, B2 = block;
+    for (let yj = nyBot; yj <= nyTop; yj++) {
+      const m = Math.floor((yE + 1 - yj) / B2);
+      const db = m <= 0 ? 0 : Math.min(tipB, m);
+      if (!db) continue;
+      const f = (nyTop - yj) / (nyTop - nyBot);
+      for (let x = -1; x <= 1; x++) {
+        const xi = X(x), z = frontZ(grid, xi, yj, isHead); if (z < 0) continue;
+        let c = mix(skin, blush, 0.1 + f * 0.25);
+        if (bp.noseRed) c = mix(c, hex('#d06050'), 0.1 + f * 0.3);
+        for (let k = z + 1; k <= zFace + B2 * db; k++) set(xi, yj, k, ramp(c, (x ? 0.95 : 1.0) + (k - zFace) * 0.01));
+      }
+    }
+  } else {
+    for (let yj = nyBot; yj <= nyTop; yj++) {
+      const f = (nyTop - yj) / (nyTop - nyBot); // 0 at the bridge, 1 at the tip row
+      // straight profile from the bridge to the tip; the lowest row tucks back under the tip
+      const depth = yj === nyBot ? Math.max(1, tipD - 1) : Math.max(1, Math.round(1 + (tipD - 1) * f));
+      const half = f < 0.3 ? 0 : nw >= 2 && f > 0.75 ? 2 : 1;
+      for (let x = -half; x <= half; x++) {
+        const xi = X(x);
+        const z = frontZ(grid, xi, yj, isHead); if (z < 0) continue;
+        const side = Math.abs(x);
+        const dd = side === 0 ? depth : side === 1 && half === 2 ? Math.max(1, depth - 1) : Math.max(1, depth - (half === 2 ? 2 : 1));
+        let c = mix(skin, blush, 0.1 + f * 0.25);
+        if (bp.noseRed) c = mix(c, hex('#d06050'), 0.1 + f * 0.3);
+        for (let k = 1; k <= dd; k++) set(xi, yj, z + k, ramp(c, (side > 0 ? 0.93 : 1.0) + k * 0.02));
+      }
     }
   }
-  // nostrils
-  for (const s of [-1, 1]) { const xi = X(s * Math.max(1, nw - 0)); const z = frontZ(grid, xi, nyBot - 1, isHead); if (z >= 0) set(xi, nyBot - 1, z, ramp(skin, 0.7)); }
+  // nostrils and the shadow under the tip
+  for (const x of [-1, 0, 1]) {
+    const xi = X(x), z = frontZ(grid, xi, nyBot - 1, isHead);
+    if (z >= 0) set(xi, nyBot - 1, z, x === 0 ? ramp(skin, 0.82) : mix(ramp(skin, 0.55), hex('#3a2218'), 0.35));
+  }
   // mouth
   const yM = nyBot - (P.child ? 2 : 3);
   const mw = bp.mouthW;
@@ -148,7 +192,8 @@ export function face(grid, sk, P, bp, U, rng) {
     paint(xi, yy, corner ? mix(dark, skin, 0.4) : dark);
     if (!corner && Math.abs(x) < mw) {
       const z = paint(xi, yM - 1, lip);
-      if (z >= 0 && bp.lipFull && Math.abs(x) < mw - 1) set(xi, yM - 1, z + 1, ramp(lip, 1.03));
+      // lower lip catches the light: one voxel out, two for full lips
+      if (z >= 0 && Math.abs(x) < mw - (bp.lipFull ? 0 : 1)) set(xi, yM - 1, z + 1, ramp(lip, 1.04));
     }
   }
   // chin dimple / chin shade
@@ -184,10 +229,12 @@ export function face(grid, sk, P, bp, U, rng) {
         if (yj === earTop && dz === 1) continue;
         const c = rim ? mix(skin, blush, 0.6) : ramp(mix(skin, blush, 0.5), 0.8);
         set(xs + s, yj, zk, c);
-        if (bp.earBig && !rim) set(xs + 2 * s, yj, zk, mix(skin, blush, 0.7));
+        if ((bp.earBig || block) && !rim) set(xs + 2 * s, yj, zk, mix(skin, blush, 0.7));
+        else if (block) set(xs + 2 * s, yj, zk, c);
       }
     }
   }
+  return { yE, zFace };
 }
 
 // --------------------------------------------------------------- hair

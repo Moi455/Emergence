@@ -1,7 +1,10 @@
 // Minimal glTF 2.0 binary writer for one villager: skeleton, skin, one mesh per outfit,
 // animation clips. No extension required. Normals are omitted on purpose: glTF clients
 // must then compute flat normals, which is exactly the voxel look.
+// LOD0 and LOD1 also carry a baked normal map with one bevel per texel (a texel is a voxel
+// face), so every voxel reads as a little cube; it is shared by all atlases of one size.
 //   encodePNG(w, h, rgbaBytes) -> Uint8Array   (injected: zlib in Node, canvas in browser)
+import { bevelAtlas } from './bevel.js';
 
 export function writeGLB({ name, sk, voxel, outfits, clips, extras }, encodePNG) {
   const chunks = []; let byteLen = 0;
@@ -33,7 +36,8 @@ export function writeGLB({ name, sk, voxel, outfits, clips, extras }, encodePNG)
   const ibmAcc = acc(ibm, 'MAT4', 5126, sk.bones.length);
   const skins = [{ name: 'Skeleton', joints: boneNode, skeleton: 0, inverseBindMatrices: ibmAcc }];
   // ---- meshes, one per outfit
-  const meshes = [], materials = [], textures = [], images = [], samplers = [{ magFilter: 9728, minFilter: 9728, wrapS: 33071, wrapT: 33071 }];
+  const meshes = [], materials = [], textures = [], images = [], samplers = [{ magFilter: 9728, minFilter: 9728, wrapS: 33071, wrapT: 33071 }, { magFilter: 9729, minFilter: 9987, wrapS: 33071, wrapT: 33071 }];
+  const bevelTex = new Map(); // atlas size -> texture of the baked per-texel bevel (shared)
   const meshNodes = [];
   outfits.forEach((o, k) => {
     const M = o.mesh;
@@ -56,9 +60,21 @@ export function writeGLB({ name, sk, voxel, outfits, clips, extras }, encodePNG)
     const png = encodePNG(M.atlas.w, M.atlas.h, M.atlas.data);
     images.push({ name: o.name + '_atlas', mimeType: 'image/png', bufferView: pushView(png) });
     textures.push({ sampler: 0, source: images.length - 1 });
-    materials.push({ name: name + '_' + o.name, pbrMetallicRoughness: { baseColorTexture: { index: textures.length - 1 }, metallicFactor: 0, roughnessFactor: 0.92 } });
+    const mat = { name: name + '_' + o.name, pbrMetallicRoughness: { baseColorTexture: { index: textures.length - 1 }, metallicFactor: 0, roughnessFactor: 0.92 } };
+    if ((o.lod ?? 0) < 2) {
+      // each texel is a voxel face: a baked bevel makes it a little cube (same for a given atlas size)
+      const key = M.atlas.w + 'x' + M.atlas.h;
+      if (!bevelTex.has(key)) {
+        const b = bevelAtlas(M.atlas.w, M.atlas.h, 4);
+        images.push({ name: 'voxel_bevel_' + key, mimeType: 'image/png', bufferView: pushView(encodePNG(b.w, b.h, b.data)) });
+        textures.push({ sampler: 1, source: images.length - 1 });
+        bevelTex.set(key, textures.length - 1);
+      }
+      mat.normalTexture = { index: bevelTex.get(key), scale: 0.75 };
+    }
+    materials.push(mat);
     meshes.push({ name: name + '_' + o.name, primitives: [{ attributes: { POSITION: pos, TEXCOORD_0: uv, JOINTS_0: jA, WEIGHTS_0: wA }, indices: iA, material: materials.length - 1, mode: 4 }] });
-    nodes.push({ name: 'Outfit_' + o.name, mesh: meshes.length - 1, skin: 0, extras: { outfit: o.name.replace(/_LOD\d$/, ''), lod: o.lod ?? 0, voxel_m: voxel * (1 << (o.lod ?? 0)), garments: o.garments, default: k === 0 } });
+    nodes.push({ name: 'Outfit_' + o.name, mesh: meshes.length - 1, skin: 0, extras: { outfit: o.name.replace(/_LOD\d$/, ''), lod: o.lod ?? 0, voxel_m: voxel * (2 << (o.lod ?? 0)), texel_m: voxel * ((o.lod ?? 0) < 2 ? 1 << (o.lod ?? 0) : 2 << (o.lod ?? 0)), garments: o.garments, default: k === 0 } });
     meshNodes.push(nodes.length - 1);
   });
   // ---- animations

@@ -1,13 +1,14 @@
 // Villager generator: seed -> appearance variables -> voxel layers -> skinned meshes per outfit.
-import { Rng, hashCombine } from './rng.js';
+import { Rng, hashCombine, h3, vnoise } from './rng.js';
 import { hex, mix, ramp } from './color.js';
-import { Grid, proportions, makeSkeleton, makeJoints, bodyPrimitives, bodyField, refineLabels } from './body.js';
+import { MAT, Grid, proportions, makeSkeleton, makeJoints, bodyPrimitives, bodyField, refineLabels } from './body.js';
 import { fillBody, face, hair, beard, hands } from './head.js';
 import { makeWeigher, meshGrid, downsample } from './mesh.js';
+import { styleMesh } from './stylemesh.js';
 import { dressOutfit, makeWardrobe } from './garments.js';
 
-export const GENERATOR_VERSION = 1;
-export const DEFAULT_VOXEL = 0.0125; // metres per character voxel
+export const GENERATOR_VERSION = 2;
+export const DEFAULT_VOXEL = 0.01; // metres per fine voxel (paint); the mesh is built in blocks of 2 (2 cm)
 
 const SKIN = ['#f3d5bd', '#ecc3a3', '#e0ab88', '#d29a72', '#bf835c', '#a46a46', '#865337', '#6a3f28', '#4f2e1e'];
 const SKIN_W = [6, 10, 12, 11, 9, 7, 5, 4, 3];
@@ -87,10 +88,12 @@ export function buildBase(bp, seed, voxel = DEFAULT_VOXEL) {
   refineLabels(grid, field, sk, P, U);
   fillBody(grid, field, bp, seed);
   hands(grid, sk);
-  face(grid, sk, P, bp, U, new Rng(hashCombine(seed, 'face')));
+  const fi = face(grid, sk, P, bp, U, new Rng(hashCombine(seed, 'face')), 2);
   hair(grid, field, sk, P, bp, U, hashCombine(seed, 'hair'));
   beard(grid, field, sk, P, bp, U, hashCombine(seed, 'beard'));
-  return { bp, P, U, sk, joints, prims, grid, field, voxel, seed };
+  // style mesh lattice: the brow line and the face plane are block boundaries
+  const align = { y: fi.yE + 2, z: fi.zFace + 1 };
+  return { bp, P, U, sk, joints, prims, grid, field, voxel, seed, align };
 }
 
 // Limb group per bone: 0 trunk (hips to head, shoulders), 1/2 arms, 3/4 legs.
@@ -103,12 +106,18 @@ export function limbGroups(sk) {
   });
 }
 
-export function meshOutfit(base, grid, lod = 0) {
+// Mesh of one outfit. Default: voxel STYLE (blocks of 2 fine voxels with bevels set by the
+// material, painted one fine voxel per texel). opts.strict = true gives the plain voxel mesh.
+export function meshOutfit(base, grid, lod = 0, opts = {}) {
   const w = makeWeigher(base.sk, base.joints, base.P, base.U);
   const group = base.groups ??= limbGroups(base.sk);
-  if (!lod) return meshGrid(grid, w, { voxelSize: base.voxel, group });
-  const f = 1 << lod;
-  return meshGrid(downsample(grid, f, Grid), w, { voxelSize: base.voxel, scale: f, group });
+  if (opts.strict) {
+    if (!lod) return meshGrid(grid, w, { voxelSize: base.voxel, group });
+    const f = 1 << lod;
+    return meshGrid(downsample(grid, f, Grid), w, { voxelSize: base.voxel, scale: f, group });
+  }
+  const f = 2 << lod; // LOD0 blocks of 2 fine voxels, then 4, 8, 16
+  return styleMesh(grid, w, { f, texel: lod < 2 ? f / 2 : f, bevel: opts.bevel, voxelSize: base.voxel, group, align: base.align });
 }
 
 export function generateVillager(seed, catalog, opts = {}) {
@@ -121,5 +130,24 @@ export function generateVillager(seed, catalog, opts = {}) {
 export function composeOutfit(v, occasion, catalog) {
   const grid = v.base.grid.clone();
   if (v.wardrobe) dressOutfit(v.base, grid, v.wardrobe, occasion, catalog);
+  painterly(grid, v.seed);
+  return grid;
+}
+
+// Hand-painted look of the reference image: every voxel's colour wanders a little in value and
+// warmth, in soft patches of a few voxels plus a fine grain. Eyes, metal and gems stay clean.
+export function painterly(grid, seed) {
+  const { nx, ny } = grid, warm = 0xd8a070, cool = 0x7088b0;
+  for (let i = 0; i < grid.col.length; i++) {
+    const c0 = grid.col[i]; if (!c0) continue;
+    const m = grid.mat[i]; if (m === MAT.eye || m === MAT.metal || m === MAT.gem) continue;
+    const x = i % nx, y = Math.floor(i / nx) % ny, z = Math.floor(i / (nx * ny));
+    const skin = m === MAT.skin;
+    const v = (vnoise(x, y, z, 3, seed + 11) - 0.5) * (skin ? 0.07 : 0.16) + (h3(x, y, z, seed + 12) - 0.5) * (skin ? 0.03 : 0.07);
+    const t = vnoise(x, y, z, 5, seed + 13) - 0.5;
+    let c = ramp(c0 & 0xffffff, 1 + v);
+    c = mix(c, t > 0 ? warm : cool, Math.abs(t) * (skin ? 0.08 : 0.16));
+    grid.col[i] = c | 0x1000000;
+  }
   return grid;
 }

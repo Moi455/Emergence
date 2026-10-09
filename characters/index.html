@@ -78,7 +78,7 @@ button:hover { border-color: var(--ink) }
 <div class="wrap">
   <header>
     <h1>Rôle des villageois
-      <small>Les 600 habitants des cinq villages d'Emergence, tirés d'une graine. Chaque portrait est un personnage riggé en pseudo-voxels de 1,25 cm, avec cinq tenues interchangeables. Cliquez sur un villageois pour le voir en 3D, l'animer et changer ses vêtements.</small>
+      <small>Les 600 habitants des cinq villages d'Emergence, tirés d'une graine. Chaque portrait est un personnage riggé en style voxel (forme en cubes de 2 cm, facettes et biseaux, pixels de 1 cm en relief de petits cubes), avec huit tenues interchangeables. Cliquez sur un villageois pour le voir en 3D, l'animer et changer ses vêtements.</small>
     </h1>
     <div class="tally" id="tally"></div>
   </header>
@@ -170,11 +170,11 @@ function setupGL() {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   $('stage').prepend(renderer.domElement);
   scene = new THREE.Scene();
-  scene.add(new THREE.HemisphereLight('#ffeedd', '#6a5a50', 1.0));
-  const sun = new THREE.DirectionalLight('#ffe2c0', 2.8); sun.position.set(-2, 4, 3); sun.castShadow = true;
+  scene.add(new THREE.HemisphereLight('#c8d6ff', '#7a5a40', 0.85));
+  const sun = new THREE.DirectionalLight('#ffcf94', 3.1); sun.position.set(-3, 2.8, 2.6); sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -1.5, right: 1.5, top: 2.5, bottom: -0.5 }); sun.shadow.normalBias = 0.01;
   scene.add(sun);
-  const fill = new THREE.DirectionalLight('#cfe0ff', 0.45); fill.position.set(3, 2, -2); scene.add(fill);
+  const fill = new THREE.DirectionalLight('#ffd7a0', 1.5); fill.position.set(2.6, 2.4, -3); scene.add(fill); // warm rim light, low sun as in the reference images
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.2 }));
   ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
   cam = new THREE.PerspectiveCamera(24, 0.8, 0.05, 50); cam.position.set(1.4, 1.35, 4.2);

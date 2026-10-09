@@ -83,14 +83,15 @@ export function proportions(bp) {
   const { sex, age, build: b, muscle: m } = bp;
   const child = age < 13, teen = age >= 13 && age < 18, elder = age >= 60;
   const f = sex === 'f';
-  let headH = child ? 0.225 + (12 - age) * 0.004 : teen ? 0.205 : 0.195;
-  if (f) headH += 0.003;
+  // close to real proportions (adult head about 1/7 of the height, as in the reference image)
+  let headH = child ? 0.19 + (12 - age) * 0.006 : teen ? 0.158 : 0.145;
+  if (f) headH += 0.002;
   const P = { headH, child, teen, elder, f };
   P.ry = headH * 0.5; P.rx = headH * (0.42 + b * 0.012) ; P.rz = headH * 0.45;
   P.cy = 0.985 - P.ry;
-  P.yNb = P.cy - P.ry - (child ? 0.014 : 0.026);
+  P.yNb = P.cy - P.ry - (child ? 0.022 : 0.034);
   P.yS = P.yNb - 0.012;
-  P.sx = (child ? 0.122 : f ? 0.132 : 0.148) + b * 0.010 + m * 0.012;
+  P.sx = (child ? 0.112 : f ? 0.116 : 0.130) + b * 0.010 + m * 0.012;
   P.ax = P.sx + (child ? 0.016 : 0.014);
   P.ru = (f ? 0.029 : 0.033) + b * 0.009 + m * 0.007 + (child ? 0.006 : 0);
   P.rf = P.ru * 0.88;

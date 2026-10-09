@@ -14,7 +14,7 @@ Options dans l'adresse : `?npc=48` (nombre de villageois, 120 au plus), `?villag
 ## Ce qui se passe
 
 - `jeu/villagers.js` se branche sur les crochets d'`engine.js` (`addDrawHook`, `addUpdate`) ; sans lui, le village tourne seul.
-- `jeu/villager_worker.js` lance le générateur `characters/gen` dans 1 à 4 workers, à partir des graines de `characters/data/villagers.json` : le jeu ne stocke que la graine et la garde-robe. Le maillage loin (5 cm) est produit pour tous d'abord, le maillage proche (2,5 cm) à l'approche du joueur.
+- `jeu/villager_worker.js` lance le générateur `characters/gen` (version 2, style voxel : blocs biseautés, peinture de 1 cm) dans 1 à 4 workers, à partir des graines de `characters/data/villagers.json` : le jeu ne stocke que la graine et la garde-robe. Le maillage loin (LOD 2, blocs de 8 cm, ~1 000 triangles) est produit pour tous d'abord, le maillage proche (LOD 1, blocs de 4 cm, ~5 000 triangles) à l'approche du joueur. Le générateur v2 ne fournit pas de normales : le worker les calcule par face. Capture : `capture_villageois_v3.png` (24 villageois, rendu logiciel, donc sans chiffre d'images par seconde).
 - Chaque villageois a son squelette humanoïde Godot (43 os), son atlas, ses tenues : il passe en tenue de travail quand il travaille, et revient à sa tenue du jour ensuite (la tenue est générée à la demande).
 - Comportement provisoire, en attendant le moteur de décision : marcher, courir (enfants), travailler, discuter à deux, s'asseoir, saluer le joueur qui s'approche. Le nom, le métier et l'action s'affichent sous le viseur.
 - Rendu : matrices d'os dans une texture (aucune limite d'uniformes sur GPU intégré), ombres reçues et portées, brouillard et étalonnage du village, animation à 10 Hz au-delà de 25 m.

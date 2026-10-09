@@ -20,7 +20,7 @@ const vs = recs.map(r => uploadVillager(gl, makeVillager(r.seed, cat, { village:
 function persp(f, a, n, fa) { const t = 1 / Math.tan(f / 2); return [t / a, 0, 0, 0, 0, t, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0]; }
 function mul(a, b) { const o = new Array(16); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
 function lookAt(e, t) { const z = [e[0] - t[0], e[1] - t[1], e[2] - t[2]], zl = Math.hypot(...z); z.forEach((v, i) => z[i] = v / zl); const x = [z[2], 0, -z[0]], xl = Math.hypot(...x); x.forEach((v, i) => x[i] = v / xl); const y = [z[1] * x[2] - z[2] * x[1], z[2] * x[0] - z[0] * x[2], z[0] * x[1] - z[1] * x[0]]; return [x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, -(x[0] * e[0] + x[1] * e[1] + x[2] * e[2]), -(y[0] * e[0] + y[1] * e[1] + y[2] * e[2]), -(z[0] * e[0] + z[1] * e[1] + z[2] * e[2]), 1]; }
-const vp = mul(persp(0.42, c.width / c.height, 0.1, 50), lookAt([0, 1.3, +(qs.get('dist') || 6.2)], [0, 0.8, 0]));
+const vp = mul(persp(0.42, c.width / c.height, 0.1, 50), lookAt([0, +(qs.get('ey') || 1.3), +(qs.get('dist') || 6.2)], [0, +(qs.get('ty') || 0.8), 0]));
 const t0 = performance.now();
 function frame() {
   const t = qs.has('t') ? +qs.get('t') : (performance.now() - t0) / 1000;

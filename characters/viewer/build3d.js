@@ -2,6 +2,9 @@
 // villager straight from the generator's mesh buffers, and its animation clips.
 import * as THREE from 'three';
 import { makeClips } from '../gen/anim.js';
+import { bevelTile } from '../gen/bevel.js';
+
+const BEVEL = bevelTile();
 
 export function buildSkeleton(sk, voxel) {
   const bones = sk.bones.map(b => { const o = new THREE.Bone(); o.name = b.name; return o; });
@@ -24,7 +27,12 @@ export function buildMesh(mesh, bones) {
   const tex = new THREE.DataTexture(mesh.atlas.data, mesh.atlas.w, mesh.atlas.h, THREE.RGBAFormat);
   tex.magFilter = tex.minFilter = THREE.NearestFilter; tex.generateMipmaps = false;
   tex.colorSpace = THREE.SRGBColorSpace; tex.flipY = false; tex.needsUpdate = true;
-  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.92, metalness: 0 });
+  // one little bevelled cube per texel (texel = voxel face)
+  const nrm = new THREE.DataTexture(BEVEL, 16, 16, THREE.RGBAFormat);
+  nrm.wrapS = nrm.wrapT = THREE.RepeatWrapping; nrm.repeat.set(mesh.atlas.w, mesh.atlas.h);
+  nrm.magFilter = THREE.LinearFilter; nrm.minFilter = THREE.LinearMipmapLinearFilter; nrm.generateMipmaps = true;
+  nrm.flipY = false; nrm.needsUpdate = true;
+  const mat = new THREE.MeshStandardMaterial({ map: tex, normalMap: nrm, normalScale: new THREE.Vector2(0.75, 0.75), roughness: 0.92, metalness: 0, flatShading: true });
   const m = new THREE.SkinnedMesh(g, mat);
   m.castShadow = true; m.receiveShadow = true;
   m.frustumCulled = false;

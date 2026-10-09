@@ -3,7 +3,7 @@
 import fs from 'fs';
 import { chromium } from 'playwright-core';
 const dir = process.argv[2] || 'out/thumbs', per = +(process.argv[3] || 60), par = +(process.argv[4] || 4);
-const total = JSON.parse(fs.readFileSync('data/villagers.json')).count;
+const total = JSON.parse(fs.readFileSync('out/villagers.json')).count;
 fs.mkdirSync(dir, { recursive: true });
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const jobs = []; for (let f = 0; f < total; f += per) jobs.push(f);

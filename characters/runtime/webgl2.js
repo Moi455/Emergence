@@ -50,7 +50,18 @@ uniform sampler2D uAtlas;
 uniform vec3 uSun;
 out vec4 frag;
 void main() {
-  vec3 n = normalize(cross(dFdx(vWorld), dFdy(vWorld))); // flat voxel faces
+  vec3 dp1 = dFdx(vWorld), dp2 = dFdy(vWorld);
+  vec3 n = normalize(cross(dp1, dp2));                     // flat faces
+  // one little bevelled cube per texel (a texel is one voxel face), normal from a cotangent
+  // frame; it fades out once a texel is under 4 pixels, so far villagers do not shimmer
+  vec2 sz = vec2(textureSize(uAtlas, 0)), d1 = dFdx(vUV) * sz, d2 = dFdy(vUV) * sz;
+  vec3 q1 = cross(dp2, n), q2 = cross(n, dp1);
+  vec3 T = q1 * d1.x + q2 * d2.x, B = q1 * d1.y + q2 * d2.y;
+  float im = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-20));
+  vec2 cell = fract(vUV * sz);
+  vec2 bv = (max(cell - 0.78, 0.0) - max(0.22 - cell, 0.0)) * (0.75 / 0.22);
+  bv *= clamp((0.5 - max(length(d1), length(d2))) * 4.0, 0.0, 1.0);
+  n = normalize(n + (T * bv.x + B * bv.y) * im);
   vec3 c = texture(uAtlas, vUV).rgb;                       // sRGB albedo with baked occlusion
   c = pow(c, vec3(2.2));
   float sun = max(dot(n, uSun), 0.0);

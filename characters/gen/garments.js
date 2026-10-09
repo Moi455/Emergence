@@ -407,7 +407,7 @@ B.hands = (base, grid, g) => {
 B.belt = (base, grid, g) => {
   const { field, sk, P, U } = base, prep = prepare(base), { cls, near } = prep;
   const pr = g.params, put = writer(base, grid, g);
-  const wy = (P.yHip + (pr.y ?? 0.1)) * U, hw = pr.width ?? 1.6;
+  const wy = (P.yHip + (pr.y ?? 0.1)) * U, hw = Math.max(1, (pr.width ?? 1.6) * 0.0125 / base.voxel); // width given in 1.25 cm voxels
   // belt sits on top of whatever is there: find the outer surface per column ring
   const n = sk.byName;
   for (let yj = Math.floor(wy - hw); yj <= Math.ceil(wy + hw - 1); yj++) {
