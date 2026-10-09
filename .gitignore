@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+ai/npc_pipeline/data/
+ai/npc_pipeline/logs/
+build/
+out/
+*.log
+.env
+.godot/

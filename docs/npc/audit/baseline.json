@@ -1,0 +1,837 @@
+{
+ "n": 1000,
+ "families": {
+  "title_dispute": 28,
+  "romance": 47,
+  "provocation": 61,
+  "proposal": 75,
+  "routine": 72,
+  "rumor": 41,
+  "negotiation": 58,
+  "info_request": 35,
+  "harmful_proposal": 59,
+  "urgent_need": 35,
+  "request": 38,
+  "out_of_world": 21,
+  "opportunity": 41,
+  "betrayal": 55,
+  "greeting": 39,
+  "kindness": 28,
+  "danger": 47,
+  "extortion": 37,
+  "election": 45,
+  "legal_need": 19,
+  "commitment": 31,
+  "wrongdoing_witnessed": 40,
+  "notice_read": 31,
+  "kin_advance": 17
+ },
+ "sizes": {
+  "entities": 2.73,
+  "events": 0.96,
+  "memories": 1.92,
+  "goals": 0.8,
+  "candidates": 11.98,
+  "titles": 1.12
+ },
+ "scalar_stats": {
+  "self.trait.aggression": {
+   "n": 1000,
+   "mean": 0.03,
+   "sd": 3.87
+  },
+  "self.trait.courage": {
+   "n": 1000,
+   "mean": -0.21,
+   "sd": 3.79
+  },
+  "self.trait.empathy": {
+   "n": 1000,
+   "mean": -0.1,
+   "sd": 3.6
+  },
+  "self.trait.sociability": {
+   "n": 1000,
+   "mean": 0.0,
+   "sd": 3.8
+  },
+  "self.trait.honesty": {
+   "n": 1000,
+   "mean": 0.2,
+   "sd": 3.93
+  },
+  "self.trait.impulsivity": {
+   "n": 1000,
+   "mean": -0.16,
+   "sd": 4.06
+  },
+  "self.trait.curiosity": {
+   "n": 1000,
+   "mean": 0.03,
+   "sd": 4.02
+  },
+  "self.trait.justice": {
+   "n": 1000,
+   "mean": -0.06,
+   "sd": 3.96
+  },
+  "self.trait.grudge": {
+   "n": 1000,
+   "mean": 0.14,
+   "sd": 3.78
+  },
+  "self.temperament.reactivity": {
+   "n": 1000,
+   "mean": 4.99,
+   "sd": 1.93
+  },
+  "self.temperament.resilience": {
+   "n": 1000,
+   "mean": 5.59,
+   "sd": 1.57
+  },
+  "self.value.kin_protection": {
+   "n": 1000,
+   "mean": 6.54,
+   "sd": 2.21
+  },
+  "self.value.property_respect": {
+   "n": 1000,
+   "mean": 5.53,
+   "sd": 2.22
+  },
+  "self.value.honor": {
+   "n": 1000,
+   "mean": 5.01,
+   "sd": 2.44
+  },
+  "self.value.life_value": {
+   "n": 1000,
+   "mean": 6.54,
+   "sd": 1.88
+  },
+  "self.value.romantic_fidelity": {
+   "n": 1000,
+   "mean": 5.51,
+   "sd": 2.46
+  },
+  "self.value.taboo_sensitivity": {
+   "n": 1000,
+   "mean": 6.58,
+   "sd": 1.82
+  },
+  "self.drive.libido": {
+   "n": 1000,
+   "mean": 3.85,
+   "sd": 2.24
+  },
+  "self.drive.social_need": {
+   "n": 1000,
+   "mean": 2.62,
+   "sd": 1.83
+  },
+  "self.drive.achievement": {
+   "n": 1000,
+   "mean": 4.54,
+   "sd": 1.84
+  },
+  "self.drive.hoarding": {
+   "n": 1000,
+   "mean": 2.46,
+   "sd": 1.42
+  },
+  "self.state.hunger": {
+   "n": 1000,
+   "mean": 3.39,
+   "sd": 2.4
+  },
+  "self.state.thirst": {
+   "n": 1000,
+   "mean": 4.34,
+   "sd": 2.56
+  },
+  "self.state.pain": {
+   "n": 1000,
+   "mean": 1.48,
+   "sd": 1.8
+  },
+  "self.state.fear": {
+   "n": 1000,
+   "mean": 1.04,
+   "sd": 1.62
+  },
+  "self.state.shock": {
+   "n": 1000,
+   "mean": 0.36,
+   "sd": 1.14
+  },
+  "self.state.confusion": {
+   "n": 1000,
+   "mean": 0.08,
+   "sd": 0.57
+  },
+  "self.state.fatigue": {
+   "n": 1000,
+   "mean": -0.48,
+   "sd": 4.49
+  },
+  "self.state.anger": {
+   "n": 1000,
+   "mean": -1.06,
+   "sd": 1.79
+  },
+  "self.state.stress": {
+   "n": 1000,
+   "mean": 0.88,
+   "sd": 1.98
+  },
+  "self.state.joy": {
+   "n": 1000,
+   "mean": -0.12,
+   "sd": 2.77
+  },
+  "self.stock.food": {
+   "n": 1000,
+   "mean": 0.79,
+   "sd": 3.74
+  },
+  "self.stock.fuel": {
+   "n": 1000,
+   "mean": 0.88,
+   "sd": 4.08
+  },
+  "self.stock.tools": {
+   "n": 1000,
+   "mean": 0.02,
+   "sd": 3.36
+  },
+  "self.body.hp": {
+   "n": 1000,
+   "mean": 8.41,
+   "sd": 1.87
+  },
+  "self.body.strength": {
+   "n": 1000,
+   "mean": 6.12,
+   "sd": 1.95
+  },
+  "self.body.load_ratio": {
+   "n": 1000,
+   "mean": 3.42,
+   "sd": 1.85
+  },
+  "self.body.job_skill": {
+   "n": 1000,
+   "mean": 4.64,
+   "sd": 3.0
+  },
+  "self.activity.progress": {
+   "n": 1000,
+   "mean": 5.04,
+   "sd": 2.87
+  },
+  "self.activity.commitment": {
+   "n": 1000,
+   "mean": 3.37,
+   "sd": 2.15
+  },
+  "self.activity.secs_since_decision": {
+   "n": 1000,
+   "mean": 6.59,
+   "sd": 1.24
+  },
+  "inventory.qty": {
+   "n": 3294,
+   "mean": 3.08,
+   "sd": 1.5
+  },
+  "inventory.quality": {
+   "n": 3294,
+   "mean": 6.32,
+   "sd": 1.94
+  },
+  "inventory.wear": {
+   "n": 3294,
+   "mean": 2.15,
+   "sd": 2.64
+  },
+  "entity.rel.affection": {
+   "n": 2733,
+   "mean": 2.89,
+   "sd": 4.6
+  },
+  "entity.rel.trust": {
+   "n": 2733,
+   "mean": 2.3,
+   "sd": 3.83
+  },
+  "entity.rel.respect": {
+   "n": 2733,
+   "mean": 2.0,
+   "sd": 3.19
+  },
+  "entity.rel.romance": {
+   "n": 2733,
+   "mean": 0.62,
+   "sd": 2.97
+  },
+  "entity.rel.debt": {
+   "n": 2733,
+   "mean": -0.02,
+   "sd": 1.82
+  },
+  "entity.rel.fear": {
+   "n": 2733,
+   "mean": 1.29,
+   "sd": 1.39
+  },
+  "entity.rel.familiarity": {
+   "n": 2733,
+   "mean": 6.71,
+   "sd": 3.26
+  },
+  "entity.rel.grudge": {
+   "n": 2733,
+   "mean": 1.28,
+   "sd": 1.79
+  },
+  "entity.social.mood_toward": {
+   "n": 2733,
+   "mean": 1.43,
+   "sd": 3.41
+  },
+  "entity.social.urge_to_interact": {
+   "n": 2733,
+   "mean": 0.8,
+   "sd": 3.19
+  },
+  "entity.social.suspicion": {
+   "n": 2733,
+   "mean": 1.15,
+   "sd": 1.47
+  },
+  "entity.social.indirect_threat": {
+   "n": 2733,
+   "mean": 0.18,
+   "sd": 1.0
+  },
+  "entity.perception.chemistry": {
+   "n": 2733,
+   "mean": 0.01,
+   "sd": 5.86
+  },
+  "entity.perception.perceived": {
+   "n": 2733,
+   "mean": 6.55,
+   "sd": 2.07
+  },
+  "entity.perception.distance": {
+   "n": 2733,
+   "mean": 6.66,
+   "sd": 1.79
+  },
+  "entity.perception.beauty": {
+   "n": 2733,
+   "mean": 5.54,
+   "sd": 1.76
+  },
+  "entity.perception.days_since_contact": {
+   "n": 2733,
+   "mean": 2.19,
+   "sd": 2.38
+  },
+  "entity.perception.rep_trust": {
+   "n": 2733,
+   "mean": 1.16,
+   "sd": 3.41
+  },
+  "entity.perception.rep_danger": {
+   "n": 2733,
+   "mean": 0.39,
+   "sd": 3.6
+  },
+  "event.intensity": {
+   "n": 965,
+   "mean": 4.87,
+   "sd": 1.63
+  },
+  "event.salience": {
+   "n": 965,
+   "mean": 4.4,
+   "sd": 1.28
+  },
+  "event.reliability": {
+   "n": 965,
+   "mean": 9.63,
+   "sd": 1.16
+  },
+  "event.delay": {
+   "n": 965,
+   "mean": 6.18,
+   "sd": 1.7
+  },
+  "event.norm.kin": {
+   "n": 965,
+   "mean": 0.48,
+   "sd": 1.97
+  },
+  "event.norm.property": {
+   "n": 965,
+   "mean": 0.12,
+   "sd": 0.83
+  },
+  "event.norm.honor": {
+   "n": 965,
+   "mean": 0.39,
+   "sd": 1.06
+  },
+  "event.norm.life": {
+   "n": 965,
+   "mean": 0.45,
+   "sd": 1.33
+  },
+  "event.norm.fidelity": {
+   "n": 965,
+   "mean": 0.37,
+   "sd": 1.6
+  },
+  "event.norm.truth": {
+   "n": 965,
+   "mean": 0.21,
+   "sd": 1.1
+  },
+  "event.norm.fairness": {
+   "n": 965,
+   "mean": 0.5,
+   "sd": 1.42
+  },
+  "event.norm.taboo": {
+   "n": 965,
+   "mean": 0.16,
+   "sd": 1.18
+  },
+  "memory.valence": {
+   "n": 1919,
+   "mean": 0.04,
+   "sd": 4.46
+  },
+  "memory.importance": {
+   "n": 1919,
+   "mean": 4.55,
+   "sd": 2.45
+  },
+  "memory.age_days": {
+   "n": 1919,
+   "mean": 6.06,
+   "sd": 1.7
+  },
+  "memory.certainty": {
+   "n": 1919,
+   "mean": 8.52,
+   "sd": 0.95
+  },
+  "goal.priority": {
+   "n": 802,
+   "mean": 5.64,
+   "sd": 1.84
+  },
+  "goal.progress": {
+   "n": 802,
+   "mean": 2.78,
+   "sd": 3.23
+  },
+  "goal.deadline_h": {
+   "n": 802,
+   "mean": 5.93,
+   "sd": 2.92
+  },
+  "title.conf": {
+   "n": 1118,
+   "mean": 4.18,
+   "sd": 3.85
+  },
+  "title.legit": {
+   "n": 1118,
+   "mean": 0.92,
+   "sd": 2.2
+  },
+  "title.authority": {
+   "n": 1118,
+   "mean": 5.53,
+   "sd": 2.13
+  },
+  "event.intent": {
+   "n": 175,
+   "mean": 7.5,
+   "sd": 2.33
+  }
+ },
+ "actions_offered": {
+  "avoid": 480,
+  "fetch_water": 345,
+  "go_to": 1114,
+  "insult": 204,
+  "endorse": 62,
+  "contest_claim": 65,
+  "claim_title": 33,
+  "ask": 611,
+  "kiss": 152,
+  "eat": 153,
+  "continue": 919,
+  "chat": 841,
+  "refuse": 325,
+  "flirt": 179,
+  "greet": 658,
+  "search": 167,
+  "call_for_help": 255,
+  "attack": 226,
+  "threaten": 118,
+  "leisure": 280,
+  "apologize": 61,
+  "wait": 81,
+  "wander": 253,
+  "rest": 333,
+  "propose": 84,
+  "accept": 242,
+  "craft": 61,
+  "embrace": 275,
+  "observe": 730,
+  "accompany": 15,
+  "inform": 233,
+  "negotiate": 372,
+  "answer": 177,
+  "warn": 189,
+  "approach": 70,
+  "sleep": 75,
+  "drink": 62,
+  "flee": 232,
+  "expel": 73,
+  "assist": 172,
+  "pick_up": 41,
+  "till": 73,
+  "forgive": 73,
+  "accuse": 124,
+  "be_intimate": 7,
+  "compliment": 31,
+  "thank": 28,
+  "give": 28,
+  "defend": 84,
+  "comfort": 26,
+  "bribe": 36,
+  "deceive": 47,
+  "vote": 147,
+  "tear_down_notice": 71,
+  "campaign": 96,
+  "post_notice": 11,
+  "chase": 40,
+  "cut": 19,
+  "dig": 24
+ },
+ "class_coverage": {
+  "betrayal": {
+   "aggress": 1.0,
+   "avoid": 1.0,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 1.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.98,
+   "continue": 1.0
+  },
+  "commitment": {
+   "aggress": 0.0,
+   "avoid": 0.87,
+   "cooperate": 0.61,
+   "resist": 0.23,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 0.84,
+   "repair": 0.16,
+   "continue": 1.0
+  },
+  "danger": {
+   "aggress": 0.0,
+   "avoid": 1.0,
+   "cooperate": 1.0,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.26,
+   "continue": 1.0
+  },
+  "election": {
+   "aggress": 0.0,
+   "avoid": 0.18,
+   "cooperate": 1.0,
+   "resist": 1.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 1.0,
+   "inform": 0.69,
+   "repair": 0.18,
+   "continue": 1.0
+  },
+  "extortion": {
+   "aggress": 0.97,
+   "avoid": 1.0,
+   "cooperate": 0.0,
+   "resist": 0.97,
+   "confront": 0.0,
+   "deceive": 1.0,
+   "negotiate": 0.92,
+   "inform": 1.0,
+   "repair": 0.19,
+   "continue": 1.0
+  },
+  "greeting": {
+   "aggress": 0.0,
+   "avoid": 1.0,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 0.85,
+   "repair": 0.21,
+   "continue": 1.0
+  },
+  "harmful_proposal": {
+   "aggress": 1.0,
+   "avoid": 1.0,
+   "cooperate": 0.93,
+   "resist": 0.93,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.32,
+   "continue": 1.0
+  },
+  "info_request": {
+   "aggress": 0.0,
+   "avoid": 1.0,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.94,
+   "inform": 1.0,
+   "repair": 0.31,
+   "continue": 1.0
+  },
+  "kin_advance": {
+   "aggress": 1.0,
+   "avoid": 1.0,
+   "cooperate": 0.53,
+   "resist": 1.0,
+   "confront": 1.0,
+   "deceive": 0.0,
+   "negotiate": 0.53,
+   "inform": 0.71,
+   "repair": 0.18,
+   "continue": 1.0
+  },
+  "kindness": {
+   "aggress": 0.0,
+   "avoid": 0.29,
+   "cooperate": 1.0,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 0.57,
+   "repair": 1.0,
+   "continue": 1.0
+  },
+  "legal_need": {
+   "aggress": 0.95,
+   "avoid": 0.95,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 0.95,
+   "deceive": 0.0,
+   "negotiate": 0.95,
+   "inform": 1.0,
+   "repair": 1.0,
+   "continue": 1.0
+  },
+  "negotiation": {
+   "aggress": 0.0,
+   "avoid": 1.0,
+   "cooperate": 1.0,
+   "resist": 1.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 1.0,
+   "inform": 1.0,
+   "repair": 0.22,
+   "continue": 1.0
+  },
+  "notice_read": {
+   "aggress": 0.0,
+   "avoid": 0.26,
+   "cooperate": 0.48,
+   "resist": 0.84,
+   "confront": 0.26,
+   "deceive": 0.0,
+   "negotiate": 0.19,
+   "inform": 0.94,
+   "repair": 0.23,
+   "continue": 1.0
+  },
+  "opportunity": {
+   "aggress": 0.0,
+   "avoid": 0.34,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.22,
+   "continue": 1.0
+  },
+  "out_of_world": {
+   "aggress": 0.0,
+   "avoid": 1.0,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.33,
+   "continue": 1.0
+  },
+  "proposal": {
+   "aggress": 0.0,
+   "avoid": 0.17,
+   "cooperate": 1.0,
+   "resist": 1.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 1.0,
+   "inform": 1.0,
+   "repair": 0.24,
+   "continue": 1.0
+  },
+  "provocation": {
+   "aggress": 1.0,
+   "avoid": 1.0,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 0.98,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 1.0,
+   "continue": 1.0
+  },
+  "request": {
+   "aggress": 0.0,
+   "avoid": 0.24,
+   "cooperate": 1.0,
+   "resist": 1.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.32,
+   "continue": 1.0
+  },
+  "romance": {
+   "aggress": 0.0,
+   "avoid": 0.94,
+   "cooperate": 0.0,
+   "resist": 0.83,
+   "confront": 0.09,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 0.64,
+   "repair": 0.34,
+   "continue": 1.0
+  },
+  "routine": {
+   "aggress": 0.0,
+   "avoid": 0.5,
+   "cooperate": 0.03,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 0.67,
+   "repair": 0.17,
+   "continue": 1.0
+  },
+  "rumor": {
+   "aggress": 0.0,
+   "avoid": 0.34,
+   "cooperate": 0.0,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.29,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.24,
+   "continue": 1.0
+  },
+  "title_dispute": {
+   "aggress": 0.0,
+   "avoid": 0.96,
+   "cooperate": 1.0,
+   "resist": 1.0,
+   "confront": 1.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.14,
+   "continue": 1.0
+  },
+  "urgent_need": {
+   "aggress": 0.0,
+   "avoid": 0.37,
+   "cooperate": 0.03,
+   "resist": 0.0,
+   "confront": 0.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 0.83,
+   "repair": 0.17,
+   "continue": 1.0
+  },
+  "wrongdoing_witnessed": {
+   "aggress": 1.0,
+   "avoid": 0.3,
+   "cooperate": 1.0,
+   "resist": 0.0,
+   "confront": 1.0,
+   "deceive": 0.0,
+   "negotiate": 0.0,
+   "inform": 1.0,
+   "repair": 0.25,
+   "continue": 1.0
+  }
+ },
+ "thin_candidate_sets": 114,
+ "contradictions": {
+  "loved but distrusted": 30,
+  "disliked but respected": 36,
+  "feared and loved": 11,
+  "grudge but trusted": 5
+ },
+ "village_coverage": 0,
+ "multi_level": 0.394,
+ "levels": {
+  "institution": 141,
+  "individual": 846,
+  "family": 300
+ },
+ "near_duplicate_pairs": 0,
+ "skeleton_repeats": 0,
+ "max_family_trait_deviation_sd": 0.5
+}

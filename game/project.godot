@@ -1,0 +1,13 @@
+; Engine configuration file.
+config_version=5
+
+[application]
+config/name="Emergence"
+run/main_scene="res://scenes/play.tscn"
+config/features=PackedStringArray("4.6")
+
+[physics]
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+renderer/rendering_method="forward_plus"

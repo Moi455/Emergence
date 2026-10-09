@@ -1,0 +1,39 @@
+# Material classes (architecture § 3.2): VoxelId = class (9 bits) << 7 | tint (7 bits).
+# The class id is stored in saves: never renumber a line, only append new ones.
+# hardness and flammability: 0..100. color: base of the tint ramp (sRGB hex).
+schema_version,1
+id,name,category,density_kg_m3,hardness,flammability,color
+0,air,gas,1,0,0,000000
+1,turf,soil,1300,8,10,5a7d3a
+2,dirt,soil,1500,10,0,6b4f35
+3,clay,soil,1800,14,0,9a6b4a
+4,sand,soil,1600,5,0,d8c48e
+5,gravel,soil,1800,12,0,8c8a84
+6,forest_floor,soil,1100,6,25,4a3a26
+7,snow,soil,300,2,0,eef2f5
+8,limestone,rock,2500,55,0,c9c2b0
+9,sandstone,rock,2300,45,0,c99a62
+10,granite,rock,2700,80,0,8f8a86
+11,slate,rock,2750,60,0,4f565c
+12,basalt,rock,2900,75,0,3a3a3c
+13,salt,mineral,2200,20,0,f0ece4
+14,iron_ore,mineral,3500,70,0,7a4b3a
+15,oak_raw,wood,750,30,70,8a6a44
+16,oak_planks,wood,700,25,75,b08a5a
+17,plaster,building,1700,20,0,e6dccb
+18,roof_tile,building,1900,35,0,a8553c
+19,thatch,building,200,3,95,c2a65a
+20,cut_stone,building,2500,60,0,b5aea0
+21,wood_trim,building,700,25,75,7a5a3a
+22,wood_trim_worn,building,650,22,75,6e5a46
+23,rock_trim,building,2500,60,0,9a958c
+24,brick,building,1900,45,0,a0705a
+25,red_brick,building,1900,45,0,9c3f2e
+26,rubble_masonry,building,2300,50,0,8f877a
+27,iron,metal,7800,90,0,4a4a4e
+28,glass,building,2500,15,0,a8c8d0
+29,vine,plant,400,2,60,4f7a30
+30,leaves,plant,300,1,70,4c7a2c
+31,bark,wood,600,30,65,5a4632
+32,cobblestone,building,2400,60,0,8a857c
+33,cloth,textile,300,2,90,b8a88a

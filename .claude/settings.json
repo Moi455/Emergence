@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./archive/**)",
+      "Read(./assets/**)",
+      "Read(**/data/*.jsonl)",
+      "Read(**/*.jsonl)",
+      "Read(**/*.glb)",
+      "Read(**/*.gltf)",
+      "Read(**/*.bin)",
+      "Read(**/*.u8)",
+      "Read(**/*.u16)",
+      "Read(**/*.vxb)",
+      "Read(**/*.vxb3)",
+      "Read(**/*.vxi)",
+      "Read(**/*.gz)",
+      "Read(**/*.zip)",
+      "Read(**/*.pt)",
+      "Read(**/*.onnx)",
+      "Read(**/*.so)",
+      "Read(**/*.dll)",
+      "Read(**/*.dylib)",
+      "Read(**/__pycache__/**)",
+      "Read(**/.venv/**)",
+      "Read(**/node_modules/**)",
+      "Read(./build/**)",
+      "Read(./out/**)",
+      "Read(./game/.godot/**)",
+      "Read(./game/bin/**)",
+      "Read(./prototypes/village-web/captures/**)",
+      "Read(./characters/thumbs/**)",
+      "Read(./docs/reference/schemas/**)",
+      "Read(**/captures/**)",
+      "Read(./tools/voxelizer/testdata/**)",
+      "Read(./ai/student/runs/**)",
+      "Read(./docs/npc/audit/**)"
+    ]
+  }
+}

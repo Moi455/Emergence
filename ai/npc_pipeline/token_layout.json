@@ -1,0 +1,1058 @@
+{
+ "format": "tok-1",
+ "F": 33,
+ "NCAT": 9,
+ "max_tokens": 64,
+ "max_cands": 16,
+ "token_types": [
+  "PAD",
+  "SELF",
+  "SELF_STATE",
+  "VILLAGE",
+  "OTHER_VILLAGE",
+  "HOUSEHOLD",
+  "ENTITY",
+  "EVENT",
+  "MEMORY",
+  "GOAL",
+  "TITLE",
+  "INV",
+  "ITEM",
+  "CAND"
+ ],
+ "cat_fields": [
+  "type",
+  "c0",
+  "c1",
+  "c2",
+  "c3",
+  "c4",
+  "p0",
+  "p1",
+  "p2"
+ ],
+ "types": {
+  "SELF": {
+   "cat": [
+    "age_cat",
+    "love_status",
+    "job",
+    "outfit_worn",
+    "-"
+   ],
+   "ptr": [
+    "-",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "trait.aggression",
+     "kind": "B100"
+    },
+    {
+     "slot": 1,
+     "name": "trait.courage",
+     "kind": "B100"
+    },
+    {
+     "slot": 2,
+     "name": "trait.empathy",
+     "kind": "B100"
+    },
+    {
+     "slot": 3,
+     "name": "trait.sociability",
+     "kind": "B100"
+    },
+    {
+     "slot": 4,
+     "name": "trait.honesty",
+     "kind": "B100"
+    },
+    {
+     "slot": 5,
+     "name": "trait.impulsivity",
+     "kind": "B100"
+    },
+    {
+     "slot": 6,
+     "name": "trait.curiosity",
+     "kind": "B100"
+    },
+    {
+     "slot": 7,
+     "name": "trait.tolerance",
+     "kind": "B100"
+    },
+    {
+     "slot": 8,
+     "name": "trait.justice",
+     "kind": "B100"
+    },
+    {
+     "slot": 9,
+     "name": "trait.ambition",
+     "kind": "B100"
+    },
+    {
+     "slot": 10,
+     "name": "trait.grudge",
+     "kind": "B100"
+    },
+    {
+     "slot": 11,
+     "name": "temperament.reactivity",
+     "kind": "U100"
+    },
+    {
+     "slot": 12,
+     "name": "temperament.resilience",
+     "kind": "U100"
+    },
+    {
+     "slot": 13,
+     "name": "value.kin_protection",
+     "kind": "U100"
+    },
+    {
+     "slot": 14,
+     "name": "value.property_respect",
+     "kind": "U100"
+    },
+    {
+     "slot": 15,
+     "name": "value.honor",
+     "kind": "U100"
+    },
+    {
+     "slot": 16,
+     "name": "value.life_value",
+     "kind": "U100"
+    },
+    {
+     "slot": 17,
+     "name": "value.romantic_fidelity",
+     "kind": "U100"
+    },
+    {
+     "slot": 18,
+     "name": "value.taboo_sensitivity",
+     "kind": "U100"
+    },
+    {
+     "slot": 19,
+     "name": "drive.libido",
+     "kind": "U100"
+    },
+    {
+     "slot": 20,
+     "name": "drive.social_need",
+     "kind": "U100"
+    },
+    {
+     "slot": 21,
+     "name": "drive.achievement",
+     "kind": "U100"
+    },
+    {
+     "slot": 22,
+     "name": "drive.hoarding",
+     "kind": "U100"
+    },
+    {
+     "slot": 23,
+     "name": "age",
+     "kind": "QLOG",
+     "vmax": 90
+    },
+    {
+     "slot": 24,
+     "name": "owns.everyday",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 25,
+     "name": "owns.work",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 26,
+     "name": "owns.travel",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 27,
+     "name": "owns.festive",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 28,
+     "name": "owns.mourning",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 29,
+     "name": "owns.cold",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 30,
+     "name": "owns.court",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 31,
+     "name": "owns.night",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 32,
+     "name": "outfit.wear",
+     "kind": "U100"
+    }
+   ]
+  },
+  "SELF_STATE": {
+   "cat": [
+    "current_action",
+    "place_type",
+    "weather",
+    "tool_in_hand",
+    "season"
+   ],
+   "ptr": [
+    "-",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "state.hunger",
+     "kind": "U100"
+    },
+    {
+     "slot": 1,
+     "name": "state.thirst",
+     "kind": "U100"
+    },
+    {
+     "slot": 2,
+     "name": "state.pain",
+     "kind": "U100"
+    },
+    {
+     "slot": 3,
+     "name": "state.fear",
+     "kind": "U100"
+    },
+    {
+     "slot": 4,
+     "name": "state.shock",
+     "kind": "U100"
+    },
+    {
+     "slot": 5,
+     "name": "state.confusion",
+     "kind": "U100"
+    },
+    {
+     "slot": 6,
+     "name": "state.fatigue",
+     "kind": "B100"
+    },
+    {
+     "slot": 7,
+     "name": "state.anger",
+     "kind": "B100"
+    },
+    {
+     "slot": 8,
+     "name": "state.stress",
+     "kind": "B100"
+    },
+    {
+     "slot": 9,
+     "name": "state.joy",
+     "kind": "B100"
+    },
+    {
+     "slot": 10,
+     "name": "stock.food",
+     "kind": "B100"
+    },
+    {
+     "slot": 11,
+     "name": "stock.fuel",
+     "kind": "B100"
+    },
+    {
+     "slot": 12,
+     "name": "stock.tools",
+     "kind": "B100"
+    },
+    {
+     "slot": 13,
+     "name": "body.hp",
+     "kind": "U100"
+    },
+    {
+     "slot": 14,
+     "name": "body.strength",
+     "kind": "U100"
+    },
+    {
+     "slot": 15,
+     "name": "body.job_skill",
+     "kind": "U100"
+    },
+    {
+     "slot": 16,
+     "name": "body.load_ratio",
+     "kind": "U1"
+    },
+    {
+     "slot": 17,
+     "name": "activity.progress",
+     "kind": "U1"
+    },
+    {
+     "slot": 18,
+     "name": "activity.commitment",
+     "kind": "U100"
+    },
+    {
+     "slot": 19,
+     "name": "activity.secs_since_decision",
+     "kind": "QLOG",
+     "vmax": 3600
+    },
+    {
+     "slot": 20,
+     "name": "time.hour_sin",
+     "kind": "B1"
+    },
+    {
+     "slot": 21,
+     "name": "time.hour_cos",
+     "kind": "B1"
+    },
+    {
+     "slot": 22,
+     "name": "time.season_sin",
+     "kind": "B1"
+    },
+    {
+     "slot": 23,
+     "name": "time.season_cos",
+     "kind": "B1"
+    },
+    {
+     "slot": 24,
+     "name": "hours_since_meal",
+     "kind": "QLOG",
+     "vmax": 24
+    }
+   ]
+  },
+  "VILLAGE": {
+   "cat": [
+    "village_id",
+    "frontier",
+    "problem_kind",
+    "problem_need",
+    "-"
+   ],
+   "ptr": [
+    "-",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "belonging",
+     "kind": "U100"
+    },
+    {
+     "slot": 1,
+     "name": "loyalty",
+     "kind": "B100"
+    },
+    {
+     "slot": 2,
+     "name": "leader_trust",
+     "kind": "B100"
+    },
+    {
+     "slot": 3,
+     "name": "leader_legit",
+     "kind": "B100"
+    },
+    {
+     "slot": 4,
+     "name": "institution_trust",
+     "kind": "B100"
+    },
+    {
+     "slot": 5,
+     "name": "economy",
+     "kind": "B100"
+    },
+    {
+     "slot": 6,
+     "name": "food",
+     "kind": "B100"
+    },
+    {
+     "slot": 7,
+     "name": "security",
+     "kind": "B100"
+    },
+    {
+     "slot": 8,
+     "name": "rep",
+     "kind": "B100"
+    },
+    {
+     "slot": 9,
+     "name": "tension",
+     "kind": "U100"
+    },
+    {
+     "slot": 10,
+     "name": "cohesion",
+     "kind": "U100"
+    },
+    {
+     "slot": 11,
+     "name": "custom.kin",
+     "kind": "U100"
+    },
+    {
+     "slot": 12,
+     "name": "custom.property",
+     "kind": "U100"
+    },
+    {
+     "slot": 13,
+     "name": "custom.honor",
+     "kind": "U100"
+    },
+    {
+     "slot": 14,
+     "name": "custom.life",
+     "kind": "U100"
+    },
+    {
+     "slot": 15,
+     "name": "custom.fidelity",
+     "kind": "U100"
+    },
+    {
+     "slot": 16,
+     "name": "custom.truth",
+     "kind": "U100"
+    },
+    {
+     "slot": 17,
+     "name": "custom.fairness",
+     "kind": "U100"
+    },
+    {
+     "slot": 18,
+     "name": "custom.taboo",
+     "kind": "U100"
+    },
+    {
+     "slot": 19,
+     "name": "problem.urgency",
+     "kind": "U100"
+    },
+    {
+     "slot": 20,
+     "name": "problem.progress",
+     "kind": "U100"
+    }
+   ]
+  },
+  "OTHER_VILLAGE": {
+   "cat": [
+    "village_id",
+    "-",
+    "-",
+    "-",
+    "-"
+   ],
+   "ptr": [
+    "-",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "relation",
+     "kind": "B100"
+    },
+    {
+     "slot": 1,
+     "name": "trade_dep",
+     "kind": "U100"
+    },
+    {
+     "slot": 2,
+     "name": "threat",
+     "kind": "U100"
+    },
+    {
+     "slot": 3,
+     "name": "my_ties",
+     "kind": "U100"
+    }
+   ]
+  },
+  "HOUSEHOLD": {
+   "cat": [
+    "-",
+    "-",
+    "-",
+    "-",
+    "-"
+   ],
+   "ptr": [
+    "-",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "size",
+     "kind": "QLOG",
+     "vmax": 12
+    },
+    {
+     "slot": 1,
+     "name": "head",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 2,
+     "name": "cohesion",
+     "kind": "U100"
+    },
+    {
+     "slot": 3,
+     "name": "wealth",
+     "kind": "B100"
+    },
+    {
+     "slot": 4,
+     "name": "honor",
+     "kind": "B100"
+    }
+   ]
+  },
+  "ENTITY": {
+   "cat": [
+    "link",
+    "age_cat",
+    "love_status",
+    "visible_action",
+    "village"
+   ],
+   "ptr": [
+    "threat_via",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "rel.affection",
+     "kind": "B100"
+    },
+    {
+     "slot": 1,
+     "name": "rel.trust",
+     "kind": "B100"
+    },
+    {
+     "slot": 2,
+     "name": "rel.respect",
+     "kind": "B100"
+    },
+    {
+     "slot": 3,
+     "name": "rel.romance",
+     "kind": "B100"
+    },
+    {
+     "slot": 4,
+     "name": "rel.debt",
+     "kind": "B100"
+    },
+    {
+     "slot": 5,
+     "name": "rel.fear",
+     "kind": "U100"
+    },
+    {
+     "slot": 6,
+     "name": "rel.familiarity",
+     "kind": "U100"
+    },
+    {
+     "slot": 7,
+     "name": "rel.grudge",
+     "kind": "U100"
+    },
+    {
+     "slot": 8,
+     "name": "mood_toward",
+     "kind": "B100"
+    },
+    {
+     "slot": 9,
+     "name": "urge_to_interact",
+     "kind": "B100"
+    },
+    {
+     "slot": 10,
+     "name": "suspicion",
+     "kind": "U100"
+    },
+    {
+     "slot": 11,
+     "name": "indirect_threat",
+     "kind": "U100"
+    },
+    {
+     "slot": 12,
+     "name": "perceived",
+     "kind": "U1"
+    },
+    {
+     "slot": 13,
+     "name": "distance",
+     "kind": "QLOG",
+     "vmax": 30
+    },
+    {
+     "slot": 14,
+     "name": "beauty",
+     "kind": "U100"
+    },
+    {
+     "slot": 15,
+     "name": "days_since_contact",
+     "kind": "QLOG",
+     "vmax": 60
+    },
+    {
+     "slot": 16,
+     "name": "rep_trust",
+     "kind": "B100"
+    },
+    {
+     "slot": 17,
+     "name": "rep_danger",
+     "kind": "B100"
+    },
+    {
+     "slot": 18,
+     "name": "understanding",
+     "kind": "ORD"
+    },
+    {
+     "slot": 19,
+     "name": "age",
+     "kind": "QLOG",
+     "vmax": 90
+    },
+    {
+     "slot": 20,
+     "name": "wears.everyday",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 21,
+     "name": "wears.work",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 22,
+     "name": "wears.travel",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 23,
+     "name": "wears.festive",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 24,
+     "name": "wears.mourning",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 25,
+     "name": "wears.cold",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 26,
+     "name": "wears.court",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 27,
+     "name": "wears.night",
+     "kind": "BOOL"
+    }
+   ]
+  },
+  "EVENT": {
+   "cat": [
+    "type",
+    "role",
+    "source",
+    "content_a",
+    "content_b"
+   ],
+   "ptr": [
+    "agent",
+    "target",
+    "subject"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "intensity",
+     "kind": "U100"
+    },
+    {
+     "slot": 1,
+     "name": "salience",
+     "kind": "U100"
+    },
+    {
+     "slot": 2,
+     "name": "understanding",
+     "kind": "ORD"
+    },
+    {
+     "slot": 3,
+     "name": "reliability",
+     "kind": "U1"
+    },
+    {
+     "slot": 4,
+     "name": "intent",
+     "kind": "U1"
+    },
+    {
+     "slot": 5,
+     "name": "delay",
+     "kind": "QLOG",
+     "vmax": 300
+    },
+    {
+     "slot": 6,
+     "name": "out_of_world",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 7,
+     "name": "has_intent",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 8,
+     "name": "norm.kin",
+     "kind": "U100"
+    },
+    {
+     "slot": 9,
+     "name": "norm.property",
+     "kind": "U100"
+    },
+    {
+     "slot": 10,
+     "name": "norm.honor",
+     "kind": "U100"
+    },
+    {
+     "slot": 11,
+     "name": "norm.life",
+     "kind": "U100"
+    },
+    {
+     "slot": 12,
+     "name": "norm.fidelity",
+     "kind": "U100"
+    },
+    {
+     "slot": 13,
+     "name": "norm.truth",
+     "kind": "U100"
+    },
+    {
+     "slot": 14,
+     "name": "norm.fairness",
+     "kind": "U100"
+    },
+    {
+     "slot": 15,
+     "name": "norm.taboo",
+     "kind": "U100"
+    },
+    {
+     "slot": 16,
+     "name": "holders",
+     "kind": "QLOG",
+     "vmax": 20
+    },
+    {
+     "slot": 17,
+     "name": "offer.gain",
+     "kind": "B100"
+    },
+    {
+     "slot": 18,
+     "name": "offer.price",
+     "kind": "QLOG",
+     "vmax": 200
+    },
+    {
+     "slot": 19,
+     "name": "offer.qty",
+     "kind": "QLOG",
+     "vmax": 20
+    },
+    {
+     "slot": 20,
+     "name": "offer.round",
+     "kind": "ORD"
+    },
+    {
+     "slot": 21,
+     "name": "question.sens",
+     "kind": "U100"
+    },
+    {
+     "slot": 22,
+     "name": "style.order",
+     "kind": "BOOL"
+    }
+   ]
+  },
+  "MEMORY": {
+   "cat": [
+    "type",
+    "source",
+    "what",
+    "broke",
+    "outcome"
+   ],
+   "ptr": [
+    "agent",
+    "target",
+    "third"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "valence",
+     "kind": "B100"
+    },
+    {
+     "slot": 1,
+     "name": "importance",
+     "kind": "U100"
+    },
+    {
+     "slot": 2,
+     "name": "severity",
+     "kind": "U100"
+    },
+    {
+     "slot": 3,
+     "name": "certainty",
+     "kind": "U1"
+    },
+    {
+     "slot": 4,
+     "name": "age_days",
+     "kind": "QLOG",
+     "vmax": 365
+    },
+    {
+     "slot": 5,
+     "name": "defining",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 6,
+     "name": "secret",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 7,
+     "name": "focus_knows_yes",
+     "kind": "BOOL"
+    },
+    {
+     "slot": 8,
+     "name": "focus_knows_no",
+     "kind": "BOOL"
+    }
+   ]
+  },
+  "GOAL": {
+   "cat": [
+    "type",
+    "target",
+    "-",
+    "-",
+    "-"
+   ],
+   "ptr": [
+    "target",
+    "partner",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "priority",
+     "kind": "U100"
+    },
+    {
+     "slot": 1,
+     "name": "progress",
+     "kind": "U1"
+    },
+    {
+     "slot": 2,
+     "name": "deadline_h",
+     "kind": "QLOG",
+     "vmax": 168
+    }
+   ]
+  },
+  "TITLE": {
+   "cat": [
+    "title",
+    "my_role",
+    "-",
+    "-",
+    "-"
+   ],
+   "ptr": [
+    "holder",
+    "claimant1",
+    "claimant2"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "authority",
+     "kind": "U100"
+    },
+    {
+     "slot": 1,
+     "name": "conf",
+     "kind": "U1"
+    },
+    {
+     "slot": 2,
+     "name": "legit",
+     "kind": "B100"
+    },
+    {
+     "slot": 3,
+     "name": "n_claimants",
+     "kind": "ORD"
+    }
+   ]
+  },
+  "INV": {
+   "cat": [
+    "item",
+    "-",
+    "-",
+    "-",
+    "-"
+   ],
+   "ptr": [
+    "-",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "qty",
+     "kind": "QLOG",
+     "vmax": 20
+    },
+    {
+     "slot": 1,
+     "name": "quality",
+     "kind": "U100"
+    },
+    {
+     "slot": 2,
+     "name": "wear",
+     "kind": "U100"
+    },
+    {
+     "slot": 3,
+     "name": "in_hand",
+     "kind": "BOOL"
+    }
+   ]
+  },
+  "ITEM": {
+   "cat": [
+    "item",
+    "owner_kind",
+    "-",
+    "-",
+    "-"
+   ],
+   "ptr": [
+    "owner",
+    "-",
+    "-"
+   ],
+   "num": [
+    {
+     "slot": 0,
+     "name": "qty",
+     "kind": "QLOG",
+     "vmax": 20
+    }
+   ]
+  },
+  "CAND": {
+   "cat": [
+    "action",
+    "arg1",
+    "arg2",
+    "arg3",
+    "arg4"
+   ],
+   "ptr": [
+    "entity",
+    "event",
+    "memory_or_option"
+   ],
+   "num": []
+  }
+ }
+}

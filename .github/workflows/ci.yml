@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    name: Pipeline PNJ + convertisseur
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r tools/voxelizer/requirements.txt
+      - run: scripts/test_all.sh
+
+  engine:
+    name: Moteur C++
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake -S engine -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build/engine
+      - run: ctest --test-dir build/engine --output-on-failure
+
+  worldgen:
+    name: Génération du monde
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake -S worldgen -B build/worldgen -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build/worldgen
+      - run: cd build/worldgen && ctest --output-on-failure -R "test_worldgen|test_terrain"
+
+  sim:
+    name: Simulation sociale
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: cd sim && python3 -m unittest discover -s tests -v

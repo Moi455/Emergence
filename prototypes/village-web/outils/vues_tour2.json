@@ -1,0 +1,5 @@
+[
+ {"name":"ring","p":{"fly":true,"yaw":0.35,"pitch":-0.05},"js":"const g=window.__game;g.setTool(1);g.player.x=g.CX-26*g.M;g.player.z=g.CZ-1.6*g.M;g.player.y=g.heightAt(g.player.x|0,g.player.z|0)+4; const c=[g.player.x,(g.player.y+80),g.player.z]; const a=0.35; const d=[-Math.sin(a),0.05,-Math.cos(a)]; const h=g.raycast(c[0],c[1],c[2],d[0],d[1],d[2],400); window.__hit=h; if(h){ const ux=Math.cos(a), uz=-Math.sin(a); for(let k=-4;k<50;k+=5) for(let t=0;t<32;t++){ const th=t/32*Math.PI*2, r=45; g.carve(Math.round(h.x+ux*r*Math.cos(th)+d[0]*k), Math.round(h.y+r*Math.sin(th)+d[1]*k), Math.round(h.z+uz*r*Math.cos(th)+d[2]*k)); } } window.__t0=performance.now();","wait":1500},
+ {"name":"ring2","p":{},"js":"","wait":8000},
+ {"name":"pond","p":{"fly":true,"yaw":3.14,"pitch":-0.25},"js":"const g=window.__game;g.player.x=g.CX-22*g.M;g.player.z=g.CZ+17*g.M;g.player.y=g.heightAt(g.player.x|0,g.player.z|0)+2*g.M;","wait":8000}
+]

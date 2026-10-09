@@ -1,0 +1,21 @@
+{
+  "_comment": "Edit with: gedit config.json. rpd = REQUESTS PER DAY (check the real value in AI Studio > Rate limits). Quotas are per project, not per key.",
+  "model": "gemini-3.5-flash-lite",
+  "rpm": 15,
+  "tpm": 250000,
+  "rpd": 500,
+  "rpd_reserve": 5,
+  "per_call": 16,
+  "workers": 4,
+  "variant": "auto",
+  "thinking": "auto",
+  "target": 50000,
+  "pilot_n": 96,
+  "data_dir": "data",
+  "log_dir": "logs",
+  "states_seed": 20261004,
+  "pilot_levels": [
+    "minimal",
+    "low"
+  ]
+}
