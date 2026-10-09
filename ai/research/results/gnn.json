@@ -1,0 +1,247 @@
+{
+ "rows": [
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float32",
+   "aggregate": "scatter",
+   "ms": 1.3208320140838623,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float32",
+   "aggregate": "csr",
+   "ms": 6.493216037750244,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float16",
+   "aggregate": "scatter",
+   "ms": 0.7287200093269348,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float16",
+   "aggregate": "csr",
+   "ms": 5.961983919143677,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float32",
+   "aggregate": "scatter",
+   "ms": 2.5633599758148193,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float32",
+   "aggregate": "csr",
+   "ms": 18.2217435836792,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float16",
+   "aggregate": "scatter",
+   "ms": 1.2292959690093994,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float16",
+   "aggregate": "csr",
+   "ms": 17.557215690612793,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float32",
+   "aggregate": "scatter",
+   "ms": 6.694208145141602,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float32",
+   "aggregate": "csr",
+   "ms": 45.18545722961426,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float16",
+   "aggregate": "scatter",
+   "ms": 3.5723520517349243,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 128,
+   "layers": 2,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float16",
+   "aggregate": "csr",
+   "ms": 43.58656120300293,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float32",
+   "aggregate": "scatter",
+   "ms": 3.676144003868103,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float32",
+   "aggregate": "csr",
+   "ms": 11.180736064910889,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float16",
+   "aggregate": "scatter",
+   "ms": 1.1068159937858582,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 20,
+   "edges": 10000,
+   "dtype": "float16",
+   "aggregate": "csr",
+   "ms": 9.562111854553223,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float32",
+   "aggregate": "scatter",
+   "ms": 10.388800144195557,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float32",
+   "aggregate": "csr",
+   "ms": 32.57542419433594,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float16",
+   "aggregate": "scatter",
+   "ms": 3.4452000856399536,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 60,
+   "edges": 30000,
+   "dtype": "float16",
+   "aggregate": "csr",
+   "ms": 28.025856018066406,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float32",
+   "aggregate": "scatter",
+   "ms": 26.637871742248535,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float32",
+   "aggregate": "csr",
+   "ms": 81.13728332519531,
+   "bitwise_reproducible": true
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float16",
+   "aggregate": "scatter",
+   "ms": 9.32863998413086,
+   "bitwise_reproducible": false
+  },
+  {
+   "d": 256,
+   "layers": 3,
+   "k": 150,
+   "edges": 75000,
+   "dtype": "float16",
+   "aggregate": "csr",
+   "ms": 70.00646209716797,
+   "bitwise_reproducible": true
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-09 22:28"
+}

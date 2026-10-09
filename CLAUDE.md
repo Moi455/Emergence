@@ -2,7 +2,7 @@
 
 Tu travailles sur **Emergence**, un jeu médiéval-fantastique pour Steam : un monde de voxels destructible et 500 PNJ en 5 villages, chacun piloté par un Transformer, dans une **simulation réelle du monde** où tout doit émerger. Le porteur du projet est **Monsieur**. Il écrit en français : réponds-lui en français, simplement, en commençant par la réponse.
 
-Tu tournes maintenant **sur sa machine** (portable, RTX série 3000 de 6 Go, 16 Go de RAM), avec un vrai GPU. Les sessions précédentes tournaient dans le cloud, sans GPU : aucun chiffre de performance réel n'existe encore. Ton travail est de mesurer, d'entraîner et de brancher pour de vrai.
+Tu tournes maintenant **sur sa machine** (portable : Quadro RTX 3000 6 Go Turing, i9-10885H 8 cœurs / 16 threads, 62 Go de RAM, mesurés le 9 oct.), avec un vrai GPU. Les sessions précédentes tournaient dans le cloud, sans GPU : aucun chiffre de performance réel n'existe encore. Ton travail est de mesurer, d'entraîner et de brancher pour de vrai.
 
 ## À lire avant toute tâche (dans cet ordre, et rien d'autre tant que ce n'est pas utile)
 
@@ -19,7 +19,7 @@ Les images de `docs/style/` (`monde_type.png`, `maison_type.png`, `pnj_type.png`
 
 ## Ce que Monsieur veut (résumé de D17 à D27 ; la charte fait foi)
 
-1. **Chaque PNJ est piloté par le Transformer**, plusieurs fois par seconde, sans cache, par lots sur le GPU. Il reçoit perception, identité, souvenirs, état ; il rend une action et des ajustements progressifs de ses variables (seule une émotion peut sauter d'un coup). Pas de moteur de règles écrit à la main pour décider à la place du modèle.
+1. **Chaque PNJ est piloté par le Transformer**, sans cache, par lots sur le GPU : **200 décisions par seconde au total** (D32), un seul modèle partagé, réveils sur événement. Il reçoit perception, identité, souvenirs, état ; il rend une action et des ajustements progressifs de ses variables (seule une émotion peut sauter d'un coup). Pas de moteur de règles écrit à la main pour décider à la place du modèle.
 2. **Les 500 PNJ sont simulés à pleine puissance partout**, même loin du joueur ; seul le rendu est coupé hors de vue. **Toute action a une répercussion persistante** (une `Operation` appliquée au monde, chargé ou non, et sauvegardée).
 3. **Avant de coder une action ou une variable**, elle doit être dans le catalogue unique `catalogue/` (D28 ; `python3 catalogue/tools/check.py`).
 4. **GPU** : le rendu utilise le moins possible du GPU dédié ; l'essentiel reste au Transformer.

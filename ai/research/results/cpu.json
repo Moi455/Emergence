@@ -1,0 +1,441 @@
+{
+ "rows": [
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 2,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 46.183937000023434,
+   "decisions_per_s": 433.0509977958322
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 2,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 36.381167999934405,
+   "decisions_per_s": 549.7349617812177
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 2,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 159.69170099924668,
+   "decisions_per_s": 400.77223549833633
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 2,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 145.74541199908708,
+   "decisions_per_s": 439.1218846765542
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 4,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 26.132321001568926,
+   "decisions_per_s": 765.3357694021608
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 4,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 22.742011000445927,
+   "decisions_per_s": 879.429703890647
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 4,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 104.61800399934873,
+   "decisions_per_s": 611.7493887610244
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 4,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 99.58455900050467,
+   "decisions_per_s": 642.6699143154881
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 8,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 20.12477000062063,
+   "decisions_per_s": 993.8001775614439
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 8,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 19.62381699922844,
+   "decisions_per_s": 1019.169716104994
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 8,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 88.30724899962661,
+   "decisions_per_s": 724.7423141929221
+  },
+  {
+   "config": "xs",
+   "T": 96,
+   "threads": 8,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 86.47042800112104,
+   "decisions_per_s": 740.1374259321381
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 2,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 53.58186499870499,
+   "decisions_per_s": 373.26061719731814
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 2,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 47.292590999859385,
+   "decisions_per_s": 422.8992232643685
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 2,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 201.11077000001387,
+   "decisions_per_s": 318.232583963532
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 2,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 184.69955799992022,
+   "decisions_per_s": 346.50867978811107
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 4,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 35.368426999411895,
+   "decisions_per_s": 565.4760953980949
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 4,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 32.75257299901568,
+   "decisions_per_s": 610.6390481322204
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 4,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 133.33604100080265,
+   "decisions_per_s": 479.99025259505595
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 4,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 118.47798899907502,
+   "decisions_per_s": 540.1847257932412
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 8,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 28.12319399890839,
+   "decisions_per_s": 711.1567768858795
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 8,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 27.87449499919603,
+   "decisions_per_s": 717.5017879454623
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 8,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 117.47362999994948,
+   "decisions_per_s": 544.8031187937881
+  },
+  {
+   "config": "xs",
+   "T": 128,
+   "threads": 8,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 115.5691370004206,
+   "decisions_per_s": 553.7810669968668
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 2,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 156.6700919993309,
+   "decisions_per_s": 127.65678340244679
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 2,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 122.25855100041372,
+   "decisions_per_s": 163.5877395596838
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 2,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 528.9454759995351,
+   "decisions_per_s": 120.99545776256198
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 2,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 420.95427900130744,
+   "decisions_per_s": 152.0355135760509
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 4,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 98.36439500031702,
+   "decisions_per_s": 203.3256037404138
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 4,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 77.8612250014703,
+   "decisions_per_s": 256.8672660829871
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 4,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 329.52119299989135,
+   "decisions_per_s": 194.22119535729254
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 4,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 267.261059001612,
+   "decisions_per_s": 239.4662366417323
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 8,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 76.57408600061899,
+   "decisions_per_s": 261.1849653659376
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 8,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 65.05046600068454,
+   "decisions_per_s": 307.45360071347585
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 8,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 294.5866760001081,
+   "decisions_per_s": 217.25354611753218
+  },
+  {
+   "config": "small",
+   "T": 96,
+   "threads": 8,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 269.0827659989736,
+   "decisions_per_s": 237.84503538306913
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 2,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 223.29329700005474,
+   "decisions_per_s": 89.5682954602757
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 2,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 170.76638199978333,
+   "decisions_per_s": 117.11907089549614
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 2,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 794.6844110001621,
+   "decisions_per_s": 80.53511446065971
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 2,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 662.8943119994801,
+   "decisions_per_s": 96.54631038688139
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 4,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 132.27688600090914,
+   "decisions_per_s": 151.19799539174622
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 4,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 109.2968210014078,
+   "decisions_per_s": 182.98793886916792
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 4,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 507.36746349866735,
+   "decisions_per_s": 126.14131690407085
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 4,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 416.9749140000931,
+   "decisions_per_s": 153.4864517053074
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 8,
+   "B": 20,
+   "kind": "fp32",
+   "ms": 106.78376699979708,
+   "decisions_per_s": 187.2943852977017
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 8,
+   "B": 20,
+   "kind": "int8_dynamic",
+   "ms": 90.30382899982214,
+   "decisions_per_s": 221.47455120689722
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 8,
+   "B": 64,
+   "kind": "fp32",
+   "ms": 371.4910090002377,
+   "decisions_per_s": 172.27873205394064
+  },
+  {
+   "config": "small",
+   "T": 128,
+   "threads": 8,
+   "B": 64,
+   "kind": "int8_dynamic",
+   "ms": 329.3590890007181,
+   "decisions_per_s": 194.31678717043226
+  }
+ ],
+ "cpu": "Intel(R) Core(TM) i9-10885H CPU @ 2.40GHz",
+ "logical_cpus": 16,
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-09 22:32"
+}

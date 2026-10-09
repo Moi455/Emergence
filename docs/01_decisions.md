@@ -37,6 +37,7 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | D29 | 2026-10-09 | Faune et phénomènes magiques : catalogués, pilotés par des lois simples du moteur, pas par un Transformer | Monsieur |
 | D30 | 2026-10-09 | Calendrier : 1 jour = 1 h 30 réelle (jour 1 h, nuit 30 min) ; 1 an = 7 h réelles (≈ 4 jours ⅔, saison 1 h 45 ; Monsieur a d'abord dit 20 h puis corrigé : « sinon cela va être dur »). Avec une vie d'environ 150 h (charte § 25), une vie ≈ 21 années de calendrier ; le vieillissement suit une horloge de vie séparée (enfance ≈ 15 h, adolescence ≈ 6 h, adulte ≈ 105 h, vieillesse ≈ 24 h). Remplace P25 | Monsieur |
 | D31 | 2026-10-09 | Le moteur social est écrit en C++20 dans `engine/`, à côté du monde ; ses énumérations, structures et bornes du gouverneur sont générées depuis `catalogue/` (une seule source de vérité). Python reste pour les outils, les références (`sim/`, `ai/npc_pipeline`) et l'entraînement (PyTorch) | Monsieur |
+| D32 | 2026-10-09 | **200 décisions par seconde au total** pour les 500 PNJ (≈ 0,4 par PNJ et par seconde en moyenne), avec un seul modèle partagé qui traite les PNJ par lots ; la réactivité vient des réveils sur événement (un couteau qui entre réveille ceux qui le voient). Précise D18 (« plusieurs fois par seconde ») | Monsieur |
 
 ## Proposé (à valider par Monsieur)
 
@@ -91,4 +92,8 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | O12 | ~~Traits figés ou non~~ tranché par D27 : ils évoluent progressivement | — |
 | O13 | Enseignant bon marché : quel modèle, quel budget | Gemini Flash-Lite, rien lancé sans accord |
 | O15 | ~~Durée du jour et calendrier~~ tranché par D30 | — |
+| O16 | D18 dit « seule une émotion peut sauter d'un coup ». Quatre variables qui ne sont pas des émotions sautent aujourd'hui : la crainte d'une personne (r_fear), la certitude d'une croyance devant une preuve (b_certainty), la fermeté d'une intention et la volonté de masquer. Les garder ainsi ? | gardées en saut (ce ne sont pas des traits ni des relations lentes) ; à confirmer |
+| O17 | La marge de calcul (200 décisions/s = 4 % du GPU en `small`) : la dépenser en profondeur du modèle (`base` 16 M, `large` 34 M) plutôt qu'en fréquence ? (docs/07) | commencer en `small`, monter quand les données suffisent |
+| O18 | Un second modèle partagé, plus profond, réservé à la réflexion lente (rare) : compatible avec « un seul modèle » ? (docs/07) | non en attendant : un seul modèle, une passe de réflexion avec le même |
+| O19 | Version Steam : NVIDIA seule (CUDA) en version 1, ou Vulkan dès le départ ? (docs/07 § 6) | CUDA d'abord (mesures faites ainsi) |
 | O14 | Textures bitmap sur les voxels. Monsieur les a demandées (D20) ; l'essai du prototype village (9 oct., `prototypes/village-web/RENDU.md`) s'en passe : grain procédural, biseau des arêtes, éclairage PRT et grille de ciel, sur le modèle de Teardown (affirmation du fil, non vérifiée ici) | textures maintenues tant que Monsieur n'a pas tranché ; comparer les deux sur captures |

@@ -1,0 +1,55 @@
+{
+ "policy_alone": {
+  "ticks": 50,
+  "p50_ms": 5.818995000481664,
+  "p95_ms": 5.859550999957719,
+  "max_ms": 5.867440000656643
+ },
+ "render_12ms": {
+  "render_alone": {
+   "busy_target_ms": 12,
+   "matmuls_per_frame": 16,
+   "burst_p50_ms": 12.64967950010032,
+   "burst_p95_ms": 12.68796200020006,
+   "frames": 150
+  },
+  "render_with_npcs": {
+   "busy_target_ms": 12,
+   "matmuls_per_frame": 15,
+   "burst_p50_ms": 10.95924049968744,
+   "burst_p95_ms": 17.87852599954931,
+   "frames": 240
+  },
+  "policy": {
+   "ticks": 75,
+   "p50_ms": 13.834256000336609,
+   "p95_ms": 15.241303999573574,
+   "max_ms": 15.393313999084057
+  }
+ },
+ "render_24ms": {
+  "render_alone": {
+   "busy_target_ms": 24,
+   "matmuls_per_frame": 31,
+   "burst_p50_ms": 17.145287500170525,
+   "burst_p95_ms": 18.552101999375736,
+   "frames": 150
+  },
+  "render_with_npcs": {
+   "busy_target_ms": 24,
+   "matmuls_per_frame": 31,
+   "burst_p50_ms": 18.990347500221105,
+   "burst_p95_ms": 23.9796669993666,
+   "frames": 240
+  },
+  "policy": {
+   "ticks": 75,
+   "p50_ms": 9.99947099990095,
+   "p95_ms": 13.174790999983088,
+   "max_ms": 13.322673999937251
+  }
+ },
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-09 22:29"
+}

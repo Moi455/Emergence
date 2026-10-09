@@ -1,0 +1,109 @@
+{
+ "float16": {
+  "run_to_run_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "neighbours_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "position_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "batch_size_B1_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 0.001220703125,
+   "discrete_equal": true
+  },
+  "batch_size_B16_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 0.0009765625,
+   "discrete_equal": true
+  },
+  "batch_size_B64_vs_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "batch_size_B200_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 0.0009765625,
+   "discrete_equal": true
+  },
+  "batch_size_B500_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 0.0009765625,
+   "discrete_equal": true
+  },
+  "graph_vs_eager_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "population_B500_vs_25xB20": {
+   "rows_bitwise_equal": 0.18400001525878906,
+   "rows_same_gesture": 1.0,
+   "max_abs_diff": 0.0009765625
+  }
+ },
+ "float32": {
+  "run_to_run_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "neighbours_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "position_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "batch_size_B1_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 8.195638656616211e-07,
+   "discrete_equal": true
+  },
+  "batch_size_B16_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 7.748603820800781e-07,
+   "discrete_equal": true
+  },
+  "batch_size_B64_vs_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "batch_size_B200_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 5.811452865600586e-07,
+   "discrete_equal": true
+  },
+  "batch_size_B500_vs_B64": {
+   "bitwise": false,
+   "max_abs_diff": 5.811452865600586e-07,
+   "discrete_equal": true
+  },
+  "graph_vs_eager_B64": {
+   "bitwise": true,
+   "max_abs_diff": 0.0,
+   "discrete_equal": true
+  },
+  "population_B500_vs_25xB20": {
+   "rows_bitwise_equal": 0.0,
+   "rows_same_gesture": 1.0,
+   "max_abs_diff": 7.152557373046875e-07
+  }
+ },
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-09 22:27"
+}
