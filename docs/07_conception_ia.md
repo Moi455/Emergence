@@ -44,7 +44,7 @@ Une relecture adverse a confronté ce document à ses scripts, à ses résultats
 1. **Un seul jeu de poids pour les 500 PNJ** : un Transformer d'ensembles de 6 à 16 M de paramètres, 128 jetons, pointeurs en biais d'attention, appelé par lots fixes de 20 à 64, en FP16.
 2. 200 décisions/s ne coûtent presque rien : **4 % du GPU** en `small` (5,5 M), **7,5 %** en `base` (16 M), **13 %** en `large` (34 M) en débit pur [Mesuré] ; sous rendu, compter **≈ 6 % et 10 à 14 ms par pas** en `small` (§ 0).
 3. Les vrais goulots sont ailleurs : le coût de lancement (sans graphe CUDA, au moins 4 à 6 ms par appel), le partage avec le rendu (+5 ms au p95 sur l'image qui croise une décision) et surtout **les données**.
-4. Autour du modèle, plusieurs boucles : un **ordonnanceur à événements** (qui pense quand, jamais quoi), un **sélecteur de contexte** appris, la **politique rapide**, un **décodeur de parole par cadres**, une **boucle lente de réflexion** et le **gouverneur**.
+4. Autour du modèle, plusieurs boucles : un **ordonnanceur à événements** (qui pense quand, jamais quoi), un **sélecteur de contexte** appris, la **politique rapide**, un **décodeur de parole à automate de grammaire**, une **boucle lente de réflexion** et le **gouverneur**.
 5. Pas de GNN sur le vrai graphe social, qui ferait lire la vérité. Le Transformer à biais de pointeurs est déjà un GNN sur le graphe que le PNJ *croit*.
 6. La marge de calcul va à la **profondeur du modèle**, pas à la fréquence : on commence en `small` et on passe en `base` quand les données suffisent.
 
