@@ -12,7 +12,7 @@ id = "slap_after_insult"
 status = "expressible"
 actions = ["strike", "go"]
 variables = ["pain", "expression", "involuntary_signs", "anger", "shame"]
-note = "strike(tête, main ouverte, light, once) puis go : une gifle"
+note = "strike(head, open_hand, swing, light, c_done) puis go : une gifle"
 charter = ["§6", "§8"]
 text_fr = "Après une remarque humiliante, une femme gifle un homme devant la taverne, puis s'en va."
 
@@ -21,16 +21,16 @@ id = "punch_in_brawl"
 status = "expressible"
 actions = ["strike", "grab", "push"]
 variables = ["pain", "wounds", "condition", "intoxication", "anger"]
-note = "strike(tête, poing, firm, once) ; l'aubergiste : grab + push pour séparer"
+note = "strike(head, fist, swing, firm, c_done) ; l'aubergiste : grab + push pour séparer"
 charter = ["§8", "§27"]
 text_fr = "Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l'autre tombe, la bagarre s'arrête quand l'aubergiste les sépare."
 
 [[story]]
 id = "beating_near_death"
 status = "expressible"
-actions = ["strike", "keep_away"]
+actions = ["strike", "go"]
 variables = ["wounds", "consciousness", "bleeding", "condition", "r_resentment"]
-note = "strike(any, poing, hard, until_still) puis keep_away ; le rival survit, inconscient"
+note = "strike(any, fist, swing, hard, c_target_still) puis go (away) ; le rival survit, inconscient"
 charter = ["§6", "§25"]
 text_fr = "Un homme rancunier roue de coups son rival jusqu'à ce qu'il ne bouge plus, puis s'arrête et fuit ; le rival survit, blessé pour des semaines."
 
@@ -39,7 +39,7 @@ id = "killed_by_blows"
 status = "expressible"
 actions = ["strike"]
 variables = ["wounds", "consciousness", "blood_volume", "alive", "condition"]
-note = "strike(tête, pied, full, until_still) prolongé après la perte de conscience : la mort vient du corps, personne n'a choisi « tuer »"
+note = "strike(head, foot, swing, full, c_target_still) prolongé après la perte de conscience : la mort vient du corps, personne n'a choisi « tuer »"
 charter = ["§25"]
 text_fr = "Une rixe dégénère : les coups continuent après la perte de connaissance et la victime meurt. Personne n'avait décidé de « tuer »."
 
@@ -76,21 +76,33 @@ text_fr = "Un loup attaque un berger à la lisière ; son frère accourt avec un
 # ─── Parole : aucun verbe social dédié, tout est contenu composé ─────────────────────────────────
 [[story]]
 id = "blackmail_affair"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(offer (if (not (did you give silver_coin:3 (to me))) (did me speak (to @E2) (says (that b:7)))))"]
 charter = ["§5", "§10"]
 text_fr = "Un homme a vu la femme du forgeron embrasser un autre ; il lui dit qu'il se taira si elle lui donne de l'argent chaque mois."
 
 [[story]]
 id = "promise_and_break"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(offer (future (did me work @T1 (with plank))))"]
 charter = ["§9", "§12"]
 text_fr = "Un charpentier promet d'aider son voisin à refaire son toit au printemps, puis ne vient pas ; le voisin s'en souvient longtemps."
 
 [[story]]
 id = "lie_about_whereabouts"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(assert (past (did me sleep (into @L1))))"]
 charter = ["§5"]
 text_fr = "Interrogé sur sa nuit, un homme affirme qu'il dormait chez lui alors qu'il était à la mine ; celui qui l'interroge le croit."
 
 [[story]]
 id = "false_rumor_spreads"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(assert (heard_said (habitual (did @E4 pour (into flour_sack) (with sand_sack)))))"]
 charter = ["§5", "§10"]
 text_fr = "Une rumeur fausse (le meunier coupe sa farine avec du sable) passe de bouche en bouche et ses ventes chutent, alors que personne ne l'a vu faire."
 
@@ -101,6 +113,9 @@ text_fr = "Une servante raconte à son amie, sous le sceau du secret, que la fil
 
 [[story]]
 id = "invite_walk_refused"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(hello (request (did you go @L2 (with me))))"]
 charter = ["§15"]
 text_fr = "« Salut Georgette, ça te dirait de venir te promener en forêt ? » Georgette, méfiante envers lui depuis un mensonge, refuse poliment."
 
@@ -111,46 +126,73 @@ text_fr = "Georgette, occupée à pétrir, répond qu'elle viendra après avoir 
 
 [[story]]
 id = "threat_conditional"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(assert (if (not (did you give silver_coin:20 (to me))) (did me work @T2 (with torch))))"]
 charter = ["§10"]
 text_fr = "Un créancier dit à un débiteur que s'il ne rembourse pas avant la fête, il brûlera sa grange."
 
 [[story]]
 id = "bribe_guard"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(offer (if (not (did you look @L3)) (did me give silver_coin:3 (to you))))"]
 charter = ["§10", "§24"]
 text_fr = "Un contrebandier propose à un garde trois pièces pour qu'il regarde ailleurs pendant la nuit."
 
 [[story]]
 id = "apology_accepted"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(sorry (assert (caused me m:4)))"]
 charter = ["§12"]
 text_fr = "Après une dispute, un frère va voir sa sœur, reconnaît qu'il a eu tort et lui demande pardon ; elle hésite puis l'embrasse."
 
 [[story]]
 id = "negotiation_price"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(offer (if (did you give @T5 (to me)) (did me give silver_coin:11 (to you))))"]
 charter = ["§13"]
 text_fr = "Une marchande et un fermier marchandent le prix d'un cochon : elle offre 8, il demande 14, ils s'accordent à 11 avec un sac de sel en plus."
 
 [[story]]
 id = "seduction_courtship"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(assert (state you w_beautiful very_high))"]
 charter = ["§6", "§12"]
 text_fr = "Deux adultes se plaisent : compliments, rires partagés, une promenade, puis un premier baiser au bord de la rivière."
 
 [[story]]
 id = "insult_without_word_insult"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(assert (not (state @T2 nutrition high)))"]
 charter = ["§6"]
 text_fr = "Un homme dit à voix haute devant tous que le pain du boulanger ne nourrirait pas un rat ; le boulanger rougit de colère."
 
 [[story]]
 id = "ask_for_directions_wrong"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(ask (route here where))"]
 charter = ["§5"]
 text_fr = "Un voyageur demande le chemin du village de la mer ; un PNJ qui se trompe sur la route l'envoie dans la mauvaise vallée."
 
 [[story]]
 id = "warn_danger"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(watch_out (assert (state @T4 integrity very_low)))"]
 charter = ["§12"]
 text_fr = "Une femme crie aux enfants de s'écarter du mur qui se fissure ; ils courent, le mur s'effondre."
 
 [[story]]
 id = "call_for_help"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(help (assert (at me @PLACE)))"]
 charter = ["§12", "§21"]
 text_fr = "Blessé dans la mine, un homme appelle à l'aide ; ceux qui l'entendent hésitent, l'un descend."
 

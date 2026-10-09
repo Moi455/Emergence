@@ -8,7 +8,8 @@
 # rappelle ou qu'on lui décrit ; un lieu est un lieu tel qu'il le connaît. D'où : se tromper de
 # personne dans le noir, accuser d'un fait inventé, ignorer qui est Aldric, se perdre.
 # Un ÉVÉNEMENT se décrit par un cadre : did(agent, geste, cible) puis des rôles qui s'y attachent
-# (with, to, into, how, says), chacun un jeton de ≤ 3 pointeurs.
+# (with, to, into, how, says) : ≤ 2 rôles en ligne dans le même jeton, says ou une proposition imbriquée
+# coûte un jeton de plus (règle unique : catalogue/README.md).
 # La même forme sert partout :
 #   croyance = proposition tenue pour vraie (étape 6) ; objectif = proposition désirée (étape 9) ;
 #   norme = proposition déontique (« il est interdit que… ») ; accord = proposition qu'on s'engage
@@ -82,29 +83,29 @@ concept = [
   { id = "maintain", category = "goal_mode", label_fr = "garder vrai" },
   { id = "avoid", category = "goal_mode", label_fr = "empêcher" },
   # ─── Liens ───
-  { id = "parent", category = "link", label_fr = "parent" },
-  { id = "child", category = "link", label_fr = "enfant" },
-  { id = "sibling", category = "link", label_fr = "frère, sœur" },
-  { id = "grandparent", category = "link", label_fr = "grand-parent" },
-  { id = "grandchild", category = "link", label_fr = "petit-enfant" },
-  { id = "aunt_uncle", category = "link", label_fr = "oncle, tante" },
-  { id = "niece_nephew", category = "link", label_fr = "neveu, nièce" },
-  { id = "cousin", category = "link", label_fr = "cousin" },
-  { id = "in_law", category = "link", label_fr = "belle-famille" },
+  { id = "parent", category = "link", label_fr = "parent", intimate = false },
+  { id = "child", category = "link", label_fr = "enfant", intimate = false },
+  { id = "sibling", category = "link", label_fr = "frère, sœur", intimate = false },
+  { id = "grandparent", category = "link", label_fr = "grand-parent", intimate = false },
+  { id = "grandchild", category = "link", label_fr = "petit-enfant", intimate = false },
+  { id = "aunt_uncle", category = "link", label_fr = "oncle, tante", intimate = false },
+  { id = "niece_nephew", category = "link", label_fr = "neveu, nièce", intimate = false },
+  { id = "cousin", category = "link", label_fr = "cousin", intimate = false },
+  { id = "in_law", category = "link", label_fr = "belle-famille", intimate = false },
   { id = "spouse", category = "link", intimate = true, label_fr = "conjoint" },
   { id = "betrothed", category = "link", intimate = true, label_fr = "fiancé" },
   { id = "lover", category = "link", intimate = true, label_fr = "amant, amante" },
   { id = "former_spouse", category = "link", intimate = true, label_fr = "ancien conjoint" },
-  { id = "friend", category = "link", label_fr = "ami" },
-  { id = "enemy", category = "link", label_fr = "ennemi" },
-  { id = "neighbor", category = "link", label_fr = "voisin" },
-  { id = "colleague", category = "link", label_fr = "compagnon de travail" },
-  { id = "employer", category = "link", label_fr = "employeur" },
-  { id = "employee", category = "link", label_fr = "employé" },
-  { id = "master", category = "link", label_fr = "maître (d'apprentissage)" },
-  { id = "apprentice", category = "link", label_fr = "apprenti" },
-  { id = "guest", category = "link", label_fr = "hôte (reçu chez soi)" },
-  { id = "stranger", category = "link", label_fr = "étranger, inconnu" },
+  { id = "friend", category = "link", label_fr = "ami", intimate = false },
+  { id = "enemy", category = "link", label_fr = "ennemi", intimate = false },
+  { id = "neighbor", category = "link", label_fr = "voisin", intimate = false },
+  { id = "colleague", category = "link", label_fr = "compagnon de travail", intimate = false },
+  { id = "employer", category = "link", label_fr = "employeur", intimate = false },
+  { id = "employee", category = "link", label_fr = "employé", intimate = false },
+  { id = "master", category = "link", label_fr = "maître (d'apprentissage)", intimate = false },
+  { id = "apprentice", category = "link", label_fr = "apprenti", intimate = false },
+  { id = "guest", category = "link", label_fr = "hôte (reçu chez soi)", intimate = false },
+  { id = "stranger", category = "link", label_fr = "étranger, inconnu", intimate = false },
   # ─── Relations dans l'espace ───
   { id = "in", category = "spatial", label_fr = "dans" },
   { id = "on", category = "spatial", label_fr = "sur" },

@@ -85,6 +85,30 @@ class TestCatalogue(unittest.TestCase):
         self.assertFalse(touch.intimate)
         manner = [p for p in touch.params if p.name == "manner"][0]
         self.assertEqual(sorted(manner.intimate_values), ["intimate", "romantic"])
+        self.assertFalse(set(touch.minor_whitelist["manner"]) & set(manner.intimate_values))
+
+    def test_every_contact_gesture_has_a_minor_whitelist(self):
+        for a in self.cat["action"].values():
+            if any(p.type == "ref" and "agent" in p.accepts for p in a.params) and a.family in ("care", "force", "tool"):
+                if a.id != "guard":
+                    self.assertTrue(a.contact and a.minor_whitelist, a.id)
+
+    def test_speech_probes_need_no_social_verb(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+        import language
+        vocab = language.Vocabulary(self.cat)
+        probes = [s for s in self.cat["story"].values() if s.utterances]
+        self.assertGreaterEqual(len(probes), 11)
+        for st in probes:
+            for u in st.utterances:
+                e = language.Expression(u, vocab)
+                self.assertTrue(e.ok, (st.id, e.problems))
+
+    def test_intimate_manner_is_caught_in_language(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+        import language
+        e = language.Expression("(request (did you touch me (how romantic)))", language.Vocabulary(self.cat))
+        self.assertIn("romantic", e.intimate_symbols())
 
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()

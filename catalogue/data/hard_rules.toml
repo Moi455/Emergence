@@ -1,10 +1,11 @@
 # hard_rules.toml - règles dures : jamais apprises, appliquées par le moteur et le gouverneur quoi
-# que dise le modèle. Elles se vérifient sur la VÉRITÉ (âge réel), pas sur les croyances.
+# que dise le modèle. D10 se vérifie sur l'âge réel, l'âge cru par l'acteur ET l'âge apparent : il suffit
+# que l'un des trois soit mineur, ou que la cible ne soit connue que de nom, pour refuser.
 
 [[hard_rule]]
 id = "D10_minors"
 label_fr = "Aucun acte romantique ou sexuel impliquant un enfant ou un adolescent"
-text_fr = "Refusé dès que l'âge RÉEL, l'âge CRU par l'acteur ou l'âge APPARENT d'un des deux (acteur ou cible) est inférieur à l'âge adulte, ou que le dossier mental de la cible n'est pas résolu (une personne connue seulement de nom ou décrite) : tout geste marqué intimate, toute expression contenant un concept ou une variable marqué intimate (r_attraction, need_intimacy, attracted_to ; liens spouse, betrothed, lover, former_spouse), tout objectif ou croyance écrit par le modèle qui en contient, tout accord dont les obligations en contiennent, toute montée de r_attraction ou de need_intimacy. need_intimacy vaut 0 avant l'âge adulte. Vérifié par check.py (_check_hard_rules) et par le gouverneur."
+text_fr = "Refusé dès que l'âge RÉEL (life_stage), l'âge CRU par l'acteur (croyance state(cible, age_years, …) ; une croyance absente compte comme mineur) ou l'âge APPARENT (look_age_seen) d'un des deux, acteur ou cible, est inférieur à l'âge adulte, ou que le dossier mental de la cible n'est pas résolu (r_known_by = name_only ou described) : tout geste dont une valeur sort de minor_whitelist, tout geste marqué intimate, toute expression contenant un concept ou une variable marqué intimate (r_attraction, need_intimacy, attracted_to ; liens spouse, betrothed, lover, former_spouse), tout objectif ou croyance écrit par le modèle qui en contient, tout accord dont les obligations en contiennent, toute montée de r_attraction ou de need_intimacy. need_intimacy vaut 0 avant l'âge adulte. Vérifié par check.py (_check_hard_rules) et par le gouverneur."
 applies_to = ["action", "concept", "variable", "agreement"]
 note = "Les tests de refus déjà prévus restent les seuls contenus de test ; rien n'est généré ni étiqueté de tel."
 

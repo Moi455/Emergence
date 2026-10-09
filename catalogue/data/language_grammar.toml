@@ -11,6 +11,7 @@
 #
 # Pointeurs vers le contexte du parleur (ce que le modèle a sous les yeux, ses propres dossiers) :
 #   @E3 = la personne du jeton ENTITY 3 ; @T5 = la chose du jeton THING 5 ; @G1 = le groupe 1 ;
+#   @L2 = un lieu qu'il connaît (son dossier de lieu : « la forêt », « ma maison ») ;
 #   b:7 = sa croyance 7 ; m:2 = son souvenir 2 ; g:1 = son objectif 1 ; @PLACE = le lieu où l'on est.
 # Le moteur DÉPLIE la parole pour chaque auditeur : il remplace b:7 par la proposition, et chaque
 # pointeur par le dossier mental de l'AUDITEUR correspondant (s'il connaît la personne), sinon par
@@ -26,7 +27,7 @@ grammar = [
   { id = "proposition", rule = "PROP := [not] [TIME] [EVID] PRED ARG* ROLE* | LOGIC PROP PROP | that PTR", label_fr = "une proposition" },
   { id = "logic", rule = "LOGIC := and | or | if | because", label_fr = "relier deux propositions (si…, parce que…)" },
   { id = "argument", rule = "ARG := REF | KIND[:QTY] | QTY | DEGREE | WORD | PROP | WH", label_fr = "un argument" },
-  { id = "reference", rule = "REF := me | you | this | here | @E<n> | @T<n> | @G<n> | @PLACE | n:<nom> | someone | anyone | everyone | no_one | (described KIND DEGREE? WORD?)", label_fr = "désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description" },
+  { id = "reference", rule = "REF := me | you | this | here | @E<n> | @T<n> | @G<n> | @L<n> | @PLACE | n:<nom> | someone | anyone | everyone | no_one | (described KIND DEGREE? WORD?)", label_fr = "désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description" },
   { id = "role", rule = "ROLE := (with REF) | (to REF) | (into REF) | (how WORD) | (says PROP)", label_fr = "les rôles d'un événement (étape 6, cadre did)" },
   { id = "question", rule = "WH := who | what | where | when | why | how_much | which", label_fr = "le trou d'une question (ask)" },
   { id = "limits", rule = "≤ 20 symboles ; imbrication d'arguments-propositions ≤ 2 ; un seul mode par parole", label_fr = "budget de l'IA" },
@@ -98,6 +99,11 @@ concept = [
   { id = "watch_out", category = "formula", label_fr = "attention !" },
   { id = "ouch", category = "formula", label_fr = "aïe" },
   { id = "laugh", category = "formula", label_fr = "(rire)" },
+  # ─── Classes de sosies (ce que voit un œil non exercé) ───
+  { id = "white_mushroom", category = "lookalike", label_fr = "champignon blanc (comestible ou mortel)" },
+  { id = "dark_berries", category = "lookalike", label_fr = "baies sombres (mûres, baies sauvages, belladone)" },
+  { id = "small_vial", category = "lookalike", label_fr = "petite fiole (potion, somnifère, poison)" },
+  { id = "silver_coin_look", category = "lookalike", label_fr = "pièce d'argent (bonne ou coupée de plomb)" },
   # ─── Mots qualitatifs courants (pour juger, louer, rabaisser : des états) ───
   { id = "w_good", category = "quality", label_fr = "bon, bien" },
   { id = "w_bad", category = "quality", label_fr = "mauvais, mal" },

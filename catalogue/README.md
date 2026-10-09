@@ -21,11 +21,11 @@ La richesse vit dans le moteur et les données ; le Transformer (≈ 5 M de para
 | Quoi | Budget | Comment |
 |---|---|---|
 | Entrée d'une décision | ≤ 128 jetons (cible ≈ 96) | le moteur choisit les choses, personnes, souvenirs et croyances les plus saillants |
-| Un objet | vecteur fixe d'usages et de propriétés (≤ 48) + type connu (≤ 512) + matière dominante (≤ 128) | un assemblage jamais vu est compris par ses propriétés : il généralise |
+| Un objet | vecteur fixe d'usages et d'états perceptibles + 6 grandeurs (≤ 48) + sorte apparente (table des sortes, ≤ 1 024) | un assemblage jamais vu est compris par ses propriétés : il généralise |
 | Le corps | un résumé (douleur, saignement, conscience, mobilité, pire blessure) | les 16 zones et le volume de sang restent au moteur |
 | Les autres | seulement ce qui se voit (apparence) | jamais leurs variables internes (charte § 5) |
 | Un geste en sortie | ≤ 64 gestes × cible par pointeur × manière en ≤ 5 niveaux par paramètre | têtes de sortie séparées, masques de faisabilité du moteur |
-| Une parole | ≤ 512 mots de grammaire (prédicats, liens, modes, émotions, techniques…) + une table de **sortes** à part (types d'objets, matières, espèces, formes : ≤ 1 024, factorisée par catégorie), ≤ 16 symboles | décodage contraint par la grammaire |
+| Une parole | ≤ 512 mots de grammaire (prédicats, liens, modes, émotions, techniques…) + une table de **sortes** à part (types d'objets, matières, espèces, formes : ≤ 1 024 en tout, factorisée par catégorie), ≤ 16 symboles | décodage contraint par la grammaire |
 | Une proposition imbriquée | un jeton de plus par niveau, ≤ 2 niveaux | comptée dans les 12 jetons BELIEF |
 | Les absents | un absent saillant (un proche, quelqu'un attendu) garde son jeton ENTITY avec present = faux | on remarque l'absence (charte § 20) |
 | Ce qu'une décision écrit | geste choisi + **≤ 4 écritures** (pointeur, variable, valeur) | chacune bornée par le pas par décision et le taux par jour ; le reste suit les lois de retour du moteur (revue du 9 oct.) |
@@ -33,9 +33,26 @@ La richesse vit dans le moteur et les données ; le Transformer (≈ 5 M de para
 
 **Unités de temps** (D30) : minute de jeu = 3,75 s réelles ; heure de jeu = 3 min 45 s ; jour = 1 h 30 (1 h de jour, 30 min de nuit) ; saison = 1 h 45 ; an = 7 h ; année de vie ≈ 2 h 30 à l'âge adulte (horloge de vie). Chaque dynamique déclare son horloge (`clock` : `real`, `day` = calendrier, `life` = horloge de vie).
 
-**Écritures** : créer un enregistrement (une croyance, un objectif, un souvenir) compte pour UNE écriture, quel que soit son nombre de champs. **Cadres d'événement** : un jeton BELIEF ou MEMORY porte le prédicat et jusqu'à 2 rôles (with, to, how) ; une parole rapportée (says) coûte un jeton de plus, compté dans le budget.
+**Durées des processus** (D30, D32 ; un PNJ décide en moyenne toutes les 2,5 s réelles = 40 s de jeu) :
 
-**Pas de temps.** `step` = au plus par décision ; `rate` = au plus par **jour de jeu** (1 h 30 réelle, D30) ; `slow_rate` = au plus par **année de vie** (≈ 2 h 30 réelles à l'âge adulte : l'horloge de vie est séparée du calendrier, dont l'année dure 7 h). Une décision tombe plusieurs fois par seconde : sans `rate`, un pas par décision deviendrait un saut.
+| Processus | Horloge | Durée | En temps réel |
+|---|---|---|---|
+| surprise, sursaut | réel | ≈ 10 s | quelques décisions |
+| peur sans menace, souffle, épuisement | réel | dizaines de secondes à minutes | |
+| colère, douleur aiguë | réel | minutes | |
+| faim (repas), soif | calendrier | ≈ 3 repas par jour | ≈ toutes les 30 min |
+| sommeil | calendrier | ≈ 8 h de jeu | ≈ 30 min (la nuit) |
+| ivresse | calendrier | quelques heures de jeu | ≈ 10 à 20 min |
+| plaie, maladie | calendrier | de quelques heures à quelques jours | ≈ 10 min à quelques heures |
+| deuil, humeur, attitudes, normes | calendrier | jours | heures |
+| culture (semis → récolte) | calendrier | ≈ 1 saison | ≈ 1 h 45 |
+| fermentation, tannage | calendrier | ≈ 1 à 2 jours | ≈ 1 h 30 à 3 h |
+| grossesse, croissance, vieillissement | vie | grossesse ≈ 0,75 an de vie ; enfance 15 h ; vie 150 h | grossesse ≈ 1 h 50 |
+| traits, valeurs | vie | ≤ 1 (traits) par année de vie | ≈ 2 h 30 par année de vie |
+
+**Écritures** : créer un enregistrement (une croyance, un objectif, un souvenir) compte pour UNE écriture, quel que soit son nombre de champs. **Cadres d'événement** (règle unique) : un jeton BELIEF, MEMORY ou EVENT porte le prédicat, ≤ 3 pointeurs (les mots et quantités ne sont pas des pointeurs : attitude(agent, variable, entité, degré) a 2 pointeurs) et ≤ 2 rôles en ligne (with, to, into, how) ; une parole rapportée (says) ou une proposition imbriquée coûte un jeton de plus, pris dans les 12 jetons BELIEF ou les 9 MEMORY.
+
+**Pas de temps.** `step` = au plus par décision ; `rate` = au plus par **jour de jeu** (1 h 30 réelle, D30) ; `slow_rate` = au plus par **année de vie** (≈ 2 h 30 réelles à l'âge adulte : l'horloge de vie est séparée du calendrier, dont l'année dure 7 h). Les 500 PNJ se partagent 200 décisions par seconde (D32), plus vite pour ceux qu'un événement réveille : sans `rate`, des pas répétés deviendraient un saut.
 
 **Rien de vrai dans ce que l'IA lit** (règle dure `no_truth_in_tokens`) : les jetons pointent vers les dossiers mentaux du PNJ, les événements qu'il se rappelle ou qu'on lui décrit, les lieux tels qu'il les connaît ; jamais vers un identifiant objectif, l'état réel d'un accord ou la vérité d'une croyance.
 

@@ -12,8 +12,8 @@
 #   Vérification (charte § 3) : un enfant de 7 ans retrouvé 5 ans plus tard (35 h) a ≈ 26 ans.
 #   L'âge qu'on dit (« il a 30 ans ») est l'âge de vie ; l'année du calendrier sert aux saisons, aux
 #   fêtes, aux récoltes, à la chronique.
-# Budget de l'IA : le PNJ ne voit le monde que par sa perception (étape 12 : jetons PLACE, THING,
-# DANGER) ; ici, le champ token dit ce que la perception en tire.
+# Budget de l'IA : le PNJ ne voit le monde que par sa perception (perception.toml : jetons PLACE, THING,
+# EVENT) ; il n'y a pas de jeton « danger » : le danger se juge.
 
 variable = [
   # ─── Horloge et calendrier ───
@@ -37,7 +37,7 @@ variable = [
   { id = "light_level", label_fr = "lumière (soleil, lune, nuages, feux, lampes, fenêtres)", holder = "area", scale = "unipolar10", writer = ["derived"], visibility = "observable", dynamics = "calculée en temps réel (D23) ; règle ce qu'on voit et à quelle distance, et la certitude de ce qu'on perçoit", token = "PLACE.light", clock = "day" },
   { id = "ambient_noise", label_fr = "bruit ambiant (couvre les paroles, les pas)", holder = "area", scale = "unipolar10", writer = ["derived"], visibility = "observable", dynamics = "foule, forge, pluie, rivière ; un murmure ne s'entend pas dans le bruit", token = "PLACE.noise", clock = "day" },
   { id = "crowding", label_fr = "nombre de gens présents", holder = "area", scale = "qty", writer = ["derived"], visibility = "observable", token = "PLACE.crowd" },
-  { id = "frontier_depth", label_fr = "profondeur dans les marches, mesurée depuis leur bord intérieur (les marches sont la bande au bord de la carte, P9)", holder = "area", scale = "qty", unit = "m", writer = ["derived"], visibility = "engine", dynamics = "pilote des variables PHYSIQUES qui empirent avec la profondeur (froid, prédateurs, tempêtes, relief, rareté de l'eau et du gibier), environ ×2 tous les 300 m (500 m en montagne) ; on meurt de ces causes, jamais d'une formule ; aucune limite visible (D26)", note = "Le PNJ ne lit pas ce nombre : il voit le froid, les loups, le terrain, et ce qu'il croit des marches.", clock = "day" },
+  { id = "frontier_depth", label_fr = "profondeur dans les marches, mesurée depuis leur bord intérieur (les marches sont la bande au bord de la carte, P9)", holder = "area", scale = "qty", unit = "m", writer = ["derived"], visibility = "engine", dynamics = "pilote des variables PHYSIQUES qui empirent avec la profondeur (froid, prédateurs, tempêtes, relief, rareté de l'eau et du gibier), environ ×2 tous les 300 m (500 m en montagne) ; on meurt de ces causes, jamais d'une formule ; aucune limite visible (D26)", note = "Le PNJ ne lit pas ce nombre : il voit le froid, les loups, le terrain, et ce qu'il croit des marches.", clock = "none" },
   # ─── Eau (hors des voxels, D24) ───
   { id = "water_volume", label_fr = "volume d'eau", holder = "substance", scale = "qty", unit = "m³", writer = ["engine"], visibility = "observable", dynamics = "puiser le baisse vraiment ; la pluie et la nappe le remontent ; un puits peut tarir", clock = "day" },
   { id = "water_level", label_fr = "niveau, profondeur", holder = "flow", scale = "qty", unit = "m", writer = ["engine"], visibility = "observable", dynamics = "crue au-delà des berges : inondation", clock = "day" },

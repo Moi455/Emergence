@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from schema import Catalogue  # noqa: E402
 
-BUDGET = {"SELF": 64, "SELF_MIND": 64, "SELF_STATE": 64, "ENTITY": 40, "BELIEF": 16, "MEMORY": 16, "GOAL": 16,
+BUDGET = {"SELF": 64, "SELF_MIND": 64, "SELF_STATE": 64, "ENTITY": 32, "BELIEF": 16, "MEMORY": 16, "GOAL": 16,
           "GROUP": 16, "COMMIT": 16, "REQUEST": 8, "PLAN": 8, "THING": 16, "PLACE": 16, "SKILL": 8, "EVENT": 16}   # fields per token type (proposal, checked at step 16)
 # how many tokens of each type one decision may hold; the perception tokens (place, things, dangers,
 # events) are defined at step 11-12 and reserved here

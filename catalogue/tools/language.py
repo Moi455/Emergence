@@ -18,7 +18,7 @@ from schema import Catalogue, FORBIDDEN_ACTION_IDS  # noqa: E402
 
 MAX_SYMBOLS = 20
 MAX_DEPTH = 2                                  # propositions nested as arguments (believes, wants, says, that)
-POINTER = re.compile(r"^(@E\d+|@T\d+|@G\d+|@PLACE|[bmg]:\d+|n:\d+)$")
+POINTER = re.compile(r"^(@E\d+|@T\d+|@G\d+|@L\d+|@PLACE|[bmg]:\d+|n:\d+)$")
 NESTING_HEADS = {"believes", "wants", "intends", "says", "may", "owes", "norm", "custom", "recipe", "that"}
 SOCIAL_VERBS = set(FORBIDDEN_ACTION_IDS) | {"promise", "threaten", "blackmail", "lie", "insult", "flatter",
                                             "seduce", "betray", "steal", "murder", "bribe", "apologize"}
@@ -45,8 +45,12 @@ class Vocabulary:
         for p in cat["property"]:
             self.words.setdefault(p, "property")
         self.kinds: set[str] = set(cat["item_type"]) | set(cat["material"]) | set(cat["species"]) | set(cat["form"])
-        self.kinds |= {sp.lookalike for sp in cat["species"].values() if sp.lookalike}
-        self.kinds |= {it.lookalike for it in cat["item_type"].values() if it.lookalike}
+        self.manner_intimate: set[str] = set()
+        for a in cat["action"].values():                     # manner values are words too (how ...)
+            for prm in a.params:
+                for val in prm.values:
+                    self.words.setdefault(val, "manner")
+                self.manner_intimate |= set(prm.intimate_values)
 
     def category(self, sym: str) -> str:
         if POINTER.match(sym):
@@ -148,7 +152,7 @@ class Expression:
         for s in self.root.symbols():
             c = self.vocab.cat["concept"].get(s)
             v = self.vocab.cat["variable"].get(s)
-            if (c is not None and c.intimate) or (v is not None and v.intimate):
+            if (c is not None and c.intimate) or (v is not None and v.intimate) or s in self.vocab.manner_intimate:
                 out.append(s)
         return out
 

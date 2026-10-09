@@ -74,9 +74,9 @@ item_type = [
   { id = "pack_frame", label_fr = "bât (charger un âne)", category = "carry", parts = ["frame:oak_raw", "strap:leather", "padding:wool"], mass_kg = 6, properties = { capacity = 80 } },
   # Monnaie et valeurs (leur valeur est une croyance partagée)
   { id = "copper_coin", label_fr = "pièce de cuivre", category = "currency", parts = ["ornament:copper"], mass_kg = 0.004 },
-  { id = "silver_coin", label_fr = "pièce d'argent", category = "currency", parts = ["ornament:silver"], mass_kg = 0.005, lookalike = "silver_coin" },
+  { id = "silver_coin", label_fr = "pièce d'argent", category = "currency", parts = ["ornament:silver"], mass_kg = 0.005, lookalike = "silver_coin_look" },
   { id = "gold_coin", label_fr = "pièce d'or (rare)", category = "currency", parts = ["ornament:gold"], mass_kg = 0.006 },
-  { id = "debased_coin", label_fr = "pièce d'argent coupée de plomb", category = "currency", parts = ["ornament:silver", "ornament:lead"], mass_kg = 0.0055, note = "Personne ne la « fabrique comme fausse » : on fond de l'argent avec du plomb. Ceux qui le découvrent en concluent ce qu'ils veulent.", lookalike = "silver_coin" },
+  { id = "debased_coin", label_fr = "pièce d'argent coupée de plomb", category = "currency", parts = ["ornament:silver", "ornament:lead"], mass_kg = 0.0055, note = "Personne ne la « fabrique comme fausse » : on fond de l'argent avec du plomb. Ceux qui le découvrent en concluent ce qu'ils veulent.", lookalike = "silver_coin_look" },
   { id = "coin_purse_full", label_fr = "bourse pleine", category = "currency", parts = ["bag:leather", "ornament:silver"], mass_kg = 0.3 },
   # Fêtes, jeux, musique
   { id = "dice", label_fr = "dés (os)", category = "game", parts = ["block:bone"], mass_kg = 0.01 },

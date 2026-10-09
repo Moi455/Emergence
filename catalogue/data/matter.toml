@@ -330,7 +330,7 @@ id = "fracture"
 label_fr = "casser, briser"
 inputs = "toute matière"
 conditions = ["impacts"]
-effect = "si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse"
+effect = "si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse ; silex contre fer : des étincelles (qui allument l'amadou)"
 
 [[process]]
 id = "crush"
@@ -345,6 +345,13 @@ label_fr = "extraire (arracher du terrain : creuser, piocher)"
 inputs = "terrain"
 conditions = ["digs"]
 effect = "retire des voxels ; la matière extraite devient objet ; la stabilité voisine change"
+
+[[process]]
+id = "till"
+label_fr = "labourer, retourner la terre"
+inputs = "sol (terrain)"
+conditions = ["digs"]
+effect = "le sol passe à « labouré » (soil_state) ; l'humidité et la fertilité s'en ressentent ; une houe, une bêche ou un araire tiré par un bœuf"
 
 # Assembler
 [[process]]
@@ -409,7 +416,7 @@ note = "Charte § 17 : la baguette ne crée rien gratuitement."
 id = "heat"
 label_fr = "chauffer"
 conditions = ["heats"]
-effect = "la température monte selon la source, la masse, la conduction"
+effect = "la température monte selon la source, la masse, la conduction ; un frottement long et fort (bois sec contre bois) chauffe jusqu'à la braise"
 
 [[process]]
 id = "combust"

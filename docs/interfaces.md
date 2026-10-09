@@ -130,6 +130,8 @@ Style tranché (I-2), précisé par Monsieur : **style voxel**, pas voxel strict
 
 ## 6. Contrat PNJ : état, décision, action
 
+> **Remplacé par `catalogue/` (D28, 9 oct. 2026).** Les 112 fonctions de `plan_contract.py` (dont steal, blackmail, deceive) mêlaient gestes, actes sociaux et interprétations ; elles cèdent la place aux 40 gestes paramétrés de `catalogue/data/actions.toml`, à la langue intérieure et aux conditions perceptives de `catalogue/data/conditions.toml`. Une version 2 de ce paragraphe et du § 7 sera **générée** depuis le catalogue (avec les en-têtes C++, D31). `plan_contract.py` reste comme référence historique.
+
 Le contrat est celui du fil des données, version 0.4 (`emergence/ai/CONTRAT_PNJ.md`), adopté tel quel comme **version 1** de cette section. Sa source de vérité exécutable reste `ai/npc_pipeline/plan_contract.py` ; le portage C++ du moteur doit reproduire ses sorties.
 
 - Trois messages : `DecisionRequest`, `Plan` (1 à 6 étapes, chacune avec `until` et `interrupt_if`, 3 conditions au plus), `PlanResult`.
@@ -162,7 +164,7 @@ Chaque fonction du contrat se joue par une ou plusieurs animations de cette list
 | Loisirs et rites | dance, dice, tell_story, wrestle_play, fish, pray, mourn | leisure, pray, mourn |
 | Engagement | (aucun clip propre : suit l'étape en cours) | accompany, break_commitment, continue |
 
-`be_intimate` ne se joue jamais à l'écran : `embrace`, puis fondu au noir. Le moteur refuse toute fonction de la famille Tendresse si l'un des deux personnages n'a pas `age_category` = `adult` ou `elder`.
+`be_intimate` ne se joue jamais à l'écran : `embrace`, puis fondu au noir. Règle D10 (version catalogue) : avec un mineur (âge réel, cru ou apparent), seules les valeurs de `minor_whitelist` du geste `touch` passent (tenir la main, serrer dans ses bras, toucher l'épaule ou la tête, doucement ou en jouant) ; `kiss` et `lean_in` ne se jouent jamais avec un mineur ; les manières romantic et intimate sont refusées.
 
 ## 8. Identifiants partagés
 

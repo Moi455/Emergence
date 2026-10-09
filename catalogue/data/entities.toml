@@ -207,16 +207,19 @@ holder = "phenomenon"
 
 [[component]]
 id = "area"
+channel = "perception"
 label_fr = "étendue d'un lieu : limites, intérieur ou dehors, lieu parent, lumière, bruit ambiant"
 holder = "place"
 
 [[component]]
 id = "clock"
+channel = "perception"
 label_fr = "horloge : temps de jeu, jour, saison, année ; horloge de vie (charte § 25)"
 holder = "world"
 
 [[component]]
 id = "climate"
+channel = "perception"
 label_fr = "climat et météo : température, vent, nuages, précipitations par région"
 holder = "world"
 
@@ -237,24 +240,28 @@ holder = "agreement"
 
 [[component]]
 id = "body"
+channel = "interoception"
 engine_only = true
 label_fr = "corps : anatomie par zones, blessures, douleur, conscience, vie"
 holder = "agent, animal"
 
 [[component]]
 id = "needs"
+channel = "interoception"
 engine_only = true
 label_fr = "besoins du corps : faim, soif, fatigue, froid, maladie"
 holder = "agent, animal"
 
 [[component]]
 id = "lifecycle"
+channel = "interoception"
 engine_only = true
 label_fr = "cycle de vie : âge sur l'horloge de vie, stade, fertilité, grossesse"
 holder = "agent, animal, plant"
 
 [[component]]
 id = "appearance"
+channel = "perception"
 engine_only = true
 label_fr = "apparence : ce que les autres voient (tenue, propreté, blessures visibles, expression du visage, posture)"
 holder = "agent, animal"
@@ -262,6 +269,7 @@ note = "La seule porte vers l'intérieur d'autrui : on voit un visage en colère
 
 [[component]]
 id = "carrier"
+channel = "interoception"
 engine_only = true
 label_fr = "porteur : mains, dos, ceinture, vêtements portés, charge"
 holder = "agent"
@@ -273,36 +281,43 @@ holder = "agent, animal"
 
 [[component]]
 id = "mind_static"
+channel = "own_mind"
 label_fr = "esprit stable : traits, valeurs, tempérament"
 holder = "agent"
 
 [[component]]
 id = "mind_dynamic"
+channel = "own_mind"
 label_fr = "esprit mouvant : émotions, humeur, pulsions, stress"
 holder = "agent"
 
 [[component]]
 id = "beliefs"
+channel = "belief"
 label_fr = "croyances : propositions tenues pour vraies, avec certitude et source ; normes ; théorie de l'esprit"
 holder = "agent"
 
 [[component]]
 id = "relations"
+channel = "belief"
 label_fr = "attitudes envers chaque personne connue"
 holder = "agent"
 
 [[component]]
 id = "memory"
+channel = "belief"
 label_fr = "mémoire épisodique : faits vécus avec leur appréciation"
 holder = "agent"
 
 [[component]]
 id = "goals"
+channel = "belief"
 label_fr = "objectifs et intentions : propositions désirées, priorités"
 holder = "agent"
 
 [[component]]
 id = "skills"
+channel = "belief"
 label_fr = "savoir-faire : maîtrise par technique, savoir comment faire"
 holder = "agent"
 
@@ -386,6 +401,7 @@ note = "Distincte de la croyance knows_how (ce qu'on croit savoir, de soi ou d'u
 
 [[component]]
 id = "percept"
+channel = "perception"
 label_fr = "une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité"
 holder = "agent"
 part_of = "beliefs"
@@ -394,6 +410,7 @@ note = "Reconstruit à chaque décision par le moteur depuis la scène, la lumi�
 
 [[component]]
 id = "event_seen"
+channel = "perception"
 label_fr = "un geste d'autrui perçu récemment (vu ou entendu) : qui, quel geste, sur quoi, comment"
 holder = "agent"
 part_of = "beliefs"

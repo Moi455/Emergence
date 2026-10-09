@@ -70,7 +70,7 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 
 | P25 | (remplacée par D30) Calendrier compressé : 1 jour ≈ 18 min réelles, 1 an = 8 jours (2 par saison), âge apparent compressé (enfance ×2, adolescence ×1,33, vieillesse ×1,5) : une vie ≈ 150 h (charte § 25) | `catalogue/data/world.toml` |
 | P26 | Bornes d'écriture du Transformer : par décision (`step`), par jour de jeu (`rate`), par année vécue pour les traits (1), valeurs (0,5), tempérament (0,3) ; l'ancienne borne « 0,1 par jour » est caduque ; au plus 4 écritures par décision | `catalogue/README.md`, revue du 9 oct. |
-| P27 | Esprit stable en 33 dimensions (32 vues par l'IA) : 18 traits HEXACO, 5 aptitudes, 2 de tempérament, 8 valeurs, attirance, goûts singuliers (attitudes envers un concept) ; les normes précises sont des croyances | `catalogue/data/mind_static.toml` |
+| P27 | Esprit stable en 33 dimensions (31 vues par l'IA, plus l'attirance ; mémoire et finesse de perception restent au moteur) : 18 traits HEXACO, 5 aptitudes, 2 de tempérament, 8 valeurs, attirance, goûts singuliers (attitudes envers un concept) ; les normes précises sont des croyances | `catalogue/data/mind_static.toml` |
 | P28 | Les objets sont des assemblages de parties (forme × matière) ; les 421 types sont un savoir commun, jamais une limite | `catalogue/data/forms.toml`, `items_*.toml` |
 | P29 | Les jetons ne contiennent aucune vérité : dossiers mentaux, événements remémorés, lieux reconnus, accords tels que crus | règle `no_truth_in_tokens`, `catalogue/data/hard_rules.toml` |
 
@@ -96,4 +96,5 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | O17 | La marge de calcul (200 décisions/s = 4 % du GPU en `small`) : la dépenser en profondeur du modèle (`base` 16 M, `large` 34 M) plutôt qu'en fréquence ? (docs/07) | commencer en `small`, monter quand les données suffisent |
 | O18 | Un second modèle partagé, plus profond, réservé à la réflexion lente (rare) : compatible avec « un seul modèle » ? (docs/07) | non en attendant : un seul modèle, une passe de réflexion avec le même |
 | O19 | Version Steam : NVIDIA seule (CUDA) en version 1, ou Vulkan dès le départ ? (docs/07 § 6) | CUDA d'abord (mesures faites ainsi) |
+| O20 | Profondeur de simulation (charte § 24) : tirée à la naissance et ne réglant que la taille du contexte lu (pas la fréquence de décision) ; faut-il qu'elle puisse évoluer au cours de la vie (un inconnu qui devient central) ? | fixe en attendant |
 | O14 | Textures bitmap sur les voxels. Monsieur les a demandées (D20) ; l'essai du prototype village (9 oct., `prototypes/village-web/RENDU.md`) s'en passe : grain procédural, biseau des arêtes, éclairage PRT et grille de ciel, sur le modèle de Teardown (affirmation du fil, non vérifiée ici) | textures maintenues tant que Monsieur n'a pas tranché ; comparer les deux sur captures |
