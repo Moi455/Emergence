@@ -1639,7 +1639,8 @@ function frame(now) {
 }
 // test hooks (used by automated screenshots)
 window.__game = {
-  dig() { const p = player; const f = [-Math.sin(p.yaw) * Math.cos(p.pitch), Math.sin(p.pitch), -Math.cos(p.yaw) * Math.cos(p.pitch)]; const h = raycast(camX / VS, camY / VS, camZ / VS, f[0], f[1], f[2], 7 / VS); if (h) carve(h.x, h.y, h.z); return !!h; }, startBench, player, carve, raycast, keys, Q, setTool: (t) => { tool = t; updTool(); }, get cam() { return [camX, camY, camZ]; }, M, CX, CZ, heightAt, instances, gl, VS, solid, voxelAt, addDrawHook: (f) => HOOKS.push(f), skyUniforms: () => SKY, addUpdate: (f) => UPDATES.push(f), setTOD: (t) => { TOD = t; updateSky(); },
+  skyUniforms: () => SKY,   // read by villagers.js: L0, L1r, L1g, L1b, sun, sunCol, exposure
+  dig() { const p = player; const f = [-Math.sin(p.yaw) * Math.cos(p.pitch), Math.sin(p.pitch), -Math.cos(p.yaw) * Math.cos(p.pitch)]; const h = raycast(camX / VS, camY / VS, camZ / VS, f[0], f[1], f[2], 7 / VS); if (h) carve(h.x, h.y, h.z); return !!h; }, startBench, player, carve, raycast, keys, Q, setTool: (t) => { tool = t; updTool(); }, get cam() { return [camX, camY, camZ]; }, M, CX, CZ, heightAt, instances, gl, VS, solid, voxelAt, addDrawHook: (f) => HOOKS.push(f), addUpdate: (f) => UPDATES.push(f), setTOD: (t) => { TOD = t; updateSky(); },
   structTest: (dry) => { const seen = new Set(); let regions = 0; const t = performance.now(); for (const i of instances) { if (seen.has(i)) continue; structTouched.add(i); const r = structuralCheck(dry); regions++; if (r) for (const j of r) seen.add(j); } return { regions, fallen: structFallen, ms: performance.now() - t }; } };
 window.dispatchEvent(new Event('village-ready'));
 requestAnimationFrame(frame);
