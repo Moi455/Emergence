@@ -1,6 +1,6 @@
 # Catalogue unique : variables et actions du monde simulé (v0.3)
 
-8 octobre 2026. Tenu par le fil « Simulation sociale des villages », **à valider par le fil « Données d'entraînement du Transformer »**, qui fait foi pour le modèle (jetons, vocabulaire, sorties).
+8 octobre 2026. Tenu par le fil « Simulation sociale des villages ». Parties « modèle » **validées par le fil « Données d'entraînement du Transformer »** (8 oct., 20:48), qui fait foi pour le modèle (jetons, vocabulaire, sorties). L'alignement sur la charte (échelle, souvenirs et objectifs écrits par le Transformer) est validé aussi (9 oct., 01:43).
 
 **La charte du jeu de Monsieur (`CHARTE_DU_JEU.md`, 8 octobre, 20:48) prime sur tout ce qui précède, ce document compris.** Les points de la charte qui touchent ce catalogue sont repris au § 0.
 
@@ -51,7 +51,7 @@ Ces trois fichiers restent comme historique. Le contrat d'action détaillé (arg
 | **sim/** | `oui` : la simulation sans rendu (`emergence/sim/`) le simule aujourd'hui ; `neutre` : le jeton reçoit une valeur fixe tant que la simulation ne le modélise pas ; `—` : absent. |
 | **Statut** | `N` noyau, `E` extension, `R` reporté (repris de v0.1 et v0.2). |
 
-Échelles : les variables psychologiques et sociales sont sur l'échelle de la charte, `−10..10` (bipolaire) ou `0..10` (quand le négatif n'a pas de sens : faim, peur, familiarité), avec une décimale ; le moteur les stocke en dixièmes. Les grandeurs physiques gardent leur unité : `0..100` pour les points de vie ou l'usure, `0..1`, `qté` = quantité réelle (le jeton la passe en échelle log 0..10). Le jeton tok-1 arrondit à l'entier (`representation.to10`).
+Échelles : les variables psychologiques et sociales sont sur l'échelle de la charte, `−10..10` (bipolaire) ou `0..10` (quand le négatif n'a pas de sens : faim, peur, familiarité), avec une décimale ; le moteur les stocke en dixièmes. Les grandeurs physiques gardent leur unité : `0..100` pour les points de vie ou l'usure, `0..1`, `qté` = quantité réelle (le jeton la passe en échelle log 0..10). Le jeton tok-1 arrondit à l'entier (`representation.to10`), ce qui suffit pour tester la boucle. **Décision du fil des données pour tok-2** : le modèle lira les dixièmes stockés par le moteur (int8 −100..+100, divisé par 100 au lieu de 10 dans le lecteur), sinon les pas fins du § 1.1 restent invisibles au modèle tant qu'ils ne franchissent pas un entier. Seuls `to10` et `num` de `encode.py` changent ; le stockage du moteur ne change pas.
 
 ### 1.1 Règles d'écriture par le Transformer
 
@@ -203,7 +203,7 @@ Le modèle voit 9 souvenirs choisis par saillance (question ouverte Q4 sur la m�
 | Variable | Échelle | Écrit par | Vu par le modèle | sim/ | Statut |
 |---|---|---|---|---|---|
 | objectif persistant (charte § 9) : type (besoin, projet, vengeance, demande d'aide, tâche partagée, accompagner), cible, partenaire, depuis | énum, id | **T** (créer, abandonner, réorienter) | `GOAL.type`, pointeurs | oui, stocké et montré au modèle (au plus 4) ; l'agenda (noces, funérailles, fêtes, recherches) reste à part | N |
-| types d'objectifs voulus par la charte : économiser pour une maison, séduire, se venger, quitter le village, apprendre un métier, s'enrichir, obtenir une fonction, retrouver quelqu'un | énum | T | — (hors vocabulaire, sauf vengeance) | — | N (à ajouter au vocabulaire) |
+| types d'objectifs voulus par la charte : économiser pour une maison, séduire, se venger, quitter le village, apprendre un métier, s'enrichir, obtenir une fonction, retrouver quelqu'un | énum | T | — (hors vocabulaire tok-1, sauf vengeance) | — | N. **Vocabulaire tok-2** (fil des données, 9 oct.) : `save_for_house`, `seduce`, `leave_village`, `learn_trade`, `get_rich`, `obtain_office`, `find_person`, en plus de `revenge` |
 | priorité | 0..10 | T pas 1 | `GOAL.priority` | oui | N |
 | progrès, échéance | 0..1, h | moteur | `progress`, `deadline_h` | neutre (0) : le moteur ne mesure pas encore le progrès | N |
 | engagement : envers, type (promesse, serment, contrat, accompagnement, mariage, emploi), degré, statut | | action, moteur | — | fiançailles, mariage | N |
@@ -361,7 +361,9 @@ Déjà en place : ce qu'un PNJ subit ou voit faire (insulte, coup, bousculade, d
 | `PERCEPT_THING` (≤ 8) | catégorie (objet, structure, eau, feu, animal, plante, ressource), matière dominante, état (intact, abîmé, effondré, en feu, inondé), distance, direction, propriétaire (moi, quelqu'un, personne), utilité pour mes besoins | moteur, agrégé depuis les voxels **dans le champ de vision** |
 | `PERCEPT_DANGER` (≤ 2) | type (chute, éboulement, feu, eau profonde, bête), intensité, distance, se rapproche ou non | moteur |
 
-Règle : le moteur résume les voxels en quelques choses saillantes ; le modèle ne voit jamais de voxels.
+Tête de sortie prévue pour tok-2 (fil des données, 9 oct.), en cinq parties : deltas d'état ; deltas de relations, par jeton `ENTITY` ; réinterprétation de souvenirs, par jeton `MEMORY` ; opération sur un objectif (garder, abandonner, réorienter, créer avec un type) ; score des options. Le gouverneur du § 1.1 borne toutes ces sorties.
+
+Règle : le moteur résume les voxels en quelques choses saillantes ; le modèle ne voit jamais de voxels. Précisions du fil des données : 17 types de jetons au lieu de 14, contexte porté d'environ 64 à 80 jetons, direction en sinus et cosinus relatifs au PNJ, propriétaire d'une chose en pointeur vers son jeton `ENTITY`.
 
 ## 7. Les actions
 
