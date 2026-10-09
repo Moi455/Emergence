@@ -14,9 +14,9 @@ const dbg = gl.getExtension('WEBGL_debug_renderer_info');
 const GPU_NAME = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
 const tq = gl.getExtension('EXT_disjoint_timer_query_webgl2');
 
-const Q = { scale: 1.0, shadows: true, ao: true, dist: 1.0 };   // quality settings
+const Q = { scale: 1.0, shadows: true, ao: true, dist: 1.0, bloom: true };   // quality settings
 const QS = new URLSearchParams(location.search); if (QS.get('scale')) Q.scale = +QS.get('scale');
-const MEM = { atlas: 0, indir: 0, vbo: 0, shadow: 0, idx: 0 };
+const MEM = { skyvol: 0, vbo: 0, shadow: 0, idx: 0, hdr: 0 };
 
 function sh(type, src) {
   const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
@@ -25,7 +25,8 @@ function sh(type, src) {
 }
 function prog(vs, fs) {
   const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
-  gl.bindAttribLocation(p, 0, 'a_pos'); gl.bindAttribLocation(p, 1, 'a_fc'); gl.bindAttribLocation(p, 2, 'a_inst');
+  gl.bindAttribLocation(p, 0, 'a_pos'); gl.bindAttribLocation(p, 1, 'a_fa'); gl.bindAttribLocation(p, 2, 'a_bn');
+  gl.bindAttribLocation(p, 3, 'a_vid'); gl.bindAttribLocation(p, 4, 'a_inst');
   gl.linkProgram(p);
   if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
   const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
@@ -33,238 +34,247 @@ function prog(vs, fs) {
   return { p, u };
 }
 
+// ============================================================================
+// Shading model
+//   ambient : sky light reconstructed from an order-1 spherical harmonic. Each vertex
+//             carries its own baked visibility (openness + bent normal), and a coarse
+//             world volume carries how much sky reaches that point through the village.
+//             Changing the hour only changes four RGB numbers on the CPU, so a full
+//             day/night cycle costs nothing per pixel.
+//   sun     : one shadow map, cheap now that the geometry is 10 cm voxels.
+//   surface : per-class roughness and metalness, a procedural grain and a bevel on each
+//             voxel edge. No bitmap textures: the detail is generated, so it costs no
+//             memory and keeps the voxel look.
+// ============================================================================
+const SKY_COMMON = `
+uniform vec3 u_zen, u_hor, u_grnd, u_sunCol, u_sun; uniform float u_haze;
+vec3 skyCol(vec3 d){
+  float up = clamp(d.y, -1.0, 1.0);
+  float mu = dot(d, u_sun);
+  vec3 c = mix(u_hor, u_zen, pow(clamp(up, 0.0, 1.0), 0.42));
+  c += u_sunCol * (0.22 * pow(max(mu, 0.0), 10.0) + 0.05 * pow(max(mu, 0.0), 2.5)) * u_haze;
+  c = mix(u_grnd, c, smoothstep(-0.12, 0.02, up));
+  return c;
+}`;
+
+const NOISE = `
+float h31(vec3 p){ p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float vn3(vec3 x){
+  vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(h31(i + vec3(0,0,0)), h31(i + vec3(1,0,0)), f.x), mix(h31(i + vec3(0,1,0)), h31(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(h31(i + vec3(0,0,1)), h31(i + vec3(1,0,1)), f.x), mix(h31(i + vec3(0,1,1)), h31(i + vec3(1,1,1)), f.x), f.y), f.z);
+}`;
+
 const VERT = `#version 300 es
-precision highp float; precision highp int;
-layout(location=0) in vec3 a_pos; layout(location=1) in vec2 a_fc; layout(location=2) in vec4 a_inst;
+precision highp float;
+layout(location=0) in vec3 a_pos;     // voxel units
+layout(location=1) in vec2 a_fa;      // face index, baked openness
+layout(location=2) in vec4 a_bn;      // bent normal (the average direction the sky comes from)
+layout(location=3) in float a_vid;    // VoxelId: class << 7 | tint
+layout(location=4) in vec4 a_inst;    // instance origin (voxels) and quarter turns
 uniform mat4 u_vp; uniform mat4 u_lvp; uniform vec3 u_cam; uniform float u_vs;
-out vec3 v_local; out vec3 v_rel; out vec4 v_ls; flat out int v_face; flat out int v_cls; flat out vec4 v_inst;
+out vec3 v_rel; out vec3 v_vox; out vec3 v_bn; out float v_ao; out vec4 v_ls;
+flat out vec3 v_n; flat out float v_vid;
 const vec3 NRM[6] = vec3[6](vec3(1,0,0),vec3(-1,0,0),vec3(0,1,0),vec3(0,-1,0),vec3(0,0,1),vec3(0,0,-1));
 vec3 rot(vec3 p, int r){ if(r==1) return vec3(p.z,p.y,-p.x); if(r==2) return vec3(-p.x,p.y,-p.z); if(r==3) return vec3(-p.z,p.y,p.x); return p; }
 void main(){
   int r = int(a_inst.w + 0.5);
-  v_local = a_pos; v_face = int(a_fc.x + 0.5); v_cls = int(a_fc.y + 0.5); v_inst = a_inst;
-  vec3 w = (rot(a_pos, r) + a_inst.xyz) * u_vs - u_cam;
-  v_rel = w;
-  vec3 nw = rot(NRM[v_face], r);
-  v_ls = u_lvp * vec4(w + nw * 0.035, 1.0);
+  vec3 vox = rot(a_pos, r) + a_inst.xyz;
+  vec3 w = vox * u_vs - u_cam;
+  v_vox = vox; v_rel = w; v_ao = a_fa.y * (1.0 / 255.0);
+  v_n = rot(NRM[int(a_fa.x + 0.5)], r);
+  v_bn = rot(a_bn.xyz, r);
+  v_vid = a_vid;
+  v_ls = u_lvp * vec4(w + v_n * 0.08, 1.0);
   gl_Position = u_vp * vec4(w, 1.0);
 }`;
 
-const FRAG_SRC = `
-precision highp float; precision highp int; precision highp usampler3D; precision highp usampler2D; precision highp sampler2DShadow;
-in vec3 v_local; in vec3 v_rel; in vec4 v_ls; flat in int v_face; flat in int v_cls; flat in vec4 v_inst;
-uniform usampler3D u_atlas; uniform usampler2D u_indir; uniform usampler2D u_bpal; uniform sampler2D u_pal; uniform sampler2DShadow u_shadow;
-uniform ivec3 u_nb; uniform ivec3 u_mmin; uniform ivec3 u_mdim; uniform int u_base; uniform int u_mode; uniform int u_lodstep;
-uniform int u_ao; uniform int u_shadows; uniform vec3 u_sun; uniform vec3 u_sunCol; uniform float u_fog;
-uniform mat4 u_vp; uniform mat4 u_lvp; uniform vec3 u_cam; uniform vec3 u_camvox; uniform float u_vs;
+const FRAG = `#version 300 es
+precision highp float; precision highp sampler2DShadow; precision highp sampler3D;
+in vec3 v_rel; in vec3 v_vox; in vec3 v_bn; in float v_ao; in vec4 v_ls;
+flat in vec3 v_n; flat in float v_vid;
+uniform sampler2D u_pal; uniform sampler2DShadow u_shadow; uniform sampler3D u_skyvol;
+uniform vec3 u_volMin, u_volScale;       // world metres -> [0,1] in the sky volume
+uniform vec3 u_shL0, u_shL1r, u_shL1g, u_shL1b;   // sky irradiance, order 1
+uniform vec3 u_cam; uniform float u_vs; uniform float u_fog; uniform int u_shadows; uniform int u_ao;
+uniform vec4 u_mat[21];                  // roughness, metalness, grain scale, grain amount
+uniform vec4 u_fires[6];                 // xyz camera-relative, w radiant power (0 = off)
+uniform float u_exposure;
 out vec4 o;
-const vec3 NRM[6] = vec3[6](vec3(1,0,0),vec3(-1,0,0),vec3(0,1,0),vec3(0,-1,0),vec3(0,0,1),vec3(0,0,-1));
-vec3 rot(vec3 p, int r){ if(r==1) return vec3(p.z,p.y,-p.x); if(r==2) return vec3(-p.x,p.y,-p.z); if(r==3) return vec3(-p.z,p.y,p.x); return p; }
-uint hash3(ivec3 p){ uint h = uint(p.x)*0x8da6b343u ^ uint(p.y)*0xd8163841u ^ uint(p.z)*0xcb1ab31fu; h ^= h>>16; h *= 0x7feb352du; h ^= h>>15; h*=0x846ca68bu; h^=h>>16; return h; }
-float h01(ivec3 p){ return float(hash3(p) & 0xffffu) / 65535.0; }
-uint fetchId(ivec3 v){
-  v -= u_mmin;
-  if (any(lessThan(v, ivec3(0))) || any(greaterThanEqual(v, u_mdim))) return 0u;
-  ivec3 b = v >> 3; int idx = u_base + b.x + u_nb.x * (b.y + u_nb.y * b.z);
-  uint e = texelFetch(u_indir, ivec2(idx & 2047, idx >> 11), 0).r;
-  if (e == 0u) return 0u;
-  if ((e & 0x80000000u) != 0u) return e & 0xffffu;
-  int s = int(e) - 1; ivec3 l = v & 7;
-  uint byt = texelFetch(u_atlas, ivec3((s & 127) * 4 + (l.x >> 1), ((s >> 7) & 63) * 8 + l.y, (s >> 13) * 8 + l.z), 0).r;
-  uint pi = (l.x & 1) == 1 ? (byt >> 4) : (byt & 15u);
-  if (pi == 0u) return 0u;
-  return texelFetch(u_bpal, ivec2((s & 127) * 16 + int(pi), s >> 7), 0).r;
+` + SKY_COMMON + NOISE + `
+float shadowAt(vec4 ls){
+  vec3 p = ls.xyz / ls.w * 0.5 + 0.5;
+  if (p.x < 0.002 || p.x > 0.998 || p.y < 0.002 || p.y > 0.998 || p.z > 1.0) return 1.0;
+  float s = 0.0; vec2 t = vec2(1.0 / 2048.0);
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) s += texture(u_shadow, vec3(p.xy + vec2(float(i), float(j)) * t, p.z - 0.00035));
+  return s / 9.0;
 }
-float solid(ivec3 v){ return fetchId(v) != 0u ? 1.0 : 0.0; }
-float vao(float s1, float s2, float c){ return (s1 > 0.5 && s2 > 0.5) ? 0.0 : (3.0 - s1 - s2 - c) / 3.0; }
-vec3 srgb(vec3 c){ return pow(c, vec3(2.2)); }
-vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
-float cobble(ivec3 v, out float stoneId){
-  vec2 p = vec2(v.xz) / 13.0; vec2 ip = floor(p); vec2 fp = fract(p);
-  float d1 = 9.0, d2 = 9.0; stoneId = 0.0;
-  for (int j=-1;j<=1;j++) for (int i=-1;i<=1;i++){
-    vec2 g = vec2(i,j); ivec3 c = ivec3(ip + g, 0).xzy;
-    vec2 r = g + vec2(h01(c), h01(c + ivec3(7,0,3))) * 0.8 + 0.1 - fp;
-    float d = dot(r,r);
-    if (d < d1){ d2 = d1; d1 = d; stoneId = h01(c + ivec3(1,0,1)); } else if (d < d2) d2 = d;
-  }
-  return sqrt(d2) - sqrt(d1);
-}
-float vnz(vec2 p){ ivec2 i = ivec2(floor(p)); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  float a = h01(ivec3(i, 5).xzy), b = h01(ivec3(i + ivec2(1, 0), 5).xzy), c = h01(ivec3(i + ivec2(0, 1), 5).xzy), d = h01(ivec3(i + ivec2(1, 1), 5).xzy);
-  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y); }
-float voxAO(ivec3 v, vec3 n, vec3 hitLocal){
-  ivec3 N = ivec3(n);
-  ivec3 T1 = n.x != 0.0 ? ivec3(0,1,0) : ivec3(1,0,0);
-  ivec3 T2 = n.z != 0.0 ? ivec3(0,1,0) : ivec3(0,0,1);
-  ivec3 q = v + N;
-  float a = solid(q + T1), b = solid(q - T1), c = solid(q + T2), d = solid(q - T2);
-  float ac = solid(q + T1 + T2), bc = solid(q - T1 + T2), ad = solid(q + T1 - T2), bd = solid(q - T1 - T2);
-  vec3 f3 = clamp(hitLocal - vec3(v), 0.0, 1.0); vec2 f = vec2(dot(f3, vec3(T1)), dot(f3, vec3(T2)));
-  float o00 = vao(b, d, bd), o10 = vao(a, d, ad), o01 = vao(b, c, bc), o11 = vao(a, c, ac);
-  return 0.42 + 0.58 * mix(mix(o00, o10, f.x), mix(o01, o11, f.x), f.y);
-}
-vec3 light(vec3 alb, vec3 nw, vec3 rel, vec4 ls, float ao){
-  float dist = length(rel);
-  float shadow = 1.0;
-  if (u_shadows == 1) {
-    vec3 sc = ls.xyz / ls.w * 0.5 + 0.5;
-    if (all(greaterThan(sc, vec3(0.0))) && all(lessThan(sc, vec3(1.0)))) {
-      float s = 0.0; vec2 ts = vec2(1.0 / 2048.0);
-      for (int j=-1;j<=1;j++) for (int i=-1;i<=1;i++) s += texture(u_shadow, vec3(sc.xy + vec2(i,j) * ts, sc.z - 0.0008));
-      shadow = s / 9.0;
-    }
-  }
-  float ndl = max(dot(nw, u_sun), 0.0);
-  vec3 sky = mix(vec3(0.26, 0.22, 0.17), vec3(0.30, 0.42, 0.66), nw.y * 0.5 + 0.5);
-  vec3 col = alb * (u_sunCol * ndl * shadow + sky * 0.75 * ao);
-  vec3 vd = rel / max(dist, 1e-3);
-  vec3 fogc = mix(vec3(0.52, 0.62, 0.76), vec3(0.95, 0.80, 0.60), pow(max(dot(vd, u_sun), 0.0), 6.0) * 0.6);
-  col = mix(col, fogc, 1.0 - exp(-max(dist - 25.0, 0.0) * u_fog));
-  col = aces(col * 0.9);
-  float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
-  col = max(mix(vec3(l), col, 1.04), 0.0);                    // grade: a touch more saturation
-  col = pow(col, vec3(1.0/2.2));
-  return col * col * (3.0 - 2.0 * col) * 0.35 + col * 0.65;  // soft S-curve
-}
-float edgeDark(vec3 hitLocal, vec3 n, float dist){
-  vec3 fl = fract(hitLocal); vec3 e3 = min(fl, 1.0 - fl);
-  float em = n.x != 0.0 ? min(e3.y, e3.z) : n.y != 0.0 ? min(e3.x, e3.z) : min(e3.x, e3.y);
-  float edge = mix(0.88, 1.0, smoothstep(0.0, 0.14, em));
-  return mix(edge, 1.0, smoothstep(3.0, 9.0, dist));
+// irradiance of the sky arriving on a surface whose open direction is b
+vec3 skyIrr(vec3 b){
+  const float A0 = 0.886227 * 0.3183099, A1 = 1.023328 * 0.3183099;   // the 1/pi of a Lambert surface
+  return max(vec3(0.0), A0 * u_shL0 + A1 * vec3(dot(u_shL1r, b), dot(u_shL1g, b), dot(u_shL1b, b)));
 }
 void main(){
-  int r = int(v_inst.w + 0.5);
-  vec3 n = NRM[v_face];
-#ifdef TRACE
-  // ---- micro-trace: the rasterized face belongs to an 8 cm micro-brick; find the 2 cm voxel the ray hits
-  vec3 camL = rot(u_camvox - v_inst.xyz, (4 - r) & 3);
-  vec3 d = normalize(v_local - camL);
-  d = mix(d, vec3(1e-5), lessThan(abs(d), vec3(1e-5)));
-  vec3 p = v_local + d * 0.002;
-  ivec3 v = ivec3(floor(p));
-  vec3 sv = sign(d); ivec3 st = ivec3(sv);
-  vec3 tD = abs(1.0 / d);
-  vec3 tM = (sv * (vec3(v) - p) + max(sv, vec3(0.0))) * tD;
-  vec3 nl = n; float t = 0.0; uint id = 0u;
-  for (int i = 0; i < 40; i++) {
-    id = fetchId(v); if (id != 0u) break;
-    if (tM.x < tM.y && tM.x < tM.z) { t = tM.x; tM.x += tD.x; v.x += st.x; nl = vec3(-sv.x, 0.0, 0.0); }
-    else if (tM.y < tM.z) { t = tM.y; tM.y += tD.y; v.y += st.y; nl = vec3(0.0, -sv.y, 0.0); }
-    else { t = tM.z; tM.z += tD.z; v.z += st.z; nl = vec3(0.0, 0.0, -sv.z); }
-  }
-  if (id == 0u) discard;
-  vec3 hit = p + d * t;
-  vec3 nw = rot(nl, r);
-  vec3 rel = (rot(hit, r) + v_inst.xyz) * u_vs - u_cam;
-  vec4 clip = u_vp * vec4(rel, 1.0);
-  gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
-  int cls = int(id >> 7), tint = int(id & 127u);
-  float ao = u_ao == 1 ? voxAO(v, nl, hit) : 1.0;
-  ivec3 wv = ivec3(floor(rot(vec3(v) + 0.5, r) + v_inst.xyz));
-  vec3 alb = srgb(texelFetch(u_pal, ivec2(tint, cls), 0).rgb) * (0.93 + 0.14 * h01(wv));
-  float dist = length(rel);
-  vec4 ls = u_lvp * vec4(rel + nw * 0.06, 1.0);
-  o = vec4(light(alb * edgeDark(hit, nl, dist), nw, rel, ls, ao), 1.0);
-#else
-  vec3 p = v_local - n * 0.5;
-  ivec3 v = ivec3(floor(p));
-  int cls = v_cls, tint = 64; float jitter;
-  ivec3 wv = ivec3(floor(rot(p, r) + v_inst.xyz));
-  if (u_mode == 0) {
-    // coarse raster LOD: look inward for the real 2 cm voxel colour
-    uint id = 0u;
-    for (int i = 0; i < 8; i++) { if (i >= u_lodstep) break; id = fetchId(ivec3(floor(v_local - n * (0.5 + float(i) * max(1.0, float(u_lodstep) / 8.0))))); if (id != 0u) break; }
-    if (id != 0u) { cls = int(id >> 7); tint = int(id & 127u); }
-    jitter = 0.95 + 0.1 * h01(wv);
-  } else {
-    float dist = length(v_rel);
-    float h = h01(wv);
-    float pch = vnz(vec2(wv.xz) / 55.0) * 0.55 + vnz(vec2(wv.xz) / 260.0 + 17.0) * 0.45;
-    tint = int(clamp(pch * 90.0 + h * 38.0, 0.0, 127.0));
-    jitter = 0.95 + 0.1 * h;
-    if (cls == 19) {
-      float sid; float e = cobble(wv, sid);
-      tint = int(30.0 + sid * 90.0);
-      if (e < 0.10) { tint = 6; jitter *= 0.7; }
-    }
-    if (cls == 16 && v_face == 2 && h > 0.9965 && dist < 25.0) tint = 127;
-  }
-  vec3 alb = srgb(texelFetch(u_pal, ivec2(tint, cls), 0).rgb) * jitter;
+  int vid = int(v_vid + 0.5); int cls = vid >> 7; int tint = vid & 127;
+  vec3 alb = texture(u_pal, vec3(0.0).xy + vec2((float(tint) + 0.5) / 128.0, (float(cls) + 0.5) / 21.0)).rgb;
+  alb = pow(alb, vec3(2.2));
+  vec4 mt = u_mat[cls];
+  vec3 n = v_n, b = normalize(v_bn);
+  vec3 wpos = v_rel + u_cam;
+
+  // --- surface detail, generated rather than sampled: a grain plus a bevel on every voxel edge.
+  // Beyond ~20 m a voxel is smaller than a pixel, so the detail is faded out rather than aliased.
   float dist = length(v_rel);
-  vec3 nw0 = rot(n, r);
-  if (u_mode == 1 && n.y == 0.0) nw0 = normalize(nw0 + vec3(0.0, mix(2.2, 6.0, smoothstep(10.0, 60.0, dist)), 0.0));
-  float tao = (u_mode == 1 && n.y == 0.0) ? 0.85 : 1.0;
-  o = vec4(light(alb * edgeDark(v_local, n, dist), nw0, v_rel, v_ls, tao), 1.0);
-#endif
+  float det = 1.0 - smoothstep(14.0, 55.0, dist);
+  vec3 cell = fract(v_vox);
+  vec3 ax = abs(n);
+  vec2 uv = ax.x > 0.5 ? cell.zy : (ax.y > 0.5 ? cell.xz : cell.xy);
+  float edge = min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));
+  float bevel = mix(1.0, smoothstep(0.0, 0.14, edge) * 0.22 + 0.78, det);
+  float g = vn3(v_vox * mt.z) * 0.6 + vn3(v_vox * mt.z * 3.1) * 0.4;
+  float grain = 1.0 + (g - 0.5) * mt.w * det;
+  float seed = h31(floor(v_vox) + 0.5);
+  // a slow stain over metres, which survives distance and breaks up the large flat areas
+  float macro = vn3(wpos * 0.33) * 0.62 + vn3(wpos * 0.097) * 0.38;
+  alb *= grain * bevel * (0.94 + 0.12 * seed * det) * (0.84 + 0.32 * macro);
+  float rough = clamp(mt.x * (0.85 + 0.3 * g), 0.04, 1.0);
+
+  // --- ambient: baked openness at the vertex, times how much sky reaches this spot in the village
+  vec3 vp = (wpos + n * 1.4 - u_volMin) * u_volScale;
+  float vol = all(greaterThan(vp, vec3(0.0))) && all(lessThan(vp, vec3(1.0))) ? texture(u_skyvol, vp).r : 1.0;
+  float ao = u_ao == 1 ? v_ao : 1.0;
+  vec3 amb = skyIrr(b) * alb * (ao * mix(0.25, 1.0, vol));
+
+  // --- sun
+  float ndl = max(dot(n, u_sun), 0.0);
+  float sh = (u_shadows == 1 && ndl > 0.0) ? shadowAt(v_ls) : 1.0;
+  vec3 dir = u_sunCol * 0.3183099 * ndl * sh;
+  vec3 col = amb + dir * alb;
+
+  // --- specular: the sun as a rough highlight, plus the sky seen in the surface
+  vec3 vdir = normalize(-v_rel);
+  vec3 hv = normalize(vdir + u_sun);
+  float a2 = rough * rough * rough * rough;
+  float d = (dot(n, hv) * dot(n, hv)) * (a2 - 1.0) + 1.0;
+  float spec = a2 / (3.14159 * d * d + 1e-4);
+  float f0 = mix(0.035, 1.0, mt.y);
+  float fmax = max(1.0 - rough, f0);                        // rough stone keeps its colour at grazing angles
+  float fres = f0 + (fmax - f0) * pow(1.0 - max(dot(vdir, n), 0.0), 5.0);
+  vec3 tintSpec = mix(vec3(1.0), alb, mt.y);
+  col += u_sunCol * sh * ndl * spec * fres * tintSpec * 0.9;
+  vec3 refl = reflect(-vdir, n);
+  col += skyCol(normalize(mix(refl, b, rough * 0.85))) * fres * mix(0.25, 1.0, mt.y) * mix(0.35, 1.0, vol) * (1.0 - rough * 0.65) * tintSpec;
+
+  // --- braziers: a few warm point lights, the only lighting that is not precomputed
+  for (int i = 0; i < 6; i++) {
+    if (u_fires[i].w <= 0.0) continue;
+    vec3 dv = u_fires[i].xyz - v_rel; float d2 = dot(dv, dv);
+    if (d2 > 121.0) continue;                               // a brazier lights eleven metres, no more
+    float att = u_fires[i].w / (d2 + 0.6) * (1.0 - d2 / 121.0);
+    col += vec3(1.0, 0.52, 0.19) * alb * att * max(dot(n, dv * inversesqrt(d2)), 0.0);
+  }
+
+  // --- aerial perspective
+  float f = 1.0 - exp(-max(dist - 25.0, 0.0) * u_fog);
+  col = mix(col, skyCol(normalize(v_rel)) * 0.92, f * 0.86);
+  o = vec4(col * u_exposure, 1.0);
 }`;
-const FRAG = '#version 300 es\n' + FRAG_SRC, FRAG_TRACE = '#version 300 es\n#define TRACE 1\n' + FRAG_SRC;
 
 const SHADOW_FRAG = `#version 300 es
-precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
+precision mediump float; void main(){}`;
 
 const SKY_VERT = `#version 300 es
-precision highp float; out vec2 v_uv; void main(){ vec2 p = vec2((gl_VertexID<<1)&2, gl_VertexID&2); v_uv = p*2.0-1.0; gl_Position = vec4(p*2.0-1.0, 1.0, 1.0); }`;
+precision highp float; uniform mat4 u_ivp; out vec3 v_d;
+void main(){ vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)) * 2.0 - 1.0;
+  vec4 q = u_ivp * vec4(p, 1.0, 1.0); v_d = q.xyz / q.w; gl_Position = vec4(p, 1.0, 1.0); }`;
+
 const SKY_FRAG = `#version 300 es
-precision highp float; in vec2 v_uv; uniform mat4 u_ivp; uniform vec3 u_sun; out vec4 o;
-vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
-float hh(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
-  return mix(mix(hh(i), hh(i+vec2(1,0)), f.x), mix(hh(i+vec2(0,1)), hh(i+vec2(1,1)), f.x), f.y); }
-float fbm(vec2 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ s += a * vn(p); p = p * 2.03 + 7.1; a *= 0.5; } return s; }
+precision highp float; in vec3 v_d; uniform float u_time; uniform float u_exposure; out vec4 o;
+` + SKY_COMMON + NOISE + `
 void main(){
-  vec4 w = u_ivp * vec4(v_uv, 1.0, 1.0); vec3 d = normalize(w.xyz / w.w);
-  float t = max(d.y, 0.0);
-  vec3 c = mix(vec3(0.52, 0.62, 0.76), vec3(0.16, 0.34, 0.70), pow(t, 0.5));
-  float s = max(dot(d, u_sun), 0.0);
-  if (d.y > 0.0) {
-    vec2 cp = d.xz / (d.y + 0.12) * 1.6;
-    float cl = smoothstep(0.48, 0.78, fbm(cp + vec2(3.0, 1.0)));
-    vec3 ccol = mix(vec3(0.78, 0.80, 0.86), vec3(1.15, 1.08, 0.98), smoothstep(0.4, 1.0, fbm(cp * 1.7 - 2.0) + s * 0.4));
-    c = mix(c, ccol, cl * smoothstep(0.0, 0.15, d.y) * 0.9);
+  vec3 d = normalize(v_d);
+  vec3 c = skyCol(d);
+  // sun disc, softened
+  float mu = dot(d, u_sun);
+  c += u_sunCol * 12.0 * smoothstep(0.9975, 0.99935, mu);
+  // a thin layer of cloud, lit from the sun side
+  if (d.y > 0.015) {
+    vec3 p = d / d.y * 0.9;
+    float n = 0.0, amp = 0.55, fr = 0.12;
+    for (int i = 0; i < 5; i++) { n += amp * vn3(vec3(p.x * fr + u_time * 0.004, 2.3, p.z * fr)); amp *= 0.5; fr *= 2.1; }
+    float cov = smoothstep(0.50, 0.80, n) * smoothstep(0.015, 0.22, d.y);
+    vec3 lit = mix(u_hor * 1.05, u_sunCol * 0.55 + u_zen * 0.6, 0.55 + 0.45 * max(mu, 0.0));
+    c = mix(c, lit, cov * 0.88);
   }
-  c += vec3(1.0, 0.82, 0.55) * (pow(s, 8.0) * 0.22 + pow(s, 900.0) * 6.0);
-  c = mix(c, vec3(0.40, 0.46, 0.40), smoothstep(0.0, -0.08, d.y));
-  c = aces(c * 0.95);
-  c = pow(c, vec3(1.0/2.2));
-  o = vec4(c * c * (3.0 - 2.0 * c) * 0.35 + c * 0.65, 1.0);
+  o = vec4(c * u_exposure, 1.0);
 }`;
 
 const WATER_VERT = `#version 300 es
 precision highp float; layout(location=0) in vec2 a_xz; uniform mat4 u_vp; uniform vec3 u_cam; uniform vec4 u_pond; out vec3 v_w; out vec2 v_q;
 void main(){ vec3 w = vec3(u_pond.x + a_xz.x * u_pond.z, u_pond.y, u_pond.w + a_xz.y * u_pond.z); v_w = w; v_q = a_xz; gl_Position = u_vp * vec4(w - u_cam, 1.0); }`;
+
 const WATER_FRAG = `#version 300 es
-precision highp float; in vec3 v_w; in vec2 v_q; uniform vec3 u_cam; uniform vec3 u_sun; uniform float u_time; uniform float u_fog; out vec4 o;
-vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
+precision highp float; in vec3 v_w; in vec2 v_q; uniform vec3 u_cam; uniform float u_time; uniform float u_fog; uniform float u_exposure; out vec4 o;
+` + SKY_COMMON + `
 void main(){
   if (dot(v_q, v_q) > 1.0) discard;
   vec2 p = v_w.xz; float t = u_time;
   vec2 g = vec2(0.0);
-  g += vec2(0.8, 0.3) * cos(dot(p, vec2(0.8, 0.3)) * 3.1 + t * 1.3) * 0.05;
-  g += vec2(-0.4, 0.9) * cos(dot(p, vec2(-0.4, 0.9)) * 5.3 + t * 1.9) * 0.03;
-  g += vec2(0.6, -0.7) * cos(dot(p, vec2(0.6, -0.7)) * 11.0 + t * 2.7) * 0.015;
+  g += vec2(0.8, 0.3) * cos(dot(p, vec2(0.8, 0.3)) * 3.1 + t * 1.3) * 0.045;
+  g += vec2(-0.4, 0.9) * cos(dot(p, vec2(-0.4, 0.9)) * 5.3 + t * 1.9) * 0.028;
+  g += vec2(0.6, -0.7) * cos(dot(p, vec2(0.6, -0.7)) * 11.0 + t * 2.7) * 0.014;
   vec3 n = normalize(vec3(-g.x, 1.0, -g.y));
   vec3 rel = v_w - u_cam; float dist = length(rel); vec3 v = rel / dist;
   vec3 r = reflect(v, n);
   float fres = 0.02 + 0.98 * pow(1.0 - max(dot(-v, n), 0.0), 5.0);
-  vec3 sky = mix(vec3(0.52, 0.62, 0.76), vec3(0.16, 0.34, 0.70), pow(max(r.y, 0.0), 0.5));
-  vec3 deep = vec3(0.03, 0.10, 0.10);
-  vec3 col = mix(deep, sky, fres) + vec3(1.0, 0.85, 0.6) * pow(max(dot(r, u_sun), 0.0), 400.0) * 4.0;
-  vec3 fogc = vec3(0.52, 0.62, 0.76);
-  col = mix(col, fogc, 1.0 - exp(-max(dist - 25.0, 0.0) * u_fog));
-  col = pow(aces(col * 0.9), vec3(1.0 / 2.2));
-  o = vec4(col, mix(0.72, 0.96, fres));
+  vec3 deep = u_zen * 0.08 + vec3(0.010, 0.030, 0.028);
+  vec3 col = mix(deep, skyCol(r), fres) + u_sunCol * pow(max(dot(r, u_sun), 0.0), 600.0) * 3.0;
+  float f = 1.0 - exp(-max(dist - 12.0, 0.0) * u_fog);
+  col = mix(col, skyCol(v) * 0.92, f);
+  o = vec4(col * u_exposure, mix(0.74, 0.97, fres));
 }`;
+
 const PART_VERT = `#version 300 es
 precision highp float;
 layout(location=0) in vec3 a_c; layout(location=1) in vec4 a_p; layout(location=2) in vec4 a_col;
-uniform mat4 u_vp; uniform vec3 u_cam; uniform vec3 u_sun; out vec3 v_c;
+uniform mat4 u_vp; uniform vec3 u_cam; uniform vec3 u_sun; uniform vec3 u_shL0; uniform vec3 u_sunCol; out vec3 v_c;
 void main(){ vec3 w = a_p.xyz + (a_c - 0.5) * a_p.w - u_cam; vec3 n = normalize(a_c - 0.5);
-  v_c = a_col.rgb * (0.55 + 0.6 * max(dot(n, u_sun), 0.0)); gl_Position = u_vp * vec4(w, 1.0); }`;
+  v_c = a_col.a > 0.5 ? a_col.rgb * (u_shL0 * 1.4 + u_sunCol * max(dot(n, u_sun), 0.0)) : a_col.rgb;
+  gl_Position = u_vp * vec4(w, 1.0); }`;
 const PART_FRAG = `#version 300 es
-precision mediump float; in vec3 v_c; out vec4 o; void main(){ o = vec4(pow(v_c, vec3(1.0/2.2)), 1.0); }`;
+precision mediump float; in vec3 v_c; uniform float u_exposure; out vec4 o; void main(){ o = vec4(v_c * u_exposure, 1.0); }`;
 
-const PW = prog(WATER_VERT, WATER_FRAG), P_RASTER = prog(VERT, FRAG), PT = prog(VERT, FRAG_TRACE), PS = prog(VERT, SHADOW_FRAG), PK = prog(SKY_VERT, SKY_FRAG), PP = prog(PART_VERT, PART_FRAG);
+// tone mapping and bloom, applied to the HDR buffer
+const POST_VERT = `#version 300 es
+precision highp float; out vec2 v_uv;
+void main(){ vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)) * 2.0 - 1.0;
+  v_uv = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
+const BRIGHT_FRAG = `#version 300 es
+precision highp float; in vec2 v_uv; uniform sampler2D u_src; out vec4 o;
+void main(){ vec3 c = texture(u_src, v_uv).rgb; float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  o = vec4(c * smoothstep(1.0, 2.2, l), 1.0); }`;
+const BLUR_FRAG = `#version 300 es
+precision highp float; in vec2 v_uv; uniform sampler2D u_src; uniform vec2 u_dir; out vec4 o;
+void main(){ vec3 c = texture(u_src, v_uv).rgb * 0.227;
+  c += (texture(u_src, v_uv + u_dir * 1.3846).rgb + texture(u_src, v_uv - u_dir * 1.3846).rgb) * 0.316;
+  c += (texture(u_src, v_uv + u_dir * 3.2308).rgb + texture(u_src, v_uv - u_dir * 3.2308).rgb) * 0.070;
+  o = vec4(c, 1.0); }`;
+const POST_FRAG = `#version 300 es
+precision highp float; in vec2 v_uv; uniform sampler2D u_src; uniform sampler2D u_bloom; uniform float u_bloomAmt; out vec4 o;
+vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
+void main(){
+  vec3 c = texture(u_src, v_uv).rgb + texture(u_bloom, v_uv).rgb * u_bloomAmt;
+  c = aces(c);
+  c = mix(vec3(dot(c, vec3(0.2126, 0.7152, 0.0722))), c, 1.10);       // a touch more colour
+  c = pow(c, vec3(1.0 / 2.2));
+  vec2 q = v_uv - 0.5;
+  c *= 1.0 - dot(q, q) * 0.28;                                        // gentle vignette
+  o = vec4(c, 1.0);
+}`;
+
+const P_MAIN = prog(VERT, FRAG), PS = prog(VERT, SHADOW_FRAG), PK = prog(SKY_VERT, SKY_FRAG);
+const PW = prog(WATER_VERT, WATER_FRAG), PP = prog(PART_VERT, PART_FRAG);
+const PBRIGHT = prog(POST_VERT, BRIGHT_FRAG), PBLUR = prog(POST_VERT, BLUR_FRAG), PPOST = prog(POST_VERT, POST_FRAG);
 
 // ======================= load data =======================
 status('Téléchargement du village voxélisé…');
@@ -297,7 +307,8 @@ const pool = W.pool; const owner = new Map();   // slot -> instance id (copy-on-
 // ======================= village (plan generator, deterministic) =======================
 const rng = (() => { let s = SEED >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
 const pick = (a) => a[Math.floor(rng() * a.length)];
-const CX = 8192, CZ = 8192, M = 50; // M voxels per meter
+const M = Math.round(1 / VS);            // voxels per metre (10 at 10 cm)
+const CX = 410 * M, CZ = 410 * M;        // village centre, in voxels
 const instances = [];
 const pads = [], streets = [];
 const tmpTerrain = new VX.Terrain({ seed: SEED, cx: CX, cz: CZ, pads: [], streets: [] });
@@ -405,8 +416,8 @@ place('Prop_Wagon', CX - 5 * M, groundAt(CX - 5 * M, CZ + 2 * M), CZ + 2 * M, 1)
 for (let k = 0; k < 6; k++) { const a = rng() * 6.28, r = (4 + rng() * 3) * M; const x = CX + Math.cos(a) * r, z = CZ + Math.sin(a) * r; place(pick(['Prop_Crate', 'Prop_Brick1', 'Prop_Brick2']), x, groundAt(x, z), z, Math.floor(rng() * 4)); }
 for (let k = -3; k <= 3; k++) { if (k === 0) continue; const x = CX + k * 2 * M; place('Prop_ExteriorBorder_Straight1', x, groundAt(x, CZ - 9.5 * M), CZ - 9.5 * M, 2); }
 
-const ponds = [{ x: CX - 22 * M, z: CZ + 29 * M, r: 8 * M, depth: 65 }];
-for (const q of ponds) { let lo = 1e9; for (let k = 0; k < 64; k++) { const a = k / 64 * Math.PI * 2; lo = Math.min(lo, tmpTerrain.natural(q.x + Math.cos(a) * q.r, q.z + Math.sin(a) * q.r) / VS); } q.level = Math.round(lo) - 6; }
+const ponds = [{ x: CX - 22 * M, z: CZ + 29 * M, r: 8 * M, depth: Math.round(1.3 / VS) }];
+for (const q of ponds) { let lo = 1e9; for (let k = 0; k < 64; k++) { const a = k / 64 * Math.PI * 2; lo = Math.min(lo, tmpTerrain.natural(q.x + Math.cos(a) * q.r, q.z + Math.sin(a) * q.r) / VS); } q.level = Math.round(lo) - Math.round(0.12 / VS); }
 const TER = { seed: SEED, cx: CX, cz: CZ, pads, streets, ponds };
 const terrain = new VX.Terrain(TER);
 // trees: procedural modules scattered around the village (deterministic)
@@ -485,7 +496,7 @@ function solid(x, y, z) {
 }
 
 // ======================= GPU resources =======================
-// palette (classes x 128 tints), terrain rows generated here
+// palette (classes x 128 tints); the terrain ramps are generated here
 const NCLS = W.ncls, NT = W.nt;
 const palData = new Uint8Array(NT * NCLS * 4);
 for (let c = 0; c < NCLS; c++) for (let t = 0; t < NT; t++) { const s = (c * NT + t) * 3, d = (c * NT + t) * 4; palData[d] = W.palette[s]; palData[d + 1] = W.palette[s + 1]; palData[d + 2] = W.palette[s + 2]; palData[d + 3] = 255; }
@@ -493,82 +504,57 @@ function ramp(c, a, b, extra) {
   for (let t = 0; t < NT; t++) { const f = t / (NT - 1), d = (c * NT + t) * 4; for (let k = 0; k < 3; k++) palData[d + k] = Math.round(a[k] + (b[k] - a[k]) * f); palData[d + 3] = 255; }
   if (extra) extra();
 }
-ramp(16, [44, 70, 30], [104, 128, 56], () => { const d = (16 * NT + 127) * 4; palData.set([235, 220, 120, 255], d); });
-ramp(17, [92, 66, 44], [140, 104, 70]);
-ramp(18, [92, 92, 96], [150, 148, 145]);
-ramp(19, [70, 72, 80], [128, 124, 122], () => { for (let t = 0; t < 10; t++) palData.set([58, 54, 50, 255], (19 * NT + t) * 4); });
-ramp(20, [118, 104, 82], [168, 152, 124]);
-ramp(12, [28, 52, 22], [98, 140, 48]);
-ramp(13, [78, 62, 48], [138, 118, 92]);
+ramp(16, [52, 78, 33], [128, 143, 60], () => { const d = (16 * NT + 127) * 4; palData.set([226, 214, 128, 255], d); });
+ramp(17, [92, 65, 41], [152, 116, 76]);
+ramp(18, [92, 88, 82], [156, 149, 136]);
+ramp(19, [78, 70, 60], [146, 134, 116], () => { for (let t = 0; t < 10; t++) palData.set([64, 56, 47, 255], (19 * NT + t) * 4); });
+ramp(20, [120, 104, 80], [178, 158, 124]);
+ramp(12, [32, 58, 24], [106, 148, 52]);
+ramp(13, [80, 64, 50], [140, 120, 94]);
 const palTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, palTex);
 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, NT, NCLS, 0, gl.RGBA, gl.UNSIGNED_BYTE, palData);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 const palRGB = (id) => { const c = Math.min(id >> 7, NCLS - 1), t = id & 127, d = (c * NT + t) * 4; return [palData[d] / 255, palData[d + 1] / 255, palData[d + 2] / 255]; };
 
-// brick atlas: R8UI, each brick = 4x8x8 texels (two 4-bit voxels per texel), 128 x 64 bricks per 8-deep layer
-const ATLAS_CAP = Math.ceil((pool.n + 24576) / 8192) * 8192;
-const ATLAS_D = (ATLAS_CAP / 8192) * 8;
-const atlas = gl.createTexture(); gl.bindTexture(gl.TEXTURE_3D, atlas);
-gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R8UI, 512, 512, ATLAS_D);
-gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-// per-brick local palettes: R16UI, 128 bricks x 16 entries per row
-const BPAL_H = ATLAS_CAP / 128;
-const bpal = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, bpal);
-gl.texStorage2D(gl.TEXTURE_2D, 1, gl.R16UI, 2048, BPAL_H);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-MEM.atlas = 512 * 512 * ATLAS_D + 2048 * BPAL_H * 2;
-gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-{
-  const layer = new Uint8Array(512 * 512 * 8);
-  const layers = Math.ceil(pool.n / 8192);
-  for (let L = 0; L < layers; L++) {
-    layer.fill(0);
-    for (let s = L * 8192; s < Math.min(pool.n, (L + 1) * 8192); s++) {
-      const sx = (s & 127) * 4, sy = ((s >> 7) & 63) * 8, src0 = s * 256;
-      for (let z = 0; z < 8; z++) for (let y = 0; y < 8; y++) {
-        const dst = sx + 512 * ((sy + y) + 512 * z), src = src0 + 4 * (y + 8 * z);
-        layer[dst] = pool.idx[src]; layer[dst + 1] = pool.idx[src + 1]; layer[dst + 2] = pool.idx[src + 2]; layer[dst + 3] = pool.idx[src + 3];
-      }
-    }
-    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, L * 8, 512, 512, 8, gl.RED_INTEGER, gl.UNSIGNED_BYTE, layer);
-  }
-  const rows = Math.ceil(pool.n / 128), pd = new Uint16Array(rows * 2048); pd.set(pool.pal.subarray(0, pool.n * 16));
-  gl.bindTexture(gl.TEXTURE_2D, bpal);
-  gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 2048, rows, gl.RED_INTEGER, gl.UNSIGNED_SHORT, pd);
+// per-class surface response: roughness, metalness, grain frequency (per voxel), grain amount
+const MAT = new Float32Array(21 * 4);
+const setMat = (c, r, m, gs, ga) => { MAT[c * 4] = r; MAT[c * 4 + 1] = m; MAT[c * 4 + 2] = gs; MAT[c * 4 + 3] = ga; };
+for (let c = 0; c < 21; c++) setMat(c, 0.9, 0, 3.0, 0.10);
+setMat(1, 0.93, 0.0, 5.0, 0.11);   // plaster: fine mottle
+setMat(2, 0.78, 0.0, 2.2, 0.17);   // wood
+setMat(3, 0.86, 0.0, 2.6, 0.20);   // worn wood
+setMat(4, 0.84, 0.0, 3.4, 0.16);   // dressed stone
+setMat(5, 0.87, 0.0, 3.0, 0.15);   // brick
+setMat(6, 0.87, 0.0, 3.0, 0.15);   // red brick
+setMat(7, 0.90, 0.0, 2.4, 0.20);   // rubble masonry
+setMat(8, 0.52, 0.0, 2.0, 0.13);   // roof tiles: glazed enough to catch the sun
+setMat(9, 0.34, 0.92, 7.0, 0.07);  // iron
+setMat(10, 0.07, 0.0, 9.0, 0.03);  // glass
+setMat(11, 0.72, 0.0, 4.0, 0.22);  // vine
+setMat(12, 0.66, 0.0, 5.5, 0.26);  // leaves
+setMat(13, 0.92, 0.0, 2.6, 0.24);  // bark
+setMat(16, 0.88, 0.0, 4.5, 0.24);  // grass
+setMat(17, 0.95, 0.0, 3.2, 0.19);  // earth
+setMat(18, 0.80, 0.0, 2.6, 0.18);  // rock
+setMat(19, 0.68, 0.0, 2.2, 0.17);  // cobbles
+setMat(20, 0.94, 0.0, 6.0, 0.22);  // gravel
+
+// coarse volume of how much sky reaches each point of the village (2 m cells, one byte)
+const VOL_C = Math.max(1, Math.round(2.0 / VS));           // cell size in voxels
+let VOLN = [1, 1, 1], VOL_ORG = [0, 0, 0];
+const skyvol = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_3D, skyvol);
+gl.texImage3D(gl.TEXTURE_3D, 0, gl.R8, 1, 1, 1, 0, gl.RED, gl.UNSIGNED_BYTE, new Uint8Array([255]));
+gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+for (const w of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T, gl.TEXTURE_WRAP_R]) gl.texParameteri(gl.TEXTURE_3D, w, gl.CLAMP_TO_EDGE);
+function uploadSkyVol(data, nx, ny, nz, org) {
+  VOLN = [nx, ny, nz]; VOL_ORG = org;
+  gl.bindTexture(gl.TEXTURE_3D, skyvol);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.R8, nx, ny, nz, 0, gl.RED, gl.UNSIGNED_BYTE, data);
+  MEM.skyvol = nx * ny * nz;
 }
-function uploadBrick(s) {
-  if (s >= ATLAS_CAP) return false;
-  gl.bindTexture(gl.TEXTURE_3D, atlas);
-  gl.texSubImage3D(gl.TEXTURE_3D, 0, (s & 127) * 4, ((s >> 7) & 63) * 8, (s >> 13) * 8, 4, 8, 8, gl.RED_INTEGER, gl.UNSIGNED_BYTE, pool.idx.subarray(s * 256, s * 256 + 256));
-  gl.bindTexture(gl.TEXTURE_2D, bpal);
-  gl.texSubImage2D(gl.TEXTURE_2D, 0, (s & 127) * 16, s >> 7, 16, 1, gl.RED_INTEGER, gl.UNSIGNED_SHORT, pool.pal.subarray(s * 16, s * 16 + 16));
-  return true;
-}
-// indirection: R32UI 2048 wide
-let totalBricks = 0; for (const m of W.mods) totalBricks += m.bricks.length;
-const IND_W = 2048, IND_H = Math.ceil((totalBricks + 1500000) / IND_W);
-const indir = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, indir);
-gl.texStorage2D(gl.TEXTURE_2D, 1, gl.R32UI, IND_W, IND_H);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-MEM.indir = IND_W * IND_H * 4;
-let indirTop = 0;
-const encB = (b) => b === 0 ? 0 : b > 0 ? ((0x80000000 | b) >>> 0) : (-b);   // mixed: slot+1
-function uploadIndir(base, data) {
-  gl.bindTexture(gl.TEXTURE_2D, indir);
-  let i = 0;
-  while (i < data.length) {
-    const idx = base + i, row = Math.floor(idx / IND_W), col = idx % IND_W, n = Math.min(IND_W - col, data.length - i);
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, col, row, n, 1, gl.RED_INTEGER, gl.UNSIGNED_INT, data.subarray(i, i + n));
-    i += n;
-  }
-}
-function allocIndir(bricks) {
-  const base = indirTop; indirTop += bricks.length;
-  if (indirTop > IND_W * IND_H) throw new Error('indirection full');
-  const d = new Uint32Array(bricks.length); for (let i = 0; i < bricks.length; i++) d[i] = encB(bricks[i]);
-  uploadIndir(base, d); return base;
-}
-for (const m of W.mods) m.base = allocIndir(m.bricks);
 
 // quad index buffer (grown on demand)
 const ibo = gl.createBuffer(); let iboQuads = 0;
@@ -580,18 +566,14 @@ function ensureIndex(q) {
   MEM.idx = a.byteLength; iboQuads = n;
 }
 ensureIndex(65536);
+const VSTRIDE = 16;
 function makeMesh(ab) {
   if (!ab || !ab.byteLength) return null;
   const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, ab, gl.STATIC_DRAW);
-  MEM.vbo += ab.byteLength; const quads = ab.byteLength / 32; ensureIndex(quads);
+  MEM.vbo += ab.byteLength; const quads = ab.byteLength / (VSTRIDE * 4); ensureIndex(quads);
   return { b, quads, bytes: ab.byteLength };
 }
 function freeMesh(m) { if (m) { gl.deleteBuffer(m.b); MEM.vbo -= m.bytes; } }
-function concat(list) {
-  let n = 0; for (const a of list) n += a.byteLength;
-  const out = new Uint8Array(n); let o = 0; for (const a of list) { out.set(new Uint8Array(a), o); o += a.byteLength; }
-  return out.buffer;
-}
 
 // ======================= workers =======================
 const shared = await (await fetch('shared.js')).text();
@@ -633,20 +615,19 @@ let rr = 0; const nextW = () => workers[(rr++) % workers.length];
 // module meshing
 const usedMods = W.mods.filter((m) => m.instances.length);
 let modsDone = 0; let MESH_MS = 0;
+const PRE = { mesh: 0, terr: 0, sky: 0, edit: 0, editN: 0 };   // what the precomputation costs, in ms
 function moduleMeshed(m) {
   const mod = W.mods[m.id];
-  mod.chunkMeshes = new Map(); for (const c of m.chunks) mod.chunkMeshes.set(c.c, c.v);
-  mod.lod = [makeMesh(concat(m.chunks.map((c) => c.v)))];
-  for (const c of m.coarse) mod.lod.push(makeMesh(c));
-  MESH_MS += m.ms; modsDone++;
-  status(`Maillage glouton des modules ${modsDone}/${usedMods.length}…`);
+  mod.lod = m.lods.map((b) => makeMesh(b));
+  MESH_MS += m.ms; PRE.mesh += m.ms; modsDone++;
+  status(`Maillage et occlusion des modules ${modsDone}/${usedMods.length}…`);
 }
 usedMods.sort((a, b) => b.nvox - a.nvox).forEach((m) => nextW().postMessage({ type: 'module', id: m.id }));
 await new Promise((res) => { const t = setInterval(() => { if (modsDone >= usedMods.length) { clearInterval(t); res(); } }, 50); });
 workers.forEach((w) => w.postMessage({ type: 'drop' }));
 
 // ======================= terrain quadtree =======================
-const WORLD = 16384, ROOT = 4096;
+const WORLD = 1024 * M, ROOT = 256 * M;   // 1024 m of terrain, quadtree roots of 256 m
 const TNODES = new Map();     // key -> {mesh, state, used}
 const tkey = (x, z, S) => x + ',' + z + ',' + S;
 const editedTiles = new Set();   // 128-tiles with removed voxels
@@ -664,7 +645,7 @@ function meshNode(nd) {
   let removed = null;
   if (step === 1) { const set = REMOVED.get((nd.x0 >> 7) * 4096 + (nd.z0 >> 7)); if (set && set.size) removed = Uint32Array.from(set); }
   jobs.set(job, (m) => {
-    terrainPending--;
+    terrainPending--; PRE.terr += m.ms || 0;
     if (ver !== nd.ver) return;
     const old = nd.mesh; nd.mesh = makeMesh(m.v); nd.state = 2; freeMesh(old);
   });
@@ -700,10 +681,67 @@ function selectTerrain(now) {
   if (++evictTick % 120 === 0) for (const [k, nd] of TNODES) if (now - nd.used > 1500 && nd.state === 2) { freeMesh(nd.mesh); TNODES.delete(k); }
 }
 
+// ---- how much sky reaches each part of the village: built once, in a worker
+{
+  const pad = 28 * M;
+  let x0 = CX - 200 * M, z0 = CZ - 200 * M, x1 = CX + 200 * M, z1 = CZ + 200 * M, y0 = 1e9, y1 = -1e9;
+  for (const i of instances) { y0 = Math.min(y0, i.y0); y1 = Math.max(y1, i.y1); }
+  y0 = Math.min(y0, heightAt(CX, CZ)) - 4 * M; y1 += 10 * M;
+  const org = [x0, y0, z0];
+  const nx = Math.ceil((x1 - x0) / VOL_C), ny = Math.ceil((y1 - y0) / VOL_C), nz = Math.ceil((z1 - z0) / VOL_C);
+  const inst = new Int32Array(instances.length * 5);
+  instances.forEach((i, k) => { inst[k * 5] = i.mod.id; inst[k * 5 + 1] = i.x; inst[k * 5 + 2] = i.y; inst[k * 5 + 3] = i.z; inst[k * 5 + 4] = i.r; });
+  const job = ++jobSeq, t0 = performance.now();
+  jobs.set(job, (r) => { PRE.sky = performance.now() - t0; if (r.v) uploadSkyVol(r.v, nx, ny, nz, org); });
+  nextW().postMessage({ type: 'skyvol', job, n: [nx, ny, nz], c: VOL_C, org, inst }, [inst.buffer]);
+}
+
+// ======================= braziers =======================
+// Fire is not voxelised: a point light plus a few emissive cubes. The light is the only
+// part of the lighting that is not precomputed, which is why there are six of them and not sixty.
+const FIRES = [];
+{
+  const place = (vx, vz) => {
+    const y = heightAt(vx | 0, vz | 0);
+    FIRES.push({ x: vx * VS, y: (y + 1) * VS, z: vz * VS, seed: FIRES.length * 7.13 });
+  };
+  for (const d of [-40, -14, 14, 40]) place(CX + d * M, CZ + 5.5 * M);
+  place(CX + 5.5 * M, CZ - 34 * M); place(CX - 5.5 * M, CZ + 30 * M);
+}
+const fireUni = new Float32Array(6 * 4);
+const FIRE_CUBES = 7;                       // emissive cubes per brazier, placed analytically
+const fireData = new Float32Array(FIRES.length * (FIRE_CUBES + 1) * 8);
+function updateFires(now) {
+  const t = now / 1000;
+  // the light fades out with daylight; at noon a brazier adds nothing anyone can see
+  const night = Math.max(0, Math.min(1, 0.15 - SKY.el * 4));
+  let k = 0;
+  for (let i = 0; i < 6; i++) {
+    const f = FIRES[i];
+    if (!f || night <= 0.01) { fireUni[i * 4 + 3] = 0; continue; }
+    const flick = 0.82 + 0.18 * Math.sin(t * 7.3 + f.seed) * Math.sin(t * 3.1 + f.seed * 2.1);
+    fireUni[i * 4] = f.x - camX; fireUni[i * 4 + 1] = f.y + 0.25 - camY; fireUni[i * 4 + 2] = f.z - camZ;
+    fireUni[i * 4 + 3] = 3.2 * night * flick;
+  }
+  for (const f of FIRES) {
+    fireData.set([f.x, f.y - 0.16, f.z, 0.5, 0.09, 0.075, 0.07, 1], k * 8); k++;   // the iron basket
+    if (night <= 0.01) continue;
+    for (let c = 0; c < FIRE_CUBES; c++) {
+      const ph = (t * 1.5 + c / FIRE_CUBES + f.seed) % 1;
+      const up = ph * 0.95, sz = (0.19 - 0.15 * ph) * (0.7 + 0.5 * Math.sin(c * 2.3 + f.seed));
+      const w = 0.11 * ph * Math.sin(t * 4 + c * 2.1 + f.seed), w2 = 0.11 * ph * Math.cos(t * 3.3 + c * 1.7);
+      const heat = 1 - ph;
+      fireData.set([f.x + w, f.y + up, f.z + w2, Math.max(0.03, sz),
+        3.4 * heat + 0.6, 1.5 * heat * heat + 0.12, 0.25 * heat * heat * heat, 0], k * 8); k++;
+    }
+  }
+  return k;
+}
+
 // ======================= player =======================
 const player = { x: CX + 0.5 * M, y: 0, z: CZ + 1 * M, vx: 0, vy: 0, vz: 0, yaw: Math.PI * 0.75, pitch: -0.08, ground: false, fly: false, eyeSmooth: 0 };
 player.y = heightAt(player.x | 0, player.z | 0) + 2;
-const HW = 12, HH = 86, EYE = 80, STEP = 20;
+const HW = Math.max(1, Math.round(0.24 / VS)), HH = Math.round(1.72 / VS), EYE = Math.round(1.6 / VS), STEP = Math.max(1, Math.round(0.42 / VS));
 const keys = {};
 function boxFree(x0, x1, y0, y1, z0, z1) {
   for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) for (let y = y0; y <= y1; y++) if (solid(x, y, z)) return false;
@@ -746,21 +784,17 @@ function moveAxis(ax, d) {
 
 // ======================= digging =======================
 const HARD = { 1: 1.2, 2: 0.9, 3: 0.9, 4: 0.55, 5: 0.6, 6: 0.6, 7: 0.6, 8: 0.8, 9: 0.25, 10: 1.5, 11: 1.6, 16: 1.3, 17: 1.3, 18: 0.5, 19: 0.6, 20: 1.2 };
-const TOOLS = [4, 8, 14, 24];   // radius in voxels (8, 16, 28, 48 cm)
+const TOOLS = [0.09, 0.18, 0.30, 0.55].map((m) => Math.max(1, Math.round(m / VS)));   // tool radius in voxels
 let tool = 1;
-const dirtyInst = new Map(); // inst -> Set(chunk index)
 let editedCount = 0, voxelsRemoved = 0;
 function ensureEdited(inst) {
   if (inst.bricks) return;
   inst.bricks = Int32Array.from(inst.mod.bricks);
-  inst.base = allocIndir(inst.bricks);
-  inst.chunks = new Map(inst.mod.chunkMeshes);
   inst.mesh = null; inst.meshDirty = true; inst.pending = 0;
   const arr = inst.mod.instances; arr.splice(arr.indexOf(inst), 1);
   editedList.push(inst); editedCount++;
 }
 const editedList = [];
-const changedBricks = new Set();
 function setLocal(inst, x, y, z) {      // remove one voxel (copy-on-write at brick level)
   const m = inst.mod; x -= m.ox; y -= m.oy; z -= m.oz;
   const bi = (x >> 3) + m.nbx * ((y >> 3) + m.nby * (z >> 3));
@@ -773,7 +807,6 @@ function setLocal(inst, x, y, z) {      // remove one voxel (copy-on-write at br
   }
   const k = slot * 256 + ((x & 7) >> 1) + 4 * ((y & 7) + 8 * (z & 7));
   pool.idx[k] &= (x & 1) ? 0x0f : 0xf0;
-  changedBricks.add(inst.id * 4194304 + bi);
 }
 function raycast(ox, oy, oz, dx, dy, dz, maxD) {   // voxel units
   let x = Math.floor(ox), y = Math.floor(oy), z = Math.floor(oz);
@@ -789,17 +822,8 @@ function raycast(ox, oy, oz, dx, dy, dz, maxD) {   // voxel units
 }
 const parts = []; const PMAX = 3000;
 function removeInstVoxel(inst, l) {
-  ensureEdited(inst);
+  ensureEdited(inst); inst.blocksDirty = true; inst.meshDirty = true;
   setLocal(inst, l[0], l[1], l[2]);
-  let s = dirtyInst.get(inst); if (!s) dirtyInst.set(inst, s = new Set());
-  const m = inst.mod, ncx = Math.ceil(m.dx / 32), ncy = Math.ceil(m.dy / 32), ncz = Math.ceil(m.dz / 32);
-  const lx = l[0] - m.ox, ly = l[1] - m.oy, lz = l[2] - m.oz;
-  // the chunk and its neighbours when near a border (8 cm faces change across chunk borders)
-  for (const [ax, ay, az] of [[0, 0, 0], [-4, 0, 0], [4, 0, 0], [0, -4, 0], [0, 4, 0], [0, 0, -4], [0, 0, 4]]) {
-    const cx = (lx + ax) >> 5, cy = (ly + ay) >> 5, cz = (lz + az) >> 5;
-    if (cx < 0 || cy < 0 || cz < 0 || cx >= ncx || cy >= ncy || cz >= ncz) continue;
-    s.add(cx + ncx * (cy + ncy * cz));
-  }
 }
 // Flood fill from the ground and from the border of the box: solid voxels not reached are floating and fall.
 let collapsedTotal = 0;
@@ -860,6 +884,119 @@ function collapse(x0, y0, z0, x1, y1, z1) {
   collapsedTotal += res.n;
   return res;
 }
+// ---- whole-building check: islands of 8 cm cells no longer linked to the ground fall (debounced after digging)
+// Each instance's occupied 4^3 blocks are cached (per module, or per edited instance). A block marks every world
+// cell its span overlaps, so pieces that touch always link: the test can only miss a collapse, never invent one.
+const structTouched = new Set(); let structTimer = 0, structFallen = 0;
+function fromLocal(inst, lx, lz) {
+  const r = inst.r;
+  if (r === 0) return [inst.x + lx, inst.z + lz];
+  if (r === 1) return [inst.x + lz, inst.z - lx - 1];
+  if (r === 2) return [inst.x - lx - 1, inst.z - lz - 1];
+  return [inst.x - lz - 1, inst.z + lx];
+}
+function blocksOf(inst) {
+  const owner_ = inst.bricks ? inst : inst.mod;
+  if (owner_.blocks && !(inst.bricks && inst.blocksDirty)) return owner_.blocks;
+  const m = inst.mod, bk = inst.bricks || m.bricks, out = [];
+  for (let bz = 0; bz < m.nbz; bz++) for (let by = 0; by < m.nby; by++) for (let bx = 0; bx < m.nbx; bx++) {
+    const e = bk[bx + m.nbx * (by + m.nby * bz)];
+    if (e === 0) continue;
+    for (let sz = 0; sz < 2; sz++) for (let sy = 0; sy < 2; sy++) for (let sx = 0; sx < 2; sx++) {
+      let any = e > 0;
+      if (!any) {
+        const o = (-e - 1) * 256;
+        for (let z = sz * 4; z < sz * 4 + 4 && !any; z++) for (let y = sy * 4; y < sy * 4 + 4 && !any; y++) {
+          const k = o + 4 * (y + 8 * z) + sx * 2; if (pool.idx[k] || pool.idx[k + 1]) any = true;
+        }
+      }
+      if (any) out.push(m.ox + bx * 8 + sx * 4, m.oy + by * 8 + sy * 4, m.oz + bz * 8 + sz * 4);
+    }
+  }
+  owner_.blocks = new Int32Array(out); inst.blocksDirty = false;
+  return owner_.blocks;
+}
+let structRuns = 0;
+function structuralCheck(dry) {
+  structRuns++;
+  // the building: instances linked by overlapping boxes, starting from those just dug
+  const region = new Set(), stack = [...structTouched]; structTouched.clear();
+  const near = (a, b) => !(a.x1 + 2 < b.x0 || b.x1 + 2 < a.x0 || a.y1 + 2 < b.y0 || b.y1 + 2 < a.y0 || a.z1 + 2 < b.z0 || b.z1 + 2 < a.z0);
+  while (stack.length && region.size < 400) {
+    const a = stack.pop(); if (region.has(a)) continue; region.add(a);
+    for (let gx = (a.x0 - 4) >> 6; gx <= (a.x1 + 4) >> 6; gx++) for (let gz = (a.z0 - 4) >> 6; gz <= (a.z1 + 4) >> 6; gz++) {
+      const g = GRID.get(gx * 65536 + gz); if (g) for (const b of g) if (!region.has(b) && near(a, b)) stack.push(b);
+    }
+  }
+  let X0 = 1e9, Y0 = 1e9, Z0 = 1e9, X1 = -1e9, Y1 = -1e9, Z1 = -1e9;
+  for (const i of region) { X0 = Math.min(X0, i.x0); Y0 = Math.min(Y0, i.y0); Z0 = Math.min(Z0, i.z0); X1 = Math.max(X1, i.x1); Y1 = Math.max(Y1, i.y1); Z1 = Math.max(Z1, i.z1); }
+  const cx0 = Math.floor(X0 / 4) - 1, cy0 = Math.floor(Y0 / 4) - 1, cz0 = Math.floor(Z0 / 4) - 1;
+  const nx = Math.floor(X1 / 4) + 2 - cx0, ny = Math.floor(Y1 / 4) + 2 - cy0, nz = Math.floor(Z1 / 4) + 2 - cz0, N = nx * ny * nz;
+  if (N > 6e6) return region;
+  const g = new Uint8Array(N);   // 1 occupied, 2 reached
+  const t0 = performance.now();
+  for (const inst of region) {
+    if (inst.mod.tree) continue;
+    const bl = blocksOf(inst);
+    for (let k = 0; k < bl.length; k += 3) {
+      const lx = bl[k], ly = bl[k + 1], lz = bl[k + 2];
+      const a = fromLocal(inst, lx, lz), b = fromLocal(inst, lx + 3, lz + 3);
+      const qx0 = (Math.min(a[0], b[0]) >> 2) - cx0, qx1 = (Math.max(a[0], b[0]) >> 2) - cx0;
+      const qz0 = (Math.min(a[1], b[1]) >> 2) - cz0, qz1 = (Math.max(a[1], b[1]) >> 2) - cz0;
+      const qy0 = ((inst.y + ly) >> 2) - cy0, qy1 = ((inst.y + ly + 3) >> 2) - cy0;
+      for (let qz = qz0; qz <= qz1; qz++) for (let qy = qy0; qy <= qy1; qy++) for (let qx = qx0; qx <= qx1; qx++) g[qx + nx * (qy + ny * qz)] = 1;
+    }
+  }
+  // anchors: occupied cells at or below the ground of their column
+  const q = new Int32Array(N); let qh = 0, qt = 0;
+  for (let qz = 0; qz < nz; qz++) for (let qx = 0; qx < nx; qx++) {
+    const h = heightAt((cx0 + qx) * 4 + 2, (cz0 + qz) * 4 + 2), top = Math.min(ny - 1, (h >> 2) - cy0);
+    for (let qy = 0; qy <= top; qy++) { const i = qx + nx * (qy + ny * qz); if (g[i] === 1) { g[i] = 2; q[qt++] = i; } }
+  }
+  const sy = nx, sz = nx * ny;
+  while (qh < qt) {
+    const i = q[qh++], x = i % nx, y = ((i / nx) | 0) % ny, z = (i / sz) | 0;
+    if (x > 0 && g[i - 1] === 1) { g[i - 1] = 2; q[qt++] = i - 1; }
+    if (x < nx - 1 && g[i + 1] === 1) { g[i + 1] = 2; q[qt++] = i + 1; }
+    if (y > 0 && g[i - sy] === 1) { g[i - sy] = 2; q[qt++] = i - sy; }
+    if (y < ny - 1 && g[i + sy] === 1) { g[i + sy] = 2; q[qt++] = i + sy; }
+    if (z > 0 && g[i - sz] === 1) { g[i - sz] = 2; q[qt++] = i - sz; }
+    if (z < nz - 1 && g[i + sz] === 1) { g[i + sz] = 2; q[qt++] = i + sz; }
+  }
+  // floating blocks: remove their voxels; one large debris per block (subsampled when many)
+  const fall = [];
+  for (const inst of region) {
+    if (inst.mod.tree) continue;
+    const bl = blocksOf(inst);
+    for (let k = 0; k < bl.length; k += 3) {
+      const lx = bl[k], ly = bl[k + 1], lz = bl[k + 2];
+      const a = fromLocal(inst, lx, lz), b = fromLocal(inst, lx + 3, lz + 3);
+      const i = ((Math.min(a[0], b[0]) >> 2) - cx0) + nx * ((((inst.y + ly) >> 2) - cy0) + ny * ((Math.min(a[1], b[1]) >> 2) - cz0));
+      if (g[i] === 1) fall.push(inst, lx, ly, lz);
+    }
+  }
+  if (!fall.length) return region;
+  if (dry) { const c = {}; for (let k = 0; k < fall.length; k += 4) c[fall[k].mod.name] = (c[fall[k].mod.name] || 0) + 1; dry.push(c); return region; }
+  const every = Math.max(1, Math.ceil(fall.length / 4 / (PMAX - parts.length + 1)));
+  const debris = []; let n = 0;
+  for (let k = 0; k < fall.length; k += 4) {
+    const inst = fall[k], lx = fall[k + 1], ly = fall[k + 2], lz = fall[k + 3], bk = () => inst.bricks || inst.mod.bricks;
+    let first = 0;
+    for (let z = lz; z < lz + 4; z++) for (let y = ly; y < ly + 4; y++) for (let x = lx; x < lx + 4; x++) {
+      const id = VX.getLocal(inst.mod, bk(), pool, x, y, z); if (!id) continue;
+      if (!first) first = id;
+      removeInstVoxel(inst, [x, y, z]); n++;
+    }
+    if (first && (k / 4) % every === 0) {
+      const w = fromLocal(inst, lx + 2, lz + 2);
+      debris.push(w[0], inst.y + ly + 2, w[1], first | 1 << 20 | Math.min(7, 4 + Math.round(Math.cbrt(every))) << 21);
+    }
+  }
+  structFallen += n; collapsedTotal += n; voxelsRemoved += n;
+  spawnDebris(debris); flushEdits();
+  console.info(`effondrement : ${region.size} pièces examinées, ${fall.length / 4} blocs de 8 cm tombés (${n} voxels) en ${(performance.now() - t0).toFixed(0)} ms`);
+  return region;
+}
 function carve(hx, hy, hz) {
   const id0 = voxelAt(hx, hy, hz); const cls = id0 >> 7;
   const R = Math.max(2, Math.round(TOOLS[tool] * (HARD[cls] || 1))), R2 = R * R;
@@ -877,12 +1014,13 @@ function carve(hx, hy, hz) {
           const l = toLocal(inst, x, y, z);
           const id = VX.getLocal(inst.mod, inst.bricks || inst.mod.bricks, pool, l[0], l[1], l[2]);
           if (!id) continue;
-          removeInstVoxel(inst, l); removed++;
+          removeInstVoxel(inst, l); removed++; structTouched.add(inst);
           if ((removed & 15) === 0 || removed < 40) debris.push(x, y, z, id);
         }
   }
   // structural check: anything no longer connected to the ground or to the outside of the work zone falls
-  const fell = collapse(x0 - 24, y0 - 24, z0 - 24, x1 + 24, y1 + 24, z1 + 24);
+  const G = Math.max(3, Math.round(0.5 / VS));
+  const fell = collapse(x0 - G, y0 - G, z0 - G, x1 + G, y1 + G, z1 + G);
   removed += fell.n;
   for (let i = 0; i < fell.debris.length; i += 4) debris.push(fell.debris[i], fell.debris[i + 1], fell.debris[i + 2], fell.debris[i + 3]);
   // terrain
@@ -903,7 +1041,11 @@ function carve(hx, hy, hz) {
   }
   voxelsRemoved += removed;
   for (const tk of tilesTouched) { const nd = TNODES.get(tkey(Math.floor(tk / 4096) * 128, (tk % 4096) * 128, 128)); if (nd) meshNode(nd); }
-  // debris particles
+  spawnDebris(debris);
+  flushEdits();
+  if (structTouched.size) { clearTimeout(structTimer); structTimer = setTimeout(structuralCheck, 350); }
+}
+function spawnDebris(debris) {
   for (let i = 0; i < debris.length && parts.length < PMAX; i += 4) {
     const raw = debris[i + 3], big = (raw >> 20) & 1, sc = (raw >> 21) & 7;
     const c = palRGB(raw & 0xffff); const j = VX.hash2(debris[i], debris[i + 2], debris[i + 1]);
@@ -912,34 +1054,8 @@ function carve(hx, hy, hz) {
       vx: (Math.random() - 0.5) * (big ? 0.6 : 2.5), vy: big ? 0 : Math.random() * 3, vz: (Math.random() - 0.5) * (big ? 0.6 : 2.5),
       s: VS * (big ? Math.max(1, sc) * (1 + Math.random() * 0.3) : 1 + Math.random() * 1.5), c: lin, life: (big ? 5 : 2.5) + Math.random() * 2 });
   }
-  flushEdits();
 }
-function flushEdits() {
-  // atlas + indirection
-  for (const key of changedBricks) {
-    const inst = instances[Math.floor(key / 4194304)], bi = key % 4194304;
-    let e = inst.bricks[bi];
-    if (e < 0) {
-      const slot = -e - 1, a = pool.idx; let any = false; for (let i = slot * 256; i < slot * 256 + 256; i++) if (a[i]) { any = true; break; }
-      if (!any) { inst.bricks[bi] = 0; e = 0; } else uploadBrick(slot);
-    }
-    uploadIndir(inst.base + bi, new Uint32Array([encB(e)]));
-  }
-  changedBricks.clear();
-  // remesh chunks
-  for (const [inst, set] of dirtyInst) {
-    const m = inst.mod, ncx = Math.ceil(m.dx / 32), ncy = Math.ceil(m.dy / 32);
-    for (const c of set) {
-      const cx = c % ncx, cy = Math.floor(c / ncx) % ncy, cz = Math.floor(c / (ncx * ncy));
-      const N = 40, block = new Uint16Array(N * N * N);
-      const bx = m.ox + cx * 32 - 4, by = m.oy + cy * 32 - 4, bz = m.oz + cz * 32 - 4;
-      for (let z = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) block[x + N * (y + N * z)] = VX.getLocal(m, inst.bricks, pool, bx + x, by + y, bz + z);
-      const job = ++jobSeq; inst.pending++;
-      jobs.set(job, (r) => { inst.pending--; if (r.v) inst.chunks.set(c, r.v); else inst.chunks.delete(c); inst.meshDirty = true; });
-      nextW().postMessage({ type: 'chunk', job, block, x0: bx, y0: by, z0: bz }, [block.buffer]);
-    }
-  }
-  dirtyInst.clear();
+function flushEdits() { /* meshes are rebuilt from meshDirty in the main loop */ 
 }
 
 // ======================= input =======================
@@ -957,6 +1073,12 @@ document.addEventListener('mousemove', (e) => {
   player.yaw -= e.movementX * 0.0022; player.pitch = Math.max(-1.55, Math.min(1.55, player.pitch - e.movementY * 0.0022));
 });
 document.addEventListener('mouseup', (e) => { if (e.button === 0) digging = false; if (e.button === 2) dragLook = false; });
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Comma' || e.code === 'Semicolon' || e.code === 'BracketLeft' || e.code === 'BracketRight') {
+    const d = (e.code === 'Comma' || e.code === 'BracketLeft') ? -0.012 : 0.012;
+    TOD = (TOD + d + 1) % 1; updateSky(); hud();
+  } else if (e.code === 'KeyN') { skyAuto = !skyAuto; hud(); }
+});
 document.addEventListener('wheel', (e) => { tool = Math.max(0, Math.min(TOOLS.length - 1, tool + Math.sign(e.deltaY))); updTool(); });
 document.addEventListener('keydown', (e) => {
   keys[e.code] = true;
@@ -966,7 +1088,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyB') startBench();
 });
 document.addEventListener('keyup', (e) => { keys[e.code] = false; });
-function updTool() { $('tool').textContent = `Outil : rayon ${TOOLS[tool] * 2} cm (molette ou 1-4)`; }
+function updTool() { $('tool').textContent = `Outil : rayon ${Math.round(TOOLS[tool] * VS * 100)} cm (molette ou 1-4)`; }
 updTool();
 for (const el of document.querySelectorAll('[data-q]')) el.addEventListener('change', () => {
   const k = el.dataset.q; Q[k] = el.type === 'checkbox' ? el.checked : +el.value; resize();
@@ -1012,9 +1134,38 @@ gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, shad
 gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE);
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 MEM.shadow = SH * SH * 4;
+
+// high dynamic range target, so the sun can be brighter than white and bloom has something to catch
+const floatRT = gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float');
+const HDRFMT = floatRT ? gl.RGBA16F : gl.RGBA8;
+let hdrTex = null, hdrDepth = null, hdrFB = null, bloomTex = [null, null], bloomFB = [null, null], bloomW = 0, bloomH = 0;
+function makeTargets(w, h) {
+  for (const t of [hdrTex, hdrDepth, bloomTex[0], bloomTex[1]]) if (t) gl.deleteTexture(t);
+  for (const f of [hdrFB, bloomFB[0], bloomFB[1]]) if (f) gl.deleteFramebuffer(f);
+  hdrTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+  gl.texStorage2D(gl.TEXTURE_2D, 1, HDRFMT, w, h);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  hdrDepth = gl.createRenderbuffer(); gl.bindRenderbuffer(gl.RENDERBUFFER, hdrDepth);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, w, h);
+  hdrFB = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, hdrFB);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, hdrTex, 0);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, hdrDepth);
+  bloomW = Math.max(1, w >> 2); bloomH = Math.max(1, h >> 2);
+  for (let i = 0; i < 2; i++) {
+    bloomTex[i] = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, bloomTex[i]);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, HDRFMT, bloomW, bloomH);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    bloomFB[i] = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, bloomFB[i]);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, bloomTex[i], 0);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  MEM.hdr = (w * h + bloomW * bloomH * 2) * (floatRT ? 8 : 4) + w * h * 4;
+}
 const instBuf = gl.createBuffer(); let instCap = 0;
 const cubeBuf = gl.createBuffer(); {
-  const v = []; const F = [[0, 1, 2, 0, 2, 3]];
+  const v = [];
   const c = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]];
   const faces = [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [3, 7, 6, 2], [0, 4, 7, 3], [1, 2, 6, 5]];
   for (const f of faces) for (const k of [0, 1, 2, 0, 2, 3]) v.push(...c[f[k]]);
@@ -1031,108 +1182,179 @@ const waterBuf = gl.createBuffer(); {
 }
 const vao = gl.createVertexArray();
 
-const SUN = (() => { const v = [0.45, 0.62, 0.38]; const l = Math.hypot(...v); return v.map((x) => x / l); })();
+// ---------------- sky, time of day, and its spherical harmonic ----------------
+// The hour only changes a handful of RGB numbers. Everything baked into the geometry
+// (openness, bent normals, the village sky volume) stays valid, which is the whole point.
+const SKY_KEY = [   // by sun elevation (sin of the altitude)
+  { e: -0.35, sun: [0.030, 0.042, 0.085], zen: [0.011, 0.018, 0.042], hor: [0.030, 0.042, 0.072], haze: 0.3 },
+  { e: -0.06, sun: [0.42, 0.26, 0.22], zen: [0.045, 0.062, 0.145], hor: [0.26, 0.17, 0.19], haze: 1.5 },
+  { e: 0.035, sun: [3.30, 1.30, 0.42], zen: [0.085, 0.135, 0.400], hor: [0.92, 0.50, 0.30], haze: 2.1 },
+  { e: 0.18, sun: [4.30, 2.85, 1.70], zen: [0.130, 0.235, 0.620], hor: [0.80, 0.70, 0.62], haze: 1.4 },
+  { e: 0.50, sun: [4.60, 4.25, 3.80], zen: [0.165, 0.330, 0.760], hor: [0.620, 0.715, 0.870], haze: 1.0 },
+  { e: 0.90, sun: [4.70, 4.45, 4.10], zen: [0.175, 0.350, 0.800], hor: [0.640, 0.740, 0.900], haze: 0.9 },
+];
+let TOD = 0.70;                       // 0.25 sunrise, 0.5 noon, 0.75 sunset
+let skyAuto = false;
+const SKY = { sun: [0, 1, 0], el: 1, sunCol: [1, 1, 1], zen: [0, 0, 0], hor: [0, 0, 0], grnd: [0, 0, 0], haze: 1, exposure: 1, fog: 0.0018, L0: [0, 0, 0], L1r: [0, 0, 0], L1g: [0, 0, 0], L1b: [0, 0, 0] };
+const GROUND_ALBEDO = [0.26, 0.30, 0.19];
+function skyColJS(d, S) {
+  const up = Math.max(-1, Math.min(1, d[1]));
+  const mu = d[0] * S.sun[0] + d[1] * S.sun[1] + d[2] * S.sun[2];
+  const t = Math.pow(Math.max(0, up), 0.42);
+  const m1 = Math.pow(Math.max(mu, 0), 10), m2 = Math.pow(Math.max(mu, 0), 2.5);
+  const g = VX.smooth(-0.12, 0.02, up), c = [0, 0, 0];
+  for (let k = 0; k < 3; k++) {
+    const v = S.hor[k] + (S.zen[k] - S.hor[k]) * t + S.sunCol[k] * (0.22 * m1 + 0.05 * m2) * S.haze;
+    c[k] = S.grnd[k] + (v - S.grnd[k]) * g;
+  }
+  return c;
+}
+const SH_DIRS = (() => {               // Fibonacci sphere, used to project the sky onto its harmonic
+  const n = 160, a = [];
+  for (let i = 0; i < n; i++) {
+    const y = 1 - (i + 0.5) * 2 / n, r = Math.sqrt(Math.max(0, 1 - y * y)), th = Math.PI * (1 + Math.sqrt(5)) * i;
+    a.push([Math.cos(th) * r, y, Math.sin(th) * r]);
+  }
+  return a;
+})();
+function updateSky() {
+  const u = (TOD - 0.25) * 2;
+  const el = Math.sin(u * Math.PI) * 1.05, az = -0.75 + u * 2.6;
+  SKY.sun = [Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az)];
+  const e = SKY.sun[1]; SKY.el = e;   // real sun elevation, kept before the moon flips the vector
+  let i = 0; while (i < SKY_KEY.length - 2 && e > SKY_KEY[i + 1].e) i++;
+  const A = SKY_KEY[i], B = SKY_KEY[i + 1];
+  const f = Math.max(0, Math.min(1, (e - A.e) / (B.e - A.e))), ff = f * f * (3 - 2 * f);
+  const lerp3 = (p, q) => [p[0] + (q[0] - p[0]) * ff, p[1] + (q[1] - p[1]) * ff, p[2] + (q[2] - p[2]) * ff];
+  SKY.sunCol = lerp3(A.sun, B.sun); SKY.zen = lerp3(A.zen, B.zen); SKY.hor = lerp3(A.hor, B.hor);
+  SKY.haze = A.haze + (B.haze - A.haze) * ff;
+  if (e < 0.02) {                       // below the horizon the light comes from the moon, from the other side
+    const k = Math.max(0, Math.min(1, (0.02 - e) / 0.12));
+    SKY.sun = [-SKY.sun[0] * k + SKY.sun[0] * (1 - k), Math.abs(SKY.sun[1]) * k + SKY.sun[1] * (1 - k), -SKY.sun[2] * k + SKY.sun[2] * (1 - k)];
+    const l = Math.hypot(...SKY.sun) || 1; SKY.sun = SKY.sun.map((v) => v / l);
+  }
+  // the ground sends part of the sky back up: this is the one bounce we keep, and it is free
+  const skyAvg = [(SKY.zen[0] + SKY.hor[0] * 2) / 3, (SKY.zen[1] + SKY.hor[1] * 2) / 3, (SKY.zen[2] + SKY.hor[2] * 2) / 3];
+  const sunUp = Math.max(0, SKY.sun[1]);
+  SKY.grnd = [0, 1, 2].map((k) => (skyAvg[k] * 0.9 + SKY.sunCol[k] * sunUp * 0.30) * GROUND_ALBEDO[k]);
+  // project onto the order-1 harmonic
+  const w = 4 * Math.PI / SH_DIRS.length;
+  const L0 = [0, 0, 0], L1 = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for (const d of SH_DIRS) {
+    const c = skyColJS(d, SKY);
+    for (let k = 0; k < 3; k++) { L0[k] += c[k] * 0.282095 * w; L1[k][0] += c[k] * 0.488603 * d[0] * w; L1[k][1] += c[k] * 0.488603 * d[1] * w; L1[k][2] += c[k] * 0.488603 * d[2] * w; }
+  }
+  SKY.L0 = L0; SKY.L1r = L1[0]; SKY.L1g = L1[1]; SKY.L1b = L1[2];
+  const lum = 0.2126 * SKY.hor[0] + 0.7152 * SKY.hor[1] + 0.0722 * SKY.hor[2];
+  SKY.exposure = Math.max(0.75, Math.min(3.2, 0.78 / Math.max(0.03, lum)));
+  SKY.fog = 0.00085 + 0.0011 * Math.max(0, (SKY.haze - 1) / 1.2);
+}
+updateSky();
+
 function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 1) * Q.scale;
-  canvas.width = Math.round(canvas.clientWidth * dpr); canvas.height = Math.round(canvas.clientHeight * dpr);
+  canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr)); canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
+  makeTargets(canvas.width, canvas.height);
 }
 window.addEventListener('resize', resize); resize();
 
-let stats = { tris: 0, draws: 0, traced: 0, terr: 0 };
+let stats = { tris: 0, draws: 0, terr: 0 };
 function bindMesh(mesh) {
   gl.bindBuffer(gl.ARRAY_BUFFER, mesh.b);
-  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.SHORT, false, 8, 0);
-  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 2, gl.UNSIGNED_BYTE, false, 8, 6);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.SHORT, false, 16, 0);
+  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 2, gl.UNSIGNED_BYTE, false, 16, 6);
+  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.BYTE, true, 16, 8);
+  gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 1, gl.UNSIGNED_SHORT, false, 16, 12);
 }
-function setModuleUniforms(pr, mod, base) {
-  gl.uniform3i(pr.u.u_nb, mod.nbx, mod.nby, mod.nbz); gl.uniform3i(pr.u.u_mmin, mod.ox, mod.oy, mod.oz);
-  gl.uniform3i(pr.u.u_mdim, mod.dx, mod.dy, mod.dz); gl.uniform1i(pr.u.u_base, base);
-}
-// LOD: 0 = micro-traced (8 cm faces, 2 cm per pixel) < 30 m < 1 = 8 cm raster < 60 m < 2 = 16 cm raster
-function lodFor(d) { const s = Q.dist; return d < 25 * s ? 0 : d < 40 * s ? 1 : d < 75 * s ? 2 : 3; }
-const LODSTEP = [0, 4, 8, 16];
+// 10 cm up close, 20 cm, then 40 cm
+function lodFor(d) { const s = Q.dist; return d < 32 * s ? 0 : d < 85 * s ? 1 : 2; }
 function setCommon(pr, vp, lvp) {
   gl.useProgram(pr.p);
   const u = pr.u;
   gl.uniformMatrix4fv(u.u_vp, false, vp);
   if (u.u_lvp) gl.uniformMatrix4fv(u.u_lvp, false, lvp);
-  gl.uniform3f(u.u_cam, camX, camY, camZ); gl.uniform1f(u.u_vs, VS);
-  if (u.u_camvox) gl.uniform3f(u.u_camvox, camX / VS, camY / VS, camZ / VS);
-  if (u.u_atlas) {
-    gl.uniform1i(u.u_atlas, 0); gl.uniform1i(u.u_indir, 1); gl.uniform1i(u.u_pal, 2); gl.uniform1i(u.u_shadow, 3); gl.uniform1i(u.u_bpal, 4);
+  gl.uniform3f(u.u_cam, camX, camY, camZ); if (u.u_vs) gl.uniform1f(u.u_vs, VS);
+  if (u.u_pal) {
+    gl.uniform1i(u.u_pal, 2); gl.uniform1i(u.u_shadow, 3); gl.uniform1i(u.u_skyvol, 5);
     gl.uniform1i(u.u_ao, Q.ao ? 1 : 0); gl.uniform1i(u.u_shadows, Q.shadows ? 1 : 0);
-    gl.uniform3fv(u.u_sun, SUN); gl.uniform3f(u.u_sunCol, 2.5, 2.2, 1.8); gl.uniform1f(u.u_fog, 0.0022);
+    gl.uniform4fv(u.u_mat, MAT);
+    gl.uniform4fv(u.u_fires, fireUni);
+    gl.uniform3f(u.u_volMin, VOL_ORG[0] * VS, VOL_ORG[1] * VS, VOL_ORG[2] * VS);
+    gl.uniform3f(u.u_volScale, 1 / (VOLN[0] * VOL_C * VS), 1 / (VOLN[1] * VOL_C * VS), 1 / (VOLN[2] * VOL_C * VS));
+    setSkyUniforms(pr);
+    gl.uniform1f(u.u_fog, SKY.fog); gl.uniform1f(u.u_exposure, SKY.exposure);
+    gl.uniform3fv(u.u_shL0, SKY.L0); gl.uniform3fv(u.u_shL1r, SKY.L1r); gl.uniform3fv(u.u_shL1g, SKY.L1g); gl.uniform3fv(u.u_shL1b, SKY.L1b);
   }
 }
+function setSkyUniforms(pr) {
+  const u = pr.u;
+  if (u.u_zen) gl.uniform3fv(u.u_zen, SKY.zen);
+  if (u.u_hor) gl.uniform3fv(u.u_hor, SKY.hor);
+  if (u.u_grnd) gl.uniform3fv(u.u_grnd, SKY.grnd);
+  if (u.u_sunCol) gl.uniform3fv(u.u_sunCol, SKY.sunCol);
+  if (u.u_sun) gl.uniform3fv(u.u_sun, SKY.sun);
+  if (u.u_haze) gl.uniform1f(u.u_haze, SKY.haze);
+}
 function drawScene(shadowPass, vp, lvp, P) {
-  const PR = shadowPass ? PS : P_RASTER, PRT = shadowPass ? PS : PT;
+  const PR = shadowPass ? PS : P_MAIN;
   setCommon(PR, vp, lvp);
+  gl.disableVertexAttribArray(4); gl.vertexAttrib4f(4, 0, 0, 0, 0);
   // terrain
-  gl.disableVertexAttribArray(2); gl.vertexAttrib4f(2, 0, 0, 0, 0);
-  if (PR.u.u_mode) gl.uniform1i(PR.u.u_mode, 1);
-  for (const nd of (shadowPass ? [] : tdraw)) {
+  for (const nd of tdraw) {
     const S = nd.S * VS, cx = nd.x0 * VS + S / 2 - camX, cz = nd.z0 * VS + S / 2 - camZ;
     const hy = heightAt(nd.x0 + (nd.S >> 1), nd.z0 + (nd.S >> 1)) * VS - camY;
     if (!visible(P, cx, hy, cz, S * 0.75 + 15)) continue;
     bindMesh(nd.mesh); gl.drawElements(gl.TRIANGLES, nd.mesh.quads * 6, gl.UNSIGNED_INT, 0);
     stats.draws++; stats.tris += nd.mesh.quads * 2; stats.terr += nd.mesh.quads * 2;
   }
-  if (PR.u.u_mode) gl.uniform1i(PR.u.u_mode, 0);
-  // unedited instances: bucket by module and LOD, one instanced draw per bucket
+  // untouched instances: bucket by module and level of detail, one instanced draw per bucket
   const data = []; const draws = [];
   for (const mod of usedMods) {
-    if (!mod.instances.length) continue;
-    const buckets = [[], [], [], []];
+    if (!mod.instances.length || !mod.lod) continue;
+    const buckets = [[], [], []];
     for (const inst of mod.instances) {
       const x = inst.cx - camX, y = inst.cy - camY, z = inst.cz - camZ;
       if (!visible(P, x, y, z, inst.rad)) continue;
       const d = Math.max(0, Math.hypot(x, y, z) - inst.rad * 0.5);
-      let l = lodFor(d); if (shadowPass) l = Math.min(3, Math.max(l + 1, 1));
+      let l = lodFor(d); if (shadowPass) l = Math.min(2, l + 1);
       while (l > 0 && !mod.lod[l]) l--;
-      if (l === 0 && !mod.lod[0]) continue;
+      if (!mod.lod[l]) continue;
       buckets[l].push(inst);
     }
-    for (let l = 0; l < 4; l++) if (buckets[l].length && mod.lod[l]) {
+    for (let l = 0; l < 3; l++) if (buckets[l].length && mod.lod[l]) {
       draws.push([mod, l, data.length / 4, buckets[l].length]);
       for (const i of buckets[l]) data.push(i.x, i.y, i.z, i.r);
     }
   }
   const arr = new Float32Array(data);
   gl.bindBuffer(gl.ARRAY_BUFFER, instBuf);
-  if (arr.byteLength > instCap) { instCap = arr.byteLength * 2; gl.bufferData(gl.ARRAY_BUFFER, instCap, gl.DYNAMIC_DRAW); }
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, arr);
-  for (const pass of [0, 1]) {          // raster LODs first, then the traced ring
-    const pr = pass === 0 ? PR : PRT;
-    if (pass === 1) setCommon(pr, vp, lvp);
-    for (const [mod, l, off, n] of draws) {
-      if ((l === 0) !== (pass === 1)) continue;
-      const mesh = mod.lod[l];
-      if (pr.u.u_nb) { setModuleUniforms(pr, mod, mod.base); if (pr.u.u_lodstep) gl.uniform1i(pr.u.u_lodstep, LODSTEP[l]); }
-      bindMesh(mesh);
-      gl.bindBuffer(gl.ARRAY_BUFFER, instBuf);
-      gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 16, off * 16); gl.vertexAttribDivisor(2, 1);
-      gl.drawElementsInstanced(gl.TRIANGLES, mesh.quads * 6, gl.UNSIGNED_INT, 0, n);
-      stats.draws++; stats.tris += mesh.quads * 2 * n;
-      if (l === 0) stats.traced += n; stats['l' + l] = (stats['l' + l] || 0) + mesh.quads * 2 * n;
-    }
-    gl.vertexAttribDivisor(2, 0); gl.disableVertexAttribArray(2);
+  if (arr.byteLength > instCap) { instCap = Math.max(1024, arr.byteLength * 2); gl.bufferData(gl.ARRAY_BUFFER, instCap, gl.DYNAMIC_DRAW); }
+  if (arr.byteLength) gl.bufferSubData(gl.ARRAY_BUFFER, 0, arr);
+  for (const [mod, l, off, n] of draws) {
+    const mesh = mod.lod[l];
+    bindMesh(mesh);
+    gl.bindBuffer(gl.ARRAY_BUFFER, instBuf);
+    gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 4, gl.FLOAT, false, 16, off * 16); gl.vertexAttribDivisor(4, 1);
+    gl.drawElementsInstanced(gl.TRIANGLES, mesh.quads * 6, gl.UNSIGNED_INT, 0, n);
+    stats.draws++; stats.tris += mesh.quads * 2 * n;
+    stats['l' + l] = (stats['l' + l] || 0) + mesh.quads * 2 * n;
   }
-  // edited instances (own bricks, own trace mesh)
+  gl.vertexAttribDivisor(4, 0); gl.disableVertexAttribArray(4);
+  // instances that have been dug into carry their own mesh
   for (const inst of editedList) {
     if (!inst.mesh) continue;
     const x = inst.cx - camX, y = inst.cy - camY, z = inst.cz - camZ;
     if (!visible(P, x, y, z, inst.rad)) continue;
-    gl.vertexAttrib4f(2, inst.x, inst.y, inst.z, inst.r);
-    if (PRT.u.u_nb) setModuleUniforms(PRT, inst.mod, inst.base);
+    gl.vertexAttrib4f(4, inst.x, inst.y, inst.z, inst.r);
     bindMesh(inst.mesh); gl.drawElements(gl.TRIANGLES, inst.mesh.quads * 6, gl.UNSIGNED_INT, 0);
     stats.draws++; stats.tris += inst.mesh.quads * 2;
   }
-  for (const h of HOOKS) { try { h(gl, shadowPass, vp, lvp, [camX, camY, camZ], SUN); } catch (err) { console.error('draw hook', err); } }
+  for (const h of HOOKS) { try { h(gl, shadowPass, vp, lvp, [camX, camY, camZ], SKY.sun); } catch (err) { console.error('draw hook', err); } }
 }
 
 // ======================= HUD =======================
+const hhmm = (t) => { const m = Math.round(((t + 0.5) % 1) * 1440); return String(Math.floor(m / 60)).padStart(2, '0') + ' h ' + String(m % 60).padStart(2, '0'); };
 const fmtB = (b) => b > 1048576 ? (b / 1048576).toFixed(1) + ' Mo' : (b / 1024).toFixed(0) + ' Ko';
-let meshCPU = 0; for (const m of usedMods) for (const v of m.chunkMeshes.values()) meshCPU += v.byteLength;
 let virtualVox = 0; for (const i of instances) virtualVox += i.mod.nvox;
 let uniqueVox = 0; for (const m of usedMods) uniqueVox += m.nvox;
 const LOAD_MS = performance.now() - T0;
@@ -1142,11 +1364,14 @@ $('info').innerHTML = `<b>GPU :</b> ${GPU_NAME}<br>` +
   `<b>Voxels du village :</b> ${(virtualVox / 1e6).toFixed(0)} M (dont ${(uniqueVox / 1e6).toFixed(1)} M stockés une fois) + terrain procédural`;
 let fpsN = 0, fpsT = performance.now(), fps = 0, cpuMs = 0, gpuMs = -1, tqObj = null, tqPending = false;
 function hud() {
-  const mem = MEM.atlas + MEM.indir + MEM.vbo + MEM.shadow + MEM.idx;
+  const mem = MEM.skyvol + MEM.vbo + MEM.shadow + MEM.idx + MEM.hdr;
   let cpuNow = pool.idx.byteLength + pool.pal.byteLength; for (const m of W.mods) cpuNow += m.bricks.byteLength; for (const i of editedList) cpuNow += i.bricks.byteLength;
   $('stats').innerHTML = `<b>${fps.toFixed(0)} img/s</b> · CPU ${cpuMs.toFixed(1)} ms · GPU ${gpuMs >= 0 ? gpuMs.toFixed(1) + ' ms' : 'n/d'}<br>` +
-    `${(stats.tris / 1e6).toFixed(2)} M triangles · ${stats.draws} appels · ${stats.traced} modules micro-tracés · ${canvas.width}×${canvas.height}<br>` +
-    `<b>Mémoire GPU :</b> ${fmtB(mem)} (atlas ${fmtB(MEM.atlas)}, maillages ${fmtB(MEM.vbo)}, ombre ${fmtB(MEM.shadow)})<br>` +
+    `${(stats.tris / 1e6).toFixed(2)} M triangles · ${stats.draws} appels · ${canvas.width}×${canvas.height}<br>` +
+    `<b>Mémoire GPU :</b> ${fmtB(mem)} (maillages ${fmtB(MEM.vbo)}, ombre ${fmtB(MEM.shadow)}, ciel du village ${fmtB(MEM.skyvol)}, image ${fmtB(MEM.hdr)})<br>` +
+    `<b>Heure :</b> ${hhmm(TOD)} (touches , et ; · N : cycle ${skyAuto ? 'en cours' : 'arrêté'}) · soleil ${(Math.asin(Math.max(-1, Math.min(1, SKY.sun[1]))) * 57.3).toFixed(0)}°<br>` +
+    `<b>Précalculs :</b> modules ${PRE.mesh.toFixed(0)} ms · terrain ${PRE.terr.toFixed(0)} ms · ciel du village ${PRE.sky.toFixed(0)} ms` +
+    (PRE.editN ? ` · remaillage après destruction ${PRE.edit.toFixed(0)} ms` : '') + `<br>` +
     `<b>Mémoire voxels CPU :</b> ${fmtB(cpuNow)} · briques mixtes ${pool.n}<br>` +
     `<b>Destruction :</b> ${(voxelsRemoved / 1000).toFixed(1)} k voxels retirés (dont ${(collapsedTotal / 1000).toFixed(1)} k effondrés) · ${editedCount} modules copiés à l'écriture` +
     (player.fly ? '<br><i>Mode vol (F)</i>' : '');
@@ -1213,7 +1438,15 @@ function frame(now) {
     if (h) carve(h.x, h.y, h.z);
   }
   // --- rebuild edited instance meshes
-  for (const inst of editedList) if (inst.meshDirty) { inst.meshDirty = false; const old = inst.mesh; inst.mesh = makeMesh(concat([...inst.chunks.values()])); freeMesh(old); }
+  // --- rebuild the mesh of instances that have been dug into (the grid is built here, meshed in a worker)
+  for (const inst of editedList) {
+    if (!inst.meshDirty || inst.pending) continue;
+    inst.meshDirty = false; inst.pending = 1;
+    const g = VX.moduleGrid(inst.mod, inst.bricks, pool, 0);
+    const job = ++jobSeq;
+    jobs.set(job, (r) => { inst.pending = 0; const old = inst.mesh; inst.mesh = makeMesh(r.v); freeMesh(old); PRE.edit = r.ms || 0; PRE.editN++; });
+    nextW().postMessage({ type: 'grid', job, V: g.V, nx: g.nx, ny: g.ny, nz: g.nz, ox: inst.mod.ox - g.B, oy: inst.mod.oy - g.B, oz: inst.mod.oz - g.B, step: 1 }, [g.V.buffer]);
+  }
   // --- particles
   for (let i = parts.length - 1; i >= 0; i--) {
     const p = parts[i]; p.life -= dt; if (p.life <= 0) { parts.splice(i, 1); continue; }
@@ -1221,67 +1454,96 @@ function frame(now) {
     if (solid(Math.floor(nx / VS), Math.floor(ny / VS), Math.floor(nz / VS))) { p.vy *= -0.25; p.vx *= 0.5; p.vz *= 0.5; } else { p.x = nx; p.y = ny; p.z = nz; }
   }
   selectTerrain(now);
+  const nFire = updateFires(now);   // before the world is drawn: the braziers light it
   // --- matrices (camera-relative)
+  if (skyAuto) { TOD = (TOD + dt / 240) % 1; updateSky(); }
   const proj = persp(70 * Math.PI / 180, canvas.width / canvas.height, 0.05, 900);
   const view = lookDir(fwd, [0, 1, 0]);
   const vp = mul(proj, view);
   const Pc = planes(vp);
-  // light: ortho box of 110 m around the camera, snapped to texels
-  const lview = lookDir([-SUN[0], -SUN[1], -SUN[2]], [0, 1, 0]);
-  const ext = 55, texel = 2 * ext / SH;
+  const SUNV = SKY.sun;
+  // light: ortho box around the camera, snapped to texels so the shadow does not crawl
+  const lview = lookDir([-SUNV[0], -SUNV[1], -SUNV[2]], [0, 1, 0]);
+  const ext = 58, texel = 2 * ext / SH;
   const lc = [lview[0] * camX + lview[4] * camY + lview[8] * camZ, lview[1] * camX + lview[5] * camY + lview[9] * camZ];
   const sx = (Math.round(lc[0] / texel) * texel - lc[0]), sy = (Math.round(lc[1] / texel) * texel - lc[1]);
-  const lproj = ortho(-ext + sx, ext + sx, -ext + sy, ext + sy, -150, 150);
+  const lproj = ortho(-ext + sx, ext + sx, -ext + sy, ext + sy, -220, 220);
   const lvp = mul(lproj, lview);
-  stats = { tris: 0, draws: 0, traced: 0, terr: 0 };
+  stats = { tris: 0, draws: 0, terr: 0 };
   gl.bindVertexArray(vao);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
   gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, palTex);
+  gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_3D, skyvol);
   if (tq && !tqPending) { tqObj = gl.createQuery(); gl.beginQuery(tq.TIME_ELAPSED_EXT, tqObj); }
   if (Q.shadows) {
     gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, shadowFB); gl.viewport(0, 0, SH, SH);
-    gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 3);
+    gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.6, 3);
     gl.cullFace(gl.FRONT);
     drawScene(true, lvp, lvp, planes(lvp));
     gl.disable(gl.POLYGON_OFFSET_FILL); gl.cullFace(gl.BACK);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, shadowTex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, hdrFB);
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clear(gl.DEPTH_BUFFER_BIT);
   // sky
-  gl.disable(gl.DEPTH_TEST); gl.useProgram(PK.p);
-  gl.uniformMatrix4fv(PK.u.u_ivp, false, inv(vp)); gl.uniform3fv(PK.u.u_sun, SUN);
-  gl.drawArrays(gl.TRIANGLES, 0, 3); gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.useProgram(PK.p);
+  gl.uniformMatrix4fv(PK.u.u_ivp, false, inv(vp)); setSkyUniforms(PK);
+  gl.uniform1f(PK.u.u_time, now / 1000); gl.uniform1f(PK.u.u_exposure, SKY.exposure);
+  gl.drawArrays(gl.TRIANGLES, 0, 3); gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
   // world
-  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_3D, atlas);
-  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, indir);
-  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, palTex);
-  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, shadowTex);
-  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, bpal);
   drawScene(false, vp, lvp, Pc);
-  // water (blended, after opaque geometry)
+  // water, blended over the opaque pass
   gl.useProgram(PW.p); gl.uniformMatrix4fv(PW.u.u_vp, false, vp); gl.uniform3f(PW.u.u_cam, camX, camY, camZ);
-  gl.uniform3fv(PW.u.u_sun, SUN); gl.uniform1f(PW.u.u_time, now / 1000); gl.uniform1f(PW.u.u_fog, 0.0022);
+  setSkyUniforms(PW); gl.uniform1f(PW.u.u_time, now / 1000); gl.uniform1f(PW.u.u_fog, SKY.fog); gl.uniform1f(PW.u.u_exposure, SKY.exposure);
   gl.bindBuffer(gl.ARRAY_BUFFER, waterBuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0); gl.vertexAttribDivisor(0, 0);
-  gl.disableVertexAttribArray(1); gl.disableVertexAttribArray(2);
+  for (const i of [1, 2, 3, 4]) gl.disableVertexAttribArray(i);
   gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.disable(gl.CULL_FACE);
-  for (const q of ponds) { gl.uniform4f(PW.u.u_pond, q.x * VS, (q.level + 0.0) * VS, q.r * VS * 1.0, q.z * VS); gl.drawArrays(gl.TRIANGLES, 0, 32 * 32 * 6); }
+  for (const q of ponds) { gl.uniform4f(PW.u.u_pond, q.x * VS, q.level * VS, q.r * VS, q.z * VS); gl.drawArrays(gl.TRIANGLES, 0, 32 * 32 * 6); }
   gl.disable(gl.BLEND); gl.depthMask(true); gl.enable(gl.CULL_FACE);
-  // particles
-  if (parts.length) {
-    const pd = new Float32Array(parts.length * 8);
+  // debris
+  if (parts.length || nFire) {
+    const pd = new Float32Array((parts.length + nFire) * 8);
     parts.forEach((p, i) => { pd.set([p.x, p.y, p.z, p.s, p.c[0], p.c[1], p.c[2], 1], i * 8); });
-    gl.useProgram(PP.p); gl.uniformMatrix4fv(PP.u.u_vp, false, vp); gl.uniform3f(PP.u.u_cam, camX, camY, camZ); gl.uniform3fv(PP.u.u_sun, SUN);
+    if (nFire) pd.set(fireData.subarray(0, nFire * 8), parts.length * 8);
+    const nDraw = parts.length + nFire;
+    gl.useProgram(PP.p); gl.uniformMatrix4fv(PP.u.u_vp, false, vp); gl.uniform3f(PP.u.u_cam, camX, camY, camZ);
+    gl.uniform3fv(PP.u.u_sun, SUNV); gl.uniform3fv(PP.u.u_shL0, SKY.L0); gl.uniform3fv(PP.u.u_sunCol, SKY.sunCol); gl.uniform1f(PP.u.u_exposure, SKY.exposure);
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeBuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 12, 0); gl.vertexAttribDivisor(0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, partBuf); gl.bufferData(gl.ARRAY_BUFFER, pd, gl.STREAM_DRAW);
     gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 32, 0); gl.vertexAttribDivisor(1, 1);
     gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 32, 16); gl.vertexAttribDivisor(2, 1);
     gl.disable(gl.CULL_FACE);
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, parts.length);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, nDraw);
     gl.enable(gl.CULL_FACE);
     gl.vertexAttribDivisor(1, 0); gl.vertexAttribDivisor(2, 0); gl.disableVertexAttribArray(2);
   }
+  // --- bloom and tone mapping
+  gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
+  for (const i of [0, 1, 2, 3, 4]) gl.disableVertexAttribArray(i);
+  if (Q.bloom) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, bloomFB[0]); gl.viewport(0, 0, bloomW, bloomH);
+    gl.useProgram(PBRIGHT.p); gl.uniform1i(PBRIGHT.u.u_src, 0);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.useProgram(PBLUR.p); gl.uniform1i(PBLUR.u.u_src, 0);
+    for (let p = 0; p < 2; p++) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bloomFB[1]); gl.uniform2f(PBLUR.u.u_dir, 1 / bloomW, 0);
+      gl.bindTexture(gl.TEXTURE_2D, bloomTex[0]); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bloomFB[0]); gl.uniform2f(PBLUR.u.u_dir, 0, 1 / bloomH);
+      gl.bindTexture(gl.TEXTURE_2D, bloomTex[1]); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.useProgram(PPOST.p);
+  gl.uniform1i(PPOST.u.u_src, 0); gl.uniform1i(PPOST.u.u_bloom, 1);
+  gl.uniform1f(PPOST.u.u_bloomAmt, Q.bloom ? 0.42 : 0.0);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, Q.bloom ? bloomTex[0] : hdrTex);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE);
   if (tq) {
     if (!tqPending && tqObj) { gl.endQuery(tq.TIME_ELAPSED_EXT); tqPending = true; }
     else if (tqPending && gl.getQueryParameter(tqObj, gl.QUERY_RESULT_AVAILABLE)) {
@@ -1292,11 +1554,13 @@ function frame(now) {
   cpuMs = cpuMs * 0.9 + 0.1 * (performance.now() - t0);
   fpsN++; if (now - fpsT > 500) { fps = fpsN * 1000 / (now - fpsT); fpsN = 0; fpsT = now; hud(); }
   let tv = 0; for (const nd of TNODES.values()) if (nd.mesh) tv += nd.mesh.bytes;
-  window.__stats = { st: stats, tnodes: TNODES.size, tdraw: tdraw.length, tvbo: tv, fps, cpuMs, gpuMs, tris: stats.tris, draws: stats.draws, mem: MEM, terrainPending, parts: parts.length, removed: voxelsRemoved, collapsed: collapsedTotal };
+  window.__stats = { st: stats, tnodes: TNODES.size, tdraw: tdraw.length, tvbo: tv, fps, cpuMs, gpuMs, tris: stats.tris, draws: stats.draws, mem: MEM, terrainPending, parts: parts.length, removed: voxelsRemoved, pre: PRE, sunY: SKY.sun[1], tod: TOD, fires: fireUni[3], collapsed: collapsedTotal, fallen: structFallen, structRuns };
   requestAnimationFrame(frame);
 }
 // test hooks (used by automated screenshots)
-window.__game = { startBench, player, carve, raycast, keys, Q, setTool: (t) => { tool = t; updTool(); }, get cam() { return [camX, camY, camZ]; }, M, CX, CZ, heightAt, instances, gl, VS, solid, voxelAt, addDrawHook: (f) => HOOKS.push(f), addUpdate: (f) => UPDATES.push(f) };
+window.__game = {
+  dig() { const p = player; const f = [-Math.sin(p.yaw) * Math.cos(p.pitch), Math.sin(p.pitch), -Math.cos(p.yaw) * Math.cos(p.pitch)]; const h = raycast(camX / VS, camY / VS, camZ / VS, f[0], f[1], f[2], 7 / VS); if (h) carve(h.x, h.y, h.z); return !!h; }, startBench, player, carve, raycast, keys, Q, setTool: (t) => { tool = t; updTool(); }, get cam() { return [camX, camY, camZ]; }, M, CX, CZ, heightAt, instances, gl, VS, solid, voxelAt, addDrawHook: (f) => HOOKS.push(f), skyUniforms: () => SKY, addUpdate: (f) => UPDATES.push(f), setTOD: (t) => { TOD = t; updateSky(); },
+  structTest: (dry) => { const seen = new Set(); let regions = 0; const t = performance.now(); for (const i of instances) { if (seen.has(i)) continue; structTouched.add(i); const r = structuralCheck(dry); regions++; if (r) for (const j of r) seen.add(j); } return { regions, fallen: structFallen, ms: performance.now() - t }; } };
 window.dispatchEvent(new Event('village-ready'));
 requestAnimationFrame(frame);
 })().catch((e) => { console.error(e); document.getElementById('loadmsg').textContent = 'Erreur : ' + e.message; });

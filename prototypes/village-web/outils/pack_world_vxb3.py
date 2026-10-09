@@ -5,6 +5,8 @@ from scipy.cluster.vq import kmeans2
 from scipy.spatial import cKDTree
 
 VOX = sys.argv[1]; OUT = sys.argv[2]
+VS_MM = int(sys.argv[3]) if len(sys.argv) > 3 else 20      # voxel edge in millimetres
+R = 20.0 / VS_MM                                           # scale factor from the original 2 cm pipeline
 CLASSES = ['air', 'plaster', 'wood', 'woodwear', 'rocktrim', 'brick', 'redbrick', 'masonry', 'tiles', 'iron',
            'glass', 'vine', 'leaves', 'bark', 'r14', 'r15', 'grass', 'dirt', 'stone', 'cobble', 'gravel']
 MAT2CLASS = {'MI_Plaster': 1, 'MI_WoodTrim': 2, 'MI_WoodTrim_Wear': 3, 'MI_RockTrim': 4, 'MI_Brick': 5,
@@ -29,7 +31,7 @@ for f in sorted(glob.glob(os.path.join(VOX, '*.npz'))):
         for s, e in zip(starts, ends):
             i0, i1 = order[s], order[e - 1]
             z0, z1 = xyz[i0, 2], xyz[i1, 2]
-            if z1 - z0 < 2 or z1 - z0 > 24: continue
+            if z1 - z0 < max(2, round(2 * R)) or z1 - z0 > max(3, round(24 * R)): continue
             x, y = xyz[i0, 0], xyz[i0, 1]
             for z in range(z0 + 1, z1):
                 if (x, y, z) in occ: continue
@@ -92,7 +94,7 @@ def pack_bits(idx, b):
     return out.astype(np.uint8).tobytes()
 
 used = sorted(c for c in CANON if pal[c].any())
-out = bytearray(b'VXB3') + struct.pack('<HHHH', 1, 1, 1, len(mods))
+out = bytearray(b'VXB3') + struct.pack('<HHHHH', 1, 1, 3, len(mods), VS_MM)   # flags bit 1: voxel size present
 out += struct.pack('<H', len(used))
 for c in used: out += struct.pack('<H', CANON[c]) + pal[c].tobytes()
 stats = []; tagn = [0, 0, 0, 0]; wide = 0

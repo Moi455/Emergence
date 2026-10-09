@@ -8,8 +8,8 @@ from voxelizer.solid import SolidFiller
 from voxelizer.style import ColorStyler
 from voxelizer.lattice import unpack
 
-def run(src, out, seal=0, fill='solid'):
-    cfg = VoxelizeConfig(fill=fill, seal_radius=seal, sharpen=0.0, saturation=1.0, contrast=1.0, max_dense_cells=250_000_000, max_entities=50_000_000)
+def run(src, out, seal=0, fill='solid', vs=0.02):
+    cfg = VoxelizeConfig(voxel_size=vs, fill=fill, seal_radius=seal, sharpen=0.0, saturation=1.0, contrast=1.0, max_dense_cells=250_000_000, max_entities=50_000_000)
     t=time.time()
     scene = load_scene(src, ())
     surf = SurfaceVoxelizer(cfg).voxelize(scene)
@@ -21,4 +21,4 @@ def run(src, out, seal=0, fill='solid'):
     print(f"{src.split('/')[-1]} {len(f.keys)} vox surf={int((f.kind==0).sum())} int={int((f.kind==1).sum())} {time.time()-t:.1f}s notes={scene.notes}", flush=True)
 
 if __name__=='__main__':
-    run(sys.argv[1], sys.argv[2], int(sys.argv[3]) if len(sys.argv)>3 else 0)
+    run(sys.argv[1], sys.argv[2], 0, 'solid', float(sys.argv[3]) if len(sys.argv)>3 else 0.02)

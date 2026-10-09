@@ -150,8 +150,14 @@ const FS_SRC = `#version 300 es
 precision highp float; precision highp sampler2DShadow;
 in vec3 v_rel; in vec3 v_n; in vec2 v_uv; in vec4 v_ls;
 uniform sampler2D u_atlas; uniform sampler2DShadow u_shadow; uniform int u_shadows; uniform vec3 u_sun; uniform float u_fog; uniform int u_depthOnly;
+// lighting of the engine (window.__game.skyUniforms): sky irradiance in order-1 spherical
+// harmonics, sun colour and automatic exposure; output is linear HDR, the engine tonemaps
+uniform vec3 u_shL0, u_shL1r, u_shL1g, u_shL1b, u_sunCol; uniform float u_exposure;
 out vec4 o;
-vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
+vec3 skyIrr(vec3 b){
+  const float A0 = 0.886227 * 0.3183099, A1 = 1.023328 * 0.3183099;
+  return max(vec3(0.0), A0 * u_shL0 + A1 * vec3(dot(u_shL1r, b), dot(u_shL1g, b), dot(u_shL1b, b)));
+}
 void main(){
   if (u_depthOnly == 1) { o = vec4(1.0); return; }
   vec3 nw = normalize(v_n); float dist = length(v_rel);
@@ -166,16 +172,10 @@ void main(){
   }
   vec3 alb = pow(texture(u_atlas, v_uv).rgb, vec3(2.2));
   float ndl = max(dot(nw, u_sun), 0.0);
-  vec3 sky = mix(vec3(0.26, 0.22, 0.17), vec3(0.30, 0.42, 0.66), nw.y * 0.5 + 0.5);
-  vec3 col = alb * (vec3(2.5, 2.2, 1.8) * ndl * shadow + sky * 0.8);
-  vec3 vd = v_rel / max(dist, 1e-3);
-  vec3 fogc = mix(vec3(0.52, 0.62, 0.76), vec3(0.95, 0.80, 0.60), pow(max(dot(vd, u_sun), 0.0), 6.0) * 0.6);
-  col = mix(col, fogc, 1.0 - exp(-max(dist - 25.0, 0.0) * u_fog));
-  col = aces(col * 0.9);
-  float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
-  col = max(mix(vec3(l), col, 1.04), 0.0);
-  col = pow(col, vec3(1.0/2.2));
-  o = vec4(col * col * (3.0 - 2.0 * col) * 0.35 + col * 0.65, 1.0);
+  vec3 col = alb * (skyIrr(nw) + u_sunCol * 0.3183099 * ndl * shadow);
+  vec3 fogc = u_shL0 * 0.282095;                     // mean radiance of the sky
+  col = mix(col, fogc, (1.0 - exp(-max(dist - 25.0, 0.0) * u_fog)) * 0.86);
+  o = vec4(col * u_exposure, 1.0);
 }`;
 
 // ---------------------------------------------------------------- names (the player speaks English)
@@ -189,7 +189,7 @@ function start(G, roster, BASE) {
   const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
   const prog = gl.createProgram(); gl.attachShader(prog, mk(gl.VERTEX_SHADER, VS_SRC)); gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, FS_SRC)); gl.linkProgram(prog);
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
-  const U = {}; for (const n of ['u_bones', 'u_vp', 'u_lvp', 'u_row', 'u_atlas', 'u_shadow', 'u_shadows', 'u_sun', 'u_fog', 'u_depthOnly']) U[n] = gl.getUniformLocation(prog, n);
+  const U = {}; for (const n of ['u_bones', 'u_vp', 'u_lvp', 'u_row', 'u_atlas', 'u_shadow', 'u_shadows', 'u_sun', 'u_fog', 'u_depthOnly', 'u_shL0', 'u_shL1r', 'u_shL1g', 'u_shL1b', 'u_sunCol', 'u_exposure']) U[n] = gl.getUniformLocation(prog, n);
 
   const JMAX = 64, W = JMAX * 4, ROWS = Math.max(1, roster.length);
   const boneTex = gl.createTexture(); gl.activeTexture(gl.TEXTURE7); gl.bindTexture(gl.TEXTURE_2D, boneTex);
@@ -266,7 +266,7 @@ function start(G, roster, BASE) {
   const bySeed = new Map(npcs.map((n) => [n.seed, n]));
   function onMesh(d) {
     const key = d.seed + '/' + d.outfit + '/' + d.lod, t0 = pending.get(key); pending.delete(key);
-    if (d.error) { console.error('villager', d.seed, d.error); workerFailed = workerFailed || 'génération'; return; }
+    if (d.error) { console.error('villager', d.seed, d.error); workerFailed = workerFailed || 'g\u00e9n\u00e9ration'; return; }
     const n = bySeed.get(d.seed); if (!n) return;
     if (d.skel && !n.skel) {
       const index = {}; d.skel.names.forEach((nm, i) => { index[nm] = i; });
@@ -392,11 +392,11 @@ function start(G, roster, BASE) {
       if (Math.abs(da) < Math.max(0.12, 0.35 / d) && d < bd) { bd = d; best = n; }
     }
     const s = best && say.get(best.id);
-    if (best) { const job = JOB(best.job); label.style.display = 'block'; label.innerHTML = `<b>${best.name}</b>${job ? ', ' + job : best.age === 'child' ? ', child' : ''} · ${ACT[best.state] || best.state}` + (s && s.until > now ? `<br><i>“${s.text}”</i>` : ''); }
+    if (best) { const job = JOB(best.job); label.style.display = 'block'; label.innerHTML = `<b>${best.name}</b>${job ? ', ' + job : best.age === 'child' ? ', child' : ''} \u00b7 ${ACT[best.state] || best.state}` + (s && s.until > now ? `<br><i>\u201c${s.text}\u201d</i>` : ''); }
     else label.style.display = 'none';
     if (infoEl && now - infoT > 1000) {
       infoT = now;
-      infoEl.innerHTML = `<b>Villageois :</b> ${stats.ready}/${npcs.length} générés (${NW} workers, ${stats.ready ? (stats.genMs / stats.ready).toFixed(0) + ' ms chacun' : '…'}) · ${drawn.n} dessinés, ${(drawn.tris / 1000).toFixed(0)} k triangles · ${(stats.gpuBytes / 1048576).toFixed(1)} Mo GPU` + (workerFailed ? ` · <b>erreur</b> ${workerFailed}` : '');
+      infoEl.innerHTML = `<b>Villageois :</b> ${stats.ready}/${npcs.length} g\u00e9n\u00e9r\u00e9s (${NW} workers, ${stats.ready ? (stats.genMs / stats.ready).toFixed(0) + ' ms chacun' : '\u2026'}) \u00b7 ${drawn.n} dessin\u00e9s, ${(drawn.tris / 1000).toFixed(0)} k triangles \u00b7 ${(stats.gpuBytes / 1048576).toFixed(1)} Mo GPU` + (workerFailed ? ` \u00b7 <b>erreur</b> ${workerFailed}` : '');
     }
   });
 
@@ -422,6 +422,10 @@ function start(G, roster, BASE) {
     gl.uniform1i(U.u_bones, 7); gl.uniform1i(U.u_shadow, 3); gl.uniform1i(U.u_atlas, 6);
     gl.uniformMatrix4fv(U.u_vp, false, vp); gl.uniformMatrix4fv(U.u_lvp, false, lvp);
     gl.uniform1i(U.u_shadows, !shadowPass && G.Q.shadows ? 1 : 0); gl.uniform3fv(U.u_sun, SUN); gl.uniform1f(U.u_fog, 0.0022);
+    // engine lighting; before the engine exposes it, a fixed daylight close to the old look
+    const sky = G.skyUniforms ? G.skyUniforms() : { L0: [3.2, 3.6, 4.4], L1r: [0, 0.9, 0], L1g: [0, 1.1, 0], L1b: [0, 1.6, 0], sunCol: [7.8, 6.9, 5.6], exposure: 1 };
+    gl.uniform3fv(U.u_shL0, sky.L0); gl.uniform3fv(U.u_shL1r, sky.L1r); gl.uniform3fv(U.u_shL1g, sky.L1g); gl.uniform3fv(U.u_shL1b, sky.L1b);
+    gl.uniform3fv(U.u_sunCol, sky.sunCol); gl.uniform1f(U.u_exposure, sky.exposure);
     gl.uniform1i(U.u_depthOnly, shadowPass ? 1 : 0);
     gl.activeTexture(gl.TEXTURE6);
     let cnt = 0, tris = 0;
@@ -437,20 +441,20 @@ function start(G, roster, BASE) {
     gl.bindVertexArray(prevVao); gl.useProgram(prevProg); gl.bindBuffer(gl.ARRAY_BUFFER, prevBuf); gl.activeTexture(prevTex);
   });
   window.__villagers = { npcs, stats, get drawn() { return drawn; } };
-  console.log(`villagers: ${npcs.length} villageois du village « ${VILLAGE} », ${NW} workers`);
+  console.log(`villagers: ${npcs.length} villageois du village \u00ab ${VILLAGE} \u00bb, ${NW} workers`);
 }
 
 // ---------------------------------------------------------------- boot
 async function init() {
   const G = window.__game;
-  if (!G || !G.addDrawHook || !G.addUpdate || !G.gl || !G.solid) { console.warn('villagers.js : engine.js n’expose pas les crochets (addDrawHook, addUpdate, gl, solid, VS).'); return; }
+  if (!G || !G.addDrawHook || !G.addUpdate || !G.gl || !G.solid) { console.warn('villagers.js : engine.js n\u2019expose pas les crochets (addDrawHook, addUpdate, gl, solid, VS).'); return; }
   try {
     // the generator sits next to the page (published build) or in the repository's characters/ folder
     let BASE = null, all = null;
     for (const b of [QS.get('characters'), 'personnages/', '../../../characters/'].filter(Boolean)) {
       try { const r = await fetch(b + 'data/villagers.json'); if (r.ok) { all = (await r.json()).villagers; BASE = b; break; } } catch (e) { /* next */ }
     }
-    if (!all) { console.warn('villagers.js : générateur de villageois introuvable (personnages/ ou ../../../characters/).'); return; }
+    if (!all) { console.warn('villagers.js : g\u00e9n\u00e9rateur de villageois introuvable (personnages/ ou ../../../characters/).'); return; }
     const pool = all.filter((v) => v.village === VILLAGE);
     const r = rng(SEED ^ 0xBEEF), roster = pool.slice();      // deterministic subset of the village
     for (let i = roster.length - 1; i > 0; i--) { const j = (r() * (i + 1)) | 0; [roster[i], roster[j]] = [roster[j], roster[i]]; }

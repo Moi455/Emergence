@@ -18,7 +18,7 @@ const fs = require('fs');
     await p.waitForFunction(() => window.__stats.terrainPending === 0, null, { timeout: 200000 }).catch(() => {});
     await p.waitForTimeout(v.wait || 6000);
     const st = await p.evaluate(() => window.__stats);
-    console.log(i, v.name, 'hit', JSON.stringify(await p.evaluate(()=>window.__hit)), 'removed', st.removed, 'collapsed', st.collapsed, JSON.stringify(st.st), 'tvbo', st.tvbo, 'gpu', st.gpuMs.toFixed(0));
+    console.log(i, v.name, 'removed', st.removed, 'collapsed', st.collapsed, 'fallen', st.fallen, 'runs', st.structRuns, 'dbg', JSON.stringify(await p.evaluate(()=>window.__dbg)), JSON.stringify(st.st), 'tvbo', st.tvbo, 'gpu', st.gpuMs.toFixed(0));
     await p.screenshot({ path: `${out}_${v.name}.png`, timeout: 240000 });
   }
   await b.close();
