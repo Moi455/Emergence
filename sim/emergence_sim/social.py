@@ -79,7 +79,22 @@ def interact(sim, a, b, place, mode="chat", witnesses=()):
     act = rng.weighted(acts, w)
     fn = ACTS[act]
     fn(sim, a, b, ra, rb, place, witnesses)
+    seen = PERCEIVED.get(act)
+    if seen:
+        sim.perceive(b, seen[0], a.id, "target", seen[1])
+        if act in INTERRUPTS:
+            sim.interrupt(b)          # charter 8: the situation changed, b decides again
+            for w_ in witnesses[:6]:
+                if w_.id not in (a.id, b.id):
+                    sim.perceive(w_, seen[0], a.id, "witness", seen[1] // 2)
     return act
+
+
+# act -> (event type b perceives, intensity); deceit looks like information to its target
+PERCEIVED = {"chat": ("chat_overture", 15), "gossip": ("inform", 30), "deceive": ("inform", 30), "legend": ("legend", 30),
+             "compliment": ("compliment", 30), "insult": ("insult", 50), "flirt": ("flirt", 40), "propose": ("proposal", 70),
+             "comfort": ("help_given", 40), "lobby": ("request", 30)}
+INTERRUPTS = ("insult", "propose")
 
 
 def pick_gossip(a, b):
@@ -210,11 +225,14 @@ def fight(sim, a, b, place, wit, mode):
         lethal = True
     for x, y in ((a, b), (b, a)):
         sim.rel_add(x, y.id, grudge=15, aff=-15)
+        sim.perceive(y, mode, x.id, "target", 80 if mode == "strike" else 60)
+        sim.interrupt(y)
     lose.fear = clamp(lose.fear + 30, 0, 100)
     vname = sim.villages[a.village].name
     witnesses = [w for w in wit if w.id not in (a.id, b.id)][:8]
     for w in witnesses:
         sim.remember(w, "brawl", a.id, -20, 40, b.id)
+        sim.perceive(w, mode, a.id, "witness", 40)
     if lose.hp <= 0:
         kind = "murder" if lethal else "brawl"
         sim.ev("murder" if lethal else "brawl", [win.id, lose.id], a.village,

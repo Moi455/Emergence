@@ -199,12 +199,19 @@ def make_brain(kind="reference", **kw):
 # Bounds per variable group, from the catalogue (column "Écriture"). None = the brain may not write it.
 EMOTIONS = {"fear": (0, 100), "anger": (0, 100), "joy": (-100, 100), "stress": (0, 100)}
 REL_IDX = {"affection": AFF, "trust": TRUST, "respect": RESPECT, "romance": ROMANCE, "familiarity": FAM, "grudge": GRUDGE}
-STEP = {"rel": 5, "drive": 5, "grief": 10, "trait": 1, "value": 1}
+STEP = {"rel": 5, "drive": 5, "grief": 10, "trait": 1, "value": 1, "memory": 10, "goal": 10}
+# goal types of the model vocabulary (tok-1); more are needed for charter 9 (see ETAT.md)
+GOAL_TYPES = ("need", "project", "vengeance", "seek_help", "shared_task", "accompany")
+MAX_GOALS = 4
+MEMORY_KINDS = ("helped", "kindness", "betrayed", "liar", "insulted", "theft_victim", "saw_theft", "brawl", "murder", "rejected",
+                "heartbreak", "affair_seen", "embezzle", "verdict_unjust", "death_kin", "death_friend", "wedding", "birth", "recovered")
 
 
 class Governor:
-    """Applies a brain's state deltas: an emotion may jump, the rest moves by bounded steps,
-    traits and values by at most 1 per game day, engine-owned variables are refused."""
+    """Applies what the brain changes in the NPC (charter 8): state, relations, memories, goals.
+    An emotion may jump, the rest moves by bounded steps, traits and values by at most 1 per game day
+    (0.1 on the charter's -10..+10 scale), engine-owned variables are refused.
+    Units: the engine's tenths of the charter scale (a trait of +35 is +3.5)."""
 
     def __init__(self):
         self.last_slow = {}            # (npc, var) -> day of the last trait/value change
@@ -212,7 +219,7 @@ class Governor:
 
     def apply(self, sim, n, deltas):
         for key, d in sorted(deltas.items()):
-            d = int(d)
+            d = int(d) if isinstance(d, (int, float)) else 0
             parts = key.split(".")
             grp = parts[0]
             if grp == "state" and parts[1] in EMOTIONS:
@@ -240,10 +247,64 @@ class Governor:
                 self.last_slow[k] = sim.day
                 tab, lo = (n.tr, -100) if grp == "trait" else (n.val, 0)
                 tab[parts[1]] = clamp(tab[parts[1]] + self._step(d, STEP[grp]), lo, 100)
+            elif grp == "mem":
+                if not self._memory(sim, n, parts, d if parts[-1] != "add" else deltas[key]):
+                    self.s["refused"] += 1
+                    continue
+            elif grp == "goal":
+                if not self._goal(sim, n, parts, deltas[key]):
+                    self.s["refused"] += 1
+                    continue
             else:
                 self.s["refused"] += 1             # body, needs, goods, coin, skills: the engine's, not the brain's
                 continue
             self.s["applied"] += 1
+
+    def _memory(self, sim, n, parts, d):
+        """mem.<i>.importance | mem.<i>.valence: step 10 on n.mem[i]; mem.add: {kind, about, valence, importance}."""
+        if parts[1] == "add":
+            if not isinstance(d, dict) or d.get("kind") not in MEMORY_KINDS:
+                return False
+            about = d.get("about")
+            if about is not None and (not isinstance(about, int) or not 0 <= about < len(sim.npcs)):
+                return False
+            sim.remember(n, d["kind"], about, clamp(int(d.get("valence", 0)), -100, 100), clamp(int(d.get("importance", 30)), 0, 100))
+            return True
+        if len(parts) != 3 or not parts[1].isdigit() or int(parts[1]) >= len(n.mem):
+            return False
+        m = n.mem[int(parts[1])]
+        if parts[2] == "valence":
+            m[3] = clamp(m[3] + self._step(d, STEP["memory"]), -100, 100)
+        elif parts[2] == "importance":
+            m[4] = clamp(m[4] + self._step(d, STEP["memory"]), 0, 100)
+        else:
+            return False
+        return True
+
+    def _goal(self, sim, n, parts, d):
+        """goal.add {type, target, priority} | goal.<i>.drop | goal.<i>.priority (step 10) | goal.<i>.target (reorient)."""
+        if parts[1] == "add":
+            if not isinstance(d, dict) or d.get("type") not in GOAL_TYPES or len(n.goals) >= MAX_GOALS:
+                return False
+            tgt = d.get("target")
+            if isinstance(tgt, int) and not (0 <= tgt < len(sim.npcs) and sim.npcs[tgt].alive):
+                return False
+            n.goals.append({"type": d["type"], "target": tgt, "priority": clamp(int(d.get("priority", 50)), 0, 100), "since": sim.day})
+            return True
+        if len(parts) != 3 or not parts[1].isdigit() or int(parts[1]) >= len(n.goals):
+            return False
+        g = n.goals[int(parts[1])]
+        if parts[2] == "drop":
+            n.goals.remove(g)
+        elif parts[2] == "priority":
+            g["priority"] = clamp(g["priority"] + self._step(int(d), STEP["goal"]), 0, 100)
+        elif parts[2] == "target":
+            if isinstance(d, int) and not (0 <= d < len(sim.npcs) and sim.npcs[d].alive):
+                return False
+            g["target"] = d
+        else:
+            return False
+        return True
 
     def _step(self, d, m):
         if d > m or d < -m:

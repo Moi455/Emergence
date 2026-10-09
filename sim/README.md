@@ -2,7 +2,7 @@
 
 Simulation sans rendu des 500 PNJ d'Emergence, au palier 2 de l'architecture (actions résolues par leur durée et leur résultat). Python ≥ 3.9, déterministe depuis une seed : c'est l'oracle du futur portage C++ (`emergence_sim` de la piste Société S5 et S6), la boucle qui accueille le Transformer des PNJ, et le générateur de trajectoires pour son entraînement.
 
-État, mesures et ce qui manque : `ETAT.md`. Variables et actions : `docs/npc/variables_v0.3_catalogue_unique.md`.
+**La charte du jeu (`CHARTE_DU_JEU.md`) prime sur tout.** État, mesures et ce qui manque : `ETAT.md`. Variables et actions : `docs/npc/variables_v0.3_catalogue_unique.md`.
 
 ## Lancer
 

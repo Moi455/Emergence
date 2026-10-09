@@ -214,6 +214,14 @@ class Sim:
                 (a.parents[0] is not None and a.parents[0] in b.parents) or
                 (a.parents[1] is not None and a.parents[1] in b.parents))
 
+    def perceive(self, n, etype, agent, role, intensity):
+        """n saw or underwent something (event type of the model vocabulary). Perception only: no state change."""
+        if not n.alive:
+            return
+        n.seen.append([self.t, etype, agent, role, intensity])
+        if len(n.seen) > 6:
+            del n.seen[0]
+
     def remember(self, n, kind, about, valence, salience, extra=None, source=None, false=False):
         if not n.alive:
             return
