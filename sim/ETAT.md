@@ -40,6 +40,7 @@ Pas d'algorithme de décision : un Transformer dans la boucle de chaque PNJ, qui
 |---|---|---|
 | passes du modèle par seconde, lots de 500 | 1 470 | 428 |
 | décisions par seconde, boucle complète | 765 | 333 |
+| idem, point de contrôle entraîné `tiny_v04` | 653 (1 273 passes du modèle/s) | — |
 | encodage Python par PNJ | 0,55 ms | 0,55 ms |
 
 - 10 jours de jeu, 500 PNJ, tiny : 121 279 décisions en 159 s. Le plus gros lot rassemble 513 PNJ : tous les vivants en une seule passe.
@@ -49,7 +50,12 @@ Pas d'algorithme de décision : un Transformer dans la boucle de chaque PNJ, qui
 
 ## Pas fait
 
-1. **Pas de point de contrôle entraîné** dans le conteneur. Le fil des données doit en fournir un, ou il sera entraîné sur la machine de Monsieur (`ai/student/ENTRAINEMENT.md`). Ensuite : `--brain transformer --model runs/small/best.pt`.
+1. **Le modèle entraîné tourne, mais ne sait pas encore vivre dans cette boucle.** Le point de contrôle du fil des données (`/mnt/project-files/donnees-transformer/modeles/tiny_v04/best.pt`) se charge avec `--model`. Il a été entraîné à imiter la référence à règles, sur les situations du générateur. Sur 20 jours, seed 7, il choisit :
+   - le sommeil (37 %) et la cour amoureuse (36 %) ;
+   - presque jamais le travail (2,5 %) ;
+   - souvent le vol de nourriture : 1 955 vols pris sur le fait.
+   Au jour 20, 499 PNJ sur 507 ont une faim ≥ 80.
+   La cause est un écart de distribution. Le générateur propose surtout des gestes du moment (`continue`, `greet`, `observe`, `embrace`). La boucle propose des options à l'échelle d'un plan (travailler, voyager, faire la cour). Le remède prévu est d'entraîner sur des situations et des options produites par cette boucle, étiquetées par l'enseignant, sur Claude Code. On peut aussi aligner la granularité des options entre le générateur et le moteur.
 2. **Pas de perception spatiale** : le modèle voit une situation sociale, pas l'espace, l'eau, le feu ni les structures. Les jetons proposés sont au § 6 du catalogue.
 3. **Pas de réveil plusieurs fois par seconde.** La simulation avance par pas d'une heure de jeu (1 heure de jeu = 10 min réelles si 1 jour = 4 h). Un PNJ décide en fin de plan, ou à l'heure suivante quand une insulte, un coup ou une demande en mariage l'interrompt. Le couteau de la charte (§ 8), qui doit interrompre en quelques secondes, demande la boucle rapide du jeu, côté moteur, avec la même prise.
 4. **Décisions encore prises par des règles, contraires à la charte § 8** :
@@ -71,6 +77,18 @@ Pas d'algorithme de décision : un Transformer dans la boucle de chaque PNJ, qui
    - quelques écarts d'âge parent-enfant font moins de 16 ans.
 10. **Anciens identifiants de villages** dans la simulation (`port`, `bourg`…), traduits à la sortie. Le flux `sim-events-0.1` de `interfaces.md` § 9 n'est pas encore écrit en fichier.
 11. **Le run de 5 ans** (stable, 513 → 556 habitants) date d'avant le passage en lots et les interruptions. Depuis, avec le cerveau de référence, seul un an a été refait, sur 3 graines. La population reste stable (graine 7 : 544 vivants, 7 décès ; graine 3 : 523, 20 ; graine 11 : 521, 21). Le test d'une saison compte désormais tous les décès, disparitions comprises.
+
+## Remarques du fil des données (8 oct., 20:48), à reprendre
+
+- Il a validé les parties « modèle » du catalogue avant son alignement sur la charte. L'échelle −10..+10 et les objectifs écrits par le cerveau restent à relire de son côté.
+- Pour lui, la romance entre adultes apparentés relève de la valeur de tabou du PNJ et de l'interrupteur de la décision D11 ; seuls les mineurs relèvent de la règle dure. Aujourd'hui, `rules.romance_ok` retire la cour envers un parent des options tant que l'interrupteur `kin_romance_taboo` est actif. Il refuse aussi un écart d'âge de plus de 20 ans, qui est une règle et non une règle dure. À trancher : le moteur filtre-t-il, ou laisse-t-il le modèle décider ?
+- Jetons de perception (`tok-2`) :
+  - 17 types de jetons ;
+  - environ 80 jetons de contexte ;
+  - direction en sinus et cosinus relatifs au PNJ ;
+  - le propriétaire d'une chose est un pointeur vers son jeton `ENTITY`.
+  Il faut aussi la tête « delta d'état » côté modèle.
+- L'encodeur Python (0,55 ms par PNJ) sera remplacé par le portage C++ de `encode.py`.
 
 ## Questions ouvertes pour Monsieur
 
