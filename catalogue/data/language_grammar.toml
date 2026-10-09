@@ -1,0 +1,119 @@
+# language_grammar.toml - étape 13 : la grammaire de la langue intérieure.
+#
+# Une parole = un MODE + une PROPOSITION (ou une formule). Aucun mot ne nomme un acte social : il n'y a
+# pas de « promettre », « menacer », « mentir », « faire chanter », « insulter », « flatter ». Ce sont des
+# combinaisons :
+#   promesse  = offer (did moi … future) ;  menace = assert (if (not …) (did moi strike …)) ;
+#   mensonge  = assert P quand on croit non-P ;  rumeur = assert P (heard_said) ;
+#   chantage  = offer (if (not (did you give …)) (did moi speak (to @mari) (says (that b:7)))).
+# Écriture préfixe entre parenthèses ; les parenthèses ne comptent pas ; ≤ 20 symboles par parole
+# (budget de l'IA). Imbrication des propositions dans un argument (believes, wants, says, that) ≤ 2.
+#
+# Pointeurs vers le contexte du parleur (ce que le modèle a sous les yeux, ses propres dossiers) :
+#   @E3 = la personne du jeton ENTITY 3 ; @T5 = la chose du jeton THING 5 ; @G1 = le groupe 1 ;
+#   b:7 = sa croyance 7 ; m:2 = son souvenir 2 ; g:1 = son objectif 1 ; @PLACE = le lieu où l'on est.
+# Le moteur DÉPLIE la parole pour chaque auditeur : il remplace b:7 par la proposition, et chaque
+# pointeur par le dossier mental de l'AUDITEUR correspondant (s'il connaît la personne), sinon par
+# une description (« un homme grand de la forge ») ou par « quelqu'un ». Ainsi l'IA écrit court, et
+# l'auditeur reçoit une proposition dans ses propres termes. Aucune vérité ne passe : seul ce que le
+# parleur croit, tel qu'il le dit.
+# Vocabulaire (catalogue/tools/language.py le construit) : mots de grammaire = les concepts, les gestes,
+# les variables et propriétés nommables ; sortes = types d'objets, matières, espèces, formes, classes de
+# sosies (table séparée, ≤ 1 024) ; noms propres = n:<id> dans la table des noms.
+
+grammar = [
+  { id = "utterance", rule = "UTT := MOOD PROP | FORMULA | FORMULA UTT", label_fr = "une parole" },
+  { id = "proposition", rule = "PROP := [not] [TIME] [EVID] PRED ARG* ROLE* | LOGIC PROP PROP | that PTR", label_fr = "une proposition" },
+  { id = "logic", rule = "LOGIC := and | or | if | because", label_fr = "relier deux propositions (si…, parce que…)" },
+  { id = "argument", rule = "ARG := REF | KIND[:QTY] | QTY | DEGREE | WORD | PROP | WH", label_fr = "un argument" },
+  { id = "reference", rule = "REF := me | you | this | here | @E<n> | @T<n> | @G<n> | @PLACE | n:<nom> | someone | anyone | everyone | no_one | (described KIND DEGREE? WORD?)", label_fr = "désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description" },
+  { id = "role", rule = "ROLE := (with REF) | (to REF) | (into REF) | (how WORD) | (says PROP)", label_fr = "les rôles d'un événement (étape 6, cadre did)" },
+  { id = "question", rule = "WH := who | what | where | when | why | how_much | which", label_fr = "le trou d'une question (ask)" },
+  { id = "limits", rule = "≤ 20 symboles ; imbrication d'arguments-propositions ≤ 2 ; un seul mode par parole", label_fr = "budget de l'IA" },
+]
+
+concept = [
+  # ─── Modes (la forme grammaticale, pas un acte social) ───
+  { id = "assert", category = "mood", label_fr = "affirmer (« c'est ainsi »)" },
+  { id = "ask", category = "mood", label_fr = "demander si, ou demander qui / quoi / où (avec un trou WH)" },
+  { id = "request", category = "mood", label_fr = "demander que l'autre fasse (impératif ou prière : le ton le dit)" },
+  { id = "offer", category = "mood", label_fr = "proposer, s'engager (« je ferai… », « je te donne… si… ») : accepté, cela fait un accord" },
+  { id = "exclaim", category = "mood", label_fr = "s'exclamer, exprimer ce qu'on ressent (« aïe », « quelle horreur »)" },
+  # ─── Logique ───
+  { id = "not", category = "logic", label_fr = "ne… pas" },
+  { id = "and", category = "logic", label_fr = "et" },
+  { id = "or", category = "logic", label_fr = "ou" },
+  { id = "if", category = "logic", label_fr = "si … alors …" },
+  { id = "because", category = "logic", label_fr = "parce que" },
+  { id = "that", category = "logic", label_fr = "ceci (le contenu d'une de mes croyances ou d'un de mes souvenirs : that b:7)" },
+  { id = "described", category = "logic", label_fr = "celui / celle / ce qui est (une description : « described smith tall »)" },
+  # ─── Temps ───
+  { id = "past", category = "time", label_fr = "passé" },
+  { id = "now", category = "time", label_fr = "maintenant" },
+  { id = "future", category = "time", label_fr = "futur" },
+  { id = "habitual", category = "time", label_fr = "d'habitude, toujours" },
+  { id = "soon", category = "time", label_fr = "bientôt" },
+  { id = "long_ago", category = "time", label_fr = "il y a longtemps" },
+  { id = "today", category = "time", label_fr = "aujourd'hui" },
+  { id = "tomorrow", category = "time", label_fr = "demain" },
+  { id = "at_festival", category = "time", label_fr = "à la fête" },
+  { id = "before_winter", category = "time", label_fr = "avant l'hiver" },
+  # ─── D'où on le tient (évidentialité : la rumeur commence ici) ───
+  { id = "seen_myself", category = "evidential", label_fr = "je l'ai vu" },
+  { id = "heard_said", category = "evidential", label_fr = "on m'a dit, il paraît" },
+  { id = "think", category = "evidential", label_fr = "je pense, je crois" },
+  { id = "sure", category = "evidential", label_fr = "j'en suis sûr" },
+  { id = "maybe", category = "evidential", label_fr = "peut-être" },
+  # ─── Degrés et quantités ───
+  { id = "very_low", category = "degree", label_fr = "très peu, très mauvais" },
+  { id = "low", category = "degree", label_fr = "peu, mauvais" },
+  { id = "mid", category = "degree", label_fr = "moyen" },
+  { id = "high", category = "degree", label_fr = "beaucoup, bon" },
+  { id = "very_high", category = "degree", label_fr = "énormément, excellent" },
+  { id = "none", category = "quantity", label_fr = "aucun" },
+  { id = "one", category = "quantity", label_fr = "un" },
+  { id = "few", category = "quantity", label_fr = "quelques" },
+  { id = "many", category = "quantity", label_fr = "beaucoup" },
+  { id = "all", category = "quantity", label_fr = "tout, tous" },
+  { id = "more", category = "quantity", label_fr = "plus" },
+  { id = "less", category = "quantity", label_fr = "moins" },
+  # ─── Questions ───
+  { id = "who", category = "wh", label_fr = "qui ?" },
+  { id = "what", category = "wh", label_fr = "quoi ?" },
+  { id = "where", category = "wh", label_fr = "où ?" },
+  { id = "when", category = "wh", label_fr = "quand ?" },
+  { id = "why", category = "wh", label_fr = "pourquoi ?" },
+  { id = "how_much", category = "wh", label_fr = "combien ?" },
+  { id = "which", category = "wh", label_fr = "lequel ?" },
+  # ─── Formules (des mots de tous les jours ; ce qu'ils valent, chacun en juge) ───
+  { id = "hello", category = "formula", label_fr = "bonjour" },
+  { id = "goodbye", category = "formula", label_fr = "au revoir" },
+  { id = "thanks", category = "formula", label_fr = "merci" },
+  { id = "sorry", category = "formula", label_fr = "pardon, désolé" },
+  { id = "please", category = "formula", label_fr = "s'il te plaît" },
+  { id = "yes", category = "formula", label_fr = "oui" },
+  { id = "no", category = "formula", label_fr = "non" },
+  { id = "welcome", category = "formula", label_fr = "bienvenue" },
+  { id = "help", category = "formula", label_fr = "à l'aide !" },
+  { id = "watch_out", category = "formula", label_fr = "attention !" },
+  { id = "ouch", category = "formula", label_fr = "aïe" },
+  { id = "laugh", category = "formula", label_fr = "(rire)" },
+  # ─── Mots qualitatifs courants (pour juger, louer, rabaisser : des états) ───
+  { id = "w_good", category = "quality", label_fr = "bon, bien" },
+  { id = "w_bad", category = "quality", label_fr = "mauvais, mal" },
+  { id = "w_beautiful", category = "quality", label_fr = "beau" },
+  { id = "w_ugly", category = "quality", label_fr = "laid" },
+  { id = "w_strong", category = "quality", label_fr = "fort" },
+  { id = "w_weak", category = "quality", label_fr = "faible" },
+  { id = "w_clever", category = "quality", label_fr = "malin, intelligent" },
+  { id = "w_stupid", category = "quality", label_fr = "bête" },
+  { id = "w_brave", category = "quality", label_fr = "courageux" },
+  { id = "w_coward", category = "quality", label_fr = "lâche" },
+  { id = "w_rich", category = "quality", label_fr = "riche" },
+  { id = "w_poor", category = "quality", label_fr = "pauvre" },
+  { id = "w_old", category = "quality", label_fr = "vieux" },
+  { id = "w_young", category = "quality", label_fr = "jeune" },
+  { id = "w_dangerous", category = "quality", label_fr = "dangereux" },
+  { id = "w_true", category = "quality", label_fr = "vrai" },
+  { id = "w_false", category = "quality", label_fr = "faux" },
+]
