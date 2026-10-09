@@ -20,7 +20,8 @@ BUDGET = {"SELF": 64, "SELF_MIND": 64, "SELF_STATE": 64, "ENTITY": 32, "BELIEF":
 TOKENS = {"SELF": 1, "SELF_MIND": 1, "SELF_STATE": 1, "TASTE": 2, "ENTITY": 10, "GROUP": 2, "BELIEF": 12,
           "HEARD": 2, "MEMORY": 9, "GOAL": 4, "PLAN": 1, "REQUEST": 2, "COMMIT": 3, "INV": 8, "SKILL": 3,
           "PLACE": 1, "THING": 16, "EVENT": 6}
-GRAMMAR_WORDS_MAX = 512    # predicates, links, modes, emotions, techniques... (concepts)
+GRAMMAR_WORDS_MAX = 768    # the real speech vocabulary (language.Vocabulary): concepts, gestures, manners,
+                           # interpretations, nameable variables and properties, directions
 KINDS_MAX = 1024           # item types, materials, species, forms: a separate, factored table
 OBJECT_VECTOR_MAX = 48     # perceptible properties and affordances of a thing
 MAX_TOKENS = 128
@@ -49,8 +50,10 @@ def main():
         print(f"  {typ:8s} {len(s[typ]):3d} champs{flag}  " + ", ".join(sorted(s[typ])))
     print("  moteur seul : " + ", ".join(hidden))
     total = sum(TOKENS.values())
-    words = len(cat["concept"])
-    kinds = sum(len(cat[k]) for k in ("item_type", "material", "species", "form"))
+    import language
+    vocab = language.Vocabulary(cat)
+    words = len(vocab.words)
+    kinds = len(vocab.kinds)
     vec = len(cat.object_vector())
     print(f"vocabulaire : {words} mots de grammaire / {GRAMMAR_WORDS_MAX}, {kinds} sortes / {KINDS_MAX} ; "
           f"vecteur d'un objet : {vec} propriétés perceptibles / {OBJECT_VECTOR_MAX}")

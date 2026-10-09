@@ -56,7 +56,8 @@ class TestCatalogue(unittest.TestCase):
         for typ, b in budget.BUDGET.items():
             self.assertLessEqual(len(s.get(typ, ())), b, typ)
         self.assertLessEqual(sum(budget.TOKENS.values()), budget.MAX_TOKENS)
-        self.assertLessEqual(len(self.cat["concept"]), budget.GRAMMAR_WORDS_MAX)
+        import language
+        self.assertLessEqual(len(language.Vocabulary(self.cat).words), budget.GRAMMAR_WORDS_MAX)
         self.assertLessEqual(len(self.cat.object_vector()), budget.OBJECT_VECTOR_MAX)
 
     def test_hidden_properties_never_seen(self):
@@ -117,6 +118,13 @@ class TestCatalogue(unittest.TestCase):
         st = self.cat["story"]["take_back_own"]
         self.assertEqual(st.actions, ["take"])
         self.assertTrue({"theft", "taking_back"} <= set(st.interpretations))
+
+    def test_model_interface_is_up_to_date(self):
+        import model_interface
+        path = model_interface.OUT
+        self.assertTrue(path.exists(), "run python3 catalogue/tools/model_interface.py")
+        self.assertEqual(path.read_text(encoding="utf-8"), model_interface.ModelInterface(self.cat).text(),
+                         "catalogue changed: regenerate catalogue/generated/model_interface.json")
 
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()

@@ -1,0 +1,3902 @@
+{
+ "input": {
+  "max_tokens": 128,
+  "object_vector": [
+   "mass",
+   "size",
+   "edge",
+   "point",
+   "reach",
+   "capacity",
+   "temperature",
+   "wetness",
+   "burning",
+   "open",
+   "lit",
+   "dirtiness",
+   "graspable",
+   "carryable",
+   "throwable",
+   "cuts",
+   "pierces",
+   "impacts",
+   "digs",
+   "contains",
+   "fuel",
+   "ignites",
+   "wearable",
+   "supports_body",
+   "climbable",
+   "openable",
+   "conceals",
+   "blocks_passage",
+   "floats_carries",
+   "shelters",
+   "writable",
+   "heats",
+   "light_source",
+   "binds",
+   "mountable",
+   "protects",
+   "launches",
+   "plays_music",
+   "reflects_image",
+   "wipes",
+   "sharpens",
+   "joins",
+   "rolls_load"
+  ],
+  "token_types": {
+   "BELIEF": {
+    "count": 12,
+    "fields": [
+     "age",
+     "certainty",
+     "contradicted",
+     "hops",
+     "importance",
+     "informant",
+     "polarity",
+     "prop",
+     "secret",
+     "shared",
+     "source",
+     "weight"
+    ]
+   },
+   "COMMIT": {
+    "count": 3,
+    "fields": [
+     "COMMIT"
+    ]
+   },
+   "ENTITY": {
+    "count": 10,
+    "fields": [
+     "dir",
+     "dist",
+     "id_certainty",
+     "known_by",
+     "link",
+     "look.age",
+     "look.attire",
+     "look.build",
+     "look.condition",
+     "look.expression",
+     "look.gaze",
+     "look.health",
+     "look.held",
+     "look.marks",
+     "look.motion",
+     "look.posture",
+     "look.sex",
+     "look.signs",
+     "look.wounds",
+     "present",
+     "rel.affection",
+     "rel.attraction",
+     "rel.familiarity",
+     "rel.fear",
+     "rel.obligation",
+     "rel.perceived_regard",
+     "rel.resentment",
+     "rel.respect",
+     "rel.rivalry",
+     "rel.since_contact",
+     "rel.trust",
+     "rep"
+    ]
+   },
+   "EVENT": {
+    "count": 6,
+    "fields": [
+     "actor",
+     "age",
+     "from_to",
+     "gesture",
+     "manner",
+     "sense",
+     "target",
+     "with"
+    ]
+   },
+   "GOAL": {
+    "count": 4,
+    "fields": [
+     "age",
+     "deadline",
+     "mode",
+     "origin",
+     "origin_ref",
+     "priority",
+     "progress",
+     "prop",
+     "status"
+    ]
+   },
+   "GROUP": {
+    "count": 2,
+    "fields": [
+     "known_by",
+     "rel.affection",
+     "rel.fear",
+     "rel.resentment",
+     "rel.respect",
+     "rel.trust"
+    ]
+   },
+   "HEARD": {
+    "count": 2,
+    "fields": [
+     "HEARD"
+    ]
+   },
+   "INV": {
+    "count": 8,
+    "fields": [
+     "INV"
+    ]
+   },
+   "MEMORY": {
+    "count": 9,
+    "fields": [
+     "age",
+     "defining",
+     "emotion",
+     "importance",
+     "interp",
+     "place",
+     "prop",
+     "role",
+     "secret",
+     "valence",
+     "vividness"
+    ]
+   },
+   "PLACE": {
+    "count": 1,
+    "fields": [
+     "air_felt",
+     "crowd",
+     "indoors",
+     "light",
+     "noise",
+     "signs",
+     "visibility",
+     "weather",
+     "wind"
+    ]
+   },
+   "PLAN": {
+    "count": 1,
+    "fields": [
+     "PLAN",
+     "commitment",
+     "goal",
+     "progress"
+    ]
+   },
+   "REQUEST": {
+    "count": 2,
+    "fields": [
+     "age",
+     "from",
+     "prop"
+    ]
+   },
+   "SELF": {
+    "count": 1,
+    "fields": [
+     "age",
+     "age_stage",
+     "body.bleeding",
+     "body.breath",
+     "body.consciousness",
+     "body.endurance",
+     "body.intox",
+     "body.load",
+     "body.manipulation",
+     "body.mobility",
+     "body.pain",
+     "body.sickness",
+     "body.strength",
+     "held",
+     "need.exhaustion",
+     "need.hunger",
+     "need.reserves",
+     "need.sleep",
+     "need.thermal",
+     "need.thirst",
+     "place",
+     "posture",
+     "season",
+     "sex",
+     "time",
+     "wound"
+    ]
+   },
+   "SELF_MIND": {
+    "count": 1,
+    "fields": [
+     "ability.coordination",
+     "ability.intellect",
+     "ability.self_control",
+     "attracted_to",
+     "temper.baseline_mood",
+     "temper.resilience",
+     "trait.altruism",
+     "trait.anxiousness",
+     "trait.assurance",
+     "trait.creativity",
+     "trait.diligence",
+     "trait.fairness",
+     "trait.fearfulness",
+     "trait.forgiveness",
+     "trait.gentleness",
+     "trait.greed_avoidance",
+     "trait.inquisitiveness",
+     "trait.modesty",
+     "trait.patience",
+     "trait.prudence",
+     "trait.sentimentality",
+     "trait.sincerity",
+     "trait.sociability",
+     "trait.unconventionality",
+     "value.achievement",
+     "value.authority",
+     "value.honor",
+     "value.liberty",
+     "value.loyalty",
+     "value.pleasure",
+     "value.power",
+     "value.sanctity"
+    ]
+   },
+   "SELF_STATE": {
+    "count": 1,
+    "fields": [
+     "attention",
+     "drive.achievement",
+     "drive.acquisition",
+     "drive.autonomy",
+     "drive.company",
+     "drive.esteem",
+     "drive.intimacy",
+     "drive.meaning",
+     "drive.novelty",
+     "drive.play",
+     "drive.security",
+     "emo.anger",
+     "emo.anxiety",
+     "emo.boredom",
+     "emo.confusion",
+     "emo.contempt",
+     "emo.disgust",
+     "emo.envy",
+     "emo.fear",
+     "emo.gratitude",
+     "emo.grief",
+     "emo.guilt",
+     "emo.jealousy",
+     "emo.joy",
+     "emo.pride",
+     "emo.sadness",
+     "emo.shame",
+     "emo.surprise",
+     "emo.tenderness",
+     "masking",
+     "mood.energy",
+     "mood.valence",
+     "self_regard",
+     "stress"
+    ]
+   },
+   "SKILL": {
+    "count": 3,
+    "fields": [
+     "self_estimate",
+     "technique"
+    ]
+   },
+   "TASTE": {
+    "count": 2,
+    "fields": [
+     "TASTE"
+    ]
+   },
+   "THING": {
+    "count": 16,
+    "fields": [
+     "amount",
+     "depth",
+     "dir",
+     "display",
+     "dist",
+     "file",
+     "file_certainty",
+     "kind",
+     "motion",
+     "owner",
+     "props",
+     "state"
+    ]
+   }
+  }
+ },
+ "output": {
+  "condition_head": [
+   "c_addressed",
+   "c_attacked",
+   "c_blocked",
+   "c_done",
+   "c_elapsed",
+   "c_exhausted",
+   "c_hands_full",
+   "c_hears",
+   "c_hunger_above",
+   "c_pain_above",
+   "c_reached",
+   "c_rested",
+   "c_sees",
+   "c_sees_ref",
+   "c_state_seen",
+   "c_stopped",
+   "c_target_down",
+   "c_target_gone",
+   "c_target_still",
+   "c_target_yields",
+   "c_thirst_above",
+   "c_time",
+   "c_tool_broken"
+  ],
+  "direction_head": [
+   "ahead",
+   "ahead_right",
+   "right",
+   "behind_right",
+   "behind",
+   "behind_left",
+   "left",
+   "ahead_left",
+   "up",
+   "down"
+  ],
+  "feasibility_mask": "computed on the NPC's percepts and beliefs, never on the world; a gesture that the world refuses fails physically and that failure is perceived",
+  "gesture_head": [
+   "blow",
+   "channel",
+   "climb",
+   "drink",
+   "eat",
+   "examine",
+   "give",
+   "go",
+   "grab",
+   "guard",
+   "jump",
+   "listen",
+   "look",
+   "mount",
+   "operate",
+   "perform",
+   "pour",
+   "pull",
+   "push",
+   "put",
+   "read",
+   "rest",
+   "scoop",
+   "search",
+   "set_posture",
+   "shape",
+   "sign",
+   "sleep",
+   "speak",
+   "stop",
+   "strike",
+   "swim",
+   "take",
+   "throw",
+   "tie",
+   "touch",
+   "wait",
+   "wear",
+   "work",
+   "write"
+  ],
+  "gestures": {
+   "blow": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "fire"
+     ]
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    }
+   ],
+   "channel": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "structure",
+      "terrain",
+      "voxel"
+     ]
+    },
+    {
+     "head": "intent",
+     "name": "intent",
+     "optional": false
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    },
+    {
+     "name": "into",
+     "optional": true,
+     "pointer": [
+      "belief",
+      "form"
+     ]
+    }
+   ],
+   "climb": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "structure",
+      "terrain",
+      "voxel",
+      "item",
+      "plant"
+     ]
+    },
+    {
+     "head": "climb.pace",
+     "name": "pace",
+     "optional": false
+    }
+   ],
+   "drink": [
+    {
+     "name": "item",
+     "optional": false,
+     "pointer": [
+      "item",
+      "water"
+     ]
+    },
+    {
+     "head": "amount",
+     "name": "amount",
+     "optional": false
+    },
+    {
+     "name": "to",
+     "optional": true,
+     "pointer": [
+      "agent",
+      "animal"
+     ]
+    }
+   ],
+   "eat": [
+    {
+     "name": "item",
+     "optional": false,
+     "pointer": [
+      "item",
+      "plant"
+     ]
+    },
+    {
+     "head": "amount",
+     "name": "amount",
+     "optional": false
+    },
+    {
+     "name": "to",
+     "optional": true,
+     "pointer": [
+      "agent",
+      "animal"
+     ]
+    }
+   ],
+   "examine": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "terrain",
+      "voxel",
+      "water",
+      "trace",
+      "plant"
+     ]
+    },
+    {
+     "head": "sense",
+     "name": "sense",
+     "optional": false
+    }
+   ],
+   "give": [
+    {
+     "name": "item",
+     "optional": false,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "name": "to",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "head": "give.mode",
+     "name": "mode",
+     "optional": false
+    }
+   ],
+   "go": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "place",
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "trace",
+      "water",
+      "direction"
+     ]
+    },
+    {
+     "head": "relation",
+     "name": "relation",
+     "optional": false
+    },
+    {
+     "head": "pace",
+     "name": "pace",
+     "optional": false
+    },
+    {
+     "head": "stealth",
+     "name": "stealth",
+     "optional": false
+    },
+    {
+     "head": "stop_at",
+     "name": "stop_at",
+     "optional": true
+    }
+   ],
+   "grab": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "head": "hold_zone",
+     "name": "hold_zone",
+     "optional": false
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    },
+    {
+     "name": "until",
+     "optional": false,
+     "type": "condition"
+    }
+   ],
+   "guard": [
+    {
+     "name": "against",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "head": "stance",
+     "name": "stance",
+     "optional": false
+    }
+   ],
+   "jump": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "place",
+      "direction",
+      "voxel",
+      "water"
+     ]
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    }
+   ],
+   "listen": [
+    {
+     "name": "target",
+     "optional": true,
+     "pointer": [
+      "agent",
+      "place",
+      "direction"
+     ]
+    },
+    {
+     "head": "stealth",
+     "name": "stealth",
+     "optional": false
+    }
+   ],
+   "look": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "terrain",
+      "water",
+      "fire",
+      "place",
+      "trace",
+      "direction"
+     ]
+    },
+    {
+     "head": "look.mode",
+     "name": "mode",
+     "optional": false
+    },
+    {
+     "head": "stealth",
+     "name": "stealth",
+     "optional": false
+    }
+   ],
+   "mount": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "animal",
+      "item"
+     ]
+    },
+    {
+     "head": "mode",
+     "name": "mode",
+     "optional": false
+    }
+   ],
+   "operate": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "head": "operate.mode",
+     "name": "mode",
+     "optional": false
+    },
+    {
+     "name": "with",
+     "optional": true,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "head": "stealth",
+     "name": "stealth",
+     "optional": false
+    }
+   ],
+   "perform": [
+    {
+     "name": "with",
+     "optional": true,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "head": "mood",
+     "name": "mood",
+     "optional": false
+    },
+    {
+     "head": "duration",
+     "name": "duration",
+     "optional": false
+    }
+   ],
+   "pour": [
+    {
+     "name": "from",
+     "optional": false,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "name": "into",
+     "optional": false,
+     "pointer": [
+      "item",
+      "place",
+      "terrain",
+      "fire",
+      "agent",
+      "water"
+     ]
+    },
+    {
+     "head": "amount",
+     "name": "amount",
+     "optional": false
+    },
+    {
+     "head": "stealth",
+     "name": "stealth",
+     "optional": false
+    }
+   ],
+   "pull": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "voxel"
+     ]
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    },
+    {
+     "name": "toward",
+     "optional": true,
+     "pointer": [
+      "place",
+      "direction"
+     ]
+    }
+   ],
+   "push": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal",
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    },
+    {
+     "head": "direction",
+     "name": "direction",
+     "optional": false
+    }
+   ],
+   "put": [
+    {
+     "name": "item",
+     "optional": false,
+     "pointer": [
+      "item",
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "name": "where",
+     "optional": false,
+     "pointer": [
+      "place",
+      "item",
+      "structure",
+      "terrain",
+      "voxel",
+      "water"
+     ]
+    },
+    {
+     "head": "stealth",
+     "name": "stealth",
+     "optional": false
+    }
+   ],
+   "read": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "structure"
+     ]
+    }
+   ],
+   "rest": [
+    {
+     "head": "duration",
+     "name": "duration",
+     "optional": false
+    }
+   ],
+   "scoop": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "terrain",
+      "voxel",
+      "water",
+      "item"
+     ]
+    },
+    {
+     "name": "with",
+     "optional": true,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "head": "amount",
+     "name": "amount",
+     "optional": false
+    },
+    {
+     "name": "into",
+     "optional": true,
+     "pointer": [
+      "item",
+      "place",
+      "terrain"
+     ]
+    }
+   ],
+   "search": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "place",
+      "item",
+      "agent",
+      "structure",
+      "terrain",
+      "trace",
+      "water"
+     ]
+    },
+    {
+     "head": "thoroughness",
+     "name": "thoroughness",
+     "optional": false
+    }
+   ],
+   "set_posture": [
+    {
+     "head": "posture",
+     "name": "posture",
+     "optional": false
+    }
+   ],
+   "shape": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "terrain"
+     ]
+    },
+    {
+     "name": "into",
+     "optional": false,
+     "pointer": [
+      "belief",
+      "form"
+     ]
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    }
+   ],
+   "sign": [
+    {
+     "head": "kind",
+     "name": "kind",
+     "optional": false
+    },
+    {
+     "name": "at",
+     "optional": true,
+     "pointer": [
+      "agent",
+      "animal",
+      "item",
+      "place",
+      "direction",
+      "group"
+     ]
+    }
+   ],
+   "sleep": [
+    {
+     "name": "where",
+     "optional": false,
+     "pointer": [
+      "place",
+      "item",
+      "structure",
+      "terrain"
+     ]
+    },
+    {
+     "name": "until",
+     "optional": false,
+     "type": "condition"
+    }
+   ],
+   "speak": [
+    {
+     "name": "to",
+     "optional": true,
+     "pointer": [
+      "agent",
+      "group",
+      "animal"
+     ]
+    },
+    {
+     "head": "volume",
+     "name": "volume",
+     "optional": false
+    },
+    {
+     "head": "tone",
+     "name": "tone",
+     "optional": false
+    },
+    {
+     "name": "content",
+     "optional": false,
+     "type": "expression"
+    }
+   ],
+   "stop": [],
+   "strike": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "terrain",
+      "voxel",
+      "plant"
+     ]
+    },
+    {
+     "head": "zone",
+     "name": "zone",
+     "optional": false
+    },
+    {
+     "head": "with",
+     "name": "with",
+     "optional": false
+    },
+    {
+     "head": "motion",
+     "name": "motion",
+     "optional": false
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    },
+    {
+     "name": "until",
+     "optional": false,
+     "type": "condition"
+    }
+   ],
+   "swim": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "place",
+      "water",
+      "direction"
+     ]
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    }
+   ],
+   "take": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "head": "from",
+     "name": "from",
+     "optional": false
+    },
+    {
+     "head": "hold",
+     "name": "hold",
+     "optional": false
+    },
+    {
+     "head": "stealth",
+     "name": "stealth",
+     "optional": false
+    }
+   ],
+   "throw": [
+    {
+     "name": "item",
+     "optional": false,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "name": "at",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "place",
+      "water",
+      "fire",
+      "voxel",
+      "direction"
+     ]
+    },
+    {
+     "head": "zone",
+     "name": "zone",
+     "optional": true
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    },
+    {
+     "name": "with",
+     "optional": true,
+     "pointer": [
+      "item"
+     ]
+    }
+   ],
+   "tie": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "agent",
+      "animal",
+      "structure"
+     ]
+    },
+    {
+     "name": "to",
+     "optional": true,
+     "pointer": [
+      "item",
+      "structure",
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "head": "tie.mode",
+     "name": "mode",
+     "optional": false
+    },
+    {
+     "name": "with",
+     "optional": false,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "head": "tightness",
+     "name": "tightness",
+     "optional": false
+    }
+   ],
+   "touch": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "head": "touch.with",
+     "name": "with",
+     "optional": false
+    },
+    {
+     "head": "touch.zone",
+     "name": "zone",
+     "optional": false
+    },
+    {
+     "head": "manner",
+     "name": "manner",
+     "optional": false
+    },
+    {
+     "head": "duration",
+     "name": "duration",
+     "optional": false
+    }
+   ],
+   "wait": [
+    {
+     "name": "until",
+     "optional": false,
+     "type": "condition"
+    }
+   ],
+   "wear": [
+    {
+     "name": "item",
+     "optional": false,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "head": "wear.mode",
+     "name": "mode",
+     "optional": false
+    },
+    {
+     "name": "on",
+     "optional": true,
+     "pointer": [
+      "agent"
+     ]
+    }
+   ],
+   "work": [
+    {
+     "name": "target",
+     "optional": false,
+     "pointer": [
+      "item",
+      "agent",
+      "animal",
+      "structure",
+      "terrain",
+      "voxel"
+     ]
+    },
+    {
+     "name": "with",
+     "optional": true,
+     "pointer": [
+      "item"
+     ]
+    },
+    {
+     "head": "work.motion",
+     "name": "motion",
+     "optional": false
+    },
+    {
+     "head": "intensity",
+     "name": "intensity",
+     "optional": false
+    },
+    {
+     "head": "duration",
+     "name": "duration",
+     "optional": false
+    }
+   ],
+   "write": [
+    {
+     "name": "on",
+     "optional": false,
+     "pointer": [
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "name": "content",
+     "optional": false,
+     "type": "expression"
+    }
+   ]
+  },
+  "manner_heads": {
+   "amount": [
+    "little",
+    "some",
+    "all"
+   ],
+   "climb.pace": [
+    "slow",
+    "walk",
+    "brisk"
+   ],
+   "direction": [
+    "away",
+    "down",
+    "aside",
+    "into"
+   ],
+   "duration": [
+    "brief",
+    "a_while",
+    "long"
+   ],
+   "from": [
+    "ground",
+    "container",
+    "hand_of",
+    "worn_by"
+   ],
+   "give.mode": [
+    "offer",
+    "press"
+   ],
+   "hold": [
+    "in_hand",
+    "in_arms",
+    "on_back",
+    "by_arm"
+   ],
+   "hold_zone": [
+    "arm",
+    "collar",
+    "hair",
+    "neck",
+    "waist"
+   ],
+   "intensity": [
+    "faint",
+    "light",
+    "firm",
+    "hard",
+    "full"
+   ],
+   "intent": [
+    "assemble",
+    "disassemble",
+    "mend",
+    "shape"
+   ],
+   "kind": [
+    "point",
+    "nod",
+    "shake_head",
+    "wave",
+    "beckon",
+    "shrug",
+    "bow",
+    "applaud",
+    "raise_hand",
+    "show",
+    "spit",
+    "fist"
+   ],
+   "look.mode": [
+    "glance",
+    "watch",
+    "stare"
+   ],
+   "manner": [
+    "gentle",
+    "firm",
+    "playful",
+    "romantic",
+    "intimate"
+   ],
+   "mode": [
+    "get_on",
+    "get_off"
+   ],
+   "mood": [
+    "joyful",
+    "sad",
+    "solemn",
+    "lively",
+    "eerie"
+   ],
+   "motion": [
+    "swing",
+    "thrust"
+   ],
+   "operate.mode": [
+    "open",
+    "close",
+    "lock",
+    "unlock",
+    "activate"
+   ],
+   "pace": [
+    "slow",
+    "walk",
+    "brisk",
+    "run"
+   ],
+   "posture": [
+    "stand",
+    "sit",
+    "kneel",
+    "crouch",
+    "lie"
+   ],
+   "relation": [
+    "toward",
+    "along",
+    "away"
+   ],
+   "sense": [
+    "look",
+    "touch",
+    "weigh",
+    "smell",
+    "taste"
+   ],
+   "stance": [
+    "block",
+    "dodge",
+    "cover"
+   ],
+   "stealth": [
+    "open",
+    "discreet"
+   ],
+   "stop_at": [
+    "touch",
+    "near",
+    "talk",
+    "sight"
+   ],
+   "thoroughness": [
+    "brief",
+    "a_while",
+    "long"
+   ],
+   "tie.mode": [
+    "knot",
+    "lash",
+    "sew",
+    "bind"
+   ],
+   "tightness": [
+    "light",
+    "firm",
+    "hard"
+   ],
+   "tone": [
+    "warm",
+    "calm",
+    "cold",
+    "angry",
+    "pleading"
+   ],
+   "touch.with": [
+    "hand",
+    "arms",
+    "lips",
+    "forehead",
+    "body"
+   ],
+   "touch.zone": [
+    "hand",
+    "shoulder",
+    "head",
+    "face",
+    "body"
+   ],
+   "volume": [
+    "whisper",
+    "low",
+    "normal",
+    "loud",
+    "shout"
+   ],
+   "wear.mode": [
+    "put_on",
+    "take_off"
+   ],
+   "with": [
+    "held",
+    "open_hand",
+    "fist",
+    "foot",
+    "head",
+    "mouth"
+   ],
+   "work.motion": [
+    "press",
+    "rub",
+    "stir",
+    "squeeze",
+    "saw"
+   ],
+   "zone": [
+    "head",
+    "torso",
+    "arms",
+    "legs",
+    "any"
+   ]
+  },
+  "max_pointers_per_gesture": 3,
+  "speech": {
+   "grammar_words": [
+    "a_while",
+    "able",
+    "above",
+    "abrasiveness",
+    "absorbency",
+    "accident",
+    "achieve",
+    "activate",
+    "adhesion",
+    "admirable",
+    "adultery",
+    "age_years",
+    "ahead",
+    "ahead_left",
+    "ahead_right",
+    "all",
+    "along",
+    "altruism",
+    "and",
+    "angry",
+    "anxiousness",
+    "any",
+    "anyone",
+    "applaud",
+    "apprentice",
+    "arm",
+    "arms",
+    "arson",
+    "aside",
+    "ask",
+    "assault",
+    "assemble",
+    "assert",
+    "assumed",
+    "assurance",
+    "at",
+    "at_festival",
+    "attitude",
+    "attracted_to",
+    "aunt_uncle",
+    "avoid",
+    "away",
+    "baseline_mood",
+    "because",
+    "beckon",
+    "before_winter",
+    "behind",
+    "behind_left",
+    "behind_right",
+    "believes",
+    "beside",
+    "betrayal",
+    "betrothed",
+    "bind",
+    "binds",
+    "block",
+    "blocks_passage",
+    "blow",
+    "body",
+    "bow",
+    "bribery",
+    "brief",
+    "brisk",
+    "broken_promise",
+    "buoyancy",
+    "burning",
+    "by_arm",
+    "c_addressed",
+    "c_attacked",
+    "c_blocked",
+    "c_done",
+    "c_elapsed",
+    "c_exhausted",
+    "c_hands_full",
+    "c_hears",
+    "c_hunger_above",
+    "c_pain_above",
+    "c_reached",
+    "c_rested",
+    "c_sees",
+    "c_sees_ref",
+    "c_state_seen",
+    "c_stopped",
+    "c_target_down",
+    "c_target_gone",
+    "c_target_still",
+    "c_target_yields",
+    "c_thirst_above",
+    "c_time",
+    "c_tool_broken",
+    "calm",
+    "capacity",
+    "carryable",
+    "caused",
+    "channel",
+    "charge",
+    "child",
+    "climb",
+    "climbable",
+    "close",
+    "cold",
+    "collar",
+    "colleague",
+    "conceals",
+    "container",
+    "contains",
+    "coordination",
+    "cousin",
+    "cover",
+    "cowardice",
+    "creativity",
+    "crouch",
+    "cultivable",
+    "custom",
+    "cuts",
+    "dark_berries",
+    "dead",
+    "described",
+    "did",
+    "digs",
+    "diligence",
+    "dirtiness",
+    "disassemble",
+    "discreet",
+    "disrespect_absence",
+    "divisible",
+    "dodge",
+    "down",
+    "dreamt",
+    "drink",
+    "drinkable",
+    "e_anger",
+    "e_anxiety",
+    "e_boredom",
+    "e_confusion",
+    "e_contempt",
+    "e_disgust",
+    "e_envy",
+    "e_fear",
+    "e_gratitude",
+    "e_grief",
+    "e_guilt",
+    "e_jealousy",
+    "e_joy",
+    "e_pride",
+    "e_sadness",
+    "e_shame",
+    "e_surprise",
+    "e_tenderness",
+    "eat",
+    "edge",
+    "edible",
+    "eerie",
+    "elasticity",
+    "employee",
+    "employer",
+    "enemy",
+    "everyone",
+    "examine",
+    "exclaim",
+    "exhaustion",
+    "exists",
+    "extortion",
+    "face",
+    "faint",
+    "fairness",
+    "fearfulness",
+    "fertility",
+    "few",
+    "firm",
+    "fist",
+    "flammability",
+    "floats_carries",
+    "foot",
+    "forbidden",
+    "forehead",
+    "forgiveness",
+    "former_spouse",
+    "fraud",
+    "freshness",
+    "friend",
+    "fuel",
+    "full",
+    "future",
+    "g_band",
+    "g_community",
+    "g_crew",
+    "g_cult",
+    "g_guild",
+    "g_household",
+    "g_lineage",
+    "g_militia",
+    "g_workshop",
+    "generosity",
+    "gentle",
+    "gentleness",
+    "get_off",
+    "get_on",
+    "give",
+    "glance",
+    "go",
+    "goodbye",
+    "grab",
+    "grandchild",
+    "grandparent",
+    "graspable",
+    "greed_avoidance",
+    "ground",
+    "guard",
+    "guest",
+    "habitual",
+    "hair",
+    "hand",
+    "hand_of",
+    "handle",
+    "hard",
+    "hardness",
+    "has",
+    "head",
+    "heard",
+    "heard_said",
+    "heats",
+    "held",
+    "hello",
+    "help",
+    "here",
+    "heroism",
+    "high",
+    "holds",
+    "hospitality",
+    "how",
+    "how_much",
+    "hunger",
+    "hydration",
+    "hypocrisy",
+    "if",
+    "ignites",
+    "impacts",
+    "in",
+    "in_arms",
+    "in_hand",
+    "in_law",
+    "inferred",
+    "injustice",
+    "inquisitiveness",
+    "insulation",
+    "insult",
+    "integrity",
+    "intellect",
+    "intends",
+    "intimate",
+    "into",
+    "intoxication",
+    "is_a",
+    "joins",
+    "joyful",
+    "jump",
+    "key_for",
+    "kindness",
+    "kneel",
+    "knot",
+    "knows_how",
+    "lash",
+    "laugh",
+    "launches",
+    "leads",
+    "left",
+    "legs",
+    "less",
+    "lie",
+    "light",
+    "light_emission",
+    "light_source",
+    "link",
+    "lips",
+    "listen",
+    "lit",
+    "little",
+    "lively",
+    "lives_at",
+    "located",
+    "lock",
+    "lockable",
+    "locked",
+    "long",
+    "long_ago",
+    "look",
+    "loud",
+    "lover",
+    "low",
+    "loyalty",
+    "made",
+    "magic_power",
+    "maintain",
+    "manslaughter",
+    "many",
+    "mass",
+    "master",
+    "may",
+    "maybe",
+    "me",
+    "measures",
+    "member",
+    "mend",
+    "mid",
+    "mockery",
+    "modesty",
+    "mood_valence",
+    "more",
+    "mount",
+    "mountable",
+    "mouth",
+    "murder",
+    "named",
+    "near",
+    "neck",
+    "neighbor",
+    "niece_nephew",
+    "no",
+    "no_one",
+    "nod",
+    "noise_on_impact",
+    "none",
+    "norm",
+    "normal",
+    "not",
+    "nothing_special",
+    "now",
+    "nutrition",
+    "obligatory",
+    "odor",
+    "offer",
+    "on",
+    "on_back",
+    "one",
+    "opacity",
+    "open",
+    "open_hand",
+    "openable",
+    "operate",
+    "or",
+    "ouch",
+    "owes",
+    "owns",
+    "pain",
+    "parent",
+    "party_to",
+    "past",
+    "patience",
+    "perform",
+    "permitted",
+    "pierces",
+    "plantable",
+    "playful",
+    "plays_music",
+    "pleading",
+    "please",
+    "point",
+    "poisoning",
+    "potency",
+    "pour",
+    "press",
+    "protection",
+    "protects",
+    "prudence",
+    "pull",
+    "push",
+    "put",
+    "put_on",
+    "qualifies",
+    "quality",
+    "r_affection",
+    "r_attraction",
+    "r_familiarity",
+    "r_fear",
+    "r_id_certainty",
+    "r_known_by",
+    "r_last_contact",
+    "r_link_believed",
+    "r_obligation",
+    "r_perceived_regard",
+    "r_present",
+    "r_reputation_seen",
+    "r_resentment",
+    "r_respect",
+    "r_rivalry",
+    "r_trust",
+    "raise_hand",
+    "reach",
+    "read",
+    "rebellion",
+    "recipe",
+    "reflectivity",
+    "reflects_image",
+    "request",
+    "rescue",
+    "resilience",
+    "resonance",
+    "rest",
+    "right",
+    "rolls",
+    "rolls_load",
+    "romantic",
+    "route",
+    "rub",
+    "run",
+    "sad",
+    "saw",
+    "says",
+    "scoop",
+    "sealable",
+    "search",
+    "seed_of",
+    "seen",
+    "seen_myself",
+    "self_control",
+    "self_defense",
+    "self_regard",
+    "sentimentality",
+    "set_posture",
+    "sew",
+    "shake_head",
+    "shameful",
+    "shape",
+    "shapes_matter",
+    "sharpens",
+    "shelters",
+    "shoulder",
+    "shout",
+    "show",
+    "shrug",
+    "sibling",
+    "sickness_felt",
+    "sight",
+    "sign",
+    "silver_coin_look",
+    "sincerity",
+    "sit",
+    "size",
+    "sleep",
+    "sleepiness",
+    "slow",
+    "small_vial",
+    "smell",
+    "sociability",
+    "solemn",
+    "some",
+    "someone",
+    "soon",
+    "sorry",
+    "speak",
+    "spit",
+    "spouse",
+    "squeeze",
+    "stand",
+    "stare",
+    "state",
+    "stir",
+    "stop",
+    "stranger",
+    "strength",
+    "stress",
+    "strike",
+    "supports_body",
+    "sure",
+    "surface_writable",
+    "swim",
+    "swing",
+    "t_archery",
+    "t_brewing",
+    "t_climbing",
+    "t_cooking",
+    "t_digging",
+    "t_farming",
+    "t_fighting",
+    "t_fishing",
+    "t_foraging",
+    "t_glass",
+    "t_healing",
+    "t_hunting",
+    "t_husbandry",
+    "t_leather",
+    "t_literacy",
+    "t_magic",
+    "t_music",
+    "t_pottery",
+    "t_reckoning",
+    "t_riding",
+    "t_smithing",
+    "t_stealth",
+    "t_stonework",
+    "t_swimming",
+    "t_textile",
+    "t_woodwork",
+    "take",
+    "take_off",
+    "taking_back",
+    "talk",
+    "taste",
+    "tastes",
+    "temperature",
+    "thanks",
+    "that",
+    "theft",
+    "think",
+    "thirst",
+    "this",
+    "threat_felt",
+    "throw",
+    "throwable",
+    "thrust",
+    "tie",
+    "to",
+    "today",
+    "told",
+    "tomorrow",
+    "torso",
+    "touch",
+    "toughness",
+    "toward",
+    "toxicity",
+    "traps",
+    "trespass",
+    "trigger",
+    "unconventionality",
+    "under",
+    "unlock",
+    "unlocks",
+    "up",
+    "usurpation",
+    "v_achievement",
+    "v_authority",
+    "v_honor",
+    "v_liberty",
+    "v_loyalty",
+    "v_pleasure",
+    "v_power",
+    "v_sanctity",
+    "vandalism",
+    "very_high",
+    "very_low",
+    "w_bad",
+    "w_beautiful",
+    "w_brave",
+    "w_clever",
+    "w_coward",
+    "w_dangerous",
+    "w_false",
+    "w_good",
+    "w_old",
+    "w_poor",
+    "w_rich",
+    "w_strong",
+    "w_stupid",
+    "w_true",
+    "w_ugly",
+    "w_weak",
+    "w_young",
+    "waist",
+    "wait",
+    "walk",
+    "wants",
+    "warm",
+    "watch",
+    "watch_out",
+    "wave",
+    "wear",
+    "wearable",
+    "wearable_slot",
+    "weigh",
+    "weighs",
+    "welcome",
+    "wetness",
+    "what",
+    "when",
+    "where",
+    "which",
+    "whisper",
+    "white_mushroom",
+    "who",
+    "why",
+    "wipes",
+    "with",
+    "work",
+    "works_as",
+    "worn_by",
+    "worth",
+    "wounds",
+    "writable",
+    "write",
+    "yes",
+    "you"
+   ],
+   "kinds": [
+    "abrasive_face",
+    "absorbent_pad",
+    "adze",
+    "air",
+    "ale",
+    "ale_barrel",
+    "ale_mug",
+    "anchor",
+    "animal_bell",
+    "animal_trough",
+    "anvil",
+    "apple_tree",
+    "apples",
+    "apron",
+    "arcane_bloom",
+    "arcane_crystal",
+    "armor_plate",
+    "arrows",
+    "ash",
+    "auger",
+    "awl",
+    "axe",
+    "back_basket",
+    "backpack",
+    "bag",
+    "bagpipe",
+    "balance_scale",
+    "ball",
+    "bandage",
+    "bark",
+    "bark_strip",
+    "barley",
+    "barley_sack",
+    "barrel",
+    "basalt",
+    "basket",
+    "basket_weave",
+    "battle_axe",
+    "bead_necklace",
+    "beam",
+    "beans",
+    "bear",
+    "bed",
+    "bee",
+    "beech",
+    "beehive_skep",
+    "bellows",
+    "belt",
+    "belt_pouch",
+    "bench",
+    "berries",
+    "berry_bush",
+    "billhook",
+    "birch",
+    "black_bread",
+    "blade",
+    "blanket",
+    "block",
+    "blowpipe",
+    "blunt_head",
+    "boar",
+    "boat",
+    "bolts",
+    "bone",
+    "bone_item",
+    "book",
+    "boots",
+    "bow",
+    "box",
+    "bracelet",
+    "braies",
+    "bramble",
+    "branch",
+    "brazier",
+    "bread",
+    "bread_loaf",
+    "bread_peel",
+    "brick",
+    "bridle",
+    "bronze",
+    "bronze_ingot",
+    "brooch",
+    "broom",
+    "bucket",
+    "buckler",
+    "butter",
+    "butter_churn",
+    "butter_pat",
+    "cabbage",
+    "cactus",
+    "cage",
+    "camel",
+    "candle_tallow",
+    "candle_wax",
+    "candlestick",
+    "carding_comb",
+    "carrot",
+    "cart",
+    "casting_mold",
+    "cat",
+    "cauldron",
+    "ceramic",
+    "ceramic_bowl",
+    "chain",
+    "chainmail",
+    "chair",
+    "chalk",
+    "chalk_stick",
+    "chamber_pot",
+    "chamomile",
+    "charcoal",
+    "charcoal_sack",
+    "charm",
+    "cheese",
+    "cheese_wheel",
+    "cherry_tree",
+    "chest",
+    "chicken",
+    "chief_circlet",
+    "cider_jug",
+    "clay",
+    "clay_lump",
+    "clay_pot",
+    "cloak",
+    "clogs",
+    "cloth",
+    "cloth_bolt_linen",
+    "cloth_bolt_wool",
+    "club",
+    "coating",
+    "cobblestone",
+    "coffin",
+    "coif",
+    "coin_purse_full",
+    "comb",
+    "cooking_pot",
+    "copper",
+    "copper_coin",
+    "copper_ingot",
+    "copper_ring",
+    "cord",
+    "court_robe",
+    "cow",
+    "cradle",
+    "crate",
+    "crossbow",
+    "crow",
+    "crowbar",
+    "crucible",
+    "crutch",
+    "crystal_shard",
+    "cup_wood",
+    "cupboard",
+    "curtain",
+    "curved_blade",
+    "cut_gem",
+    "cut_stone",
+    "cutting_board",
+    "dagger",
+    "date_palm",
+    "death_cap",
+    "debased_coin",
+    "decoy_whistle",
+    "deer",
+    "dice",
+    "dirt",
+    "distaff",
+    "dog",
+    "donkey",
+    "door",
+    "door_lock",
+    "dress",
+    "dried_meat",
+    "drinking_horn",
+    "drum",
+    "dye",
+    "dye_pot",
+    "dye_vat",
+    "eagle",
+    "earrings",
+    "edible_mushroom",
+    "eel",
+    "egg",
+    "egg_item",
+    "elastic_limb",
+    "fastener",
+    "feather",
+    "feathers",
+    "felling_axe",
+    "fence_panel",
+    "festival_banner",
+    "festival_mask",
+    "festive_gown",
+    "fiber_bundle",
+    "file",
+    "firewood_bundle",
+    "fish_grilled",
+    "fish_trap",
+    "fishing_boat",
+    "fishing_net",
+    "fishing_rod",
+    "flail",
+    "flatbread",
+    "flax",
+    "flesh",
+    "fleshing_knife",
+    "flint",
+    "flint_nodule",
+    "flour",
+    "flour_sack",
+    "flower_crown",
+    "flute",
+    "food_body",
+    "forest_floor",
+    "fox",
+    "foxglove",
+    "frame",
+    "frog",
+    "frying_pan",
+    "fur",
+    "fur_blanket",
+    "fur_boots",
+    "fur_coat",
+    "fur_pelt",
+    "gambeson",
+    "game_board",
+    "garment",
+    "gem",
+    "glass",
+    "glass_bottle",
+    "glass_goblet",
+    "glass_pane",
+    "gloves",
+    "glue_pot",
+    "goat",
+    "gold",
+    "gold_coin",
+    "gold_ingot",
+    "goose",
+    "grain",
+    "granite",
+    "granules",
+    "grapes",
+    "grapevine",
+    "grave_marker",
+    "gravel",
+    "grip",
+    "ham",
+    "hammer",
+    "hand_plane",
+    "handcart",
+    "hare",
+    "harness",
+    "harpoon",
+    "harrow",
+    "hatchet",
+    "headwrap",
+    "healer_bag",
+    "heather",
+    "helmet",
+    "hemp",
+    "herb",
+    "herbal_remedy",
+    "herbs_bundle",
+    "hide",
+    "hinge",
+    "hod",
+    "hoe",
+    "holy_symbol",
+    "honey",
+    "honey_cake",
+    "honey_pot",
+    "hood",
+    "hooded_cloak",
+    "hook",
+    "horn",
+    "horn_item",
+    "horse",
+    "horseshoe",
+    "hose",
+    "hourglass",
+    "hull",
+    "hunting_horn",
+    "hunting_knife",
+    "hurdy_gurdy",
+    "ibex",
+    "icon",
+    "improvised_spear",
+    "incense",
+    "ink",
+    "ink_pot",
+    "iron",
+    "iron_ingot",
+    "iron_ore",
+    "ivy",
+    "jaw_trap",
+    "jug",
+    "key",
+    "key_bit",
+    "kindling",
+    "kneading_trough",
+    "knife",
+    "ladder",
+    "ladle",
+    "lancet",
+    "lantern",
+    "lead",
+    "lead_ingot",
+    "leash",
+    "leather",
+    "leather_apron",
+    "leather_armor",
+    "leather_cap",
+    "leather_leggings",
+    "leather_piece",
+    "leaves",
+    "leg",
+    "letter",
+    "lid",
+    "lime_mortar",
+    "lime_sack",
+    "limestone",
+    "linen",
+    "linen_dress",
+    "liquid",
+    "lock_mechanism",
+    "locked_chest",
+    "lockpick",
+    "log",
+    "loom",
+    "lump",
+    "lute",
+    "mace",
+    "magic_core",
+    "mail",
+    "mallet",
+    "mandrake",
+    "marbles",
+    "marmot",
+    "mattock",
+    "mead_jug",
+    "meadow_grass",
+    "measuring_cup",
+    "measuring_rod",
+    "membrane",
+    "memento",
+    "mesh",
+    "milk",
+    "milk_jug",
+    "milking_pail",
+    "miner_basket",
+    "mirror",
+    "mittens",
+    "mortar_batch",
+    "mortar_pestle",
+    "mortar_tub",
+    "moss",
+    "mourning_robe",
+    "mushrooms",
+    "nails",
+    "necklace",
+    "needle",
+    "needle_thread",
+    "nettle",
+    "night_shirt",
+    "nightshade",
+    "notice_board",
+    "nuts",
+    "oak",
+    "oak_planks",
+    "oak_raw",
+    "oar",
+    "oats",
+    "oats_sack",
+    "offering_bowl",
+    "oil",
+    "oil_jar",
+    "oil_lamp",
+    "oilskin_coat",
+    "olive_tree",
+    "onion",
+    "onions",
+    "ore_chunk",
+    "ornament",
+    "owl",
+    "ox",
+    "pack_frame",
+    "padding",
+    "paddle",
+    "padlock",
+    "paper",
+    "parchment",
+    "pear_tree",
+    "pears",
+    "pendant",
+    "pewter_plate",
+    "pick_head",
+    "pickaxe",
+    "pie",
+    "pig",
+    "pike",
+    "pillow",
+    "pine",
+    "pitch",
+    "pitch_pot",
+    "pitchfork",
+    "plank",
+    "plaster",
+    "platform",
+    "plough",
+    "plumb_line",
+    "point",
+    "poison_vial",
+    "poker",
+    "polished_face",
+    "poppy",
+    "porridge",
+    "post",
+    "potter_wheel",
+    "powder",
+    "prayer_beads",
+    "preparation",
+    "priest_vestment",
+    "pulley",
+    "purse",
+    "quarterstaff",
+    "quern",
+    "quill",
+    "quiver",
+    "raft",
+    "rag",
+    "rag_doll",
+    "rake",
+    "rat",
+    "raw_fish",
+    "raw_gem",
+    "raw_hide",
+    "raw_meat",
+    "razor",
+    "red_brick",
+    "reed",
+    "reed_bundle",
+    "reed_plant",
+    "relic",
+    "resonator",
+    "ring",
+    "ring_band",
+    "river_fish",
+    "roast_meat",
+    "rock_trim",
+    "rod",
+    "roof_tile",
+    "roots",
+    "rope",
+    "rope_fiber",
+    "rubble",
+    "rubble_masonry",
+    "rug",
+    "rush_mat",
+    "rye",
+    "rye_sack",
+    "sack",
+    "saddle",
+    "saddlebag",
+    "sage",
+    "sail",
+    "salt",
+    "salt_bag",
+    "salt_block",
+    "salt_rake",
+    "salted_fish",
+    "salve",
+    "sand",
+    "sand_sack",
+    "sandals",
+    "sandstone",
+    "sausage",
+    "saw",
+    "scale_marks",
+    "scarecrow",
+    "scarf",
+    "scissors",
+    "scorpion",
+    "scythe",
+    "sea_fish",
+    "seal",
+    "seal_stamp",
+    "sealing_wax",
+    "seaweed",
+    "seed",
+    "seed_bag",
+    "seed_drill_bag",
+    "shaft",
+    "sheep",
+    "sheep_shears",
+    "sheet_flexible",
+    "sheet_rigid",
+    "shelf",
+    "shellfish",
+    "shellfish_bed",
+    "shepherd_crook",
+    "shepherd_mantle",
+    "shirt",
+    "shoes",
+    "short_sword",
+    "shovel",
+    "shroud",
+    "shutter",
+    "sickle",
+    "sieve",
+    "silk",
+    "silk_bolt",
+    "silk_gown",
+    "silver",
+    "silver_coin",
+    "silver_ingot",
+    "skirt",
+    "slate",
+    "slate_tile",
+    "sled",
+    "sledgehammer",
+    "sleeping_draught",
+    "sling",
+    "small_box",
+    "smith_gauntlets",
+    "smith_hammer",
+    "smoked_fish",
+    "snake",
+    "snare",
+    "snow",
+    "soap",
+    "soap_bar",
+    "softwood",
+    "soup",
+    "spade",
+    "spade_head",
+    "spear",
+    "spindle",
+    "spinning_wheel",
+    "spirit_flask",
+    "spit",
+    "splint",
+    "splitting_wedge",
+    "spoon",
+    "spout",
+    "stew",
+    "stone_block",
+    "stone_chisel",
+    "stone_loose",
+    "stool",
+    "storage_jar",
+    "strange_relic",
+    "strap",
+    "straw",
+    "straw_bale",
+    "straw_hat",
+    "straw_mattress",
+    "sword",
+    "table",
+    "table_knife",
+    "tallow",
+    "tallow_block",
+    "tally_stick",
+    "tanning_vat",
+    "tapestry",
+    "teeth",
+    "temple_bell",
+    "tension_string",
+    "thatch",
+    "thatch_bundle",
+    "thimble",
+    "throwing_stones",
+    "tin",
+    "tin_ingot",
+    "tinderbox",
+    "tines",
+    "tongs",
+    "torch",
+    "trencher",
+    "trestle_table",
+    "trigger_mechanism",
+    "trousers",
+    "trowel",
+    "tunic",
+    "turf",
+    "turnip",
+    "turnips",
+    "two_man_saw",
+    "undershirt",
+    "vegetable",
+    "veil",
+    "vessel",
+    "vest",
+    "vine",
+    "vulture",
+    "wagon",
+    "walnut_tree",
+    "wand_cracked",
+    "wand_strong",
+    "wand_weak",
+    "washtub",
+    "water",
+    "water_jug",
+    "watering_pot",
+    "waterskin",
+    "wax",
+    "wax_cake",
+    "wax_tablet",
+    "wedding_ring",
+    "wedge",
+    "weights_set",
+    "wheat",
+    "wheat_sack",
+    "wheel",
+    "wheelbarrow",
+    "whetstone",
+    "wick",
+    "wicker",
+    "wicker_bundle",
+    "willow",
+    "willow_bark_herb",
+    "window_frame",
+    "wine_bottle",
+    "winnowing_basket",
+    "wolf",
+    "wood_chisel",
+    "wood_trim",
+    "wood_trim_worn",
+    "wooden_bowl",
+    "wooden_shield",
+    "wooden_shovel",
+    "wooden_toy",
+    "wool",
+    "wool_cap",
+    "wool_fleece",
+    "wool_tunic",
+    "work_smock",
+    "wreath",
+    "yarn",
+    "yarrow",
+    "yew",
+    "yew_wood",
+    "yoke"
+   ],
+   "max_depth": 2,
+   "max_symbols": 20,
+   "pointers": [
+    "@E<n>",
+    "@T<n>",
+    "@G<n>",
+    "@L<n>",
+    "@PLACE",
+    "b:<n>",
+    "m:<n>",
+    "g:<n>",
+    "n:<name>"
+   ]
+  },
+  "writes": {
+   "max_per_decision": 4,
+   "writable": {
+    "altruism": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "anger": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "anxiety": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "anxiousness": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "assurance": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "attention": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "mref",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "b_certainty": {
+     "holder": "belief",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "engine",
+      "T_jump"
+     ]
+    },
+    "b_importance": {
+     "holder": "belief",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 1.0,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "b_polarity": {
+     "holder": "belief",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bool",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "engine",
+      "T_jump"
+     ]
+    },
+    "b_proposition": {
+     "holder": "belief",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "proposition",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "engine",
+      "T_jump"
+     ]
+    },
+    "b_secret": {
+     "holder": "belief",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bool",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "b_source": {
+     "holder": "belief",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "enum",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "engine",
+      "T_jump"
+     ]
+    },
+    "b_weight": {
+     "holder": "belief",
+     "intimate": false,
+     "rate_per_day": 0.3,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.3,
+     "writer": [
+      "T_step"
+     ]
+    },
+    "baseline_mood": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "boredom": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "confusion": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "contempt": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "creativity": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "diligence": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "disgust": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "envy": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "fairness": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "fear": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "fearfulness": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "forgiveness": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "g_deadline": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "time",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "g_desired": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "proposition",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "g_mode": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "enum",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "g_origin": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "enum",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "g_origin_ref": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "mref",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "engine",
+      "T_jump"
+     ]
+    },
+    "g_priority": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 3.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 1.0,
+     "writer": [
+      "T_step"
+     ]
+    },
+    "g_status": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "enum",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "gentleness": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "gratitude": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "greed_avoidance": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "grief": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "guilt": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "i_commitment": {
+     "holder": "intention",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "i_serves": {
+     "holder": "intention",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "mref",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "i_steps": {
+     "holder": "intention",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "list",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "inquisitiveness": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "jealousy": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "joy": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "m_content": {
+     "holder": "episode",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "proposition",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "engine",
+      "T_jump"
+     ]
+    },
+    "m_defining": {
+     "holder": "episode",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bool",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "m_emotion": {
+     "holder": "episode",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "enum",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "m_importance": {
+     "holder": "episode",
+     "intimate": false,
+     "rate_per_day": 1.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 1.0,
+     "writer": [
+      "T_jump",
+      "T_step"
+     ]
+    },
+    "m_interpretation": {
+     "holder": "episode",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "word",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "m_secret": {
+     "holder": "episode",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bool",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "m_valence": {
+     "holder": "episode",
+     "intimate": false,
+     "rate_per_day": 1.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 1.0,
+     "writer": [
+      "T_jump",
+      "T_step"
+     ]
+    },
+    "masking": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "modesty": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "need_achievement": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_acquisition": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_autonomy": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_company": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_esteem": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_intimacy": {
+     "holder": "mind_dynamic",
+     "intimate": true,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_meaning": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_novelty": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_play": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "need_security": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "engine",
+      "T_step"
+     ]
+    },
+    "patience": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "pride": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "prudence": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "r_affection": {
+     "holder": "relation",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "r_attraction": {
+     "holder": "relation",
+     "intimate": true,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "r_fear": {
+     "holder": "relation",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "r_obligation": {
+     "holder": "relation",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "r_resentment": {
+     "holder": "relation",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "r_respect": {
+     "holder": "relation",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "r_rivalry": {
+     "holder": "relation",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "r_trust": {
+     "holder": "relation",
+     "intimate": false,
+     "rate_per_day": 2.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "resilience": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.3,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "sadness": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "self_control": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "self_regard": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 3.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.5,
+     "writer": [
+      "T_step",
+      "engine"
+     ]
+    },
+    "sentimentality": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "shame": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "sincerity": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "sociability": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "surprise": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "tastes": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "list",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "tenderness": {
+     "holder": "mind_dynamic",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "writer": [
+      "T_jump",
+      "engine"
+     ]
+    },
+    "unconventionality": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "bipolar10",
+     "slow_per_life_year": 1.0,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_achievement": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_authority": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_honor": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_liberty": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_loyalty": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_pleasure": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_power": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    },
+    "v_sanctity": {
+     "holder": "mind_static",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "unipolar10",
+     "slow_per_life_year": 0.5,
+     "step": 0.05,
+     "writer": [
+      "birth",
+      "T_slow"
+     ]
+    }
+   }
+  }
+ },
+ "schema_version": "model-interface-1"
+}

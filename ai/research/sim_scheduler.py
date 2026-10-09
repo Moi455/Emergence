@@ -22,14 +22,17 @@ from common import save
 
 TICK = 0.1
 RATE = 200.0
-NOMINAL, BURST, BUCKET_MAX = 20, 64, 400.0
+NOMINAL, BURST, BUCKET_MAX = 18, 64, 400.0   # nominal under the refill (20/tick): the bucket recovers (review 10 Oct)
 CLASSES = ("P0_danger", "P1_addressed", "P2_gesture_end", "P3_notable", "P4_heartbeat")
 
 
 class Npc:
-    __slots__ = ("id", "village", "asleep", "commitment", "last", "pending", "pending_since", "decisions")
+    __slots__ = ("id", "village", "asleep", "commitment", "last", "pending", "pending_since", "decisions", "cues", "seen_events", "danger_event")
 
     def __init__(self, i, rng):
+        self.cues = []
+        self.seen_events = set()
+        self.danger_event = None
         self.id, self.village = i, i // 100
         self.asleep = False
         self.commitment = rng.uniform(0, 10)
@@ -47,12 +50,14 @@ class Scheduler:
         self.seq = 0
         self.bucket = BUCKET_MAX
         self.latency = {c: [] for c in CLASSES}
+        self.cue_latency = {c: [] for c in CLASSES}
+        self.bucket_trace = []
         self.per_tick = []
         self.bursts = {}
 
-    def push(self, t, npc, cls):
+    def push(self, t, npc, cls, event=None):
         self.seq += 1
-        heapq.heappush(self.events, (t, self.seq, npc, cls))
+        heapq.heappush(self.events, (t, self.seq, npc, cls, event))
 
     def gesture_duration(self, npc):
         # routine gestures: walking somewhere, a series of strikes, eating... median ~4 s, long tail
@@ -60,6 +65,7 @@ class Scheduler:
 
     def raise_flag(self, t, npc, cls):
         """An engine-side cue arrives. P3 only interrupts if it beats the NPC's own commitment (a model output)."""
+        npc.cues.append((t, cls))           # every perception is timed until the NPC's next decision (any class)
         if cls == 3 and self.rng.uniform(0, 10) < npc.commitment * 0.8:
             return
         if npc.pending is None or cls < npc.pending:
@@ -71,14 +77,21 @@ class Scheduler:
     def decide(self, t, npc):
         cls = npc.pending
         self.latency[CLASSES[cls]].append(t - npc.pending_since)
+        for t0, c in npc.cues:              # unbiased: each perception's delay to the next decision, whatever won
+            self.cue_latency[CLASSES[c]].append(t - t0)
+        npc.cues = []
+        if cls == 0:                        # cascade: a scream wakes the neighbours who hear it
+            for o in self.npcs[npc.village * 100:(npc.village + 1) * 100]:
+                if o is not npc and not o.asleep and self.rng.random() < 0.05:
+                    self.push(t + self.rng.uniform(0.5, 1.5), o, 0, npc.danger_event)
         npc.pending, npc.last = None, t
         npc.decisions += 1
         # the decision starts a gesture; its end (stop condition) is a future P2 ; a talker is answered (P1)
         self.push(t + self.gesture_duration(npc), npc, 2)
-        if not npc.asleep and self.rng.random() < 0.12:
+        if not npc.asleep and self.rng.random() < 0.12:     # speech: EVERY hearer gets P1 (review 10 Oct)
             others = [o for o in self.npcs[npc.village * 100:(npc.village + 1) * 100] if o is not npc and not o.asleep]
-            if others:
-                self.push(t + self.rng.uniform(1.0, 3.0), self.rng.choice(others), 1)
+            for o in self.rng.sample(others, min(len(others), self.rng.randint(1, 5))):
+                self.push(t + self.rng.uniform(1.0, 3.0), o, 1)
 
     def scenario(self, horizon):
         for npc in self.npcs:
@@ -87,10 +100,11 @@ class Scheduler:
         while t < horizon:                                     # background notable perceptions, ~0.05/s per NPC
             t += self.rng.expovariate(500 * 0.05)
             self.push(t, self.rng.choice(self.npcs), 3)
-        for t0, size, label in ((600.0, 40, "knife_in_tavern"), (1200.0, 100, "fire_in_village")):
-            village = 1 if label == "knife_in_tavern" else 3
-            for npc in self.rng.sample(self.npcs[village * 100:(village + 1) * 100], size):
-                self.push(t0 + self.rng.uniform(0, 0.3), npc, 0)
+        dangers = [(600.0, 40, 1), (1200.0, 100, 3)]
+        dangers += [(t0, 15, int(t0 // 120) % 5) for t0 in range(180, int(horizon), 120)]   # recurrent smaller dangers
+        for k, (t0, size, village) in enumerate(dangers):
+            for npc in self.rng.sample(self.npcs[village * 100:(village + 1) * 100], size):   # those who SEE it
+                self.push(t0 + self.rng.uniform(0, 0.3), npc, 0, k)
 
     def night(self, t):
         # one third of the cycle asleep (D30: night 30 min of a 1 h 30 day), staggered by village
@@ -106,7 +120,12 @@ class Scheduler:
             if int(t * 10) % 50 == 0:
                 self.night(t)
             while self.events and self.events[0][0] <= t:
-                _, _, npc, cls = heapq.heappop(self.events)
+                _, _, npc, cls, event = heapq.heappop(self.events)
+                if event is not None:                      # the same danger perceived again is not a new cue
+                    if event in npc.seen_events:
+                        continue
+                    npc.seen_events.add(event)
+                    npc.danger_event = event
                 self.raise_flag(t, npc, cls)
             for npc in self.npcs:                               # heartbeat
                 if npc.pending is None and t - npc.last > (60.0 if npc.asleep else 8.0):
@@ -120,6 +139,7 @@ class Scheduler:
                 self.decide(t, npc)
             self.bucket -= cap
             self.per_tick.append(cap)
+            self.bucket_trace.append(self.bucket)
         return self.report(horizon)
 
     def report(self, horizon):
@@ -127,6 +147,10 @@ class Scheduler:
             xs = sorted(xs)
             return xs[min(len(xs) - 1, int(q * len(xs)))] if xs else None
         out = {"decisions_per_s": sum(self.per_tick) / horizon, "max_per_tick": max(self.per_tick)}
+        out["per_perception_latency"] = {c: {"n": len(xs), "p50_s": pct(xs, 0.5), "p95_s": pct(xs, 0.95)}
+                                         for c, xs in self.cue_latency.items()}
+        out["bucket_min"] = min(self.bucket_trace) if self.bucket_trace else None
+        out["burst_ticks_served"] = sum(1 for c in self.per_tick if c > NOMINAL)
         for c, xs in self.latency.items():
             out[c] = {"n": len(xs), "p50_s": pct(xs, 0.5), "p95_s": pct(xs, 0.95), "p99_s": pct(xs, 0.99),
                       "max_s": max(xs) if xs else None}

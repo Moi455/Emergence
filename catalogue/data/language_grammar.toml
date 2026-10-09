@@ -13,11 +13,15 @@
 #   @E3 = la personne du jeton ENTITY 3 ; @T5 = la chose du jeton THING 5 ; @G1 = le groupe 1 ;
 #   @L2 = un lieu qu'il connaît (son dossier de lieu : « la forêt », « ma maison ») ;
 #   b:7 = sa croyance 7 ; m:2 = son souvenir 2 ; g:1 = son objectif 1 ; @PLACE = le lieu où l'on est.
-# Le moteur DÉPLIE la parole pour chaque auditeur : il remplace b:7 par la proposition, et chaque
-# pointeur par le dossier mental de l'AUDITEUR correspondant (s'il connaît la personne), sinon par
-# une description (« un homme grand de la forge ») ou par « quelqu'un ». Ainsi l'IA écrit court, et
-# l'auditeur reçoit une proposition dans ses propres termes. Aucune vérité ne passe : seul ce que le
-# parleur croit, tel qu'il le dit.
+# Le moteur DÉPLIE la parole pour chaque auditeur SANS passer par la vérité (revue du 10 oct.) :
+#   - b:7, m:2 → la proposition, dont chaque pointeur est déplié à son tour ;
+#   - une personne ou une chose pointée (@E2, @T5) est transmise sous la forme que le PARLEUR peut donner :
+#     son nom s'il le croit (n:<nom>), un geste de désignation si elle est là (sign point), ou une description
+#     tirée de ce que le parleur en perçoit (« described smith tall ») ; jamais l'identité vraie ;
+#   - l'AUDITEUR apparie cette forme à ses propres dossiers avec ses croyances (named), sa perception (il voit
+#     qui est désigné) ou ses descriptions, avec une certitude ; sinon il crée un dossier « un certain … ».
+# Ainsi l'IA écrit court, l'auditeur reçoit une proposition dans ses propres termes, et l'on peut parler
+# d'Aldric à quelqu'un qui ne le connaît pas, se tromper de personne, ou désigner sans nommer.
 # Vocabulaire (catalogue/tools/language.py le construit) : mots de grammaire = les concepts, les gestes,
 # les variables et propriétés nommables ; sortes = types d'objets, matières, espèces, formes, classes de
 # sosies (table séparée, ≤ 1 024) ; noms propres = n:<id> dans la table des noms.

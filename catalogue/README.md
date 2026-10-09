@@ -20,15 +20,15 @@ La richesse vit dans le moteur et les données ; le Transformer (≈ 5 M de para
 
 | Quoi | Budget | Comment |
 |---|---|---|
-| Entrée d'une décision | ≤ 128 jetons (cible ≈ 96) | le moteur choisit les choses, personnes, souvenirs et croyances les plus saillants |
+| Entrée d'une décision | ≤ 128 jetons (cible ≈ 96) | un **sélecteur appris** (entraîné par la perte de la politique) choisit les personnes, choses, souvenirs et croyances, parmi ce que le PNJ perçoit et croit ; une saillance simple ne sert que d'amorce provisoire, à remplacer |
 | Un objet | vecteur fixe d'usages et d'états perceptibles + 6 grandeurs (≤ 48) + sorte apparente (table des sortes, ≤ 1 024) | un assemblage jamais vu est compris par ses propriétés : il généralise |
 | Le corps | un résumé (douleur, saignement, conscience, mobilité, pire blessure) | les 16 zones et le volume de sang restent au moteur |
 | Les autres | seulement ce qui se voit (apparence) | jamais leurs variables internes (charte § 5) |
 | Un geste en sortie | ≤ 64 gestes × cible par pointeur × manière en ≤ 5 niveaux par paramètre | têtes de sortie séparées, masques de faisabilité du moteur |
-| Une parole | ≤ 512 mots de grammaire (prédicats, liens, modes, émotions, techniques…) + une table de **sortes** à part (types d'objets, matières, espèces, formes : ≤ 1 024 en tout, factorisée par catégorie), ≤ 16 symboles | décodage contraint par la grammaire |
+| Une parole | ≤ 768 mots de grammaire (le vrai vocabulaire : concepts, gestes, manières, interprétations, variables et propriétés nommables, directions) + une table de **sortes** à part (types d'objets, matières, espèces, formes : ≤ 1 024 en tout, factorisée par catégorie), ≤ 20 symboles | décodeur autorégressif contraint par la grammaire (un automate), 20 pas au plus |
 | Une proposition imbriquée | un jeton de plus par niveau, ≤ 2 niveaux | comptée dans les 12 jetons BELIEF |
 | Les absents | un absent saillant (un proche, quelqu'un attendu) garde son jeton ENTITY avec present = faux | on remarque l'absence (charte § 20) |
-| Ce qu'une décision écrit | geste choisi + **≤ 4 écritures** (pointeur, variable, valeur) | chacune bornée par le pas par décision et le taux par jour ; le reste suit les lois de retour du moteur (revue du 9 oct.) |
+| Ce qu'une décision écrit | geste choisi + **≤ 4 écritures** (pointeur, variable, valeur ; créer une croyance, un objectif, un souvenir ou un plan = une écriture dont la proposition sort du décodeur de la parole) | chacune bornée par le pas par décision et le taux par jour ; le reste suit les lois de retour du moteur (revue du 9 oct.) |
 | Rythme | gestes rapides, objectifs lents | tout ne se décide pas à chaque pas |
 
 **Unités de temps** (D30) : minute de jeu = 3,75 s réelles ; heure de jeu = 3 min 45 s ; jour = 1 h 30 (1 h de jour, 30 min de nuit) ; saison = 1 h 45 ; an = 7 h ; année de vie ≈ 2 h 30 à l'âge adulte (horloge de vie). Chaque dynamique déclare son horloge (`clock` : `real`, `day` = calendrier, `life` = horloge de vie).
@@ -54,7 +54,7 @@ La richesse vit dans le moteur et les données ; le Transformer (≈ 5 M de para
 
 **Pas de temps.** `step` = au plus par décision ; `rate` = au plus par **jour de jeu** (1 h 30 réelle, D30) ; `slow_rate` = au plus par **année de vie** (≈ 2 h 30 réelles à l'âge adulte : l'horloge de vie est séparée du calendrier, dont l'année dure 7 h). Les 500 PNJ se partagent 200 décisions par seconde (D32), plus vite pour ceux qu'un événement réveille : sans `rate`, des pas répétés deviendraient un saut.
 
-**Rien de vrai dans ce que l'IA lit** (règle dure `no_truth_in_tokens`) : les jetons pointent vers les dossiers mentaux du PNJ, les événements qu'il se rappelle ou qu'on lui décrit, les lieux tels qu'il les connaît ; jamais vers un identifiant objectif, l'état réel d'un accord ou la vérité d'une croyance.
+**Rien de vrai dans ce que l'IA lit** (règle dure `no_truth_in_tokens`) — ni dans les jetons, ni dans le **masque de faisabilité** (calculé sur ce que le PNJ perçoit et croit ; l'échec réel est physique et perçu), ni dans les **réveils** (on se réveille parce qu'on perçoit, pas parce qu'un danger est près en vrai), ni dans le **dépliage de la parole** (voir `data/language_grammar.toml`) : les jetons pointent vers les dossiers mentaux du PNJ, les événements qu'il se rappelle ou qu'on lui décrit, les lieux tels qu'il les connaît ; jamais vers un identifiant objectif, l'état réel d'un accord ou la vérité d'une croyance.
 
 Champ `token` d'une variable : où l'IA la voit (`SELF.body.pain`, `ENTITY.look.wounds`…), ou vide si elle ne la voit pas (moteur seul). Une variable non vue peut quand même agir sur le monde : c'est le moteur qui l'applique.
 

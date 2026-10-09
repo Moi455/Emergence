@@ -2,10 +2,56 @@
 
 Statut : **proposition**, rien n'est décidé. **[Mesuré]** = sur la machine de Monsieur (Quadro RTX 3000 6 Go, Turing, PyTorch 2.14, CUDA 13) ; scripts et résultats bruts dans `ai/research/` (`results/*.json`). **[Estimé]** sinon. Les modèles mesurés ont des poids aléatoires : on mesure le coût, pas l'intelligence.
 
+## 0. Révision après relecture (10 oct.)
+
+Une relecture adverse a confronté ce document à ses scripts, à ses résultats bruts et au catalogue. Corrections :
+
+1. **Ordonnanceur** (`ai/research/sim_scheduler.py`, refait et remesuré [Mesuré]) :
+   - le seau à jetons ne se rechargeait pas sous charge : le nominal passe à 18 décisions par pas, sous la recharge de 20 ;
+   - la latence est mesurée pour chaque perception jusqu'à la décision suivante, quelle que soit la classe qui l'emporte : l'ancien « P3 2,7 s » souffrait d'un biais du survivant ;
+   - le banc ajoute des dangers récurrents et des cascades de cris, et réveille chaque auditeur d'une parole. Une cascade sans identité d'événement s'emballait (500 000 alertes en 45 min) ; un danger porte donc une identité, et percevoir à nouveau le même danger n'est pas un nouvel indice.
+
+   Sur 45 min de jeu et 500 PNJ :
+
+   | Mesure | Valeur |
+   |---|---|
+   | décisions par seconde | 184 en moyenne, 64 au plus par pas |
+   | danger, délai au p95 | 0 s (servi dans le pas) |
+   | parole adressée, délai | immédiat |
+   | fin de geste, délai au p95 | 1,4 s |
+   | perception notable, délai au p95 | 5,8 s |
+   | réveil périodique, délai au p95 | 8,8 s |
+
+2. **Aucune entrée calculée sur la vérité.** Le masque de faisabilité, les réveils, la sélection du contexte et le dépliage de la parole reposent sur ce que le PNJ perçoit et croit. Un geste que le monde refuse échoue physiquement, et cet échec est perçu. L'auditeur apparie lui-même les noms, désignations et descriptions à ses dossiers, sans passer par l'identité vraie (`catalogue/data/language_grammar.toml`).
+3. **Têtes de sortie générées depuis le catalogue** (`catalogue/generated/model_interface.json`, `catalogue/tools/model_interface.py`) :
+   - 40 gestes, 35 têtes de manière, au plus 3 pointeurs par geste, une tête de 10 directions, 23 conditions ;
+   - parole sur 592 mots et 643 sortes, en 20 symboles au plus ;
+   - 93 variables écrivables, au plus 4 écritures par décision.
+
+   Créer une croyance, un objectif, un souvenir ou un plan compte pour une écriture, et sa proposition sort du **décodeur autorégressif contraint par un automate de grammaire** (20 pas). Le décodeur « par cadres » est abandonné, car il ne produisait ni la logique ni les rôles. À remesurer à 20 pas.
+4. **Coût sous rendu.** Il faut retenir ≈ 6 % du GPU et 10 à 14 ms par pas de 20 décisions sous rendu en `small`, plutôt que « 4 % ». C'est à remesurer en `base`, à 60 images/s, avec un vrai rendu Vulkan, sur 30 min.
+5. **Une seule taille de lot (32)** et un seul graphe CUDA. Un pic se traite en plusieurs lots identiques, sinon la décision d'un PNJ dépendrait d'un danger ailleurs (bits différents, c'est mesuré).
+6. **Sélecteur de contexte appris pour tous les types de jetons**, entraîné par la perte de la politique (top-k de Gumbel ou passage direct du gradient), avec un sous-ensemble étiqueté en vue large. Une saillance simple ne sert que d'amorce provisoire.
+7. **Un seul tokeniseur**, généré depuis le catalogue, écrit en C++ et exposé à Python (nanobind). Le DAgger vient seulement ensuite, sur le moteur social C++ (D31), pas sur `sim/`, qui suit d'autres règles et d'autres jetons.
+8. **Professeur** :
+   - avant toute dépense de quota, rendre 20 vraies situations et compter leurs jetons avec un tokeniseur local : l'estimation plausible est de 4 000 jetons par situation et plus de 10 000 de légende, au lieu des 2 500 et 4 000 annoncés ;
+   - lancer un pilote qui mesure les refus et adoucissements de Gemini par famille de gestes, avec des variantes envoyées en requêtes séparées ;
+   - appliquer le gouverneur (et D10) avant tout envoi ;
+   - imposer une sortie structurée (schéma à énumérations) à Gemini et une grammaire GBNF au modèle local ;
+   - tracer une courbe d'apprentissage gratuite (10 k → 300 k étiquettes du décideur de référence) avant d'affirmer qu'un volume suffit ;
+   - tenir un planning de nuit du GPU entre modèle local, entraînement et DAgger.
+9. **Nuances** :
+   - « INT8 plus lent » ne vaut que pour `torch._int_mm` sur Turing à B=200 : l'INT8 de TensorRT n'a pas été testé ;
+   - les 4 à 6 ms de lancement sont un coût de PyTorch en Python ;
+   - un GNN déterministe est possible ; il est écarté parce qu'il lirait le vrai graphe social ;
+   - les mémoires de 0,2 à 0,5 Go sont mesurées sous PyTorch, pas avec ONNX Runtime ;
+   - un repli sur processeur `xs` donnerait d'autres PNJ selon le matériel.
+10. **Questions** : la question 1 du § 7 est tranchée par D32 (200 décisions/s au total). Le précalcul de plongements statiques (personnalité) devient la question O21.
+
 ## 1. Verdict
 
 1. **Un seul jeu de poids pour les 500 PNJ** : un Transformer d'ensembles de 6 à 16 M de paramètres, 128 jetons, pointeurs en biais d'attention, appelé par lots fixes de 20 à 64, en FP16.
-2. 200 décisions/s ne coûtent presque rien : **4 % du GPU** en `small` (5,5 M), **7,5 %** en `base` (16 M), **13 %** en `large` (34 M) [Mesuré].
+2. 200 décisions/s ne coûtent presque rien : **4 % du GPU** en `small` (5,5 M), **7,5 %** en `base` (16 M), **13 %** en `large` (34 M) en débit pur [Mesuré] ; sous rendu, compter **≈ 6 % et 10 à 14 ms par pas** en `small` (§ 0).
 3. Les vrais goulots sont ailleurs : le coût de lancement (sans graphe CUDA, au moins 4 à 6 ms par appel), le partage avec le rendu (+5 ms au p95 sur l'image qui croise une décision) et surtout **les données**.
 4. Autour du modèle, plusieurs boucles : un **ordonnanceur à événements** (qui pense quand, jamais quoi), un **sélecteur de contexte** appris, la **politique rapide**, un **décodeur de parole par cadres**, une **boucle lente de réflexion** et le **gouverneur**.
 5. Pas de GNN sur le vrai graphe social, qui ferait lire la vérité. Le Transformer à biais de pointeurs est déjà un GNN sur le graphe que le PNJ *croit*.

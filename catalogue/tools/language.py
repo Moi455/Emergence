@@ -22,6 +22,9 @@ POINTER = re.compile(r"^(@E\d+|@T\d+|@G\d+|@L\d+|@PLACE|[bmg]:\d+|n:\d+)$")
 NESTING_HEADS = {"believes", "wants", "intends", "says", "may", "owes", "norm", "custom", "recipe", "that"}
 SOCIAL_VERBS = set(FORBIDDEN_ACTION_IDS) | {"promise", "threaten", "blackmail", "lie", "insult", "flatter",
                                             "seduce", "betray", "steal", "murder", "bribe", "apologize"}
+NAMEABLE_HOLDERS = {"mind_static", "relation"}
+NAMEABLE_VARIABLES = {"pain", "hunger", "thirst", "sleepiness", "exhaustion", "sickness_felt", "intoxication",
+                      "age_years", "strength", "wounds", "stress", "self_regard", "mood_valence"}
 CONTEXT_WORDS = {"me", "you", "this", "here", "someone", "anyone", "everyone", "no_one"}
 
 
@@ -41,11 +44,15 @@ class Vocabulary:
             self.words.setdefault(a, "gesture")
         for i in cat["interpretation"]:                      # judgements are words (qualifies), never options
             self.words.setdefault(i, "interpretation")
-        for v in cat["variable"].values():
-            if v.token:                                      # what an NPC can feel or notice, it can name
+        for v in cat["variable"].values():                   # what one talks about: traits, values, attitudes,
+            if v.token and (v.holder in NAMEABLE_HOLDERS or v.id in NAMEABLE_VARIABLES):   # felt body states
                 self.words.setdefault(v.id, "variable")
         for p in cat["property"]:
             self.words.setdefault(p, "property")
+        self.directions = ["ahead", "ahead_right", "right", "behind_right", "behind", "behind_left", "left",
+                           "ahead_left", "up", "down"]
+        for d in self.directions:
+            self.words.setdefault(d, "direction")
         self.kinds: set[str] = set(cat["item_type"]) | set(cat["material"]) | set(cat["species"]) | set(cat["form"])
         self.manner_intimate: set[str] = set()
         for a in cat["action"].values():                     # manner values are words too (how ...)
