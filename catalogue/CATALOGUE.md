@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 47, variable 308, property 89, action 40, concept 246, grammar 8, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79
+Compte : entity 16, component 47, variable 308, property 89, action 40, concept 246, grammar 8, interpretation 34, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79
 
 ## Histoires (tests d'acceptation)
 
@@ -42,13 +42,13 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | secret_kept_loyal | §5, §12 | todo | Interrogée par le juge, une amie refuse de dire où se cache son ami, et prétend ne rien savoir. |
 | flattery_manipulation | §7, §27 | todo | Un intrigant flatte sans cesse un chef très susceptible pour obtenir une charge ; le chef la lui donne. |
 | misunderstood_reference | §15 | todo | Le joueur parle à un PNJ d'« Aldric du moulin » ; le PNJ ne le connaît pas et demande de qui il s'agit. |
-| theft_seen | §5, §10 | todo | Un enfant affamé prend une miche sur l'étal pendant que la boulangère a le dos tourné ; une passante l'a vu, la boulangère non. |
-| take_back_own | §5 | todo | Un homme reprend chez son voisin la hache qu'il lui avait prêtée ; le fils du voisin, qui l'ignore, croit à un vol. |
-| betrayal_emerges | §6, §10 | todo | Un homme a promis à son associé de ne jamais vendre leur secret de teinture ; ruiné, il le vend à un rival. L'associé y voit une trahison, le rival une bonne affaire. |
+| theft_seen | §5, §10 | expressible | Un enfant affamé prend une miche sur l'étal pendant que la boulangère a le dos tourné ; une passante l'a vu, la boulangère non. |
+| take_back_own | §5 | expressible | Un homme reprend chez son voisin la hache qu'il lui avait prêtée ; le fils du voisin, qui l'ignore, croit à un vol. |
+| betrayal_emerges | §6, §10 | expressible | Un homme a promis à son associé de ne jamais vendre leur secret de teinture ; ruiné, il le vend à un rival. L'associé y voit une trahison, le rival une bonne affaire. |
 | adultery_discovered | §5, §12 | todo | Une femme surprend son mari avec une autre ; elle se tait des semaines, puis le quitte. |
 | injustice_verdict | §11 | todo | Le chef condamne un pauvre pour un vol qu'il n'a pas commis ; une partie du village y voit une injustice et sa confiance dans le chef baisse. |
 | generosity_noticed | §21 | todo | Pendant la disette, une famille partage ses réserves avec les voisins ; on s'en souviendra à la génération suivante. |
-| absence_at_funeral | §20, §21 | todo | Tout le village assiste aux funérailles d'une ancienne respectée ; le joueur ne vient pas ; plusieurs habitants le remarquent et le jugent. |
+| absence_at_funeral | §20, §21 | expressible | Tout le village assiste aux funérailles d'une ancienne respectée ; le joueur ne vient pas ; plusieurs habitants le remarquent et le jugent. |
 | cowardice_judged | §21 | todo | Un homme fuit au lieu d'aider pendant l'attaque des loups ; ceux qui l'ont vu le méprisent, sa femme le défend. |
 | heroism_judged | §24 | todo | Une inconnue sort un enfant d'une maison en feu ; elle devient quelqu'un dont on parle et qu'on écoute. |
 | hypocrisy_exposed | §5, §27 | todo | Le prêtre qui prêche la fidélité est vu sortant de chez une veuve à l'aube ; les fidèles se partagent entre déni et colère. |
@@ -109,7 +109,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | wand_lost | §17 | todo | Un artisan perd sa baguette dans la rivière ; il ne peut plus travailler et doit en racheter une très cher. |
 | smash_wall_hammer | §17, §16 | todo | Un ouvrier démolit à la masse le mur d'une maison abandonnée et récupère les pierres pour son enclos. |
 | fetch_water_well_dry | §2, §16 | todo | Pendant l'été sec, chacun puise au puits ; le niveau baisse, puis le puits tarit ; on se dispute la source. |
-| set_fire_barn | §16 | todo | Un homme vexé met le feu à la grange de son rival ; le feu gagne la maison voisine ; on fait la chaîne avec des seaux. |
+| set_fire_barn | §16 | expressible | Un homme vexé met le feu à la grange de son rival ; le feu gagne la maison voisine ; on fait la chaîne avec des seaux. |
 | bridge_destroyed_offscreen | §3, §16 | todo | Loin du joueur, une crue emporte le pont ; quand il arrive, le pont n'existe plus et les voyageurs passent par le gué. |
 | craft_tool | §17, §13 | todo | Un forgeron transforme du minerai et du charbon en une pioche, qu'il vend à un mineur. |
 | farm_cycle | §13 | todo | Une paysanne laboure, sème, désherbe, récolte, et garde des graines pour l'année suivante. |
@@ -244,7 +244,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | a_obligations | qui doit rendre vrai quoi, avant quand, à quelle condition, une fois ou à chaque période (chaque jour, chaque saison, chaque année), et la part déjà remplie | list | moteur |  | moteur seul | repris tel quel de la proposition acceptée (expression de la langue) |  | 0 |
 | a_witnesses | les témoins | list | moteur |  | moteur seul | ceux qui ont perçu l'échange de paroles, cachés compris ; un accord sans témoin ne se prouve que par la parole |  | 0 |
 | a_form | forme (dit, devant témoins, écrit, scellé, rituel) | enum (spoken, witnessed, written, sealed, ritual) | moteur |  | moteur seul | écrit quand une inscription le porte ; scellé si un sceau y est apposé ; rituel si fait selon une coutume crue (noces au temple) |  | 0 |
-| a_status | état objectif (en cours, tenu, rompu, délié, caduc) | enum (open, fulfilled, broken, released, void) | moteur |  | moteur seul | tenu quand les obligations deviennent vraies ; rompu à l'échéance dépassée ou sur refus dit ; délié quand le bénéficiaire le dit ; caduc à la mort d'une partie (que la dette passe aux héritiers est une croyance, pas une règle) |  | 0 |
+| a_status | état objectif (en cours, tenu, rompu, délié, caduc) | enum (open, fulfilled, broken, released, void) | moteur |  | moteur seul | tenu quand les obligations deviennent vraies ; rompu à l'échéance dépassée ou sur refus dit ; délié quand le bénéficiaire le dit ; caduc à la mort d'une partie (que la dette passe aux héritiers est une croyance, pas une règle) |  | 1 |
 | a_document | l'écrit qui le porte, s'il existe | id | moteur |  | privé |  |  | 0 |
 | a_kind_label | étiquette pour la chronique (prêt, vente, mariage, emploi, apprentissage, serment, alliance, garde…) | enum (promise, loan, sale, barter, employment, apprenticeship, marriage, betrothal, oath, alliance, custody, other) | calculé |  | moteur seul | tirée du contenu ; sert à l'affichage, jamais à décider |  | 0 |
 
@@ -300,7 +300,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| b_proposition | ce qui est cru (proposition) | proposition | moteur, T saut |  | privé | le moteur crée les perçues et les entendues ; le Transformer crée les déduites et adopte les entendues | BELIEF.prop | 0 |
+| b_proposition | ce qui est cru (proposition) | proposition | moteur, T saut |  | privé | le moteur crée les perçues et les entendues ; le Transformer crée les déduites et adopte les entendues | BELIEF.prop | 2 |
 | b_polarity | cru vrai ou cru faux | bool | moteur, T saut |  | privé |  | BELIEF.polarity | 0 |
 | b_certainty | certitude | unipolar10 | moteur, T saut |  | privé | le moteur la fixe pour une perception (vue, lumière, distance, attention, ivresse) ; le Transformer la révise d'un coup devant une preuve | BELIEF.certainty | 0 |
 | b_weight | poids : combien on y tient (force d'une norme, valeur qu'on donne à une chose) | bipolar10 | T pas | 0.3 | privé | une norme change lentement chez chacun, par de nombreuses décisions ; la coutume d'un village suit | BELIEF.weight | 0 |
@@ -398,7 +398,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| fire_extent | étendue du feu | qty | moteur |  | observable |  |  | 0 |
+| fire_extent | étendue du feu | qty | moteur |  | observable |  |  | 1 |
 | fire_heat | chaleur | qty | moteur |  | observable |  |  | 0 |
 | fire_fuel | combustible restant | qty | moteur |  | observable |  |  | 0 |
 | fire_spread | propagation (selon inflammabilité, humidité, vent) | ratio | moteur |  | observable | l'eau versée, la terre jetée, l'absence de combustible l'arrêtent |  | 0 |
@@ -415,7 +415,7 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | m_role | son rôle dans ce fait (auteur, cible, témoin, l'a appris) | enum (actor, target, witness, told) | moteur |  | privé |  | MEMORY.role | 0 |
 | m_valence | ce que ce souvenir fait ressentir (−10 blessure, +10 bonheur) | bipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite réinterprété par pas de 1 | MEMORY.valence | 0 |
 | m_importance | importance (règle l'oubli et ce qui revient à l'esprit) | unipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite pas de 1 | MEMORY.importance | 0 |
-| m_interpretation | le jugement porté (vol, trahison, accident, générosité, injustice, rien de spécial…) | word | T saut |  | privé | une interprétation du catalogue (étape 14) ; peut changer quand on apprend autre chose | MEMORY.interp | 0 |
+| m_interpretation | le jugement porté (vol, trahison, accident, générosité, injustice, rien de spécial…) | word | T saut |  | privé | une interprétation du catalogue (étape 14) ; peut changer quand on apprend autre chose | MEMORY.interp | 5 |
 | m_emotion | l'émotion dominante liée au souvenir | enum | T saut |  | privé | se réveille quand le souvenir revient (le moteur rappelle, le modèle ressent) | MEMORY.emotion | 0 |
 | m_defining | souvenir marquant (fait partie de qui l'on est ; ne s'oublie pas) | bool | T saut |  | privé |  | MEMORY.defining | 0 |
 | m_secret | souvenir qu'on cache | bool | T saut |  | privé |  | MEMORY.secret | 0 |
@@ -635,10 +635,10 @@ Compte : entity 16, component 47, variable 308, property 89, action 40, concept 
 | r_id_certainty | certitude que la personne vue est bien celle du dossier (pénombre, distance, déguisement, masque) | unipolar10 | calculé |  | privé | le moteur la calcule depuis la lumière, la distance, la familiarité, ce qui cache le visage ; basse, on peut se tromper de personne | ENTITY.id_certainty | 0 |
 | r_true_entity | la vraie entité derrière ce dossier mental (le moteur seul la connaît) | id | moteur |  | moteur seul |  |  | 0 |
 | r_known_by | comment on le connaît (vu et reconnu, seulement de nom, seulement décrit) | enum (seen, name_only, described) | moteur |  | privé | un dossier « de nom » se lie à une personne vue quand on apprend que c'est elle (une croyance, qui peut être fausse) | ENTITY.known_by ; GROUP.known_by | 0 |
-| r_present | là maintenant, ou absent | bool | calculé |  | privé | un absent saillant (un proche, quelqu'un qu'on s'attendait à voir) reste montré : on remarque l'absence (charte § 20) | ENTITY.present | 0 |
+| r_present | là maintenant, ou absent | bool | calculé |  | privé | un absent saillant (un proche, quelqu'un qu'on s'attendait à voir) reste montré : on remarque l'absence (charte § 20) | ENTITY.present | 1 |
 | r_affection | affection (−10 haine, +10 amour profond) | bipolar10 | T pas, moteur | 0.5 | privé | le moteur ne fait que l'effacement lent vers 0 après des années sans contact | ENTITY.rel.affection ; GROUP.rel.affection | 0 |
-| r_trust | confiance (−10 s'attend à être trompé, +10 confie sa vie) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.trust ; GROUP.rel.trust | 0 |
-| r_respect | respect, admiration (−10 mépris, +10 admiration) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.respect ; GROUP.rel.respect | 0 |
+| r_trust | confiance (−10 s'attend à être trompé, +10 confie sa vie) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.trust ; GROUP.rel.trust | 2 |
+| r_respect | respect, admiration (−10 mépris, +10 admiration) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.respect ; GROUP.rel.respect | 1 |
 | r_attraction | attirance amoureuse (adultes seulement) | unipolar10 | T pas, moteur | 0.5 | privé | règle dure D10 appliquée par le gouverneur ; le moteur ne fait que l'effacement | ENTITY.rel.attraction | 0 |
 | r_fear | crainte de cette personne | unipolar10 | T saut, moteur |  | privé | peut sauter (il a sorti un couteau) ; retombe lentement | ENTITY.rel.fear ; GROUP.rel.fear | 0 |
 | r_resentment | rancune | unipolar10 | T pas, moteur | 0.5 | privé | le moteur l'efface très lentement, d'autant plus lentement que la personne est peu portée au pardon | ENTITY.rel.resentment ; GROUP.rel.resentment | 1 |
@@ -1571,17 +1571,17 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 
 | id | famille | libellé | paramètres | effets | perception | histoires |
 |---|---|---|---|---|---|---|
-| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion | 2 |
+| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion | 3 |
 | climb | move | grimper, escalader, descendre une paroi | target:ref; pace:enum=slow/walk/brisk | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu | 0 |
 | swim | move | nager | target:ref; intensity:enum=faint/light/firm/hard/full | épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade | vu, entendu | 0 |
 | jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu | 0 |
 | mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu | 0 |
 | set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | 0 |
-| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 0 |
+| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 2 |
 | put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 0 |
-| give | grasp | tendre, donner en main propre, nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | 0 |
+| give | grasp | tendre, donner en main propre, nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | 1 |
 | throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) | 0 |
-| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | 0 |
+| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | 1 |
 | wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref? | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu | 0 |
 | operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) | 0 |
 | strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) | 4 |
@@ -1589,8 +1589,8 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | pull | force | tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre) | target:ref; intensity:enum=faint/light/firm/hard/full; toward:ref? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu | 0 |
 | grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu | 1 |
 | guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu | 0 |
-| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | 0 |
-| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | 0 |
+| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | 1 |
+| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | 1 |
 | tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu | 0 |
 | blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu | 0 |
 | shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu | 0 |
@@ -1600,16 +1600,16 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu | 0 |
 | rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu | 0 |
 | touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; zone:enum=hand/shoulder/head/face/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | 0 |
-| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | 0 |
+| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | 1 |
 | listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché | 0 |
 | search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu | 0 |
 | examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu | 0 |
 | read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu | 0 |
-| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | 14 |
+| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | 15 |
 | sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu | 0 |
 | write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:ref; content:expression | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu | 0 |
 | perform | communicate | chanter, jouer d'un instrument, danser (les paroles d'un chant passent par speak) | with:ref?; mood:enum=joyful/sad/solemn/lively/eerie; duration:enum=brief/a_while/long | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu | 0 |
-| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu | 0 |
+| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu | 1 |
 | stop | meta | s'arrêter, interrompre ce qu'on fait |  | interrompt l'intention en cours ; le PNJ repasse au Transformer | vu | 0 |
 
 ## Langue intérieure : concepts
@@ -1875,6 +1875,45 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | role | ROLE := (with REF) \| (to REF) \| (into REF) \| (how WORD) \| (says PROP) | les rôles d'un événement (étape 6, cadre did) |
 | question | WH := who \| what \| where \| when \| why \| how_much \| which | le trou d'une question (ask) |
 | limits | ≤ 20 symboles ; imbrication d'arguments-propositions ≤ 2 ; un seul mode par parole | budget de l'IA |
+
+## Interprétations (jamais des options)
+
+| id | libellé | faits objectifs | normes |
+|---|---|---|---|
+| theft | vol | custody passed by take, without a give from the previous holder, the previous holder or a claimant is recognized by others | norm(forbidden, take what is another's without their give) |
+| taking_back | reprendre son bien | custody passed by take, the taker held it earlier and gave it as a loan (agreement) | norm(permitted, take back what one lent) |
+| assault | agression, coups | strike or push or grab on an agent, harm caused (wounds, pain) | norm(forbidden, strike someone who did not strike) |
+| self_defense | légitime défense | the target struck or threatened first with a weapon | norm(permitted, strike to protect oneself or one's own) |
+| murder | meurtre | an agent died of wounds from strikes by another agent | norm(forbidden, cause someone's death) |
+| manslaughter | mort sans l'avoir voulu (rixe qui tourne mal, accident) | an agent died of wounds from strikes in a brawl, or from an accident caused by another | norm(shameful, cause a death by carelessness) |
+| accident | accident | harm without any agent's gesture aimed at it (a collapse, a fall, a beast) |  |
+| lie | mensonge | the speaker asserted P while holding the belief not-P | norm(forbidden, assert what one believes false) |
+| betrayal | trahison | an agreement or a secret was broken by a party, to the other's harm | norm(forbidden, break one's word), norm(forbidden, reveal what was confided) |
+| broken_promise | promesse non tenue | an agreement passed its deadline unfulfilled | norm(obligatory, do what one promised) |
+| adultery | adultère, infidélité | an adult in a marriage agreement had an intimate touch with another adult | norm(forbidden, romantic touch outside one's marriage) |
+| injustice | injustice | someone was punished or deprived for an act they did not commit, or more than others for the same act | norm(forbidden, punish the innocent), norm(obligatory, the same rule for all) |
+| generosity | générosité | goods given without any agreement asking for a return | norm(admirable, share in hard times) |
+| kindness | gentillesse, aide | a gesture that reduced another's pain, hunger, danger or work | norm(admirable, help those who need it) |
+| rescue | sauvetage | an agent moved or protected another out of a lethal danger | norm(admirable, risk oneself for another) |
+| cowardice | lâcheté | an agent moved away from a danger while others nearby were harmed | norm(shameful, abandon one's own in danger) |
+| heroism | héroïsme | an agent faced a lethal danger to protect others | norm(admirable, risk oneself for another) |
+| insult | insulte, humiliation | an utterance attributed a low state to the hearer, in front of others | norm(forbidden, shame someone in public) |
+| mockery | moquerie, plaisanterie | an utterance or gesture followed by laughter, about someone present |  |
+| threat_felt | menace | an utterance conditioning a harm to the hearer on the hearer's act | norm(forbidden, force someone by fear) |
+| extortion | chantage, racket | an offer conditioning the revealing of a secret or a harm on a payment | norm(forbidden, force someone by fear), norm(forbidden, sell silence) |
+| bribery | corruption, pot-de-vin | goods given to a role holder conditioned on not doing what the role is believed to require | norm(forbidden, buy a role holder) |
+| fraud | tromperie, fraude (fausse monnaie, balance faussée, marchandise trompeuse) | goods exchanged while the seller held a belief that their state was worse than said or shown | norm(forbidden, deceive in trade) |
+| poisoning | empoisonnement | an agent poured or put a toxic substance into what another ate or drank | norm(forbidden, cause someone's death) |
+| arson | incendie volontaire | a fire started by an agent's gesture on fuel belonging to another | norm(forbidden, destroy what is another's) |
+| vandalism | dégradation, destruction du bien d'autrui | strikes reduced the integrity of a thing believed to be another's | norm(forbidden, destroy what is another's) |
+| trespass | intrusion | an agent entered a place others recognize as belonging to someone else, without being invited | norm(forbidden, enter another's home uninvited) |
+| hypocrisy | hypocrisie | an agent asserted a norm and acted against it | norm(shameful, preach what one does not do) |
+| disrespect_absence | manque d'égards (absence remarquée) | an agent expected by custom was not present at an event (funeral, wedding, feast) | custom(village, everyone attends a funeral) |
+| loyalty | loyauté, fidélité | an agent kept an agreement or a secret at a cost to themselves | norm(admirable, keep faith) |
+| hospitality | hospitalité | an agent let another into their home, gave food or shelter | norm(admirable, welcome the traveller) |
+| rebellion | rébellion, désobéissance | an agent refused or acted against a request from someone others believe holds a role | norm(obligatory, obey the one who holds the role) |
+| usurpation | usurpation | an agent claimed a role others believe held by someone else, and acted as its holder | norm(forbidden, take a role by force) |
+| nothing_special | rien de particulier |  |  |
 
 ## Règles dures
 

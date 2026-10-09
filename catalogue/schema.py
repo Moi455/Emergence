@@ -222,7 +222,9 @@ class Grammar(Entry):
 
 @dataclass
 class Interpretation(Entry):
-    facts: list[str] = field(default_factory=list)     # objective facts the engine records
+    """A judgement an observer may make about events (theft, betrayal...). NEVER an option: a word to judge with."""
+    facts: list[str] = field(default_factory=list)     # objective facts the engine records (truth, for the chronicle)
+    cues: list[str] = field(default_factory=list)      # what an observer can perceive or believe that points to it
     norms: list[str] = field(default_factory=list)     # norm beliefs that make it salient
 
 

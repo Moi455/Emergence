@@ -239,16 +239,28 @@ text_fr = "Le joueur parle à un PNJ d'« Aldric du moulin » ; le PNJ ne le con
 # ─── Interprétations : résultats de choix, jamais des choix ──────────────────────────────────────
 [[story]]
 id = "theft_seen"
+status = "expressible"
+actions = ["take", "look"]
+interpretations = ["theft", "nothing_special"]
+variables = ["b_proposition", "m_interpretation", "r_trust"]
 charter = ["§5", "§10"]
 text_fr = "Un enfant affamé prend une miche sur l'étal pendant que la boulangère a le dos tourné ; une passante l'a vu, la boulangère non."
 
 [[story]]
 id = "take_back_own"
+status = "expressible"
+actions = ["take"]
+interpretations = ["taking_back", "theft"]
+variables = ["m_interpretation", "b_proposition"]
 charter = ["§5"]
 text_fr = "Un homme reprend chez son voisin la hache qu'il lui avait prêtée ; le fils du voisin, qui l'ignore, croit à un vol."
 
 [[story]]
 id = "betrayal_emerges"
+status = "expressible"
+actions = ["speak", "give"]
+interpretations = ["betrayal", "nothing_special"]
+variables = ["a_status", "m_interpretation", "r_trust"]
 charter = ["§6", "§10"]
 text_fr = "Un homme a promis à son associé de ne jamais vendre leur secret de teinture ; ruiné, il le vend à un rival. L'associé y voit une trahison, le rival une bonne affaire."
 
@@ -269,6 +281,10 @@ text_fr = "Pendant la disette, une famille partage ses réserves avec les voisin
 
 [[story]]
 id = "absence_at_funeral"
+status = "expressible"
+actions = ["go", "wait"]
+interpretations = ["disrespect_absence"]
+variables = ["r_present", "m_interpretation", "r_respect"]
 charter = ["§20", "§21"]
 text_fr = "Tout le village assiste aux funérailles d'une ancienne respectée ; le joueur ne vient pas ; plusieurs habitants le remarquent et le jugent."
 
@@ -582,6 +598,10 @@ text_fr = "Pendant l'été sec, chacun puise au puits ; le niveau baisse, puis l
 
 [[story]]
 id = "set_fire_barn"
+status = "expressible"
+actions = ["work", "scoop", "pour"]
+interpretations = ["arson"]
+variables = ["fire_extent", "m_interpretation"]
 charter = ["§16"]
 text_fr = "Un homme vexé met le feu à la grange de son rival ; le feu gagne la maison voisine ; on fait la chaîne avec des seaux."
 

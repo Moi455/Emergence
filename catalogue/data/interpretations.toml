@@ -1,0 +1,248 @@
+# interpretations.toml - étape 14 : ce que les témoins CONCLUENT. Jamais une option (D28).
+#
+# Un PNJ ne « vole » pas : il prend (take), discrètement peut-être, une chose qu'un autre croit à lui.
+# Un témoin, lui, peut en conclure « c'est un vol » : il écrit un souvenir dont l'interprétation est
+# theft (m_interpretation), ou dit « qualifies(cet événement, theft) ». Deux témoins du même geste
+# peuvent conclure différemment (la hache reprise : vol pour le fils, rien pour le père).
+#   facts : ce que le moteur enregistre, vrai (pour la chronique et les mesures ; jamais lu par l'IA) ;
+#   cues  : ce qu'un témoin peut PERCEVOIR ou CROIRE et qui pointe vers ce jugement ;
+#   norms : les croyances de norme qui le rendent saillant (sans elles, le même geste ne choque pas).
+# Ces mots servent à juger, à raconter et à accuser ; le validateur refuse qu'un geste en porte le nom.
+
+[[interpretation]]
+id = "theft"
+label_fr = "vol"
+facts = ["custody passed by take, without a give from the previous holder", "the previous holder or a claimant is recognized by others"]
+cues = ["take with stealth discreet", "the thing is believed to be another's (owns)", "the holder absent or not looking", "the taker hides it after"]
+norms = ["norm(forbidden, take what is another's without their give)"]
+
+[[interpretation]]
+id = "taking_back"
+label_fr = "reprendre son bien"
+facts = ["custody passed by take", "the taker held it earlier and gave it as a loan (agreement)"]
+cues = ["the taker is believed to own it", "a loan is remembered"]
+norms = ["norm(permitted, take back what one lent)"]
+
+[[interpretation]]
+id = "assault"
+label_fr = "agression, coups"
+facts = ["strike or push or grab on an agent", "harm caused (wounds, pain)"]
+cues = ["strike seen", "the target did not strike first", "visible injury"]
+norms = ["norm(forbidden, strike someone who did not strike)"]
+
+[[interpretation]]
+id = "self_defense"
+label_fr = "légitime défense"
+facts = ["the target struck or threatened first with a weapon"]
+cues = ["the other was seen striking first or holding a blade", "the striker stopped when the other yielded"]
+norms = ["norm(permitted, strike to protect oneself or one's own)"]
+
+[[interpretation]]
+id = "murder"
+label_fr = "meurtre"
+facts = ["an agent died of wounds from strikes by another agent"]
+cues = ["strikes continued after the target was down or still", "a weapon was used", "the body was hidden"]
+norms = ["norm(forbidden, cause someone's death)"]
+
+[[interpretation]]
+id = "manslaughter"
+label_fr = "mort sans l'avoir voulu (rixe qui tourne mal, accident)"
+facts = ["an agent died of wounds from strikes in a brawl, or from an accident caused by another"]
+cues = ["a brawl was seen", "the striker stopped and looked shocked", "no weapon"]
+norms = ["norm(shameful, cause a death by carelessness)"]
+
+[[interpretation]]
+id = "accident"
+label_fr = "accident"
+facts = ["harm without any agent's gesture aimed at it (a collapse, a fall, a beast)"]
+cues = ["nobody was seen acting", "a collapse, a slip, a beast"]
+norms = []
+
+[[interpretation]]
+id = "lie"
+label_fr = "mensonge"
+facts = ["the speaker asserted P while holding the belief not-P"]
+cues = ["what was said contradicts what one saw or later learned", "involuntary signs while speaking (blush, tremble)", "the speaker gained from it"]
+norms = ["norm(forbidden, assert what one believes false)"]
+
+[[interpretation]]
+id = "betrayal"
+label_fr = "trahison"
+facts = ["an agreement or a secret was broken by a party, to the other's harm"]
+cues = ["a promise remembered and its breaking seen or learned", "a secret confided and now known by others", "the one trusted sided with an enemy"]
+norms = ["norm(forbidden, break one's word)", "norm(forbidden, reveal what was confided)"]
+
+[[interpretation]]
+id = "broken_promise"
+label_fr = "promesse non tenue"
+facts = ["an agreement passed its deadline unfulfilled"]
+cues = ["a promise remembered (commitments_seen) and the deadline believed past"]
+norms = ["norm(obligatory, do what one promised)"]
+
+[[interpretation]]
+id = "adultery"
+label_fr = "adultère, infidélité"
+facts = ["an adult in a marriage agreement had an intimate touch with another adult"]
+cues = ["a romantic or intimate touch seen between one spouse and someone else", "secret meetings"]
+norms = ["norm(forbidden, romantic touch outside one's marriage)"]
+
+[[interpretation]]
+id = "injustice"
+label_fr = "injustice"
+facts = ["someone was punished or deprived for an act they did not commit, or more than others for the same act"]
+cues = ["the punished is believed innocent", "the punisher is believed partial (kin, bribe)"]
+norms = ["norm(forbidden, punish the innocent)", "norm(obligatory, the same rule for all)"]
+
+[[interpretation]]
+id = "generosity"
+label_fr = "générosité"
+facts = ["goods given without any agreement asking for a return"]
+cues = ["give seen", "the giver is believed to have little", "in a time of scarcity"]
+norms = ["norm(admirable, share in hard times)"]
+
+[[interpretation]]
+id = "kindness"
+label_fr = "gentillesse, aide"
+facts = ["a gesture that reduced another's pain, hunger, danger or work"]
+cues = ["help seen", "nothing asked in return"]
+norms = ["norm(admirable, help those who need it)"]
+
+[[interpretation]]
+id = "rescue"
+label_fr = "sauvetage"
+facts = ["an agent moved or protected another out of a lethal danger"]
+cues = ["someone carried out of a fire or water", "stood between a beast and a child"]
+norms = ["norm(admirable, risk oneself for another)"]
+
+[[interpretation]]
+id = "cowardice"
+label_fr = "lâcheté"
+facts = ["an agent moved away from a danger while others nearby were harmed"]
+cues = ["go away seen during an attack", "kin or friends left behind"]
+norms = ["norm(shameful, abandon one's own in danger)"]
+
+[[interpretation]]
+id = "heroism"
+label_fr = "héroïsme"
+facts = ["an agent faced a lethal danger to protect others"]
+cues = ["rescue seen", "the danger was believed great"]
+norms = ["norm(admirable, risk oneself for another)"]
+
+[[interpretation]]
+id = "insult"
+label_fr = "insulte, humiliation"
+facts = ["an utterance attributed a low state to the hearer, in front of others"]
+cues = ["said loud before others", "the content lowers the hearer (bad, weak, stupid, coward)", "laughter followed"]
+norms = ["norm(forbidden, shame someone in public)"]
+
+[[interpretation]]
+id = "mockery"
+label_fr = "moquerie, plaisanterie"
+facts = ["an utterance or gesture followed by laughter, about someone present"]
+cues = ["laughter", "playful tone", "the target's reaction"]
+norms = []
+
+[[interpretation]]
+id = "threat_felt"
+label_fr = "menace"
+facts = ["an utterance conditioning a harm to the hearer on the hearer's act"]
+cues = ["if … then harm said to me", "a weapon shown", "an angry tone"]
+norms = ["norm(forbidden, force someone by fear)"]
+
+[[interpretation]]
+id = "extortion"
+label_fr = "chantage, racket"
+facts = ["an offer conditioning the revealing of a secret or a harm on a payment"]
+cues = ["pay or I tell", "pay or I harm", "repeated each period"]
+norms = ["norm(forbidden, force someone by fear)", "norm(forbidden, sell silence)"]
+
+[[interpretation]]
+id = "bribery"
+label_fr = "corruption, pot-de-vin"
+facts = ["goods given to a role holder conditioned on not doing what the role is believed to require"]
+cues = ["a coin given to a guard, a judge, a chief", "in secret", "followed by a favour"]
+norms = ["norm(forbidden, buy a role holder)"]
+
+[[interpretation]]
+id = "fraud"
+label_fr = "tromperie, fraude (fausse monnaie, balance faussée, marchandise trompeuse)"
+facts = ["goods exchanged while the seller held a belief that their state was worse than said or shown"]
+cues = ["a coin too light or that rings wrong", "a scale that weighs wrong", "a rope that breaks the next day"]
+norms = ["norm(forbidden, deceive in trade)"]
+
+[[interpretation]]
+id = "poisoning"
+label_fr = "empoisonnement"
+facts = ["an agent poured or put a toxic substance into what another ate or drank"]
+cues = ["pour seen into a cup or a pot", "illness right after eating or drinking", "the pourer gains from it"]
+norms = ["norm(forbidden, cause someone's death)"]
+
+[[interpretation]]
+id = "arson"
+label_fr = "incendie volontaire"
+facts = ["a fire started by an agent's gesture on fuel belonging to another"]
+cues = ["someone seen with a torch near it", "fire starting at night", "a quarrel before"]
+norms = ["norm(forbidden, destroy what is another's)"]
+
+[[interpretation]]
+id = "vandalism"
+label_fr = "dégradation, destruction du bien d'autrui"
+facts = ["strikes reduced the integrity of a thing believed to be another's"]
+cues = ["strike on a wall, a fence, a window", "the thing is believed to be another's"]
+norms = ["norm(forbidden, destroy what is another's)"]
+
+[[interpretation]]
+id = "trespass"
+label_fr = "intrusion"
+facts = ["an agent entered a place others recognize as belonging to someone else, without being invited"]
+cues = ["entered a house without being let in", "at night", "by a window"]
+norms = ["norm(forbidden, enter another's home uninvited)"]
+
+[[interpretation]]
+id = "hypocrisy"
+label_fr = "hypocrisie"
+facts = ["an agent asserted a norm and acted against it"]
+cues = ["preached it, was seen doing the opposite"]
+norms = ["norm(shameful, preach what one does not do)"]
+
+[[interpretation]]
+id = "disrespect_absence"
+label_fr = "manque d'égards (absence remarquée)"
+facts = ["an agent expected by custom was not present at an event (funeral, wedding, feast)"]
+cues = ["a custom says everyone attends", "the absent one is known", "present = false while others came"]
+norms = ["custom(village, everyone attends a funeral)"]
+
+[[interpretation]]
+id = "loyalty"
+label_fr = "loyauté, fidélité"
+facts = ["an agent kept an agreement or a secret at a cost to themselves"]
+cues = ["kept silent under questioning", "stayed when others left"]
+norms = ["norm(admirable, keep faith)"]
+
+[[interpretation]]
+id = "hospitality"
+label_fr = "hospitalité"
+facts = ["an agent let another into their home, gave food or shelter"]
+cues = ["welcomed in", "fed, given a bed"]
+norms = ["norm(admirable, welcome the traveller)"]
+
+[[interpretation]]
+id = "rebellion"
+label_fr = "rébellion, désobéissance"
+facts = ["an agent refused or acted against a request from someone others believe holds a role"]
+cues = ["an order refused before others", "a decree ignored"]
+norms = ["norm(obligatory, obey the one who holds the role)"]
+
+[[interpretation]]
+id = "usurpation"
+label_fr = "usurpation"
+facts = ["an agent claimed a role others believe held by someone else, and acted as its holder"]
+cues = ["claims to be chief while the chief lives", "the guards follow him"]
+norms = ["norm(forbidden, take a role by force)"]
+
+[[interpretation]]
+id = "nothing_special"
+label_fr = "rien de particulier"
+facts = []
+cues = ["an ordinary gesture in an ordinary place"]
+norms = []

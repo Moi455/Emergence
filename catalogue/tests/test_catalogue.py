@@ -110,6 +110,14 @@ class TestCatalogue(unittest.TestCase):
         e = language.Expression("(request (did you touch me (how romantic)))", language.Vocabulary(self.cat))
         self.assertIn("romantic", e.intimate_symbols())
 
+    def test_one_gesture_many_judgements(self):
+        # the same take can be judged theft by one witness and taking back by another; never an option
+        self.assertIn("theft", self.cat["interpretation"])
+        self.assertFalse(set(self.cat["interpretation"]) & set(self.cat["action"]))
+        st = self.cat["story"]["take_back_own"]
+        self.assertEqual(st.actions, ["take"])
+        self.assertTrue({"theft", "taking_back"} <= set(st.interpretations))
+
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()
         cat._add("action", {"id": "blackmail", "family": "communicate"}, "test")

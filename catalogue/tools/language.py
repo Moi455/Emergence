@@ -39,6 +39,8 @@ class Vocabulary:
             self.words[c.id] = c.category
         for a in cat["action"]:
             self.words.setdefault(a, "gesture")
+        for i in cat["interpretation"]:                      # judgements are words (qualifies), never options
+            self.words.setdefault(i, "interpretation")
         for v in cat["variable"].values():
             if v.token:                                      # what an NPC can feel or notice, it can name
                 self.words.setdefault(v.id, "variable")
