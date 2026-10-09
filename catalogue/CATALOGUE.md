@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 47, variable 308, property 89, action 40, concept 246, grammar 8, interpretation 34, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79
+Compte : entity 16, component 47, variable 308, property 89, action 40, concept 246, grammar 8, interpretation 34, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
 
 ## Histoires (tests d'acceptation)
 

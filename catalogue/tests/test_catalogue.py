@@ -126,6 +126,17 @@ class TestCatalogue(unittest.TestCase):
         self.assertEqual(path.read_text(encoding="utf-8"), model_interface.ModelInterface(self.cat).text(),
                          "catalogue changed: regenerate catalogue/generated/model_interface.json")
 
+    def test_old_contract_fully_migrated(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ai" / "npc_pipeline"))
+        import plan_contract
+        mig = self.cat["migration"]
+        for f in plan_contract.FUNCTIONS:
+            self.assertIn(f, mig, f)
+        for c in plan_contract.CONDITIONS:
+            self.assertIn("cond_" + c, mig, c)
+        for social in ("steal", "blackmail", "deceive", "threaten", "insult", "bribe"):
+            self.assertIn(mig[social].becomes, ("interpretation", "speech"), social)
+
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()
         cat._add("action", {"id": "blackmail", "family": "communicate"}, "test")

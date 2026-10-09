@@ -235,6 +235,15 @@ class HardRule(Entry):
 
 
 @dataclass
+class Migration(Entry):
+    """Step 17: what an old contract function, condition or sim/ variable becomes (id = the old name)."""
+    old_kind: str = ""                   # function | condition | trait | value | drive | relation
+    becomes: str = ""                    # gesture | speech | interpretation | belief | variable | engine | removed
+    to: list[str] = field(default_factory=list)   # new catalogue ids (actions, concepts, interpretations, variables)
+    how: str = ""
+
+
+@dataclass
 class Story(Entry):
     charter: list[str] = field(default_factory=list)   # charter paragraphs, e.g. ['§8', '§20']
     text_fr: str = ""
@@ -252,7 +261,7 @@ class Story(Entry):
 KINDS: dict[str, type[Entry]] = {
     "entity": EntityKind, "component": Component, "variable": Variable, "property": Property,
     "action": Action, "concept": Concept, "grammar": Grammar, "interpretation": Interpretation,
-    "hard_rule": HardRule, "story": Story, "material": Material, "process": Process, "form": Form, "item_type": ItemType, "species": Species,
+    "hard_rule": HardRule, "story": Story, "material": Material, "process": Process, "form": Form, "item_type": ItemType, "species": Species, "migration": Migration,
 }
 ENGINE_MATERIALS = Path(__file__).resolve().parents[1] / "engine" / "data" / "materials.csv"
 PROPERTY_CATEGORIES = ("intrinsic", "affordance", "state")
@@ -550,6 +559,12 @@ class Catalogue:
             for pc in it.made_by:
                 if pc not in self["process"]:
                     p.append(f"item_type {it.id}: unknown process '{pc}'")
+        for mg in self["migration"].values():
+            if mg.becomes not in ("gesture", "speech", "interpretation", "belief", "variable", "engine", "removed"):
+                p.append(f"migration {mg.id}: becomes '{mg.becomes}'")
+            for t in mg.to:
+                if not any(t in self[k] for k in ("action", "concept", "interpretation", "variable")):
+                    p.append(f"migration {mg.id}: unknown target '{t}'")
         lookalikes = {c.id for c in self["concept"].values() if c.category == "lookalike"}
         for x in list(self["species"].values()) + list(self["item_type"].values()):
             if x.lookalike and x.lookalike not in lookalikes:
