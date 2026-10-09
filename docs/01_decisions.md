@@ -69,7 +69,7 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 
 | P25 | (remplacée par D30) Calendrier compressé : 1 jour ≈ 18 min réelles, 1 an = 8 jours (2 par saison), âge apparent compressé (enfance ×2, adolescence ×1,33, vieillesse ×1,5) : une vie ≈ 150 h (charte § 25) | `catalogue/data/world.toml` |
 | P26 | Bornes d'écriture du Transformer : par décision (`step`), par jour de jeu (`rate`), par année vécue pour les traits (1), valeurs (0,5), tempérament (0,3) ; l'ancienne borne « 0,1 par jour » est caduque ; au plus 4 écritures par décision | `catalogue/README.md`, revue du 9 oct. |
-| P27 | Esprit stable en 31 dimensions : 18 traits HEXACO, 5 aptitudes, 2 de tempérament, 8 valeurs, attirance, goûts singuliers (attitudes envers un concept) ; les normes précises sont des croyances | `catalogue/data/mind_static.toml` |
+| P27 | Esprit stable en 33 dimensions (32 vues par l'IA) : 18 traits HEXACO, 5 aptitudes, 2 de tempérament, 8 valeurs, attirance, goûts singuliers (attitudes envers un concept) ; les normes précises sont des croyances | `catalogue/data/mind_static.toml` |
 | P28 | Les objets sont des assemblages de parties (forme × matière) ; les 421 types sont un savoir commun, jamais une limite | `catalogue/data/forms.toml`, `items_*.toml` |
 | P29 | Les jetons ne contiennent aucune vérité : dossiers mentaux, événements remémorés, lieux reconnus, accords tels que crus | règle `no_truth_in_tokens`, `catalogue/data/hard_rules.toml` |
 

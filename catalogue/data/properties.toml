@@ -8,10 +8,14 @@
 #                porte ou lester un filet, parce qu'elle est lourde, dure et saisissable.
 # Une affordance dit ce qui est physiquement possible ; ce que l'agent en fait, c'est lui qui le choisit.
 # La valeur marchande et la beauté ne sont pas ici : ce sont des croyances (étapes 6 et 10).
+# perceptible = false : la propriété ne se voit pas (toxicité, puissance magique, clé de quelle serrure…) ;
+# elle agit dans le monde, mais l'IA ne la connaît que par ses croyances. Une affordance n'est perceptible
+# que si toutes ses sources le sont (Catalogue.perceptible_properties).
 
 # ─── Intrinsèques ───────────────────────────────────────────────────────────────────────────────
 [[property]]
 id = "mass"
+in_vector = true
 label_fr = "masse"
 applies_to = ["item", "structure", "agent", "animal", "plant"]
 scale = "qty"
@@ -19,6 +23,7 @@ unit = "kg"
 
 [[property]]
 id = "size"
+in_vector = true
 label_fr = "encombrement (plus grande dimension)"
 applies_to = ["item", "structure", "agent", "animal", "plant"]
 scale = "qty"
@@ -46,12 +51,14 @@ rule = "matières, multipliée par la sécheresse (1 − humidité)"
 
 [[property]]
 id = "edge"
+in_vector = true
 label_fr = "tranchant (lame)"
 applies_to = ["item"]
 scale = "unipolar10"
 
 [[property]]
 id = "point"
+in_vector = true
 label_fr = "pointe"
 applies_to = ["item"]
 scale = "unipolar10"
@@ -63,6 +70,7 @@ applies_to = ["item"]
 
 [[property]]
 id = "reach"
+in_vector = true
 label_fr = "allonge (longueur utile en main)"
 applies_to = ["item"]
 scale = "qty"
@@ -70,6 +78,7 @@ unit = "m"
 
 [[property]]
 id = "capacity"
+in_vector = true
 label_fr = "capacité de contenance"
 applies_to = ["item", "structure", "place"]
 scale = "qty"
@@ -82,6 +91,7 @@ applies_to = ["item", "structure"]
 
 [[property]]
 id = "nutrition"
+perceptible = false
 label_fr = "valeur nourrissante"
 applies_to = ["item", "plant", "animal"]
 scale = "unipolar10"
@@ -94,12 +104,14 @@ scale = "unipolar10"
 
 [[property]]
 id = "toxicity"
+perceptible = false
 label_fr = "toxicité"
 applies_to = ["item", "plant", "water_body"]
 scale = "unipolar10"
 
 [[property]]
 id = "potency"
+perceptible = false
 label_fr = "effet sur le corps ou l'esprit (soin, ivresse, sommeil, douleur) : type et force"
 applies_to = ["item", "plant"]
 scale = "list"
@@ -137,18 +149,21 @@ scale = "enum"
 
 [[property]]
 id = "fertility"
+perceptible = false
 label_fr = "fertilité d'un sol"
 applies_to = ["terrain"]
 scale = "unipolar10"
 
 [[property]]
 id = "seed_of"
+perceptible = false
 label_fr = "graine ou bouture de (espèce)"
 applies_to = ["item"]
 scale = "id"
 
 [[property]]
 id = "magic_power"
+perceptible = false
 label_fr = "puissance magique (ce qu'un outil peut transformer et à quelle vitesse)"
 applies_to = ["item", "phenomenon"]
 scale = "unipolar10"
@@ -235,6 +250,7 @@ applies_to = ["item", "structure"]
 
 [[property]]
 id = "charge"
+perceptible = false
 label_fr = "charge magique restante"
 category = "state"
 applies_to = ["item"]
@@ -249,6 +265,7 @@ scale = "unipolar10"
 
 [[property]]
 id = "quality"
+perceptible = false
 label_fr = "qualité de façon (le travail de l'artisan)"
 category = "state"
 applies_to = ["item", "structure"]
@@ -515,6 +532,7 @@ applies_to = ["item", "structure"]
 
 [[property]]
 id = "measures"
+perceptible = false
 label_fr = "mesure (poids, longueur, volume, temps) avec une précision"
 applies_to = ["item", "structure"]
 scale = "list"
@@ -522,6 +540,7 @@ note = "Une balance faussée mesure mal : la tricherie n'est pas une action, c'e
 
 [[property]]
 id = "key_for"
+perceptible = false
 label_fr = "ouvre une serrure donnée"
 applies_to = ["item"]
 scale = "id"

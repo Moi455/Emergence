@@ -26,10 +26,11 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 
-SCALES = ("bipolar10", "unipolar10", "qty", "ratio", "enum", "id", "mref", "bool", "list", "proposition", "time")
+SCALES = ("bipolar10", "unipolar10", "qty", "ratio", "enum", "id", "mref", "word", "bool", "list", "proposition", "time")
 # id   = an objective identifier: engine only, may never carry a token.
 # mref = a pointer to one of the NPC's OWN records (mental file of a person/object/place/group, a remembered
 #        event, its goal, its belief): the only kind of pointer the model may read.
+# word = a vocabulary word (a concept, an interpretation, a perceptual class): never an objective entity.
 CLOCKS = ("real", "day", "life", "none")   # real seconds | calendar (day 1 h 30, year 7 h, D30) | life clock
 WRITERS = ("engine", "T_jump", "T_step", "T_slow", "birth", "action", "derived")
 VISIBILITY = ("private", "observable", "public", "engine")
@@ -98,6 +99,8 @@ class Property(Entry):
     unit: str = ""
     derived_from: list[str] = field(default_factory=list)   # property ids an affordance is computed from
     perceptible: bool = True             # can be seen/felt on the thing; False: known only by belief (toxicity...)
+    in_vector: bool = False              # intrinsic magnitudes the affordances do not convey (mass, reach...); affordances
+                                         # and states are always in the object vector when perceptible
     rule: str = ""                       # how the engine computes or changes it (physics, not decision)
 
 
@@ -328,6 +331,12 @@ class Catalogue:
             return all(ok(d, seen + (pid,)) for d in pr.derived_from if d in props and d not in seen)
         return [pid for pid in props if ok(pid)]
 
+    def object_vector(self) -> list[str]:
+        """The fixed vector describing a perceived thing to the model (THING.props)."""
+        props = self["property"]
+        return [p for p in self.perceptible_properties()
+                if props[p].category in ("affordance", "state") or props[p].in_vector]
+
     def citations(self) -> dict[str, dict[str, list[str]]]:
         """kind -> id -> ids of the stories that cite it."""
         out: dict[str, dict[str, list[str]]] = {k: {} for k in STORY_REFS.values()}
@@ -344,6 +353,7 @@ class Catalogue:
         p += self._check_enums()
         p += self._check_refs()
         p += self._check_layers()
+        p += self._check_hard_rules()
         if strict:
             p += self._check_coverage()
         return p
@@ -472,6 +482,21 @@ class Catalogue:
         for c in self["concept"].values():
             if c.refers and not any(c.refers in self[k] for k in KINDS):
                 p.append(f"concept {c.id}: refers to unknown entry '{c.refers}'")
+        return p
+
+    def _check_hard_rules(self) -> list[str]:
+        """D10 must be structural: the intimate flags exist where the rule needs them."""
+        p = []
+        if "D10_minors" not in self["hard_rule"]:
+            p.append("hard_rule D10_minors missing")
+        for vid in ("r_attraction", "need_intimacy", "attracted_to"):
+            v = self["variable"].get(vid)
+            if v is None or not v.intimate:
+                p.append(f"variable {vid}: must exist and be flagged intimate (D10)")
+        for cid in ("spouse", "betrothed", "lover", "former_spouse"):
+            c = self["concept"].get(cid)
+            if c is None or not c.intimate:
+                p.append(f"concept {cid}: must exist and be flagged intimate (D10)")
         return p
 
     def _check_layers(self) -> list[str]:

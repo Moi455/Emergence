@@ -31,7 +31,11 @@ La richesse vit dans le moteur et les données ; le Transformer (≈ 5 M de para
 | Ce qu'une décision écrit | geste choisi + **≤ 4 écritures** (pointeur, variable, valeur) | chacune bornée par le pas par décision et le taux par jour ; le reste suit les lois de retour du moteur (revue du 9 oct.) |
 | Rythme | gestes rapides, objectifs lents | tout ne se décide pas à chaque pas |
 
-**Unités de temps.** `step` = au plus par décision ; `rate` = au plus par **jour de jeu** (1 h 30 réelle, D30) ; `slow_rate` = au plus par **année de vie** (≈ 2 h 30 réelles à l'âge adulte : l'horloge de vie est séparée du calendrier, dont l'année dure 7 h). Une décision tombe plusieurs fois par seconde : sans `rate`, un pas par décision deviendrait un saut.
+**Unités de temps** (D30) : minute de jeu = 3,75 s réelles ; heure de jeu = 3 min 45 s ; jour = 1 h 30 (1 h de jour, 30 min de nuit) ; saison = 1 h 45 ; an = 7 h ; année de vie ≈ 2 h 30 à l'âge adulte (horloge de vie). Chaque dynamique déclare son horloge (`clock` : `real`, `day` = calendrier, `life` = horloge de vie).
+
+**Écritures** : créer un enregistrement (une croyance, un objectif, un souvenir) compte pour UNE écriture, quel que soit son nombre de champs. **Cadres d'événement** : un jeton BELIEF ou MEMORY porte le prédicat et jusqu'à 2 rôles (with, to, how) ; une parole rapportée (says) coûte un jeton de plus, compté dans le budget.
+
+**Pas de temps.** `step` = au plus par décision ; `rate` = au plus par **jour de jeu** (1 h 30 réelle, D30) ; `slow_rate` = au plus par **année de vie** (≈ 2 h 30 réelles à l'âge adulte : l'horloge de vie est séparée du calendrier, dont l'année dure 7 h). Une décision tombe plusieurs fois par seconde : sans `rate`, un pas par décision deviendrait un saut.
 
 **Rien de vrai dans ce que l'IA lit** (règle dure `no_truth_in_tokens`) : les jetons pointent vers les dossiers mentaux du PNJ, les événements qu'il se rappelle ou qu'on lui décrit, les lieux tels qu'il les connaît ; jamais vers un identifiant objectif, l'état réel d'un accord ou la vérité d'une croyance.
 

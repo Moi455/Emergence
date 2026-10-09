@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_rule 4, story 146, material 82, process 30, form 63, item_type 421, species 79
+Compte : entity 16, component 46, variable 288, property 89, concept 144, hard_rule 4, story 146, material 84, process 30, form 63, item_type 421, species 79
 
 ## Histoires (tests d'acceptation)
 
@@ -225,6 +225,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | intention | l'intention en cours : la suite de gestes choisie pour un objectif | agent |
 | request | une demande reçue et pas encore traitée (qui, quoi, depuis quand) | agent |
 | skill | une maîtrise : une technique et son niveau (la vraie compétence, tenue par le moteur) | agent |
+| percept | une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité | agent |
 
 ## Variables d'état
 
@@ -232,14 +233,14 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| sim_depth | profondeur de simulation (taille du contexte et fréquence des décisions accordées à ce PNJ) | unipolar10 | calculé |  | moteur seul | réglée par sa place dans les réseaux sociaux (liens, rôles, accords en cours) et sa proximité du joueur ; jamais une règle qui lui interdit un rôle ; distincte de l'intelligence du personnage |  | 0 |
+| sim_depth | profondeur de simulation (taille du contexte et fréquence des décisions accordées à ce PNJ) | unipolar10 | calculé |  | moteur seul | tirée à la naissance (charte § 24 : certains PNJ sont simulés plus profondément que d'autres) ; jamais liée au joueur, à la position ni au rang social (D19 : pleine puissance partout) ; distincte de l'intelligence du personnage |  | 0 |
 
 ### agreement_terms
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | a_parties | les parties | list | moteur |  | moteur seul | ceux qui ont proposé et accepté |  | 0 |
-| a_obligations | qui doit rendre vrai quoi, avant quand, à quelle condition, une fois ou à chaque période (chaque mois), et la part déjà remplie | list | moteur |  | moteur seul | repris tel quel de la proposition acceptée (expression de la langue) |  | 0 |
+| a_obligations | qui doit rendre vrai quoi, avant quand, à quelle condition, une fois ou à chaque période (chaque jour, chaque saison, chaque année), et la part déjà remplie | list | moteur |  | moteur seul | repris tel quel de la proposition acceptée (expression de la langue) |  | 0 |
 | a_witnesses | les témoins | list | moteur |  | moteur seul | ceux qui ont perçu l'échange de paroles, cachés compris ; un accord sans témoin ne se prouve que par la parole |  | 0 |
 | a_form | forme (dit, devant témoins, écrit, scellé, rituel) | enum (spoken, witnessed, written, sealed, ritual) | moteur |  | moteur seul | écrit quand une inscription le porte ; scellé si un sceau y est apposé ; rituel si fait selon une coutume crue (noces au temple) |  | 0 |
 | a_status | état objectif (en cours, tenu, rompu, délié, caduc) | enum (open, fulfilled, broken, released, void) | moteur |  | moteur seul | tenu quand les obligations deviennent vraies ; rompu à l'échéance dépassée ou sur refus dit ; délié quand le bénéficiaire le dit ; caduc à la mort d'une partie (que la dette passe aux héritiers est une croyance, pas une règle) |  | 0 |
@@ -250,10 +251,10 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| animal_species | espèce | id | naissance |  | observable |  | THING.kind | 0 |
-| animal_fear_humans | peur des humains | unipolar10 | moteur |  | observable | monte quand on le chasse, baisse avec les soins ; le gibier fuit, le loup affamé ose | THING.behavior | 0 |
-| animal_aggression | agressivité (faim, petits à défendre, blessure, meute) | unipolar10 | moteur |  | observable |  | DANGER (bête) | 0 |
-| animal_attachment | attachement à un humain (le chien au berger) | list | moteur |  | observable | monte quand on le nourrit et le soigne ; reste après la mort du maître | THING.owner_link | 0 |
+| animal_species | espèce | id | naissance |  | moteur seul |  |  | 0 |
+| animal_fear_humans | peur des humains | unipolar10 | moteur |  | moteur seul | monte quand on le chasse, baisse avec les soins ; le gibier fuit, le loup affamé ose |  | 0 |
+| animal_aggression | agressivité (faim, petits à défendre, blessure, meute) | unipolar10 | moteur |  | moteur seul |  |  | 0 |
+| animal_attachment | attachement à un humain (le chien au berger) | list | moteur |  | moteur seul | monte quand on le nourrit et le soigne ; reste après la mort du maître |  | 0 |
 | animal_group | troupeau, meute, nid | id | moteur |  | observable |  |  | 0 |
 | animal_tameness | domestication (sauvage, apprivoisé, domestique) | enum (wild, tamed, domestic) | moteur |  | observable |  |  | 0 |
 
@@ -270,18 +271,21 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | attire_seen | ce qu'on voit de la tenue (sobre ou riche, de fête, de deuil, de travail, armure) | list | calculé |  | observable | tiré des vêtements portés : matières, qualité, teintes, emplacements | ENTITY.look.attire | 0 |
 | held_seen | ce qu'il tient en main, vu par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable | vecteur d'usages de l'objet en main : qu'il coupe ou perce, et non son nom | ENTITY.look.held | 0 |
 | grooming | propreté, cheveux, barbe, mouillé | unipolar10 | calculé |  | observable |  | ENTITY.look.grooming | 0 |
-| gaze | ce qu'il regarde (une personne, une chose, un lieu) | id | calculé |  | observable | tiré de l'attention et de l'orientation ; on voit qu'on est regardé, ou qu'il regarde ailleurs | ENTITY.look.gaze (pointeur) | 0 |
+| gaze | ce qu'il regarde (une personne, une chose, un lieu) | mref | calculé |  | observable | tiré de l'attention et de l'orientation ; on voit qu'on est regardé, ou qu'il regarde ailleurs | ENTITY.look.gaze (pointeur) | 0 |
 
 ### area
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
+| phenomenon_signs | signes d'un phénomène (lumières errantes, silence soudain, sons, froid brutal, odeur) | list | calculé |  | observable | ce qui se voit et s'entend ; jamais « ici, il y a de la magie » | PLACE.signs | 0 |
+| hostility_drivers | ce qui empire dans les marches (froid, densité de prédateurs, tempêtes, relief, rareté de l'eau et du gibier) | list | calculé |  | moteur seul | tiré de la profondeur dans les marches ; chaque élément agit par la physique (froid sur le corps, loups plus nombreux, terrain plus dur) |  | 0 |
+| underground_depth | profondeur sous terre (noir, air vicié, éboulements) | qty | calculé |  | moteur seul | plus profond : plus noir, l'air manque (souffle), les galeries s'effondrent plus facilement ; on meurt de ces causes (P9 : valable sous terre) |  | 0 |
 | place_bounds | étendue d'un lieu, lieu parent | list | moteur |  | observable |  |  | 0 |
 | indoors | intérieur ou dehors | bool | moteur |  | observable |  | PLACE.indoors | 0 |
 | light_level | lumière (soleil, lune, nuages, feux, lampes, fenêtres) | unipolar10 | calculé |  | observable | calculée en temps réel (D23) ; règle ce qu'on voit et à quelle distance, et la certitude de ce qu'on perçoit | PLACE.light | 0 |
 | ambient_noise | bruit ambiant (couvre les paroles, les pas) | unipolar10 | calculé |  | observable | foule, forge, pluie, rivière ; un murmure ne s'entend pas dans le bruit | PLACE.noise | 0 |
 | crowding | nombre de gens présents | qty | calculé |  | observable |  | PLACE.crowd | 0 |
-| frontier_depth | profondeur dans les marches (distance au-delà de la lisière habitée) | qty | calculé |  | moteur seul | l'hostilité croît : survie ∝ 2^(−d/300 m), 500 m en montagne ; aucune limite visible (D26) |  | 0 |
+| frontier_depth | profondeur dans les marches, mesurée depuis leur bord intérieur (les marches sont la bande au bord de la carte, P9) | qty | calculé |  | moteur seul | pilote des variables PHYSIQUES qui empirent avec la profondeur (froid, prédateurs, tempêtes, relief, rareté de l'eau et du gibier), environ ×2 tous les 300 m (500 m en montagne) ; on meurt de ces causes, jamais d'une formule ; aucune limite visible (D26) |  | 0 |
 
 ### belief
 
@@ -292,7 +296,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | b_certainty | certitude | unipolar10 | moteur, T saut |  | privé | le moteur la fixe pour une perception (vue, lumière, distance, attention, ivresse) ; le Transformer la révise d'un coup devant une preuve | BELIEF.certainty | 0 |
 | b_weight | poids : combien on y tient (force d'une norme, valeur qu'on donne à une chose) | bipolar10 | T pas | 0.3 | privé | une norme change lentement chez chacun, par de nombreuses décisions ; la coutume d'un village suit | BELIEF.weight | 0 |
 | b_source | d'où vient la croyance (vu, entendu, dit, lu, déduit, supposé, rêvé) | enum | moteur, T saut |  | privé | le moteur pour vu, entendu, dit, lu ; le Transformer pour déduit | BELIEF.source | 0 |
-| b_informant | qui l'a dit (ou l'auteur de l'écrit) | id | moteur |  | privé | un billet anonyme n'a pas d'informateur connu | BELIEF.informant (pointeur) | 0 |
+| b_informant | qui l'a dit (ou l'auteur de l'écrit) | mref | moteur |  | privé | un billet anonyme n'a pas d'informateur connu | BELIEF.informant (pointeur) | 0 |
 | b_hops | de combien de bouches elle est passée (0 vu, 1 dit par un témoin, 2 et plus : ouï-dire) | qty | moteur |  | privé | pris dans ce que dit l'informateur (« je l'ai vu », « on me l'a dit ») : il peut mentir dessus | BELIEF.hops | 0 |
 | b_acquired | depuis quand on le croit | time | moteur |  | privé |  | BELIEF.age | 0 |
 | b_confirmed | dernière confirmation (revu, réentendu) | time | moteur |  | privé | une croyance confirmée résiste à l'oubli |  | 0 |
@@ -309,7 +313,8 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 |---|---|---|---|---|---|---|---|---|
 | belief_capacity | nombre de croyances gardées | qty | calculé |  | moteur seul | de 128 à 384 selon la mémoire (memory_capacity) ; au-delà, la moins importante et la moins confirmée s'efface |  | 0 |
 | heard_unprocessed | ce qu'on vient d'entendre et qu'on n'a pas encore jugé | list | moteur |  | privé | « Y m'a dit que P » attend que le Transformer décide d'y croire ou non ; s'efface s'il n'en fait rien | HEARD (≤ 2 jetons) | 0 |
-| place_recognized | où l'on croit être (lieu reconnu par ses repères) | id | moteur |  | privé | reconnu par la perception quand on connaît les repères ; hors des lieux connus : dernier lieu connu et direction approximative : on peut se perdre (charte § 19) | SELF.place | 0 |
+| place_recognized | où l'on croit être (lieu reconnu par ses repères) | mref | moteur |  | privé | reconnu par la perception quand on connaît les repères ; hors des lieux connus : dernier lieu connu et direction approximative : on peut se perdre (charte § 19) | SELF.place | 0 |
+| time_felt | heure du jour ressentie (soleil, lumière, cloches, faim) ; incertaine sous terre ou à l'intérieur | qty | calculé |  | privé | exacte à peu près dehors au soleil ; dérive dans le noir, sous terre, par temps couvert | SELF.time (sin, cos, certitude) | 0 |
 
 ### body
 
@@ -336,9 +341,10 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | robustness | robustesse (résistance aux coups et aux maladies) | unipolar10 | naissance, moteur |  | privé |  |  | 0 |
 | vision | acuité visuelle | unipolar10 | naissance, moteur |  | privé | baisse avec l'âge, une blessure à l'œil ; la nuit réduit ce qu'elle permet |  | 0 |
 | hearing | acuité auditive | unipolar10 | naissance, moteur |  | privé |  |  | 0 |
-| illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent | SELF.body.sickness (gravité ressentie) | 0 |
+| illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent |  | 0 |
 | immunities | immunités acquises | list | moteur |  | moteur seul |  |  | 0 |
 | intoxication | ivresse, effet d'une substance (alcool, somnifère, poison) | unipolar10 | moteur |  | observable | monte par la potency de ce qu'on ingère, redescend en heures | SELF.body.intox ; ENTITY.look.drunk | 0 |
+| sickness_felt | malaise ressenti (fièvre, nausée, faiblesse) : les symptômes, pas la maladie | unipolar10 | calculé |  | privé | tiré des symptômes ; l'incubation ne se sent pas | SELF.body.sickness | 0 |
 
 ### carrier
 
@@ -360,12 +366,12 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| air_temperature | température de l'air | qty | moteur |  | observable | saison, heure, altitude, côté de la carte (désert, montagne, mer) | PLACE.temperature | 0 |
+| air_temperature | température de l'air | qty | moteur |  | observable | saison, heure, altitude, côté de la carte (désert, montagne, mer) | PLACE.air_felt (glacial, froid, frais, doux, chaud, brûlant : le ressenti, pas les degrés) | 0 |
 | wind | vent (direction, force) | qty | moteur |  | observable | pousse le feu, les voiles, la pluie ; vent dominant venu de la mer | PLACE.wind | 0 |
 | cloud_cover | nuages | ratio | moteur |  | observable |  |  | 0 |
-| precipitation | pluie, neige, grêle (type, intensité) | list | moteur |  | observable | mouille (wetness), remplit les puits, gonfle les rivières, éteint les feux | PLACE.weather | 0 |
+| precipitation | pluie, neige, grêle (type, intensité) | list | moteur |  | observable | mouille (wetness), remplit les puits, gonfle les rivières, éteint les feux | PLACE.weather (pluie, neige, orage, vent fort : ce qui se voit et s'entend) | 0 |
 | fog | brume, brouillard | ratio | moteur |  | observable | réduit la portée de la vue (perception) | PLACE.visibility | 0 |
-| storm | orage, tempête (foudre, coups de vent) | unipolar10 | moteur |  | observable | la foudre peut allumer un feu ; la tempête tue en montagne et en mer | DANGER | 0 |
+| storm | orage, tempête (foudre, coups de vent) | unipolar10 | moteur |  | observable | la foudre peut allumer un feu ; la tempête tue en montagne et en mer ; elle se voit et s'entend (PLACE.weather) |  | 0 |
 | snow_cover | neige au sol | qty | moteur |  | observable | ralentit, efface les traces, isole les villages |  | 0 |
 
 ### clock
@@ -373,7 +379,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | game_time | temps de jeu écoulé | time | moteur |  | public |  |  | 0 |
-| time_of_day | heure du jour | qty | calculé |  | public |  | SELF.time (heure, sin et cos) | 0 |
+| time_of_day | heure du jour | qty | calculé |  | public |  |  | 0 |
 | day_of_year | jour de l'année, saison | qty | calculé |  | public |  | SELF.season | 0 |
 | year | année du calendrier | qty | calculé |  | public |  |  | 0 |
 | moon_phase | phase de la lune (lumière la nuit, croyances) | ratio | calculé |  | public |  |  | 0 |
@@ -383,7 +389,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| fire_extent | étendue du feu | qty | moteur |  | observable |  | THING.size ; DANGER (feu) | 0 |
+| fire_extent | étendue du feu | qty | moteur |  | observable |  |  | 0 |
 | fire_heat | chaleur | qty | moteur |  | observable |  |  | 0 |
 | fire_fuel | combustible restant | qty | moteur |  | observable |  |  | 0 |
 | fire_spread | propagation (selon inflammabilité, humidité, vent) | ratio | moteur |  | observable | l'eau versée, la terre jetée, l'absence de combustible l'arrêtent |  | 0 |
@@ -396,11 +402,11 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | m_content | ce qui a été perçu (proposition : qui a fait quoi, sur quoi) | proposition | moteur, T saut |  | privé | le moteur l'écrit tel que perçu (pas tel qu'il s'est passé) ; il se déforme quand la netteté baisse ; le Transformer peut aussi créer un souvenir (charte § 8) | MEMORY.prop | 0 |
 | m_fact_ref | le fait réel (lien pour le moteur) | id | moteur |  | moteur seul |  |  | 0 |
 | m_when | quand | time | moteur |  | privé |  | MEMORY.age | 0 |
-| m_where | où | id | moteur |  | privé |  | MEMORY.place (pointeur) | 0 |
+| m_where | où | mref | moteur |  | privé |  | MEMORY.place (pointeur) | 0 |
 | m_role | son rôle dans ce fait (auteur, cible, témoin, l'a appris) | enum (actor, target, witness, told) | moteur |  | privé |  | MEMORY.role | 0 |
 | m_valence | ce que ce souvenir fait ressentir (−10 blessure, +10 bonheur) | bipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite réinterprété par pas de 1 | MEMORY.valence | 0 |
 | m_importance | importance (règle l'oubli et ce qui revient à l'esprit) | unipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite pas de 1 | MEMORY.importance | 0 |
-| m_interpretation | le jugement porté (vol, trahison, accident, générosité, injustice, rien de spécial…) | id | T saut |  | privé | une interprétation du catalogue (étape 14) ; peut changer quand on apprend autre chose | MEMORY.interp | 0 |
+| m_interpretation | le jugement porté (vol, trahison, accident, générosité, injustice, rien de spécial…) | word | T saut |  | privé | une interprétation du catalogue (étape 14) ; peut changer quand on apprend autre chose | MEMORY.interp | 0 |
 | m_emotion | l'émotion dominante liée au souvenir | enum | T saut |  | privé | se réveille quand le souvenir revient (le moteur rappelle, le modèle ressent) | MEMORY.emotion | 0 |
 | m_defining | souvenir marquant (fait partie de qui l'on est ; ne s'oublie pas) | bool | T saut |  | privé |  | MEMORY.defining | 0 |
 | m_secret | souvenir qu'on cache | bool | T saut |  | privé |  | MEMORY.secret | 0 |
@@ -411,7 +417,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| water_level | niveau, profondeur | qty | moteur |  | observable | crue au-delà des berges : inondation | THING.depth ; DANGER (eau profonde) | 0 |
+| water_level | niveau, profondeur | qty | moteur |  | observable | crue au-delà des berges : inondation |  | 0 |
 | water_flow | débit, courant | qty | moteur |  | observable | un fort courant emporte, noie, arrache un pont |  | 0 |
 | ice | glace (épaisseur) | qty | moteur |  | observable | porte un homme au-delà d'une épaisseur ; sinon elle cède |  | 0 |
 
@@ -422,9 +428,9 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | g_desired | ce qu'on veut (proposition) | proposition | T saut |  | privé | créé, réorienté (autre cible) ou abandonné par le Transformer ; au plus 8 gardés | GOAL.prop | 0 |
 | g_mode | rendre vrai, garder vrai, empêcher | enum | T saut |  | privé |  | GOAL.mode | 0 |
 | g_priority | priorité | unipolar10 | T pas | 1.0 | privé |  | GOAL.priority | 0 |
-| g_deadline | échéance (avant la fête, avant l'hiver…) | time | T saut, moteur |  | privé | le moteur la reprend d'un accord quand l'objectif vient d'un accord | GOAL.deadline | 0 |
+| g_deadline | échéance (avant la fête, avant l'hiver…) | time | T saut, moteur |  | privé | quand l'objectif vient d'un accord, le moteur reprend l'échéance CRUE (commitments_seen), jamais la vraie | GOAL.deadline | 0 |
 | g_origin | d'où vient l'objectif (de soi, d'une demande, d'un rôle, d'un accord, d'une norme) | enum (self, asked, role, agreement, norm) | T saut, moteur |  | privé |  | GOAL.origin | 0 |
-| g_origin_ref | qui l'a demandé, quel accord, quel rôle | id | moteur, T saut |  | privé |  | GOAL.origin_ref (pointeur) | 0 |
+| g_origin_ref | qui l'a demandé, quel accord, quel rôle | mref | moteur, T saut |  | privé |  | GOAL.origin_ref (pointeur) | 0 |
 | g_status | état (actif, en pause, atteint, échoué, abandonné) | enum (active, paused, achieved, failed, abandoned) | T saut, moteur |  | privé | le Transformer met en pause, reprend, abandonne ; le moteur constate atteint ou échoué d'après les CROYANCES de la personne, jamais d'après la vérité (un mort qu'elle n'a pas appris reste à venger) | GOAL.status | 0 |
 | g_progress | avancement (quand il se mesure : pièces économisées / prix cru de la maison) | ratio | calculé |  | privé |  | GOAL.progress | 0 |
 | g_since | depuis quand | time | moteur |  | privé |  | GOAL.age | 0 |
@@ -439,9 +445,9 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| plant_species | espèce | id | naissance |  | observable |  | THING.kind | 0 |
-| plant_stage | stade (graine, pousse, adulte, en fleur, en fruit, sec, mort) | enum (seed, sprout, mature, flowering, fruiting, dry, dead) | moteur |  | observable |  | THING.state | 0 |
-| plant_yield | ce qu'elle porte (fruits, grain, bois) | qty | moteur |  | observable | selon la saison, l'eau, le sol, la lumière, les soins | THING.amount | 0 |
+| plant_species | espèce | id | naissance |  | moteur seul |  |  | 0 |
+| plant_stage | stade (graine, pousse, adulte, en fleur, en fruit, sec, mort) | enum (seed, sprout, mature, flowering, fruiting, dry, dead) | moteur |  | observable |  |  | 0 |
+| plant_yield | ce qu'elle porte (fruits, grain, bois) | qty | moteur |  | observable | selon la saison, l'eau, le sol, la lumière, les soins |  | 0 |
 | plant_health | santé (sécheresse, maladie, piétinement, feu) | unipolar10 | moteur |  | observable |  |  | 0 |
 
 ### intention
@@ -449,7 +455,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | i_steps | la suite de gestes choisie (1 à 6), chacun avec ses conditions d'arrêt et d'interruption | list | T saut |  | privé | gestes et conditions de l'étape 12 ; le moteur l'exécute seul jusqu'à la fin, l'échec ou l'interruption | PLAN | 0 |
-| i_serves | l'objectif qu'elle sert | id | T saut |  | privé |  | PLAN.goal (pointeur) | 0 |
+| i_serves | l'objectif qu'elle sert | mref | T saut |  | privé |  | PLAN.goal (pointeur) | 0 |
 | i_step_index | étape en cours, progression | qty | moteur |  | privé |  | PLAN.progress | 0 |
 | i_commitment | fermeté (résister aux interruptions mineures) | unipolar10 | T saut |  | privé | haute : seul un vrai danger interrompt ; basse : la moindre chose détourne | PLAN.commitment | 0 |
 
@@ -469,7 +475,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | life_stage | stade de vie | enum (infant, child, teen, adult, elder) | calculé |  | observable | infant < 3, child < 14, teen < 18, adult < 60, elder ; les règles dures se lisent ici | SELF.age_stage | 0 |
 | senescence | vieillissement (accélère les pertes de force, de vue, la mortalité) | unipolar10 | calculé |  | observable |  |  | 0 |
 | fecundity | fécondité | unipolar10 | moteur |  | moteur seul |  |  | 0 |
-| pregnancy | grossesse (aucune, précoce, visible, avancée) | enum (none, early, visible, late) | moteur |  | moteur seul | précoce : personne ne le sait, pas même elle, avant des signes (nausées, ventre) ; ensuite c'est une croyance née de la perception | SELF.body.pregnant (dès qu'elle le sait) | 0 |
+| pregnancy | grossesse (aucune, précoce, visible, avancée) | enum (none, early, visible, late) | moteur |  | moteur seul | précoce : personne ne le sait, pas même elle ; ensuite ses signes (nausées, ventre) se perçoivent, et elle le CROIT (croyance state(moi, enceinte)) : jamais lu directement |  | 0 |
 | biological_parents | parents biologiques (un fait ; on peut l'ignorer ou le cacher) | list | naissance |  | moteur seul |  |  | 0 |
 
 ### magic
@@ -494,7 +500,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | anger | colère | unipolar10 | T saut, moteur |  | privé | retombe selon la résilience ; la douleur, la faim, le manque de sommeil, l'ivresse la font monter plus vite | SELF_STATE.emo.anger | 0 |
 | joy | joie | unipolar10 | T saut, moteur |  | privé | retombe vers l'humeur de fond | SELF_STATE.emo.joy | 0 |
 | sadness | tristesse | unipolar10 | T saut, moteur |  | privé | retombe lentement | SELF_STATE.emo.sadness | 0 |
-| grief | deuil (perte d'un proche) | unipolar10 | T pas, moteur | 1.0 | privé | s'installe (au plus 1 par jour de jeu) ; le moteur ne fait que le faire retomber très lentement | SELF_STATE.emo.grief | 0 |
+| grief | deuil (perte d'un proche) | unipolar10 | T saut, moteur |  | privé | peut saisir d'un coup (une émotion) ; le moteur le fait retomber très lentement, sur des jours de jeu | SELF_STATE.emo.grief | 0 |
 | disgust | dégoût (physique ou moral) | unipolar10 | T saut, moteur |  | privé | retombe vite | SELF_STATE.emo.disgust | 0 |
 | surprise | surprise, choc | unipolar10 | T saut, moteur |  | privé | retombe en secondes | SELF_STATE.emo.surprise | 0 |
 | shame | honte (devant les autres) | unipolar10 | T saut, moteur |  | privé | retombe lentement ; trahie par la rougeur | SELF_STATE.emo.shame | 0 |
@@ -509,12 +515,12 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | confusion | confusion (ne pas comprendre ce qui se passe ou ce qu'on dit) | unipolar10 | T saut, moteur |  | privé | retombe en minutes ; l'ivresse, les coups à la tête, la fièvre et certains phénomènes l'augmentent (le corps) | SELF_STATE.emo.confusion | 0 |
 | mood_valence | humeur (−10 sombre, +10 radieuse) | bipolar10 | calculé |  | privé | moyenne glissante des émotions sur des heures de vie, tirée vers l'humeur de fond | SELF_STATE.mood.valence | 0 |
 | mood_energy | entrain du moment (0 abattu, 10 survolté) | unipolar10 | calculé |  | privé | émotions, sommeil, faim, ivresse | SELF_STATE.mood.energy | 0 |
-| stress | tension accumulée | unipolar10 | calculé |  | privé | s'accumule par la peur, l'inquiétude, la colère et les besoins non satisfaits qui durent ; se vide par le repos, le plaisir, la compagnie ; haute, elle use la santé et la patience | SELF_STATE.stress | 0 |
+| stress | tension accumulée | unipolar10 | calculé |  | privé | s'accumule quand la peur, l'inquiétude, la colère et les besoins non satisfaits durent ; se vide par le sommeil, le repos, la compagnie ; haute, elle use la santé (robustesse) | SELF_STATE.stress | 0 |
 | self_regard | estime de soi du moment (−10 se sent nul, +10 se sent fort) | bipolar10 | T pas, moteur | 0.5 | privé | le Transformer la déplace (réussite, éloge, humiliation : c'est lui qui juge) ; le moteur la ramène lentement vers le trait d’assurance (assurance) ; c'est aussi le Transformer qui fait évoluer ce trait, lentement | SELF_STATE.self_regard | 0 |
 | need_company | besoin de compagnie (solitude) | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps passé sans personne à portée de voix, plus vite si sociable ; baisse avec le temps passé à se parler (compte objectif) ; ce qui fait une bonne compagnie, le Transformer en juge | SELF_STATE.drive.company | 0 |
 | need_intimacy | désir d'intimité amoureuse (adultes seulement) | unipolar10 | moteur, T pas | 0.5 | privé | toujours 0 avant l'âge adulte (règle dure D10, appliquée par le moteur) ; le moteur : lente dérive avec le temps ; le reste, le Transformer | SELF_STATE.drive.intimacy | 0 |
 | need_esteem | besoin de reconnaissance | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : lente montée avec le temps ; ce qui la comble ou la blesse (éloge, humiliation) se juge : le Transformer | SELF_STATE.drive.esteem | 0 |
-| need_autonomy | besoin d'autonomie | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte quand on reçoit une parole au mode impératif, qu'on est retenu de force ou enfermé (faits objectifs) | SELF_STATE.drive.autonomy | 0 |
+| need_autonomy | besoin d'autonomie | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte quand on est retenu de force, attaché ou enfermé (faits physiques) ; ce que vaut un ordre reçu se juge : le Transformer | SELF_STATE.drive.autonomy | 0 |
 | need_achievement | besoin d'accomplir | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps passé sans geste de travail, baisse quand une intention se termine ; réussite et échec se jugent : le Transformer | SELF_STATE.drive.achievement | 0 |
 | need_novelty | besoin de nouveauté | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec la routine (mêmes lieux, mêmes gestes : compte objectif), plus vite si curieux | SELF_STATE.drive.novelty | 0 |
 | need_security | besoin de sécurité | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : le corps seulement (faim, froid, douleur, pas d'abri la nuit) ; une menace se juge : le Transformer | SELF_STATE.drive.security | 0 |
@@ -522,47 +528,47 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | need_play | besoin de jeu, de rire, de fête | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps de travail ; d'où viennent les farces (charte § 27) | SELF_STATE.drive.play | 0 |
 | need_meaning | besoin de sens, de foi | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : très lente dérive ; un deuil, une catastrophe, un mystère se jugent : le Transformer | SELF_STATE.drive.meaning | 0 |
 | masking | volonté de cacher ce qu'on ressent (0 rien, 10 visage de marbre) | unipolar10 | T saut |  | privé | le moteur l'applique à l'expression, selon la maîtrise de soi ; les signes involontaires passent quand même | SELF_STATE.masking | 0 |
-| attention | ce sur quoi l'attention est fixée (une personne, une chose, un bruit) | id | T saut |  | privé | le moteur perçoit plus finement ce qui est au centre de l'attention, moins bien le reste | SELF_STATE.attention (pointeur) | 0 |
+| attention | ce sur quoi l'attention est fixée (une personne, une chose, un bruit) | mref | T saut |  | privé | le moteur perçoit plus finement ce qui est au centre de l'attention, moins bien le reste | SELF_STATE.attention (pointeur) | 0 |
 
 ### mind_static
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| sincerity | sincérité (−10 manipule et ment sans gêne, +10 ne peut pas mentir) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.sincerity | 0 |
-| fairness | équité (−10 triche et vole volontiers, +10 refuse tout gain injuste) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.fairness | 0 |
-| greed_avoidance | désintérêt pour la richesse (−10 avide, +10 indifférent au luxe) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.greed_avoidance | 0 |
-| modesty | modestie (−10 vaniteux, se croit au-dessus, +10 humble) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.modesty | 0 |
-| fearfulness | craintivité (−10 intrépide, prend des risques, +10 peureux, cherche la sécurité) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.fearfulness | 0 |
-| anxiousness | anxiété (−10 serein, +10 se fait du souci pour tout) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.anxiousness | 0 |
-| sentimentality | sensibilité affective (−10 froid et indépendant, +10 s'attache, s'émeut, a besoin des autres) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.sentimentality | 0 |
-| assurance | assurance (−10 timide, se sent nul devant les autres, +10 sûr de lui, prend la parole, mène) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.assurance | 0 |
-| sociability | sociabilité (−10 solitaire, +10 recherche la compagnie) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.sociability | 0 |
-| forgiveness | pardon (−10 rancunier à vie, +10 pardonne vite) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.forgiveness | 0 |
-| gentleness | douceur (−10 dur, cassant, têtu, +10 indulgent, accommodant) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.gentleness | 0 |
-| patience | patience (−10 s'emporte au moindre mot, +10 garde son calme) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.patience | 0 |
-| diligence | application (−10 paresseux, désordonné, bâcle, +10 acharné, méthodique, perfectionniste) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.diligence | 0 |
-| prudence | prudence (−10 impulsif, agit sans réfléchir, +10 pèse tout) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.prudence | 0 |
-| inquisitiveness | curiosité (−10 sans curiosité, +10 veut tout voir, tout savoir, attiré par l'inconnu) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.inquisitiveness | 0 |
-| creativity | inventivité et sens du beau (−10 suit les recettes, indifférent, +10 invente, ému par la beauté) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.creativity | 0 |
-| unconventionality | originalité (−10 conformiste, attaché aux usages, +10 excentrique) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.unconventionality | 0 |
-| altruism | altruisme (−10 indifférent à la souffrance d'autrui, +10 ne supporte pas de voir souffrir) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.trait.altruism | 0 |
+| sincerity | sincérité (−10 manipule et ment sans gêne, +10 ne peut pas mentir) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.sincerity | 0 |
+| fairness | équité (−10 triche et vole volontiers, +10 refuse tout gain injuste) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.fairness | 0 |
+| greed_avoidance | désintérêt pour la richesse (−10 avide, +10 indifférent au luxe) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.greed_avoidance | 0 |
+| modesty | modestie (−10 vaniteux, se croit au-dessus, +10 humble) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.modesty | 0 |
+| fearfulness | craintivité (−10 intrépide, prend des risques, +10 peureux, cherche la sécurité) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.fearfulness | 0 |
+| anxiousness | anxiété (−10 serein, +10 se fait du souci pour tout) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.anxiousness | 0 |
+| sentimentality | sensibilité affective (−10 froid et indépendant, +10 s'attache, s'émeut, a besoin des autres) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.sentimentality | 0 |
+| assurance | assurance (−10 timide, se sent nul devant les autres, +10 sûr de lui, prend la parole, mène) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.assurance | 0 |
+| sociability | sociabilité (−10 solitaire, +10 recherche la compagnie) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.sociability | 0 |
+| forgiveness | pardon (−10 rancunier à vie, +10 pardonne vite) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.forgiveness | 0 |
+| gentleness | douceur (−10 dur, cassant, têtu, +10 indulgent, accommodant) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.gentleness | 0 |
+| patience | patience (−10 s'emporte au moindre mot, +10 garde son calme) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.patience | 0 |
+| diligence | application (−10 paresseux, désordonné, bâcle, +10 acharné, méthodique, perfectionniste) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.diligence | 0 |
+| prudence | prudence (−10 impulsif, agit sans réfléchir, +10 pèse tout) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.prudence | 0 |
+| inquisitiveness | curiosité (−10 sans curiosité, +10 veut tout voir, tout savoir, attiré par l'inconnu) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.inquisitiveness | 0 |
+| creativity | inventivité et sens du beau (−10 suit les recettes, indifférent, +10 invente, ému par la beauté) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.creativity | 0 |
+| unconventionality | originalité (−10 conformiste, attaché aux usages, +10 excentrique) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.unconventionality | 0 |
+| altruism | altruisme (−10 indifférent à la souffrance d'autrui, +10 ne supporte pas de voir souffrir) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.trait.altruism | 0 |
 | intellect | intelligence (raisonnement, prévoyance) | unipolar10 | naissance, moteur |  | privé | monte un peu avec l'étude et l'âge adulte, baisse au grand âge ; c'est un trait du personnage, pas la profondeur de simulation (sim_depth) | SELF_MIND.ability.intellect | 0 |
 | memory_capacity | mémoire (combien et combien de temps on retient) | unipolar10 | naissance, moteur |  | moteur seul | le moteur l'applique : nombre de souvenirs gardés, vitesse d'oubli |  | 0 |
 | perceptiveness | finesse de perception sociale (lire un visage, un trouble) | unipolar10 | naissance, moteur |  | moteur seul | le moteur l'applique : plus elle est haute, plus il montre de signes involontaires fins |  | 0 |
-| self_control | maîtrise de soi (masquer ses émotions, résister à une envie) | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.ability.self_control | 0 |
+| self_control | maîtrise de soi (masquer ses émotions, résister à une envie) | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.ability.self_control | 0 |
 | coordination | adresse du corps (−10 maladroit, renverse tout, +10 adroit) | bipolar10 | naissance, moteur |  | observable | le moteur l'applique à la précision des gestes : un maladroit rate, renverse, fait tomber (charte § 27) | SELF_MIND.ability.coordination | 0 |
-| resilience | retour au calme (vitesse à laquelle les émotions retombent) | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.temper.resilience | 0 |
-| baseline_mood | humeur de fond (−10 sombre et morne, +10 radieux, enjoué, blagueur) | bipolar10 | naissance, T lent |  | privé |  | SELF_MIND.temper.baseline_mood | 0 |
-| v_loyalty | valeur : fidélité aux siens (famille, amis, village) | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.loyalty | 0 |
-| v_authority | valeur : respect de l'autorité, de l'ordre, de la loi | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.authority | 0 |
-| v_sanctity | valeur : le sacré, la pureté, les tabous | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.sanctity | 0 |
-| v_liberty | valeur : liberté, ne pas être dominé | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.liberty | 0 |
-| v_achievement | valeur : réussir, être compétent, accomplir | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.achievement | 0 |
-| v_power | valeur : pouvoir, rang, commander, posséder | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.power | 0 |
-| v_honor | valeur : l'honneur, la réputation, ne pas perdre la face | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.honor | 0 |
-| v_pleasure | valeur : le plaisir, le confort, la bonne chère | unipolar10 | naissance, T lent |  | privé |  | SELF_MIND.value.pleasure | 0 |
+| resilience | retour au calme (vitesse à laquelle les émotions retombent) | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.temper.resilience | 0 |
+| baseline_mood | humeur de fond (−10 sombre et morne, +10 radieux, enjoué, blagueur) | bipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.temper.baseline_mood | 0 |
+| v_loyalty | valeur : fidélité aux siens (famille, amis, village) | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.loyalty | 0 |
+| v_authority | valeur : respect de l'autorité, de l'ordre, de la loi | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.authority | 0 |
+| v_sanctity | valeur : le sacré, la pureté, les tabous | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.sanctity | 0 |
+| v_liberty | valeur : liberté, ne pas être dominé | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.liberty | 0 |
+| v_achievement | valeur : réussir, être compétent, accomplir | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.achievement | 0 |
+| v_power | valeur : pouvoir, rang, commander, posséder | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.power | 0 |
+| v_honor | valeur : l'honneur, la réputation, ne pas perdre la face | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.honor | 0 |
+| v_pleasure | valeur : le plaisir, le confort, la bonne chère | unipolar10 | naissance, T lent | 0.05 | privé |  | SELF_MIND.value.pleasure | 0 |
 | attracted_to | attirance (par quel sexe la personne peut être attirée) | list (female, male) | naissance |  | privé |  | SELF_MIND.attracted_to | 0 |
-| tastes | goûts singuliers : attitude (−10..+10) envers un concept (une couleur, un aliment, un lieu, une activité, une sorte de gens, la nuit, l'eau…) | list | naissance, T lent |  | privé | quelques goûts marqués par personne, tirés à la naissance ; d'autres naissent de l'expérience | TASTE (≤ 2 jetons saillants, pointeur vers le concept) | 0 |
+| tastes | goûts singuliers : attitude (−10..+10) envers un concept (une couleur, un aliment, un lieu, une activité, une sorte de gens, la nuit, l'eau…) | list | naissance, T lent | 0.05 | privé | quelques goûts marqués par personne, tirés à la naissance ; d'autres naissent de l'expérience | TASTE (≤ 2 jetons saillants, pointeur vers le concept) | 0 |
 
 ### needs
 
@@ -575,18 +581,32 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | sleepiness | besoin de sommeil | unipolar10 | moteur |  | observable | dette de sommeil sur le jour ; seul le sommeil la rembourse | SELF.need.sleep | 0 |
 | thermal_comfort | confort thermique (−10 glacé, +10 étouffant) | bipolar10 | calculé |  | observable | écart entre température du corps et confort ; frissons et sueur visibles | SELF.need.thermal | 0 |
 
+### percept
+
+| id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
+|---|---|---|---|---|---|---|---|---|
+| pc_kind_seen | sorte apparente (classe de sosies : « champignon blanc ») ; la vraie sorte seulement pour un œil exercé | word | calculé |  | observable | le moteur montre la vraie sorte si la maîtrise de la technique utile (cueillette, chasse, forge…) et la lumière suffisent, sinon la classe de sosies (lookalike) | THING.kind | 0 |
+| pc_file | le dossier mental de cette chose, si on la connaît (« mon marteau », « la vache du voisin ») | mref | calculé |  | observable |  | THING.file | 0 |
+| pc_props_seen | propriétés et usages qui se voient (tranchant, lourd, contient, brûle…) : le vecteur perceptible | list | calculé |  | observable | seulement les propriétés perceptibles et les usages qui en découlent (Catalogue.object_vector : usages et états perceptibles + masse, taille, tranchant, pointe, allonge, contenance) ; toxicité, puissance magique, clé de quelle serrure : jamais | THING.props | 0 |
+| pc_state_seen | état apparent (intact, abîmé, fissuré, en feu, mouillé, pourri, vide, mûr…) | list | calculé |  | observable |  | THING.state | 0 |
+| pc_amount_seen | quantité apparente (aucun, un peu, assez, beaucoup ; profondeur : à gué, à la taille, profonde, fond invisible) | enum (none, few, some, many, unknown) | calculé |  | observable |  | THING.amount | 0 |
+| pc_display | ce que fait une bête, vu de dehors (calme, broute, aux aguets, fuit, grogne, montre les dents, charge, rôde, joue) | enum (calm, grazing, alert, fleeing, growling, baring_teeth, charging, stalking, playing) | calculé |  | observable | tiré du comportement réel de la bête, sans dire pourquoi : le danger se juge | THING.display | 0 |
+| pc_owner_believed | à qui on CROIT que c'est (croyance owns) | mref | calculé |  | privé |  | THING.owner | 0 |
+| pc_motion | mouvement apparent (immobile, s'approche, s'éloigne, tombe, roule) | enum (still, approaching, leaving, falling, rolling) | calculé |  | observable |  | THING.motion | 0 |
+
 ### phenomenon_field
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | phenomenon_kind | nature (zone de silence, lumières errantes, sol qui chante, vents contraires, sommeil étrange…) | id | naissance |  | moteur seul |  |  | 0 |
 | phenomenon_intensity | intensité, rayon, cycle (actif la nuit, à la pleine lune…) | list | moteur |  | moteur seul |  |  | 0 |
-| phenomenon_effects | effets sur ce qui entre (rêves, peur, confusion, objets qui changent, boussole folle) | list | moteur |  | observable | s'appliquent aux variables du corps et de l'esprit par le moteur (une loi du monde, pas une décision) ; la perception en montre les signes | DANGER ; PLACE.strangeness | 0 |
+| phenomenon_effects | effets sur ce qui entre (rêves, peur, confusion, objets qui changent, boussole folle) | list | moteur |  | moteur seul | le moteur n'applique que des effets physiques ou physiologiques (confusion, envie de dormir, perception brouillée, froid, sons) ; les rêves deviennent des souvenirs de source « rêvé » ; ce qu'on ressent (peur, émerveillement) se juge : le Transformer |  | 0 |
 
 ### relation
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
+| r_id_certainty | certitude que la personne vue est bien celle du dossier (pénombre, distance, déguisement, masque) | unipolar10 | calculé |  | privé | le moteur la calcule depuis la lumière, la distance, la familiarité, ce qui cache le visage ; basse, on peut se tromper de personne | ENTITY.id_certainty | 0 |
 | r_true_entity | la vraie entité derrière ce dossier mental (le moteur seul la connaît) | id | moteur |  | moteur seul |  |  | 0 |
 | r_known_by | comment on le connaît (vu et reconnu, seulement de nom, seulement décrit) | enum (seen, name_only, described) | moteur |  | privé | un dossier « de nom » se lie à une personne vue quand on apprend que c'est elle (une croyance, qui peut être fausse) | ENTITY.known_by ; GROUP.known_by | 0 |
 | r_present | là maintenant, ou absent | bool | calculé |  | privé | un absent saillant (un proche, quelqu'un qu'on s'attendait à voir) reste montré : on remarque l'absence (charte § 20) | ENTITY.present | 0 |
@@ -599,10 +619,10 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | r_obligation | dette morale ressentie (on lui doit quelque chose, sans contrat) | bipolar10 | T pas, moteur | 0.5 | privé | + : je lui dois ; − : il me doit | ENTITY.rel.obligation | 0 |
 | r_rivalry | rivalité (en concurrence pour une même chose : une place, une personne, un marché) | unipolar10 | T pas, moteur | 0.5 | privé |  | ENTITY.rel.rivalry | 0 |
 | r_familiarity | familiarité (combien on le connaît) | unipolar10 | moteur |  | privé | monte avec le temps passé ensemble et les échanges, baisse lentement sans contact | ENTITY.rel.familiarity | 0 |
-| r_perceived_regard | ce qu'on croit qu'il pense de soi (−10 il me hait, +10 il m'adore) | bipolar10 | T pas | 1.0 | privé | théorie de l'esprit : peut être complètement faux | ENTITY.rel.perceived_regard | 0 |
+| r_perceived_regard | ce qu'on croit qu'il pense de soi (−10 il me hait, +10 il m'adore) | bipolar10 | calculé |  | privé | résumé des croyances attitude(lui, …, moi) : ce qu'on croit qu'il pense de soi ; peut être faux | ENTITY.rel.perceived_regard | 0 |
 | r_last_contact | dernière fois qu'on s'est vus ou parlé | time | moteur |  | privé |  | ENTITY.rel.since_contact | 0 |
 | r_shared_history | nombre de souvenirs partagés | qty | calculé |  | privé |  | ENTITY.rel.history | 0 |
-| r_link_believed | le lien qu'on croit avoir (parent, conjoint, maître, employeur…) | enum | calculé |  | privé | tiré des croyances link et des accords en cours ; le plus fort est montré | ENTITY.link | 0 |
+| r_link_believed | le lien qu'on croit avoir (parent, conjoint, maître, employeur…) | enum | calculé |  | privé | tiré des croyances link et des accords tels que crus (commitments_seen) ; le plus fort est montré | ENTITY.link | 0 |
 | r_reputation_seen | ce qu'on croit de lui : honnête, dangereux, compétent, riche, pieux (réputation crue) | list | calculé |  | privé | tiré des croyances has_trait ; on peut se tromper | ENTITY.rep (honnêteté, danger, compétence, richesse, piété) | 0 |
 
 ### relations
@@ -616,7 +636,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| q_from | qui demande | id | moteur |  | privé |  | REQUEST.from (pointeur) | 0 |
+| q_from | qui demande | mref | moteur |  | privé |  | REQUEST.from (pointeur) | 0 |
 | q_content | ce qui est demandé (proposition : « que tu viennes te promener en forêt ») | proposition | moteur |  | privé |  | REQUEST.prop | 0 |
 | q_since | depuis quand on attend une réponse | time | moteur |  | privé | ne pas répondre est aussi une réponse (charte § 20) : la demande expire, le demandeur le perçoit | REQUEST.age | 0 |
 
@@ -624,8 +644,9 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
+| k_self_estimate | ce qu'on croit valoir dans une technique (tiré de ce qu'on a vu de ses propres réussites et ratés) | unipolar10 | calculé |  | privé | moyenne glissante des résultats PERÇUS de ses propres gestes ; un vantard qui n'a jamais essayé se croit bon (croyance knows_how), son estimation, elle, reste vide | SKILL.self_estimate | 0 |
 | k_technique | technique | enum | moteur |  | privé |  | SKILL.technique | 0 |
-| k_mastery | maîtrise (0 rien, 10 maître) | unipolar10 | moteur |  | privé | monte en pratiquant, plus vite avec un maître présent qui montre et corrige (faits objectifs : gestes de l'un vus par l'autre) ; baisse lentement sans pratique ; se perd à la mort si personne ne l'a apprise (charte § 25) | SKILL.mastery | 0 |
+| k_mastery | maîtrise (0 rien, 10 maître) | unipolar10 | moteur |  | privé | monte en pratiquant, plus vite avec un maître présent qui montre et corrige (faits objectifs : gestes de l'un vus par l'autre) ; baisse lentement sans pratique ; se perd à la mort si personne ne l'a apprise (charte § 25) |  | 0 |
 | k_last_practice | dernière pratique | time | moteur |  | moteur seul |  |  | 0 |
 
 ### social_referent
@@ -635,7 +656,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | s_name | nom (pour l'affichage ; jamais dans l'état d'un PNJ) | id | moteur |  | public |  |  | 0 |
 | s_introduced_by | qui en a parlé le premier (tout agent peut créer un référent en le nommant ou le décrivant : « nous trois », « ceux de la forêt ») | id | moteur |  | moteur seul |  |  | 0 |
 | s_introduced_at | quand on en a parlé la première fois | time | moteur |  | moteur seul |  |  | 0 |
-| s_scope | pour un rôle : le groupe dans lequel il s'exerce (chef DU village de la forêt) | id | moteur |  | public |  | GROUP.scope (pointeur) | 0 |
+| s_scope | pour un rôle : le groupe dans lequel il s'exerce (chef DU village de la forêt) | id | moteur |  | moteur seul |  |  | 0 |
 | recognized_members | qui est reconnu membre d'un groupe, et par combien de gens | list | calculé |  | moteur seul | agrégat des croyances member |  | 0 |
 | role_holder_support | qui est cru titulaire d'un rôle, et par combien (deux chefs peuvent coexister) | list | calculé |  | moteur seul | agrégat des croyances holds, pondéré par la familiarité au groupe |  | 0 |
 | legitimacy | légitimité d'un titulaire (part des membres qui croient qu'il a le droit) | ratio | calculé |  | moteur seul |  |  | 0 |
@@ -648,7 +669,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | soil_fertility | fertilité | unipolar10 | moteur |  | observable | s'épuise par les récoltes, remonte en jachère et avec le fumier |  | 0 |
-| soil_state | état (nu, labouré, semé, cultivé, en jachère, piétiné) | enum (bare, tilled, sown, growing, fallow, trampled) | moteur |  | observable |  | THING.state | 0 |
+| soil_state | état (nu, labouré, semé, cultivé, en jachère, piétiné) | enum (bare, tilled, sown, growing, fallow, trampled) | moteur |  | observable |  |  | 0 |
 | soil_moisture | humidité du sol | unipolar10 | moteur |  | observable | pluie, arrosage, sécheresse |  | 0 |
 | deposit | gisement (minerai, pierre, sel, argile : nature, quantité, profondeur) | list | moteur |  | moteur seul | s'épuise quand on extrait |  | 0 |
 
@@ -656,7 +677,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| position | position dans le monde | qty | moteur |  | observable |  | distance et direction relatives (sin, cos) dans chaque jeton perçu | 0 |
+| position | position dans le monde | qty | moteur |  | observable |  | ENTITY.dist ; ENTITY.dir ; THING.dist ; THING.dir (apparents, relatifs au PNJ) | 0 |
 | orientation | orientation (où il regarde) | qty | moteur |  | observable | détermine le champ de vision : on ne voit pas ce qui se passe dans son dos ; vu de dehors, c'est le regard (gaze) |  | 0 |
 | velocity | vitesse | qty | moteur |  | observable |  | ENTITY.look.approaching | 0 |
 | place_in | lieu englobant réel (pièce, maison, place, village, région) | id | moteur |  | moteur seul |  |  | 0 |
@@ -667,22 +688,23 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | load_margin | marge avant effondrement (charge / résistance, appuis) | ratio | moteur |  | moteur seul | creuser sous un mur, ôter un étai, le feu, l'eau la font baisser ; à 0, effondrement (une suite d'Operation) |  | 0 |
-| visible_damage | dégâts visibles (fissures, affaissement) | unipolar10 | calculé |  | observable | les fissures précèdent l'effondrement : on peut les voir et avertir | THING.state ; DANGER (éboulement) | 0 |
+| visible_damage | dégâts visibles (fissures, affaissement) | unipolar10 | calculé |  | observable | les fissures précèdent l'effondrement : on peut les voir et avertir |  | 0 |
 
 ### substance
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| water_volume | volume d'eau | qty | moteur |  | observable | puiser le baisse vraiment ; la pluie et la nappe le remontent ; un puits peut tarir | THING.amount | 0 |
+| water_volume | volume d'eau | qty | moteur |  | observable | puiser le baisse vraiment ; la pluie et la nappe le remontent ; un puits peut tarir |  | 0 |
 | water_quality | potabilité (une eau peut être souillée, empoisonnée, salée) | unipolar10 | moteur |  | moteur seul | les cadavres, les déchets, le sel la gâtent ; on ne le voit pas toujours |  | 0 |
 
 ### trace_record
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| trace_kind | sorte (empreintes, sang, cendre, braises, branches cassées, objet tombé, place vide, odeur, voix entendue au loin) | enum (footprints, blood, ash, embers, broken_plants, dropped_item, empty_spot, smell, drag_marks, tool_marks) | moteur |  | observable |  | THING.kind (trace) | 0 |
-| trace_freshness | fraîcheur (s'efface avec le temps, la pluie, la neige, les passages) | unipolar10 | moteur |  | observable |  | THING.state | 0 |
-| trace_direction | direction (des pas, d'un traînage) | qty | moteur |  | observable |  | THING.direction | 0 |
+| trace_maker_cue | ce qu'une trace dit de son auteur (taille du pied, botte, sabot, pieds nus, nombre, charge portée) | list | moteur |  | observable | s'efface avec la trace |  | 0 |
+| trace_kind | sorte (empreintes, sang, cendre, braises, branches cassées, objet tombé, odeur, traînée, marques d'outil) ; une place vide se remarque par une croyance démentie (b_contradicted) | enum (footprints, blood, ash, embers, broken_plants, dropped_item, smell, drag_marks, tool_marks) | moteur |  | observable |  |  | 0 |
+| trace_freshness | fraîcheur (s'efface avec le temps, la pluie, la neige, les passages) | unipolar10 | moteur |  | observable |  |  | 0 |
+| trace_direction | direction (des pas, d'un traînage) | qty | moteur |  | observable |  |  | 0 |
 | trace_fact | le fait qui l'a laissée (le moteur seul) | id | moteur |  | moteur seul |  |  | 0 |
 
 ## Propriétés et affordances
@@ -819,6 +841,8 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | chalk | proposée | rock | 2100 | 8 | 5 | 0 | natural |  |  |
 | soap | proposée | organic | 1050 | 3 |  | 0 | built |  |  |
 | ink | proposée | fluid | 1050 | 0 |  | 0 | fluid |  |  |
+| softwood | proposée | wood | 500 | 20 | 45 | 85 | natural |  |  |
+| yew_wood | proposée | wood | 670 | 35 | 70 | 65 | natural |  |  |
 | ceramic | proposée | building | 2000 | 50 | 15 | 0 | built |  |  |
 | charcoal | proposée | mineral | 400 | 5 |  | 95 | loose |  |  |
 | ash | proposée | soil | 600 | 0 |  | 0 | loose |  |  |
@@ -996,7 +1020,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | pig | cochon | animal | village, forest | oui | meat:flesh, fat:tallow, hide:hide | 1 | fouille, mange les déchets, s'échappe |
 | chicken | poule, coq | animal | village | oui | egg:egg, meat:flesh, feather:feather |  | pond, picore, chante à l'aube |
 | goose | oie, canard | animal | village, river | oui | egg:egg, meat:flesh, feather:feather, fat:tallow |  | crie à l'approche d'un étranger |
-| dog | chien | animal | village | oui |  | 2 | s'attache à qui le nourrit, garde, aboie, suit, mord l'inconnu menaçant |
+| dog | chien | animal | village | oui |  | 2 | s'attache à qui le nourrit, garde, aboie, suit ; mord qui frappe son maître ou entre la nuit dans la maison (ce qui se voit et s'entend) |
 | cat | chat | animal | village | oui |  |  | chasse les rats, va où il veut |
 | bee | abeilles (colonie) | animal | meadow, village | oui | honey:honey, wax:wax | 1 | pique qui ouvre la ruche sans fumée |
 | deer | cerf, biche | animal | forest |  | meat:flesh, hide:hide, antler:horn, bone:bone | 1 | fuit au moindre bruit, revient aux mêmes passages |
@@ -1013,7 +1037,7 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | rat | rat, souris | animal | village |  |  | 1 | mange les réserves, porte les maladies |
 | snake | serpent (vipère) | animal | meadow, desert |  |  | 4 | mord si on marche dessus ; venin |
 | scorpion | scorpion | animal | desert |  |  | 4 | se cache dans les bottes et les pierres |
-| vulture | vautour | animal | desert, mountain |  | feather:feather |  | tourne au-dessus de ce qui va mourir |
+| vulture | vautour | animal | desert, mountain |  | feather:feather |  | tourne au-dessus des corps et des bêtes blessées ou immobiles (ce qui se voit) |
 | frog | grenouille, crapaud | animal | river |  |  |  |  |
 | river_fish | poisson de rivière (truite, carpe) | animal | river |  | meat:flesh, bone:bone |  |  |
 | sea_fish | poisson de mer (hareng, morue) | animal | sea |  | meat:flesh, bone:bone, oil:oil |  | bancs qui vont et viennent selon la saison |
@@ -1038,10 +1062,10 @@ Compte : entity 16, component 45, variable 272, property 89, concept 144, hard_r
 | walnut_tree | noyer, châtaignier, noisetier | plant | forest, village |  | nut:vegetable, wood:oak_raw, husk:dye |  |  |
 | oak | chêne | plant | forest |  | wood:oak_raw, bark:bark, acorn:vegetable |  |  |
 | beech | hêtre | plant | forest |  | wood:oak_raw, nut:vegetable |  |  |
-| pine | pin, sapin | plant | mountain, forest |  | wood:oak_raw, resin:pitch |  |  |
+| pine | pin, sapin | plant | mountain, forest |  | wood:softwood, resin:pitch |  |  |
 | birch | bouleau | plant | forest, mountain |  | wood:oak_raw, bark:bark |  |  |
 | willow | saule (osier) | plant | river |  | withy:wicker, bark:bark |  |  |
-| yew | if (arcs ; toxique) | plant | forest |  | wood:oak_raw | 3 |  |
+| yew | if (arcs ; toxique) | plant | forest |  | wood:yew_wood | 3 |  |
 | date_palm | palmier dattier | plant | desert |  | fruit:vegetable, fiber:rope_fiber |  |  |
 | olive_tree | olivier | plant | desert, village |  | fruit:vegetable, oil:oil, wood:oak_raw |  |  |
 | meadow_grass | herbe des prés, foin | plant | meadow |  | hay:straw |  |  |
@@ -1669,7 +1693,7 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 
 | id | règle | s'applique à |
 |---|---|---|
-| D10_minors | Refusé dès qu'un argument a un life_stage réel inférieur à adult : tout geste marqué intimate, toute expression contenant un concept intimate (attirance, liens conjoint, fiancé, amant), tout objectif ou croyance écrite par le modèle qui en contient, tout accord de mariage ou de fiançailles, toute montée de r_attraction ou de need_intimacy. need_intimacy vaut 0 avant l'âge adulte. | action, concept, variable, agreement |
+| D10_minors | Refusé dès que l'âge RÉEL, l'âge CRU par l'acteur ou l'âge APPARENT d'un des deux (acteur ou cible) est inférieur à l'âge adulte, ou que le dossier mental de la cible n'est pas résolu (une personne connue seulement de nom ou décrite) : tout geste marqué intimate, toute expression contenant un concept ou une variable marqué intimate (r_attraction, need_intimacy, attracted_to ; liens spouse, betrothed, lover, former_spouse), tout objectif ou croyance écrit par le modèle qui en contient, tout accord dont les obligations en contiennent, toute montée de r_attraction ou de need_intimacy. need_intimacy vaut 0 avant l'âge adulte. Vérifié par check.py (_check_hard_rules) et par le gouverneur. | action, concept, variable, agreement |
 | engine_owns_body | Le Transformer n'écrit jamais une variable d'un composant engine_only (corps, besoins, cycle de vie, apparence, porteur, registre, maîtrise) : il agit par des gestes, la physique en fait les effets. | variable |
 | no_truth_in_tokens | Les jetons pointent vers des dossiers mentaux, des événements remémorés ou décrits, des lieux connus ; jamais vers un identifiant objectif, l'état réel d'un accord, la vraie identité, la vraie santé ou la vérité d'une croyance (charte § 5). | variable, concept |
 | sparse_writes | Au plus 4 écritures (pointeur, variable, valeur) par décision, en plus du geste choisi ; chacune bornée par le pas par décision et le taux par jour de jeu. Le reste suit les lois de retour du moteur. | variable |

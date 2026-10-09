@@ -25,4 +25,6 @@ material = [
   { id = "chalk", label_fr = "craie", category = "rock", density_kg_m3 = 2100, hardness = 8, toughness = 5, cohesion = "natural", color = "f2f0e8" },
   { id = "soap", label_fr = "savon", category = "organic", density_kg_m3 = 1050, hardness = 3, cohesion = "built", color = "e0d8b8" },
   { id = "ink", label_fr = "encre", category = "fluid", density_kg_m3 = 1050, cohesion = "fluid", color = "101018" },
+  { id = "softwood", label_fr = "bois résineux (pin, sapin)", category = "wood", density_kg_m3 = 500, hardness = 20, toughness = 45, flammability = 85, cohesion = "natural", conductivity = 10, color = "c8a46a" },
+  { id = "yew_wood", label_fr = "bois d'if (élastique, toxique)", category = "wood", density_kg_m3 = 670, hardness = 35, toughness = 70, flammability = 65, cohesion = "natural", conductivity = 10, color = "b0583a" },
 ]

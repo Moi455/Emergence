@@ -56,6 +56,19 @@ class TestCatalogue(unittest.TestCase):
         for typ, b in budget.BUDGET.items():
             self.assertLessEqual(len(s.get(typ, ())), b, typ)
         self.assertLessEqual(sum(budget.TOKENS.values()), budget.MAX_TOKENS)
+        self.assertLessEqual(len(self.cat["concept"]), budget.GRAMMAR_WORDS_MAX)
+        self.assertLessEqual(len(self.cat.object_vector()), budget.OBJECT_VECTOR_MAX)
+
+    def test_hidden_properties_never_seen(self):
+        seen = set(self.cat.perceptible_properties())
+        for pid in ("toxicity", "magic_power", "key_for", "edible", "unlocks", "shapes_matter"):
+            self.assertNotIn(pid, seen, pid)
+
+    def test_no_truth_scale_in_tokens(self):
+        for v in self.cat["variable"].values():
+            if v.token:
+                self.assertNotEqual(v.scale, "id", v.id)
+                self.assertNotEqual(v.visibility, "engine", v.id)
 
     def test_forbidden_action_is_caught(self):
         cat = Catalogue()

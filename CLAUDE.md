@@ -21,7 +21,7 @@ Les images de `docs/style/` (`monde_type.png`, `maison_type.png`, `pnj_type.png`
 
 1. **Chaque PNJ est piloté par le Transformer**, plusieurs fois par seconde, sans cache, par lots sur le GPU. Il reçoit perception, identité, souvenirs, état ; il rend une action et des ajustements progressifs de ses variables (seule une émotion peut sauter d'un coup). Pas de moteur de règles écrit à la main pour décider à la place du modèle.
 2. **Les 500 PNJ sont simulés à pleine puissance partout**, même loin du joueur ; seul le rendu est coupé hors de vue. **Toute action a une répercussion persistante** (une `Operation` appliquée au monde, chargé ou non, et sauvegardée).
-3. **Avant de coder une action ou une variable**, elle doit être dans le catalogue unique (`ai/CATALOGUE_modele.md` et le catalogue de `sim/`).
+3. **Avant de coder une action ou une variable**, elle doit être dans le catalogue unique `catalogue/` (D28 ; `python3 catalogue/tools/check.py`).
 4. **GPU** : le rendu utilise le moins possible du GPU dédié ; l'essentiel reste au Transformer.
 5. **Rendu** : voxels du monde plus gros que 2 cm (taille ouverte : 5 cm proposé, 10 cm essayé par le prototype village), textures (demandées ; le prototype s'en passe, question O14), lumière en temps réel (heure, nuages, météo), pas d'upscaling.
 6. **Eau et feu** au plus léger, pas forcément en voxels ; l'eau est une quantité prélevable qui réagit.
@@ -66,6 +66,7 @@ docs/             décisions, architecture (06 fait foi), interfaces, style/ (ba
 engine/           cœur C++20 (plan, chunks, maillage, terrain) + extension Godot
 worldgen/         génération déterministe du monde
 game/             projet Godot 4.6, scène play.tscn
+catalogue/        source unique des variables et des actions (TOML, validateur, budget de l'IA)
 ai/               Transformer des PNJ : contrat, catalogue, jetons, données, entraînement (student/)
 sim/              simulation sociale provisoire (moteur à règles, à remplacer par la boucle Transformer)
 characters/       générateur des villageois (à refaire en style voxel)

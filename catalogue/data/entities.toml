@@ -383,3 +383,11 @@ part_of = "skills"
 max_count = 26
 engine_only = true
 note = "Distincte de la croyance knows_how (ce qu'on croit savoir, de soi ou d'un autre)."
+
+[[component]]
+id = "percept"
+label_fr = "une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité"
+holder = "agent"
+part_of = "beliefs"
+max_count = 16
+note = "Reconstruit à chaque décision par le moteur depuis la scène, la lumière, la distance, l'attention et l'œil (maîtrise) du PNJ."

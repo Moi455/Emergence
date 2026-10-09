@@ -63,6 +63,6 @@ item_type = [
   # Remèdes et poisons
   { id = "herbal_remedy", label_fr = "remède d'herbes", category = "medicine", parts = ["preparation:herb", "vessel:ceramic"], mass_kg = 0.3, properties = { potency = ["soin:5"] }, made_by = ["crush", "mix"], good = "medicine" },
   { id = "salve", label_fr = "onguent, baume", category = "medicine", parts = ["preparation:herb", "preparation:tallow", "vessel:ceramic"], mass_kg = 0.2, properties = { potency = ["soin:4"] }, made_by = ["crush", "mix", "heat"], good = "medicine" },
-  { id = "sleeping_draught", label_fr = "potion qui fait dormir", category = "medicine", parts = ["preparation:herb", "liquid:water", "vessel:glass"], mass_kg = 0.3, properties = { potency = ["sommeil:6"] }, good = "medicine" },
-  { id = "poison_vial", label_fr = "fiole de poison (herbes ou champignons)", category = "medicine", parts = ["preparation:herb", "vessel:glass", "lid:bark"], mass_kg = 0.1, properties = { toxicity = 8 }, note = "Un objet comme un autre : empoisonner n'est pas une action, c'est verser une substance toxique dans ce qu'un autre boira." },
+  { id = "sleeping_draught", label_fr = "potion qui fait dormir", category = "medicine", parts = ["preparation:herb", "liquid:water", "vessel:glass"], mass_kg = 0.3, properties = { potency = ["sommeil:6"] }, good = "medicine", lookalike = "small_vial" },
+  { id = "poison_vial", label_fr = "fiole de poison (herbes ou champignons)", category = "medicine", parts = ["preparation:herb", "vessel:glass", "lid:bark"], mass_kg = 0.1, properties = { toxicity = 8 }, note = "Un objet comme un autre : empoisonner n'est pas une action, c'est verser une substance toxique dans ce qu'un autre boira.", lookalike = "small_vial" },
 ]
