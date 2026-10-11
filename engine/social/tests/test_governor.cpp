@@ -64,7 +64,8 @@ TEST(ages_are_floored_toward_minor) {
   CHECK_EQ(Party::from_years(std::numeric_limits<double>::quiet_NaN()), -1);
   CHECK_EQ(Party::from_years(std::numeric_limits<double>::infinity()), -1);
   CHECK_EQ(Party::from_years(-3.0), -1);
-  CHECK_EQ(Party::from_years(1.0e9), std::numeric_limits<std::int16_t>::max());
+  CHECK_EQ(Party::from_years(1.0e9), -1);                         // absurd: unknown, a possible minor (review 10)
+  CHECK_EQ(Party::from_years(1.0e308), -1);
   const Party just_under{179, 179, 179, true}, of_age{180, 180, 180, true}, thing{5, 5, 5, false, false};
   CHECK(just_under.may_be_minor());
   CHECK(!of_age.may_be_minor());
@@ -337,10 +338,15 @@ TEST(relation_steps_then_hits_the_daily_rate_then_rolls_over) {
   CHECK_EQ(led.moved_today(gen::Var::r_affection, 7), spec.rate_tenths);
   CHECK_EQ(led.moved_today(gen::Var::r_affection, 8), 0);       // another target has its own account
   led.roll(1, 0);
-  CHECK_EQ(led.moved_today(gen::Var::r_affection, 7), 0);       // nothing was cleared, the stamp is just old
+  CHECK_EQ(led.moved_today(gen::Var::r_affection, 7), 0);       // a new day, a new account
   CHECK(g.check_write(request(gen::Var::r_affection, x, x + 100, 7), led).value > x);
-  led.roll(0, 0);                                               // time never goes back
-  CHECK_EQ(led.day(), 1);
+  led.roll(0, 0);                                               // any change of day, even back, as the oracle
+  CHECK_EQ(led.day(), 0);
+  CHECK_EQ(led.moved_today(gen::Var::r_affection, 7), 0);
+  led.roll(std::numeric_limits<std::int32_t>::max(), 0);        // a bogus day does not freeze the ledger
+  led.roll(2, 0);
+  CHECK_EQ(led.day(), 2);
+  CHECK(g.check_write(request(gen::Var::r_affection, x, x + 100, 7), led).value > x);
 }
 
 TEST(ledger_can_be_saved_and_restored) {
@@ -364,6 +370,42 @@ TEST(ledger_can_be_saved_and_restored) {
   std::vector<LedgerEntry> bad = saved;
   bad.front().reserved = 1;
   CHECK(!b.restore(0, 0, bad));
+  // review 10: a saved ledger is untrusted input
+  const auto refused = [&](auto mutate) {
+    std::vector<LedgerEntry> v = saved;
+    mutate(v.front());
+    return !b.restore(a.day(), a.life_year(), v) && b.entries().empty();
+  };
+  CHECK(refused([](LedgerEntry& e) { e.day_moved = std::numeric_limits<std::int32_t>::min(); }));
+  CHECK(refused([](LedgerEntry& e) { e.year_moved = -1; }));
+  CHECK(refused([](LedgerEntry& e) { e.day_moved = WriteLedger::kMaxMoved + 1; }));
+  CHECK(refused([](LedgerEntry& e) { e.var = static_cast<std::uint16_t>(gen::kVariables.size()); }));
+  CHECK(refused([&](LedgerEntry& e) { e.day_stamp = a.day() + 1; }));
+  CHECK(refused([&](LedgerEntry& e) { e.year_stamp = a.life_year() + 1; }));
+  CHECK(b.restore(a.day(), a.life_year(), saved));
+}
+
+TEST(check_writes_with_a_short_output_keeps_nothing) {
+  Governor g;
+  const std::array<WriteKey, 6> keys{WriteKey{1, gen::Var::r_affection}, WriteKey{2, gen::Var::r_affection},
+                                     WriteKey{3, gen::Var::r_affection}, WriteKey{4, gen::Var::r_affection},
+                                     WriteKey{5, gen::Var::r_affection}, WriteKey{6, gen::Var::r_affection}};
+  std::array<Verdict, 3> out{};
+  CHECK_EQ(g.check_writes(keys, out), std::size_t{0});
+  for (const Verdict& v : out) CHECK(!v.allowed && v.reason == Reason::invalid_value);
+}
+
+TEST(speech_content_is_refused_until_the_language_port) {
+  Governor g;
+  GestureCall call;
+  call.gesture = gen::Gesture::speak;
+  const gen::GestureSpec& spec = gen::kGestures[static_cast<std::size_t>(gen::Gesture::speak)];
+  int content = -1;
+  for (int i = 0; i < spec.n_params; ++i)
+    if (spec.params[i].type == gen::ParamType::expression) content = i;
+  CHECK(content >= 0);
+  call.value[content] = 0;
+  CHECK(g.check_gesture(call, &kPalette[0]).reason == Reason::structured);
 }
 
 TEST(a_full_ledger_denies_a_new_key_until_entries_expire) {
@@ -373,7 +415,7 @@ TEST(a_full_ledger_denies_a_new_key_until_entries_expire) {
     CHECK(g.check_write(request(gen::Var::r_affection, 0, 100, t), led).allowed);
   const Verdict full = g.check_write(request(gen::Var::r_affection, 0, 100, 1000), led);
   CHECK(!full.allowed);
-  CHECK(full.reason == Reason::clipped);
+  CHECK(full.reason == Reason::ledger_full);                    // explicit, not a silent clip (review 10)
   CHECK_EQ(full.value, 0);
   led.roll(1, 0);                                               // a new game day: the old entries are dead
   CHECK(g.check_write(request(gen::Var::r_affection, 0, 100, 1000), led).allowed);

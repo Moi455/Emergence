@@ -39,18 +39,18 @@ class ModelInterface:
     }
     ALIASES = {"HEARD": "BELIEF", "INV": "THING"}
     EXPLICIT = {
-        "TASTE": {"concept": {"scale": "word", "values": [], "unit": "", "list_of": ""},
-                  "attitude": {"scale": "bipolar10", "values": [], "unit": "", "list_of": ""}},
-        "COMMIT": {"counterparty": {"scale": "mref", "values": [], "unit": "", "list_of": ""},
-                   "mine": {"scale": "bool", "values": [], "unit": "", "list_of": ""},
-                   "prop": {"scale": "proposition", "values": [], "unit": "", "list_of": ""},
-                   "deadline": {"scale": "time", "values": [], "unit": "", "list_of": ""},
-                   "status": {"scale": "enum", "values": ["open", "fulfilled", "broken", "released"], "unit": "", "list_of": ""},
-                   "witnesses": {"scale": "list", "values": [], "unit": "", "list_of": "mref"}},
-        "PLAN": {"step": {"scale": "word", "values": [], "unit": "", "list_of": ""},
-                 "goal": {"scale": "mref", "values": [], "unit": "", "list_of": ""},
-                 "progress": {"scale": "ratio", "values": [], "unit": "", "list_of": ""},
-                 "commitment": {"scale": "unipolar10", "values": [], "unit": "", "list_of": ""}},
+        "TASTE": {"concept": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": []},
+                  "attitude": {"scale": "bipolar10", "values": [], "unit": "", "list_of": "", "components": []}},
+        "COMMIT": {"counterparty": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": []},
+                   "mine": {"scale": "bool", "values": [], "unit": "", "list_of": "", "components": []},
+                   "prop": {"scale": "proposition", "values": [], "unit": "", "list_of": "", "components": []},
+                   "deadline": {"scale": "time", "values": [], "unit": "", "list_of": "", "components": []},
+                   "status": {"scale": "enum", "values": ["open", "fulfilled", "broken", "released"], "unit": "", "list_of": "", "components": []},
+                   "witnesses": {"scale": "list", "values": [], "unit": "", "list_of": "mref", "components": []}},
+        "PLAN": {"step": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": []},
+                 "goal": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": []},
+                 "progress": {"scale": "ratio", "values": [], "unit": "", "list_of": "", "components": []},
+                 "commitment": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": []}},
     }
     ACCEPT_TOKENS = {"agent": "ENTITY", "animal": "THING", "item": "THING|INV", "structure": "THING", "terrain": "THING",
                      "voxel": "THING", "water": "THING", "fire": "THING", "trace": "THING", "plant": "THING",
@@ -67,7 +67,9 @@ class ModelInterface:
                     continue
                 key = m.group(1) + ("." + m.group(2) if m.group(2) else "")
                 values = v.values or sorted(c.id for c in self.cat["concept"].values() if v.values_from and c.category == v.values_from)
-                out.setdefault(key, {"from": v.id, "scale": v.scale, "values": values, "unit": v.unit, "list_of": v.list_of})
+                comps = self.cat.object_vector() if v.components == ["@object_vector"] else list(v.components)
+                out.setdefault(key, {"from": v.id, "scale": v.scale, "values": values, "unit": v.unit, "list_of": v.list_of,
+                                     "components": comps})
         return out
 
     def input_spec(self) -> dict:

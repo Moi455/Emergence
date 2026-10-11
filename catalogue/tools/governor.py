@@ -23,6 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from schema import Catalogue  # noqa: E402
 
 WRITES_PER_DECISION = 4
+LEDGER_CAPACITY = 512          # live (target, variable) entries per NPC; beyond, a NEW key is refused (ledger_full)
+MAX_AGE_TENTHS = 32767         # an age beyond this (int16 tenths) is absurd: it reads as UNKNOWN (a possible minor)
 _CAT = Catalogue.load()
 ADULT_AGE = float(_CAT["hard_rule"]["D10_minors"].adult_age_years)   # pinned in hard_rules.toml (18)
 SCALE_BOUNDS = {"bipolar10": (-100, 100), "unipolar10": (0, 100)}     # in tenths
@@ -36,7 +38,9 @@ def tenths(x: float) -> int:
 
 def age_tenths(years: float | None) -> int:
     """Years -> tenths of years, rounded DOWN (toward 'minor'): 17.96 years stays a minor."""
-    return -1 if years is None or not math.isfinite(years) else math.floor(years * 10)
+    if years is None or not math.isfinite(years) or years < 0 or years * 10 >= MAX_AGE_TENTHS + 1:
+        return -1                                   # unknown, negative or absurd: deny by default
+    return math.floor(years * 10)
 
 
 @dataclass
@@ -89,6 +93,13 @@ class WriteLedger:
     year_moved: dict = field(default_factory=dict)
     day: int = 0
     life_year: int = 0
+
+    def live(self) -> int:
+        return sum(1 for x in self.day_moved.values() if x) + sum(1 for x in self.year_moved.values() if x)
+
+    def can_record(self, key) -> bool:
+        """A key already moving this day / life-year, or a free place (LEDGER_CAPACITY live entries at most)."""
+        return bool(self.day_moved.get(key) or self.year_moved.get(key)) or self.live() < LEDGER_CAPACITY
 
     def roll(self, day: int, life_year: int):
         if day != self.day:
@@ -177,6 +188,8 @@ class Governor:
         d = max(-step, min(step, delta))
         left = max(0, limit - used.get(key, 0))
         d = max(-left, min(left, d))
+        if d != 0 and not ledger.can_record(key):
+            return Verdict(False, o / 10, "ledger full: no new (target, variable) this day", "ledger_full")
         used[key] = used.get(key, 0) + abs(d)
         return Verdict(d != 0 or delta == 0, (o + d) / 10, book, book if d == delta else "clipped")
 
@@ -222,9 +235,11 @@ class Governor:
 
     # ---- gestures ---------------------------------------------------------------------------------
     def check_gesture(self, action_id: str, params: dict, actor: Party | None, parties: dict | None = None,
-                      executed: bool = False) -> Verdict:
+                      executed: bool = False, content_parties: dict | None = None, expand=None) -> Verdict:
         """params: param name -> value; parties: param name -> Party for every param that designates someone or
-        something. executed=True (the model's own output): every non-optional param must be present."""
+        something. executed=True (the model's own output): every non-optional param must be present.
+        An expression param (speak, write) is checked here with check_utterance (review 10): the content is part of
+        the gesture. content_parties / expand are those of check_utterance (None: deny by default)."""
         a = self.cat["action"].get(action_id)
         if a is None:
             return no("unknown_gesture")
@@ -238,6 +253,14 @@ class Governor:
             for p in a.params:
                 if not p.optional and p.name not in params:
                     return no("invalid_value", f"missing param {p.name}")
+        for p in a.params:
+            if p.type == "expression" and p.name in params:
+                import language
+                e = params[p.name]
+                e = e if isinstance(e, language.Expression) else language.Expression(str(e), self.vocab)
+                v = self.check_utterance(e, actor, content_parties, expand=expand)
+                if not v.allowed:
+                    return v
         persons = [actor or UNKNOWN]
         for pn in a.party_params:
             prm = known[pn]

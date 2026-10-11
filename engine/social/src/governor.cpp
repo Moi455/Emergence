@@ -42,7 +42,7 @@ std::int16_t Party::from_years(double years) {
   if (!std::isfinite(years)) return -1;
   const double t = std::floor(years * 10.0);
   if (t < 0.0) return -1;
-  if (t > std::numeric_limits<std::int16_t>::max()) return std::numeric_limits<std::int16_t>::max();
+  if (t > std::numeric_limits<std::int16_t>::max()) return -1;   // absurd: unknown, a possible minor
   return static_cast<std::int16_t>(t);
 }
 
@@ -66,6 +66,7 @@ std::string_view to_string(Reason r) {
     case Reason::d10_whitelist: return "d10_whitelist";
     case Reason::duplicate: return "duplicate";
     case Reason::too_many_writes: return "too_many_writes";
+    case Reason::ledger_full: return "ledger_full";
     case Reason::kCount: break;
   }
   return "?";
@@ -74,8 +75,14 @@ std::string_view to_string(Reason r) {
 // ---- WriteLedger -----------------------------------------------------------------------------------------
 
 void WriteLedger::roll(std::int32_t day, std::int32_t life_year) {
-  if (day > day_) day_ = day;
-  if (life_year > life_year_) life_year_ = life_year;
+  if (day != day_) {
+    day_ = day;
+    for (std::size_t i = 0; i < size_; ++i) entries_[i].day_moved = 0;
+  }
+  if (life_year != life_year_) {
+    life_year_ = life_year;
+    for (std::size_t i = 0; i < size_; ++i) entries_[i].year_moved = 0;
+  }
 }
 
 std::size_t WriteLedger::find(gen::Var v, std::uint32_t target) const {
@@ -135,7 +142,9 @@ bool WriteLedger::restore(std::int32_t day, std::int32_t life_year, std::span<co
   entries_.fill(LedgerEntry{});
   bool good = saved.size() <= kCapacity;
   for (std::size_t i = 0; good && i < saved.size(); ++i) {
-    good = saved[i].reserved == 0;
+    const LedgerEntry& e = saved[i];
+    good = e.reserved == 0 && e.var < gen::kVariables.size() && e.day_moved >= 0 && e.day_moved <= kMaxMoved &&
+           e.year_moved >= 0 && e.year_moved <= kMaxMoved && e.day_stamp <= day && e.year_stamp <= life_year;
     for (std::size_t j = 0; good && j < i; ++j)
       good = !(saved[j].target == saved[i].target && saved[j].var == saved[i].var);
   }
@@ -184,13 +193,17 @@ Verdict Governor::check_write(const WriteRequest& r, WriteLedger& ledger) const 
   if (d != 0) {
     const bool recorded = stepw ? ledger.add_today(r.var, r.target, std::abs(d))
                                 : ledger.add_this_year(r.var, r.target, std::abs(d));
-    if (!recorded) d = 0;                                   // table full of live entries: deny, move nothing
+    if (!recorded) return {false, static_cast<std::int16_t>(o), Reason::ledger_full};   // deny, move nothing
   }
   return {d != 0 || delta == 0, static_cast<std::int16_t>(o + d), d == delta ? book : Reason::clipped};
 }
 
 std::size_t Governor::check_writes(std::span<const WriteKey> keys, std::span<Verdict> out) const {
-  const std::size_t n = std::min(keys.size(), out.size());
+  if (out.size() < keys.size()) {
+    for (Verdict& v : out) v = refuse(Reason::invalid_value);
+    return 0;
+  }
+  const std::size_t n = keys.size();
   std::size_t unique = 0, kept = 0;
   for (std::size_t i = 0; i < n; ++i) {
     bool dup = false;
@@ -224,6 +237,8 @@ Verdict Governor::check_gesture(const GestureCall& call, const Party* actor, boo
     const bool valid = p.type == gen::ParamType::enum_ ? (val >= 0 && val < p.n_values) : val == 0;
     if (!valid) return refuse(Reason::invalid_value);
   }
+  for (int i = 0; i < g.n_params; ++i)                          // content: check_utterance, not ported yet
+    if (g.params[i].type == gen::ParamType::expression && call.value[i] == 0) return refuse(Reason::structured);
 
   // 2. The persons involved: the actor, each party param that is given (a missing non-optional party param of a
   //    contact gesture counts an UNKNOWN person). A thing never counts.

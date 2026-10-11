@@ -10,6 +10,10 @@ Deterministic (fixed seed, sorted iteration). The vectors compare the REASON COD
     `executed` flag, and invalid values (an enum index == n_values, negative, a value for a missing param).
     An invalid value of a ref / qty / ... param (anything but index 0) has no Python equivalent (the Python side
     accepts any string there), so its expected reason is written directly: invalid_value.
+  * an EXPRESSION param given (speak, write): the oracle checks its content (here a neutral "(help)") inside
+    check_gesture; the C++ port has no language yet and refuses it (structured) until check_utterance is ported;
+  * the ledger: days that go back (any change of day starts a new account) and a ledger filled to
+    LEDGER_CAPACITY live keys (the next new key: ledger_full).
 """
 from __future__ import annotations
 
@@ -21,7 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "tools"))
 from schema import Catalogue  # noqa: E402
-from governor import SELF_HOLDERS, Governor, Party, WriteLedger, age_tenths, tenths  # noqa: E402
+from governor import LEDGER_CAPACITY, SELF_HOLDERS, Governor, Party, WriteLedger, age_tenths, tenths  # noqa: E402
 from gen_cpp import ident  # noqa: E402
 
 OUT = ROOT.parent / "engine" / "social" / "tests" / "governor_vectors.inc"
@@ -130,6 +134,8 @@ def gen_writes(cat, g, rng, L, counts):
                     day += 1
                 elif r < 0.12:
                     day += rng.randint(2, 5)
+                elif r < 0.13 and day > 0:
+                    day -= 1                             # time going back: a new account, as any change of day
                 if rng.random() < 0.04:
                     life_year += 1
                 led.roll(day, life_year)
@@ -148,6 +154,19 @@ def gen_writes(cat, g, rng, L, counts):
                          f"{target}, {ti}, {ai}, {str(v.allowed).lower()}, {reason(v.code)}, {val}}},")
                 if v.allowed and v.value is not None:
                     held[target] = val
+    # a ledger filled to capacity: every new key is refused (ledger_full) until the day changes
+    vid = "r_affection"
+    seq += 1
+    led = WriteLedger()
+    for day, targets in ((0, range(1, LEDGER_CAPACITY + 3)), (1, range(LEDGER_CAPACITY + 1, LEDGER_CAPACITY + 4))):
+        led.roll(day, 0)
+        for t in targets:
+            v = g.check_write(vid, 0, 1, led, target=str(t))
+            val = 0 if v.value is None else tenths(v.value)
+            counts["write"][v.code] += 1
+            L.append(f"  {{{seq}, {day}, 0, em::social::gen::Var::{ident(vid)}, 0, 10, false, {t}, -1, -1, "
+                     f"{str(v.allowed).lower()}, {reason(v.code)}, {val}}},")
+    assert counts["write"]["ledger_full"] == 2, counts["write"]
     L.append("};")
 
 
@@ -183,7 +202,10 @@ def gen_gestures(cat, g, rng, L, counts):
              " int actor; bool executed; em::social::Reason reason; };")
     L.append("static constexpr GestureCase kGestureCases[] = {")
 
-    def emit(gesture_cpp, vals, pidx, ai, executed, code):
+    def emit(gesture_cpp, vals, pidx, ai, executed, code, a=None):
+        if a is not None and code != "invalid_value" and any(
+                p.type == "expression" and vals[i] == 0 for i, p in enumerate(a.params)):
+            code = "structured"                          # C++: content not checkable before the language port
         counts["gesture"][code] += 1
         L.append(f"  {{{gesture_cpp}, {{{', '.join(map(str, vals))}}}, {{{', '.join(map(str, pidx))}}}, {ai}, "
                  f"{str(executed).lower()}, {reason(code)}}},")
@@ -198,6 +220,8 @@ def gen_gestures(cat, g, rng, L, counts):
                     k = rng.randrange(len(p.values)); vals[i] = k; params[p.name] = p.values[k]
                 elif p.type == "ref":
                     vals[i] = 0; params[p.name] = "@E1"
+                elif p.type == "expression":
+                    vals[i] = 0; params[p.name] = "(help)"
                 else:
                     vals[i] = 0; params[p.name] = "x"
             if p.name in a.party_params and rng.random() < (0.85 if given else 0.12):
@@ -212,12 +236,12 @@ def gen_gestures(cat, g, rng, L, counts):
             params, parties, vals, pidx = build(a, 0.75)
             ai = pick_party(rng, 0.5)
             v = g.check_gesture(a.id, params, party_ref(ai), parties)
-            emit(gc, vals, pidx, ai, False, v.code)
+            emit(gc, vals, pidx, ai, False, v.code, a)
         for _ in range(30):                              # executed: the model's own output, params required
             params, parties, vals, pidx = build(a, 0.9)
             ai = pick_party(rng, 0.5)
             v = g.check_gesture(a.id, params, party_ref(ai), parties, executed=True)
-            emit(gc, vals, pidx, ai, True, v.code)
+            emit(gc, vals, pidx, ai, True, v.code, a)
         enum_idx = [i for i, p in enumerate(a.params) if p.type == "enum"]
         other_idx = [i for i, p in enumerate(a.params) if p.type != "enum"]
         for n in range(8):                               # invalid values (they win over everything else)
@@ -231,7 +255,7 @@ def gen_gestures(cat, g, rng, L, counts):
                 params[p.name] = "__invalid__"
                 v = g.check_gesture(a.id, params, party_ref(ai), parties, executed=executed)
                 assert v.code == "invalid_value", (a.id, p.name)
-                emit(gc, vals, pidx, ai, executed, v.code)
+                emit(gc, vals, pidx, ai, executed, v.code, a)
             elif kind.startswith("other") and other_idx:
                 i = rng.choice(other_idx)
                 vals[i] = 1 if kind == "other_one" else -3
@@ -241,7 +265,7 @@ def gen_gestures(cat, g, rng, L, counts):
                 params["__no_such_param__"] = "x"
                 v = g.check_gesture(a.id, params, party_ref(ai), parties, executed=executed)
                 assert v.code == "invalid_value"
-                emit(gc, vals, pidx, ai, executed, v.code)
+                emit(gc, vals, pidx, ai, executed, v.code, a)
     for _ in range(5):                                   # a gesture that is not in the catalogue
         assert g.check_gesture("no_such_gesture", {}, None).code == "unknown_gesture"
         emit("em::social::gen::Gesture::kCount", [-1] * 6, [-1] * 6, -1, False, "unknown_gesture")

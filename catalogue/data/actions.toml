@@ -142,7 +142,7 @@ params = [
 ]
 uses = ["t_woodwork", "t_stonework", "t_farming"]
 contact = true
-party_params = ["item"]
+party_params = ["item", "where"]
 minor_person_ok = true
 minor_whitelist = { contact_zone = ["arms", "back"] }
 effects = "une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher"
@@ -213,7 +213,7 @@ params = [
 ]
 requires = { item = "wearable" }
 contact = true
-party_params = ["on"]
+party_params = ["on", "item"]
 minor_person_ok = true
 minor_whitelist = { mode = ["put_on"], contact_zone = ["head", "shoulder", "arms", "hands", "legs"] }
 effects = "change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification)"
@@ -288,7 +288,7 @@ params = [
   { name = "toward", type = "ref", accepts = ["place", "direction"], optional = true },
 ]
 contact = true
-party_params = ["target"]
+party_params = ["target", "toward"]
 minor_person_ok = true
 effects = "déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte"
 perceptibility = "vu"
@@ -361,7 +361,7 @@ params = [
 ]
 uses = ["t_healing", "t_cooking", "t_smithing", "t_woodwork", "t_leather", "t_husbandry", "t_brewing", "t_pottery"]
 contact = true
-party_params = ["target"]
+party_params = ["target", "with"]
 minor_person_ok = true
 minor_whitelist = { motion = ["press"], intensity = ["faint", "light", "firm"], duration = ["brief", "a_while"], contact_zone = ["head", "shoulder", "arms", "hands", "back", "legs"] }
 effects = "le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase"
@@ -384,7 +384,7 @@ params = [
 requires = { with = "binds" }
 uses = ["t_textile", "t_woodwork", "t_fishing", "t_healing"]
 contact = true
-party_params = ["target", "to"]
+party_params = ["target", "to", "with"]
 minor_person_ok = true
 minor_whitelist = { mode = ["knot"], tightness = ["light", "firm"], contact_zone = ["head", "arms", "hands", "legs"] }
 effects = "processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang"

@@ -27,8 +27,8 @@ struct Party {
 
   bool may_be_minor() const;
 
-  // Years -> tenths of years, FLOORED (toward "minor"): 17.96 years -> 179, never 180. A non-finite or negative
-  // age gives -1 (unknown); an age beyond the 16-bit range saturates.
+  // Years -> tenths of years, FLOORED (toward "minor"): 17.96 years -> 179, never 180. A non-finite, negative or
+  // absurd age (beyond the 16-bit range) gives -1: unknown, a possible minor (deny by default).
   static std::int16_t from_years(double years);
 };
 
@@ -38,7 +38,7 @@ enum class Reason : std::uint8_t {
   unknown_variable, engine_owned, structured, non_finite, no_writer,
   unknown_gesture, invalid_value,
   d10_intimate, d10_value, d10_person, d10_whitelist,
-  duplicate, too_many_writes,
+  duplicate, too_many_writes, ledger_full,
   kCount
 };
 
@@ -63,13 +63,13 @@ struct LedgerEntry {
 static_assert(sizeof(LedgerEntry) == 24 && std::is_trivially_copyable_v<LedgerEntry>);
 
 // Per-NPC memory of what the model already moved, for the per-game-day and per-life-year bounds. A small flat
-// table, deterministic, no allocation, nothing is ever cleared: an entry whose stamp is not the current day (or
-// life-year) simply reads as zero and its slot is reused. Time never goes back: roll() ignores an earlier value.
+// table, deterministic, no allocation. Any change of day (or life-year), in either direction, starts a new
+// account, as in the oracle: roll() zeroes what was moved and the slots are reused.
 // When the table holds kCapacity live entries a write to a NEW (target, variable) cannot be recorded and is
-// refused (reason clipped, nothing moves): deny, never a bound that silently disappears.
+// refused (Reason::ledger_full, nothing moves): deny, never a bound that silently disappears.
 class WriteLedger {
  public:
-  static constexpr std::size_t kCapacity = 128;
+  static constexpr std::size_t kCapacity = gen::kLedgerCapacity;
 
   void roll(std::int32_t day, std::int32_t life_year);
   std::int32_t day() const { return day_; }
@@ -80,8 +80,10 @@ class WriteLedger {
   bool add_today(gen::Var v, std::uint32_t target, std::int32_t amount);       // false = table full
   bool add_this_year(gen::Var v, std::uint32_t target, std::int32_t amount);   // false = table full
 
-  // Save / load. restore() refuses (returns false, leaves the ledger empty) more than kCapacity entries,
-  // a duplicated (target, variable) or a non-zero `reserved`.
+  // Save / load. restore() refuses (returns false, leaves the ledger empty) more than kCapacity entries, a
+  // duplicated (target, variable), a non-zero `reserved`, an unknown variable, a moved amount outside
+  // [0, kMaxMoved] or a stamp later than the day / life-year restored.
+  static constexpr std::int32_t kMaxMoved = 1 << 20;
   std::span<const LedgerEntry> entries() const { return {entries_.data(), size_}; }
   bool restore(std::int32_t day, std::int32_t life_year, std::span<const LedgerEntry> saved);
 
@@ -131,11 +133,14 @@ class Governor {
  public:
   Verdict check_write(const WriteRequest& request, WriteLedger& ledger) const;
 
-  // executed = the model's own output: every non-optional param must be present.
+  // executed = the model's own output: every non-optional param must be present. A gesture whose EXPRESSION
+  // param is given (speak, write) is refused (Reason::structured): its content goes through check_utterance,
+  // which is not ported yet (review 10). The oracle checks the content inside check_gesture.
   Verdict check_gesture(const GestureCall& call, const Party* actor, bool executed = false) const;
 
   // Sparse writes: one per (target, variable), the first kWritesPerDecision kept. out[i] is the verdict of
-  // keys[i]: ok (kept), duplicate, or too_many_writes. Processes min(keys, out) items; returns how many are kept.
+  // keys[i]: ok (kept), duplicate, or too_many_writes; returns how many are kept. `out` shorter than `keys`:
+  // every out[i] is refused (invalid_value) and nothing is kept.
   std::size_t check_writes(std::span<const WriteKey> keys, std::span<Verdict> out) const;
 };
 

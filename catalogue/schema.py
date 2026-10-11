@@ -102,6 +102,8 @@ class Variable(Entry):
     values_from: str = ""                # enum whose values are the concepts of this category (single source)
     clock: str = ""                      # which clock its dynamics follow (CLOCKS); required when dynamics are given
     list_of: str = ""                    # element type of a list that reaches a token (mref, word, enum, qty, proposition)
+    components: list[str] = field(default_factory=list)   # named axes of a vector value as it reaches a token
+                                         # (["sin", "cos"]); ["@object_vector"] = Catalogue.object_vector
     reads: list[str] = field(default_factory=list)   # derived variables in a BELIEF channel: the variables they read
     intimate: bool | None = None         # D10: never raised toward / from a minor (real, believed or apparent age);
                                          # MUST be declared on relations and drives
@@ -426,6 +428,15 @@ class Catalogue:
                 p.append(f"variable {v.id}: a list that reaches a token must declare list_of (mref, word, enum, qty, proposition)")
             if v.token and not v.holder:
                 p.append(f"variable {v.id}: a token needs a holder component")
+            if v.components:
+                if not (v.scale == "qty" or (v.scale == "list" and v.list_of == "qty")):
+                    p.append(f"variable {v.id}: components only on a qty or a list of qty")
+                if "@object_vector" in v.components and v.components != ["@object_vector"]:
+                    p.append(f"variable {v.id}: @object_vector stands alone")
+                if len(set(v.components)) != len(v.components) or not all(re.fullmatch(r"@object_vector|[a-z][a-z0-9_]*", c) for c in v.components):
+                    p.append(f"variable {v.id}: components must be unique lowercase identifiers")
+            elif v.token and v.scale == "list" and v.list_of == "qty":
+                p.append(f"variable {v.id}: a list of qty that reaches a token must name its components (its width)")
             if v.token and v.holder in self["component"]:
                 ch = self._channel(v.holder)
                 for part in v.token.split(";"):
@@ -488,6 +499,10 @@ class Catalogue:
                 p.append(f"action {a.id}: a ref accepts an agent, contact must be declared (D10)")
             if a.contact and not a.party_params:
                 p.append(f"action {a.id}: contact gesture without party_params (D10)")
+            if a.contact:                               # any pointer of a contact gesture may be handed a person (review 10)
+                for prm in a.params:
+                    if prm.type == "ref" and prm.name not in a.party_params:
+                        p.append(f"action {a.id}: contact gesture, ref '{prm.name}' must be a party param (D10)")
             for pp in a.party_params:
                 if pp not in pnames:
                     p.append(f"action {a.id}: party param '{pp}' unknown")

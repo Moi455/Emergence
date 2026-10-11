@@ -6,10 +6,11 @@
 
 namespace em::social::gen {
 
-inline constexpr std::uint64_t kCatalogueFingerprint = 0x7709d8e4d404f3abull;  // FNV-1a 64 of model_interface.json text + this file without this line
+inline constexpr std::uint64_t kCatalogueFingerprint = 0x3d9314751503ba64ull;  // FNV-1a 64 of model_interface.json text + this file without this line
 inline constexpr int kMaxParams = 6;
 inline constexpr int kMaxValues = 12;
 inline constexpr int kAdultAgeYears = 18;   // D10, read from life_stage
+inline constexpr int kLedgerCapacity = 512;   // governor.py LEDGER_CAPACITY
 
 enum class Scale : std::uint8_t { bipolar10, unipolar10, qty, ratio, enum_, id, mref, word, bool_, list, proposition, time };
 enum class Family : std::uint8_t { move, posture, grasp, force, tool, transform, consume, care, perceive, communicate, meta };
@@ -188,7 +189,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
   GestureSpec{"pull", Family::force, true, false, true, 3, {
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
     ParamSpec{"intensity", ParamType::enum_, 5, {"faint", "light", "firm", "hard", "full"}, 0x0, 0x1f, true, false, false, false},
-    ParamSpec{"toward", ParamType::ref, 0, {}, 0x0, 0x0, false, true, false, false},
+    ParamSpec{"toward", ParamType::ref, 0, {}, 0x0, 0x0, false, true, true, false},
   }},
   GestureSpec{"push", Family::force, true, false, true, 3, {
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
@@ -197,7 +198,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
   }},
   GestureSpec{"put", Family::grasp, true, false, true, 4, {
     ParamSpec{"item", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
-    ParamSpec{"where", ParamType::ref, 0, {}, 0x0, 0x0, false, false, false, false},
+    ParamSpec{"where", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
     ParamSpec{"stealth", ParamType::enum_, 2, {"open", "discreet"}, 0x0, 0x3, false, false, false, false},
     ParamSpec{"contact_zone", ParamType::enum_, 9, {"head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"}, 0x0, 0x28, false, false, false, true},
   }},
@@ -271,7 +272,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
     ParamSpec{"to", ParamType::ref, 0, {}, 0x0, 0x0, false, true, true, false},
     ParamSpec{"mode", ParamType::enum_, 4, {"knot", "lash", "sew", "bind"}, 0x0, 0x1, false, false, false, true},
-    ParamSpec{"with", ParamType::ref, 0, {}, 0x0, 0x0, false, false, false, false},
+    ParamSpec{"with", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
     ParamSpec{"tightness", ParamType::enum_, 3, {"light", "firm", "hard"}, 0x0, 0x3, true, false, false, true},
     ParamSpec{"contact_zone", ParamType::enum_, 9, {"head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"}, 0x0, 0x99, false, false, false, true},
   }},
@@ -286,14 +287,14 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
     ParamSpec{"until", ParamType::condition, 0, {}, 0x0, 0x0, false, false, false, false},
   }},
   GestureSpec{"wear", Family::grasp, true, false, true, 4, {
-    ParamSpec{"item", ParamType::ref, 0, {}, 0x0, 0x0, false, false, false, false},
+    ParamSpec{"item", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
     ParamSpec{"mode", ParamType::enum_, 2, {"put_on", "take_off"}, 0x0, 0x1, false, false, false, true},
     ParamSpec{"on", ParamType::ref, 0, {}, 0x0, 0x0, false, true, true, false},
     ParamSpec{"contact_zone", ParamType::enum_, 9, {"head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"}, 0x0, 0x9d, false, false, false, true},
   }},
   GestureSpec{"work", Family::tool, true, false, true, 6, {
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
-    ParamSpec{"with", ParamType::ref, 0, {}, 0x0, 0x0, false, true, false, false},
+    ParamSpec{"with", ParamType::ref, 0, {}, 0x0, 0x0, false, true, true, false},
     ParamSpec{"motion", ParamType::enum_, 5, {"press", "rub", "stir", "squeeze", "saw"}, 0x0, 0x1, false, false, false, true},
     ParamSpec{"intensity", ParamType::enum_, 5, {"faint", "light", "firm", "hard", "full"}, 0x0, 0x7, true, false, false, true},
     ParamSpec{"duration", ParamType::enum_, 3, {"brief", "a_while", "long"}, 0x0, 0x3, true, false, false, true},
