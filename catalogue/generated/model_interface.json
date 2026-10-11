@@ -54,66 +54,77 @@
     "fields": {
      "age": {
       "from": "b_acquired",
+      "list_of": "",
       "scale": "time",
       "unit": "",
       "values": []
      },
      "certainty": {
       "from": "b_certainty",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "contradicted": {
       "from": "b_contradicted",
+      "list_of": "",
       "scale": "bool",
       "unit": "",
       "values": []
      },
      "hops": {
       "from": "b_hops",
+      "list_of": "",
       "scale": "qty",
       "unit": "",
       "values": []
      },
      "importance": {
       "from": "b_importance",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "informant": {
       "from": "b_informant",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "polarity": {
       "from": "b_polarity",
+      "list_of": "",
       "scale": "bool",
       "unit": "",
       "values": []
      },
      "prop": {
       "from": "b_proposition",
+      "list_of": "",
       "scale": "proposition",
       "unit": "",
       "values": []
      },
      "secret": {
       "from": "b_secret",
+      "list_of": "",
       "scale": "bool",
       "unit": "",
       "values": []
      },
      "shared": {
       "from": "b_told_to",
+      "list_of": "mref",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "source": {
       "from": "b_source",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -128,6 +139,7 @@
      },
      "weight": {
       "from": "b_weight",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
@@ -137,7 +149,49 @@
    },
    "COMMIT": {
     "count": 3,
-    "fields": {},
+    "fields": {
+     "counterparty": {
+      "list_of": "",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "deadline": {
+      "list_of": "",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "mine": {
+      "list_of": "",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "prop": {
+      "list_of": "",
+      "scale": "proposition",
+      "unit": "",
+      "values": []
+     },
+     "status": {
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "open",
+       "fulfilled",
+       "broken",
+       "released"
+      ]
+     },
+     "witnesses": {
+      "list_of": "mref",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     }
+    },
     "layout": "counterparty (mref), mine_or_theirs, prop (expression), deadline_felt, status_believed, witnesses_believed"
    },
    "ENTITY": {
@@ -145,24 +199,28 @@
     "fields": {
      "dir": {
       "from": "ep_dir",
+      "list_of": "",
       "scale": "qty",
       "unit": "",
       "values": []
      },
      "dist": {
       "from": "ep_dist",
+      "list_of": "",
       "scale": "qty",
       "unit": "m",
       "values": []
      },
      "id_certainty": {
       "from": "r_id_certainty",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "known_by": {
       "from": "r_known_by",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -173,6 +231,7 @@
      },
      "link": {
       "from": "r_link_believed",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -203,24 +262,28 @@
      },
      "look.age": {
       "from": "ep_age",
+      "list_of": "",
       "scale": "qty",
       "unit": "ans",
       "values": []
      },
      "look.attire": {
       "from": "ep_attire",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "look.build": {
       "from": "ep_build",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "look.condition": {
       "from": "ep_condition",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -233,6 +296,7 @@
      },
      "look.expression": {
       "from": "ep_expression",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -254,30 +318,35 @@
      },
      "look.gaze": {
       "from": "ep_gaze",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "look.health": {
       "from": "ep_health",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "look.held": {
       "from": "ep_held",
+      "list_of": "qty",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "look.marks": {
       "from": "ep_marks",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "look.motion": {
       "from": "ep_motion",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -289,6 +358,7 @@
      },
      "look.posture": {
       "from": "ep_posture",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -308,6 +378,7 @@
      },
      "look.sex": {
       "from": "ep_sex",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -318,90 +389,105 @@
      },
      "look.signs": {
       "from": "ep_signs",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "look.wounds": {
       "from": "ep_wounds",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "name": {
       "from": "r_name_believed",
+      "list_of": "",
       "scale": "word",
       "unit": "",
       "values": []
      },
      "present": {
       "from": "r_present",
+      "list_of": "",
       "scale": "bool",
       "unit": "",
       "values": []
      },
      "rel.affection": {
       "from": "r_affection",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "rel.attraction": {
       "from": "r_attraction",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "rel.familiarity": {
       "from": "r_familiarity",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "rel.fear": {
       "from": "r_fear",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "rel.obligation": {
       "from": "r_obligation",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "rel.perceived_regard": {
       "from": "r_perceived_regard",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "rel.resentment": {
       "from": "r_resentment",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "rel.respect": {
       "from": "r_respect",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "rel.rivalry": {
       "from": "r_rivalry",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "rel.trust": {
       "from": "r_trust",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "rep": {
       "from": "r_reputation_seen",
+      "list_of": "qty",
       "scale": "list",
       "unit": "",
       "values": []
@@ -414,36 +500,42 @@
     "fields": {
      "actor": {
       "from": "ev_actor",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "age": {
       "from": "ev_age",
+      "list_of": "",
       "scale": "time",
       "unit": "",
       "values": []
      },
      "from_to": {
       "from": "ev_from_to",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "gesture": {
       "from": "ev_gesture",
+      "list_of": "",
       "scale": "word",
       "unit": "",
       "values": []
      },
      "manner": {
       "from": "ev_manner_seen",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "sense": {
       "from": "ev_sense",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -454,12 +546,14 @@
      },
      "target": {
       "from": "ev_target",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "with": {
       "from": "ev_with",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
@@ -472,18 +566,21 @@
     "fields": {
      "age": {
       "from": "g_since",
+      "list_of": "",
       "scale": "time",
       "unit": "",
       "values": []
      },
      "deadline": {
       "from": "g_deadline",
+      "list_of": "",
       "scale": "time",
       "unit": "",
       "values": []
      },
      "mode": {
       "from": "g_mode",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -494,6 +591,7 @@
      },
      "origin": {
       "from": "g_origin",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -506,30 +604,35 @@
      },
      "origin_ref": {
       "from": "g_origin_ref",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "priority": {
       "from": "g_priority",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "progress": {
       "from": "g_progress",
+      "list_of": "",
       "scale": "ratio",
       "unit": "",
       "values": []
      },
      "prop": {
       "from": "g_desired",
+      "list_of": "",
       "scale": "proposition",
       "unit": "",
       "values": []
      },
      "status": {
       "from": "g_status",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -548,6 +651,7 @@
     "fields": {
      "known_by": {
       "from": "r_known_by",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -558,30 +662,35 @@
      },
      "rel.affection": {
       "from": "r_affection",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "rel.fear": {
       "from": "r_fear",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "rel.resentment": {
       "from": "r_resentment",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "rel.respect": {
       "from": "r_respect",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "rel.trust": {
       "from": "r_trust",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
@@ -590,13 +699,220 @@
     "layout": ""
    },
    "HEARD": {
+    "alias_of": "BELIEF",
     "count": 2,
-    "fields": {},
+    "fields": {
+     "age": {
+      "from": "b_acquired",
+      "list_of": "",
+      "scale": "time",
+      "unit": "",
+      "values": []
+     },
+     "certainty": {
+      "from": "b_certainty",
+      "list_of": "",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "contradicted": {
+      "from": "b_contradicted",
+      "list_of": "",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "hops": {
+      "from": "b_hops",
+      "list_of": "",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "importance": {
+      "from": "b_importance",
+      "list_of": "",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "informant": {
+      "from": "b_informant",
+      "list_of": "",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "polarity": {
+      "from": "b_polarity",
+      "list_of": "",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "prop": {
+      "from": "b_proposition",
+      "list_of": "",
+      "scale": "proposition",
+      "unit": "",
+      "values": []
+     },
+     "secret": {
+      "from": "b_secret",
+      "list_of": "",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
+     "shared": {
+      "from": "b_told_to",
+      "list_of": "mref",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "source": {
+      "from": "b_source",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "assumed",
+       "dreamt",
+       "heard",
+       "inferred",
+       "read",
+       "seen",
+       "told"
+      ]
+     },
+     "weight": {
+      "from": "b_weight",
+      "list_of": "",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     }
+    },
     "layout": "same fields as BELIEF (prop, polarity, certainty=engine prior, source=told, informant, hops, age)"
    },
    "INV": {
+    "alias_of": "THING",
     "count": 8,
-    "fields": {},
+    "fields": {
+     "amount": {
+      "from": "pc_amount_seen",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "none",
+       "few",
+       "some",
+       "many",
+       "unknown"
+      ]
+     },
+     "depth": {
+      "from": "pc_depth_seen",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "shallow",
+       "waist",
+       "deep",
+       "unseen_bottom"
+      ]
+     },
+     "dir": {
+      "from": "pc_dir",
+      "list_of": "",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "display": {
+      "from": "pc_display",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "calm",
+       "grazing",
+       "alert",
+       "fleeing",
+       "growling",
+       "baring_teeth",
+       "charging",
+       "stalking",
+       "playing"
+      ]
+     },
+     "dist": {
+      "from": "pc_dist",
+      "list_of": "",
+      "scale": "qty",
+      "unit": "m",
+      "values": []
+     },
+     "file": {
+      "from": "pc_file",
+      "list_of": "",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "file_certainty": {
+      "from": "pc_file_certainty",
+      "list_of": "",
+      "scale": "unipolar10",
+      "unit": "",
+      "values": []
+     },
+     "kind": {
+      "from": "pc_kind_seen",
+      "list_of": "",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
+     "motion": {
+      "from": "pc_motion",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "still",
+       "approaching",
+       "leaving",
+       "falling",
+       "rolling"
+      ]
+     },
+     "owner": {
+      "from": "pc_owner_believed",
+      "list_of": "",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "props": {
+      "from": "pc_props_seen",
+      "list_of": "qty",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
+     "state": {
+      "from": "pc_state_seen",
+      "list_of": "word",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     }
+    },
     "layout": "same fields as THING (kind, props = object vector, state, amount, owner, file)"
    },
    "LOCUS": {
@@ -604,30 +920,35 @@
     "fields": {
      "dir": {
       "from": "lc_dir",
+      "list_of": "",
       "scale": "qty",
       "unit": "",
       "values": []
      },
      "dist": {
       "from": "lc_dist",
+      "list_of": "",
       "scale": "qty",
       "unit": "m",
       "values": []
      },
      "file": {
       "from": "lc_file",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "kind": {
       "from": "lc_kind",
+      "list_of": "",
       "scale": "word",
       "unit": "",
       "values": []
      },
      "owner": {
       "from": "lc_owner",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
@@ -640,18 +961,21 @@
     "fields": {
      "age": {
       "from": "m_when",
+      "list_of": "",
       "scale": "time",
       "unit": "",
       "values": []
      },
      "defining": {
       "from": "m_defining",
+      "list_of": "",
       "scale": "bool",
       "unit": "",
       "values": []
      },
      "emotion": {
       "from": "m_emotion",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -677,30 +1001,35 @@
      },
      "importance": {
       "from": "m_importance",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "interp": {
       "from": "m_interpretation",
+      "list_of": "",
       "scale": "word",
       "unit": "",
       "values": []
      },
      "place": {
       "from": "m_where",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "prop": {
       "from": "m_content",
+      "list_of": "",
       "scale": "proposition",
       "unit": "",
       "values": []
      },
      "role": {
       "from": "m_role",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -712,18 +1041,21 @@
      },
      "secret": {
       "from": "m_secret",
+      "list_of": "",
       "scale": "bool",
       "unit": "",
       "values": []
      },
      "valence": {
       "from": "m_valence",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "vividness": {
       "from": "m_vividness",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
@@ -736,6 +1068,7 @@
     "fields": {
      "air_felt": {
       "from": "pp_air_felt",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -749,42 +1082,49 @@
      },
      "crowd": {
       "from": "pp_crowd_seen",
+      "list_of": "",
       "scale": "qty",
       "unit": "",
       "values": []
      },
      "indoors": {
       "from": "pp_indoors",
+      "list_of": "",
       "scale": "bool",
       "unit": "",
       "values": []
      },
      "light": {
       "from": "pp_light",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "noise": {
       "from": "pp_noise",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "signs": {
       "from": "pp_signs",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "sun": {
       "from": "pp_sun",
+      "list_of": "",
       "scale": "qty",
       "unit": "",
       "values": []
      },
      "weather": {
       "from": "pp_weather_seen",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
@@ -796,20 +1136,26 @@
     "count": 1,
     "fields": {
      "commitment": {
-      "from": "i_commitment",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "goal": {
-      "from": "i_serves",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "progress": {
-      "from": "i_step_index",
-      "scale": "qty",
+      "list_of": "",
+      "scale": "ratio",
+      "unit": "",
+      "values": []
+     },
+     "step": {
+      "list_of": "",
+      "scale": "word",
       "unit": "",
       "values": []
      }
@@ -821,18 +1167,21 @@
     "fields": {
      "age": {
       "from": "q_since",
+      "list_of": "",
       "scale": "time",
       "unit": "",
       "values": []
      },
      "from": {
       "from": "q_from",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "prop": {
       "from": "q_content",
+      "list_of": "",
       "scale": "proposition",
       "unit": "",
       "values": []
@@ -845,12 +1194,14 @@
     "fields": {
      "age": {
       "from": "age_years",
+      "list_of": "",
       "scale": "qty",
       "unit": "ans",
       "values": []
      },
      "age_stage": {
       "from": "life_stage",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -863,120 +1214,140 @@
      },
      "body.bleeding": {
       "from": "bleeding",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "body.breath": {
       "from": "breath",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "body.consciousness": {
       "from": "consciousness",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "body.endurance": {
       "from": "endurance",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "body.intox": {
       "from": "intoxication",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "body.load": {
       "from": "load_ratio",
+      "list_of": "",
       "scale": "ratio",
       "unit": "",
       "values": []
      },
      "body.manipulation": {
       "from": "manipulation",
+      "list_of": "",
       "scale": "ratio",
       "unit": "",
       "values": []
      },
      "body.mobility": {
       "from": "mobility",
+      "list_of": "",
       "scale": "ratio",
       "unit": "",
       "values": []
      },
      "body.pain": {
       "from": "pain",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "body.sickness": {
       "from": "sickness_felt",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "body.strength": {
       "from": "strength",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "held": {
       "from": "own_held_seen",
+      "list_of": "qty",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "need.exhaustion": {
       "from": "exhaustion",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "need.hunger": {
       "from": "hunger",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "need.reserves": {
       "from": "reserves",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "need.sleep": {
       "from": "sleepiness",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "need.thermal": {
       "from": "thermal_comfort",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "need.thirst": {
       "from": "thirst",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "place": {
       "from": "place_recognized",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "posture": {
       "from": "posture_felt",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -996,6 +1367,7 @@
      },
      "season": {
       "from": "season_felt",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -1007,6 +1379,7 @@
      },
      "sex": {
       "from": "sex",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -1016,12 +1389,14 @@
      },
      "time": {
       "from": "time_felt",
+      "list_of": "",
       "scale": "qty",
       "unit": "",
       "values": []
      },
      "wound": {
       "from": "wounds",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []
@@ -1034,24 +1409,28 @@
     "fields": {
      "ability.coordination": {
       "from": "coordination",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "ability.intellect": {
       "from": "intellect",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "ability.self_control": {
       "from": "self_control",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "attracted_to": {
       "from": "attracted_to",
+      "list_of": "enum",
       "scale": "list",
       "unit": "",
       "values": [
@@ -1061,168 +1440,196 @@
      },
      "temper.baseline_mood": {
       "from": "baseline_mood",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "temper.resilience": {
       "from": "resilience",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "trait.altruism": {
       "from": "altruism",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.anxiousness": {
       "from": "anxiousness",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.assurance": {
       "from": "assurance",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.creativity": {
       "from": "creativity",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.diligence": {
       "from": "diligence",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.fairness": {
       "from": "fairness",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.fearfulness": {
       "from": "fearfulness",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.forgiveness": {
       "from": "forgiveness",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.gentleness": {
       "from": "gentleness",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.greed_avoidance": {
       "from": "greed_avoidance",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.inquisitiveness": {
       "from": "inquisitiveness",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.modesty": {
       "from": "modesty",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.patience": {
       "from": "patience",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.prudence": {
       "from": "prudence",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.sentimentality": {
       "from": "sentimentality",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.sincerity": {
       "from": "sincerity",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.sociability": {
       "from": "sociability",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "trait.unconventionality": {
       "from": "unconventionality",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "value.achievement": {
       "from": "v_achievement",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "value.authority": {
       "from": "v_authority",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "value.honor": {
       "from": "v_honor",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "value.liberty": {
       "from": "v_liberty",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "value.loyalty": {
       "from": "v_loyalty",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "value.pleasure": {
       "from": "v_pleasure",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "value.power": {
       "from": "v_power",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "value.sanctity": {
       "from": "v_sanctity",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
@@ -1235,204 +1642,238 @@
     "fields": {
      "attention": {
       "from": "attention",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "drive.achievement": {
       "from": "need_achievement",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.acquisition": {
       "from": "need_acquisition",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.autonomy": {
       "from": "need_autonomy",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.company": {
       "from": "need_company",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.esteem": {
       "from": "need_esteem",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.intimacy": {
       "from": "need_intimacy",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.meaning": {
       "from": "need_meaning",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.novelty": {
       "from": "need_novelty",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.play": {
       "from": "need_play",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "drive.security": {
       "from": "need_security",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.anger": {
       "from": "anger",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.anxiety": {
       "from": "anxiety",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.boredom": {
       "from": "boredom",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.confusion": {
       "from": "confusion",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.contempt": {
       "from": "contempt",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.disgust": {
       "from": "disgust",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.envy": {
       "from": "envy",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.fear": {
       "from": "fear",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.gratitude": {
       "from": "gratitude",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.grief": {
       "from": "grief",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.guilt": {
       "from": "guilt",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.jealousy": {
       "from": "jealousy",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.joy": {
       "from": "joy",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.pride": {
       "from": "pride",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.sadness": {
       "from": "sadness",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.shame": {
       "from": "shame",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.surprise": {
       "from": "surprise",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "emo.tenderness": {
       "from": "tenderness",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "masking": {
       "from": "masking",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "mood.energy": {
       "from": "mood_energy",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "mood.valence": {
       "from": "mood_valence",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "self_regard": {
       "from": "self_regard",
+      "list_of": "",
       "scale": "bipolar10",
       "unit": "",
       "values": []
      },
      "stress": {
       "from": "stress",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
@@ -1445,12 +1886,14 @@
     "fields": {
      "self_estimate": {
       "from": "k_self_estimate",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "technique": {
       "from": "k_technique",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -1487,7 +1930,20 @@
    },
    "TASTE": {
     "count": 2,
-    "fields": {},
+    "fields": {
+     "attitude": {
+      "list_of": "",
+      "scale": "bipolar10",
+      "unit": "",
+      "values": []
+     },
+     "concept": {
+      "list_of": "",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     }
+    },
     "layout": "concept (pointer to a word) + attitude (bipolar10)"
    },
    "THING": {
@@ -1495,6 +1951,7 @@
     "fields": {
      "amount": {
       "from": "pc_amount_seen",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -1507,6 +1964,7 @@
      },
      "depth": {
       "from": "pc_depth_seen",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -1518,12 +1976,14 @@
      },
      "dir": {
       "from": "pc_dir",
+      "list_of": "",
       "scale": "qty",
       "unit": "",
       "values": []
      },
      "display": {
       "from": "pc_display",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -1540,30 +2000,35 @@
      },
      "dist": {
       "from": "pc_dist",
+      "list_of": "",
       "scale": "qty",
       "unit": "m",
       "values": []
      },
      "file": {
       "from": "pc_file",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "file_certainty": {
       "from": "pc_file_certainty",
+      "list_of": "",
       "scale": "unipolar10",
       "unit": "",
       "values": []
      },
      "kind": {
       "from": "pc_kind_seen",
+      "list_of": "",
       "scale": "word",
       "unit": "",
       "values": []
      },
      "motion": {
       "from": "pc_motion",
+      "list_of": "",
       "scale": "enum",
       "unit": "",
       "values": [
@@ -1576,18 +2041,21 @@
      },
      "owner": {
       "from": "pc_owner_believed",
+      "list_of": "",
       "scale": "mref",
       "unit": "",
       "values": []
      },
      "props": {
       "from": "pc_props_seen",
+      "list_of": "qty",
       "scale": "list",
       "unit": "",
       "values": []
      },
      "state": {
       "from": "pc_state_seen",
+      "list_of": "word",
       "scale": "list",
       "unit": "",
       "values": []

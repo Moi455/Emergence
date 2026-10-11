@@ -6,7 +6,7 @@
 
 namespace em::social::gen {
 
-inline constexpr std::uint64_t kCatalogueFingerprint = 0xce95623e2148530cull;  // FNV-1a 64 of model_interface.json text + this file without this line
+inline constexpr std::uint64_t kCatalogueFingerprint = 0x7709d8e4d404f3abull;  // FNV-1a 64 of model_interface.json text + this file without this line
 inline constexpr int kMaxParams = 6;
 inline constexpr int kMaxValues = 12;
 inline constexpr int kAdultAgeYears = 18;   // D10, read from life_stage

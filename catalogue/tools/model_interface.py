@@ -37,6 +37,21 @@ class ModelInterface:
         "REQUEST": "from (mref), prop (expression), age",
         "SKILL": "technique (word), self_estimate",
     }
+    ALIASES = {"HEARD": "BELIEF", "INV": "THING"}
+    EXPLICIT = {
+        "TASTE": {"concept": {"scale": "word", "values": [], "unit": "", "list_of": ""},
+                  "attitude": {"scale": "bipolar10", "values": [], "unit": "", "list_of": ""}},
+        "COMMIT": {"counterparty": {"scale": "mref", "values": [], "unit": "", "list_of": ""},
+                   "mine": {"scale": "bool", "values": [], "unit": "", "list_of": ""},
+                   "prop": {"scale": "proposition", "values": [], "unit": "", "list_of": ""},
+                   "deadline": {"scale": "time", "values": [], "unit": "", "list_of": ""},
+                   "status": {"scale": "enum", "values": ["open", "fulfilled", "broken", "released"], "unit": "", "list_of": ""},
+                   "witnesses": {"scale": "list", "values": [], "unit": "", "list_of": "mref"}},
+        "PLAN": {"step": {"scale": "word", "values": [], "unit": "", "list_of": ""},
+                 "goal": {"scale": "mref", "values": [], "unit": "", "list_of": ""},
+                 "progress": {"scale": "ratio", "values": [], "unit": "", "list_of": ""},
+                 "commitment": {"scale": "unipolar10", "values": [], "unit": "", "list_of": ""}},
+    }
     ACCEPT_TOKENS = {"agent": "ENTITY", "animal": "THING", "item": "THING|INV", "structure": "THING", "terrain": "THING",
                      "voxel": "THING", "water": "THING", "fire": "THING", "trace": "THING", "plant": "THING",
                      "place": "PLACE (here) or LOCUS (a known place, @L)", "belief": "BELIEF", "form": "kinds table (forms)",
@@ -52,7 +67,7 @@ class ModelInterface:
                     continue
                 key = m.group(1) + ("." + m.group(2) if m.group(2) else "")
                 values = v.values or sorted(c.id for c in self.cat["concept"].values() if v.values_from and c.category == v.values_from)
-                out.setdefault(key, {"from": v.id, "scale": v.scale, "values": values, "unit": v.unit})
+                out.setdefault(key, {"from": v.id, "scale": v.scale, "values": values, "unit": v.unit, "list_of": v.list_of})
         return out
 
     def input_spec(self) -> dict:
@@ -64,6 +79,11 @@ class ModelInterface:
             types[typ] = {"count": count,
                           "fields": {n: fields.get(f"{typ}.{n}", fields.get(typ, {})) for n in names if n != typ},
                           "layout": self.RECORD_LAYOUTS.get(typ, "")}
+        for typ, base in self.ALIASES.items():                     # same layout as another record type
+            types[typ]["fields"] = dict(types[base]["fields"])
+            types[typ]["alias_of"] = base
+        for typ, flds in self.EXPLICIT.items():                     # record tokens fed by list variables
+            types[typ]["fields"] = {k: dict(v) for k, v in flds.items()}
         return {"max_tokens": budget.MAX_TOKENS, "token_types": types,
                 "object_vector": self.cat.object_vector(),
                 "encoding": "bipolar10 and unipolar10 read as int8 tenths / 100; qty log-scaled; enum and word as vocabulary ids; time as age in game hours (log)",
