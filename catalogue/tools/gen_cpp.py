@@ -2,12 +2,16 @@
 
     python3 catalogue/tools/gen_cpp.py      # writes engine/social/generated/emergence/social/catalogue_gen.h
 
-Gestures with their parameters (value lists, D10 intimate and minor-whitelist masks), conditions, and variables
-with their governor bounds in TENTHS (the engine stores tenths of the charter scale). A fingerprint of the
-model interface is embedded so the engine can refuse a model trained on another catalogue.
+Gestures (in sorted action-id order, the order of the model's gesture head) with their parameters (value lists,
+D10 intimate and minor-whitelist masks), conditions, and variables with their governor bounds in TENTHS (the
+engine stores tenths of the charter scale). A fingerprint is embedded so the engine can refuse a model trained on
+another catalogue: FNV-1a 64 of the text of model_interface.json followed by this very file without the line that
+declares kCatalogueFingerprint (the fingerprint cannot hash itself). The generator refuses to run on a catalogue
+that does not validate.
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -15,8 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "tools"))
 from schema import Catalogue  # noqa: E402
 import model_interface  # noqa: E402
-from governor import ADULT_AGE, tenths  # noqa: E402
+from governor import ADULT_AGE, SELF_HOLDERS, tenths  # noqa: E402
 
+FP_MARK = "@@FINGERPRINT@@"   # placeholder of the fingerprint line while the body is hashed
 OUT = ROOT.parent / "engine" / "social" / "generated" / "emergence" / "social" / "catalogue_gen.h"
 WRITER_BITS = {"engine": 1, "T_jump": 2, "T_step": 4, "T_slow": 8, "birth": 16, "action": 32, "derived": 64}
 SCALES = ("bipolar10", "unipolar10", "qty", "ratio", "enum", "id", "mref", "word", "bool", "list", "proposition", "time")
@@ -46,8 +51,37 @@ def fnv1a64(text: str) -> int:
     return h
 
 
+_ESCAPES = {"\\": "\\\\", '"': '\\"', "\n": "\\n", "\r": "\\r", "\t": "\\t"}
+
+
 def cpp_str(s: str) -> str:
-    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    """A C++ string literal. Control characters become 3-digit octal escapes (never swallow a following digit)."""
+    out = []
+    for ch in s:
+        if ch in _ESCAPES:
+            out.append(_ESCAPES[ch])
+        elif ord(ch) < 0x20 or ord(ch) == 0x7f:
+            out.append("\\%03o" % ord(ch))
+        else:
+            out.append(ch)
+    return '"' + "".join(out) + '"'
+
+
+_IDENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def check_identifiers(what: str, ids: list, reserved: tuple = ()) -> None:
+    """The generated identifiers must be valid C++ and unique once keywords are sanitised."""
+    seen: dict[str, str] = {}
+    for i in ids:
+        c = ident(i)
+        if not _IDENT.match(c):
+            raise SystemExit(f"{what}: '{i}' is not a valid C++ identifier")
+        if c in reserved:
+            raise SystemExit(f"{what}: '{i}' collides with the reserved enumerator '{c}'")
+        if c in seen:
+            raise SystemExit(f"{what}: '{i}' and '{seen[c]}' give the same C++ identifier '{c}'")
+        seen[c] = i
 
 
 class CppGenerator:
@@ -59,6 +93,7 @@ class CppGenerator:
         self.L.append(line)
 
     def enum(self, name: str, base: str, ids: list[str]):
+        check_identifiers(f"enum {name}", ids, reserved=("kCount",))
         self.emit(f"enum class {name} : {base} {{")
         for i in ids:
             self.emit(f"  {ident(i)},")
@@ -70,7 +105,7 @@ class CppGenerator:
         self.emit()
 
     def gestures(self):
-        acts = list(self.cat["action"].values())
+        acts = sorted(self.cat["action"].values(), key=lambda a: a.id)   # = gesture_head of model_interface.json
         self.enum("Gesture", "std::uint8_t", [a.id for a in acts])
         self.emit("inline constexpr std::array<GestureSpec, %d> kGestures = {{" % len(acts))
         for a in acts:
@@ -87,13 +122,13 @@ class CppGenerator:
                 ps.append(f"ParamSpec{{{cpp_str(p.name)}, ParamType::{ident(p.type)}, {len(p.values)}, {{{vals}}}, "
                           f"0x{imask:x}, 0x{mmask:x}, {str(p.ordinal).lower()}, {str(p.optional).lower()}, "
                           f"{str(p.name in a.party_params).lower()}, {str(p.name in a.minor_whitelist).lower()}}}")
-            fam = FAMILIES.index(a.family)
+            if a.family not in FAMILIES:
+                raise SystemExit(f"{a.id}: unknown family {a.family}")
             self.emit(f"  GestureSpec{{{cpp_str(a.id)}, Family::{ident(a.family)}, {str(bool(a.contact)).lower()}, "
-                      f"{str(a.minor_person_ok).lower()}, {len(ps)}, {{")
+                      f"{str(bool(a.intimate)).lower()}, {str(bool(a.minor_person_ok)).lower()}, {len(ps)}, {{")
             for x in ps:
                 self.emit(f"    {x},")
             self.emit("  }},")
-            del fam
         self.emit("}};")
         self.emit()
 
@@ -111,17 +146,16 @@ class CppGenerator:
             bits = sum(WRITER_BITS[w] for w in v.writer)
             self.emit(f"  VariableSpec{{{cpp_str(v.id)}, {cpp_str(v.holder)}, Scale::{ident(v.scale)}, 0x{bits:02x}, "
                       f"{tenths(v.step)}, {tenths(v.rate)}, {tenths(v.slow_rate)}, {str(bool(v.intimate)).lower()}, "
-                      f"{str(engine_only).lower()}}},")
+                      f"{str(engine_only).lower()}, {str(v.holder in SELF_HOLDERS).lower()}}},")
         self.emit("}};")
         self.emit()
 
     def generate(self) -> str:
-        fp = fnv1a64(model_interface.ModelInterface(self.cat).text())
         self.emit("// GENERATED by catalogue/tools/gen_cpp.py from catalogue/ - do not edit (decision D31).")
         self.emit("#pragma once")
         self.emit("#include <array>\n#include <cstdint>\n#include <string_view>\n")
         self.emit("namespace em::social::gen {\n")
-        self.emit(f"inline constexpr std::uint64_t kCatalogueFingerprint = 0x{fp:016x}ull;  // of model_interface.json")
+        self.emit(FP_MARK)
         self.emit(f"inline constexpr int kMaxParams = {MAX_PARAMS};\ninline constexpr int kMaxValues = {MAX_VALUES};")
         self.emit(f"inline constexpr int kAdultAgeYears = {int(ADULT_AGE)};   // D10, read from life_stage\n")
         self.emit("enum class Scale : std::uint8_t { " + ", ".join(ident(x) for x in SCALES) + " };")
@@ -133,16 +167,22 @@ class CppGenerator:
                   "  std::uint16_t minor_mask;      // D10: values allowed when a minor is involved\n  bool ordinal;\n  bool optional;\n"
                   "  bool party;                    // D10: may designate a person involved\n"
                   "  bool whitelisted;              // D10: REQUIRED and checked against minor_mask when a minor is involved\n};\n")
-        self.emit("struct GestureSpec {\n  std::string_view id;\n  Family family;\n  bool contact;\n  bool minor_person_ok;   // D10\n  std::uint8_t n_params;\n"
+        self.emit("struct GestureSpec {\n  std::string_view id;\n  Family family;\n  bool contact;           // a ref param accepts an agent (D10)\n"
+                  "  bool intimate;          // D10: refused as soon as a possible minor is involved\n  bool minor_person_ok;   // D10\n  std::uint8_t n_params;\n"
                   "  std::array<ParamSpec, kMaxParams> params;\n};\n")
         self.emit("struct VariableSpec {\n  std::string_view id;\n  std::string_view holder;\n  Scale scale;\n  std::uint8_t writers;\n"
                   "  std::int16_t step_tenths;      // per decision\n  std::int16_t rate_tenths;      // per game day (T_step)\n"
-                  "  std::int16_t slow_tenths;      // per life-year (T_slow)\n  bool intimate;\n  bool engine_only;\n};\n")
+                  "  std::int16_t slow_tenths;      // per life-year (T_slow)\n  bool intimate;\n  bool engine_only;\n"
+                  "  bool self_holder;              // held by the actor himself (mind_static, mind_dynamic, needs, body): D10 looks at the actor only\n};\n")
         self.gestures()
         self.conditions()
         self.variables()
         self.emit("}  // namespace em::social::gen")
-        return "\n".join(self.L) + "\n"
+        body = "\n".join(l for l in self.L if l != FP_MARK) + "\n"
+        fp = fnv1a64(model_interface.ModelInterface(self.cat).text() + body)
+        line = (f"inline constexpr std::uint64_t kCatalogueFingerprint = 0x{fp:016x}ull;"
+                "  // FNV-1a 64 of model_interface.json text + this file without this line")
+        return "\n".join(line if l == FP_MARK else l for l in self.L) + "\n"
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -172,6 +212,7 @@ class StateGenerator:
 
     def struct(self, comp: str, L: list):
         c = self.cat["component"][comp]
+        check_identifiers(f"struct {camel(comp)}", [v.id for v in self.fields(comp)])
         L.append(f"// {comp}: {c.label_fr}" + (f" (records, {c.max_count} per NPC)" if c.max_count else ""))
         L.append(f"struct {camel(comp)} {{")
         for v in self.fields(comp):
@@ -224,6 +265,10 @@ class StateGenerator:
 
 def main():
     cat = Catalogue.load()
+    problems = cat.validate()
+    if problems:
+        sys.stderr.write("catalogue does not validate, nothing generated:\n" + "\n".join("  " + p for p in problems) + "\n")
+        raise SystemExit(1)
     text = CppGenerator(cat).generate()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(text, encoding="utf-8")

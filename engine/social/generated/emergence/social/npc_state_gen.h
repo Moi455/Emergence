@@ -267,6 +267,15 @@ struct Intention {
   ListRef i_steps{};  // handle into a side table (variable-size data)
 };
 
+// locus: un lieu qu'il connaît et qui compte maintenant (sa maison, sa destination, la mine, le lieu d'un souvenir) (records, 3 per NPC)
+struct Locus {
+  std::int32_t lc_dir{};  // milli-units of its unit
+  std::int32_t lc_dist{};  // milli-units of its unit
+  MRef lc_file{};  // persistent id of one of the NPC's own records
+  std::uint16_t lc_kind{};  // vocabulary id
+  MRef lc_owner{};  // persistent id of one of the NPC's own records
+};
+
 // percept: une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité (records, 16 per NPC)
 struct Percept {
   std::uint8_t pc_amount_seen{};  // value index
@@ -305,6 +314,7 @@ struct Relation {
   std::uint8_t r_known_by{};  // value index
   GameTime r_last_contact{};  // game seconds
   std::uint8_t r_link_believed{};  // value index
+  std::uint16_t r_name_believed{};  // vocabulary id
   std::int16_t r_obligation{};  // tenths of the charter scale
   std::int16_t r_perceived_regard{};  // tenths of the charter scale
   bool r_present{};
@@ -351,6 +361,7 @@ struct NpcState {
   RecordPool<EventSeen, 6> event_seen_records;
   RecordPool<Goal, 8> goal_records;
   RecordPool<Intention, 1> intention_records;
+  RecordPool<Locus, 3> locus_records;
   RecordPool<Percept, 16> percept_records;
   RecordPool<PlacePercept, 1> place_percept_records;
   RecordPool<Relation, 96> relation_records;
