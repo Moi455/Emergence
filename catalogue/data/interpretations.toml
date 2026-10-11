@@ -33,6 +33,13 @@ cues = ["EVENT.gesture=strike : on l'a vu frapper", "ENTITY.look.wounds : la vic
 norms = ["(norm forbidden (did anyone strike someone))"]
 
 [[interpretation]]
+id = "affront"
+label_fr = "affront, gifle, provocation (humilier sans vouloir blesser ; souvent un défi)"
+facts = ["strike léger, main ouverte, au visage ou à la tête, sans blessure", "devant d'autres personnes"]
+cues = ["EVENT.manner : main ouverte, léger", "SELF.body.pain : une douleur brève et faible", "PLACE.crowd : devant tout le monde", "HEARD : ce qui a été dit juste avant"]
+norms = ["(norm shameful (did anyone strike someone (how open_hand)))"]
+
+[[interpretation]]
 id = "self_defense"
 label_fr = "légitime défense"
 facts = ["l'autre a frappé ou a levé une lame le premier"]
