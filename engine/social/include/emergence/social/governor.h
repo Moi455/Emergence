@@ -66,12 +66,16 @@ static_assert(sizeof(LedgerEntry) == 24 && std::is_trivially_copyable_v<LedgerEn
 // table, deterministic, no allocation: an entry whose stamp is not the current day (or life-year) reads as zero
 // and its slot is reused. Time never goes back (review 11): roll() ignores an earlier value, so an oscillating
 // clock cannot refill the bounds, and an aberrant jump (more than gen::kMaxDayJump days or gen::kMaxYearJump
-// life-years at once) is ignored too (review 13).
+// life-years at once) is ignored too (review 13). A default-constructed ledger adopts the clock of its FIRST
+// roll(), whatever the value (an NPC born late is not stuck on day 0, review 15).
 // When the table holds kCapacity live entries a write to a NEW (target, variable) cannot be recorded and is
 // refused (Reason::ledger_full, nothing moves): deny, never a bound that silently disappears.
 class WriteLedger {
  public:
   static constexpr std::size_t kCapacity = gen::kLedgerCapacity;
+
+  WriteLedger() = default;
+  WriteLedger(std::int32_t day, std::int32_t life_year) : day_(day), life_year_(life_year), synced_(true) {}
 
   void roll(std::int32_t day, std::int32_t life_year);
   std::int32_t day() const { return day_; }
@@ -82,13 +86,14 @@ class WriteLedger {
   bool add_today(gen::Var v, std::uint32_t target, std::int32_t amount);       // false = table full
   bool add_this_year(gen::Var v, std::uint32_t target, std::int32_t amount);   // false = table full
 
-  // Save / load. restore() refuses (returns false, leaves the ledger empty) more than kCapacity entries, a
-  // duplicated (target, variable), a non-zero `reserved`, an unknown variable, a moved amount outside
-  // [0, kMaxMoved] or a stamp later than the day / life-year restored. A failed restore LOCKS the bounds: no
-  // write moves anything until the next day (T_step) or life-year (T_slow) - a corrupt save never refills them.
+  // Save / load. `now_day` / `now_life_year` are the ENGINE's clock, never values read from the save (review 15).
+  // restore() refuses (returns false, leaves the ledger empty) more than kCapacity entries, a duplicated
+  // (target, variable), a non-zero `reserved`, an unknown variable, a moved amount outside [0, kMaxMoved] or a
+  // stamp later than now. A failed restore LOCKS the bounds: no write moves anything until the next day (T_step)
+  // or life-year (T_slow) - a corrupt save never refills them. `saved` may alias entries().
   static constexpr std::int32_t kMaxMoved = 1 << 20;
   std::span<const LedgerEntry> entries() const { return {entries_.data(), size_}; }
-  bool restore(std::int32_t day, std::int32_t life_year, std::span<const LedgerEntry> saved);
+  bool restore(std::int32_t now_day, std::int32_t now_life_year, std::span<const LedgerEntry> saved);
 
  private:
   std::size_t find(gen::Var v, std::uint32_t target) const;   // index, or size_ when absent
@@ -98,6 +103,7 @@ class WriteLedger {
   std::array<LedgerEntry, kCapacity> entries_{};
   std::size_t size_ = 0;
   std::int32_t day_ = 0, life_year_ = 0;
+  bool synced_ = false;                         // false until the first roll() or restore()
   bool lock_day_ = false, lock_year_ = false;   // set by a failed restore
 };
 

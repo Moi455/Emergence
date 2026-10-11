@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <limits>
 
 namespace em::social {
@@ -75,6 +76,12 @@ std::string_view to_string(Reason r) {
 // ---- WriteLedger -----------------------------------------------------------------------------------------
 
 void WriteLedger::roll(std::int32_t day, std::int32_t life_year) {
+  if (!synced_) {                                 // the first roll adopts the engine's clock (review 15)
+    synced_ = true;
+    if (day != day_) { day_ = day; lock_day_ = false; }
+    if (life_year != life_year_) { life_year_ = life_year; lock_year_ = false; }
+    return;
+  }
   if (day > day_ && std::int64_t{day} - day_ <= gen::kMaxDayJump) { day_ = day; lock_day_ = false; }
   if (life_year > life_year_ && std::int64_t{life_year} - life_year_ <= gen::kMaxYearJump) {
     life_year_ = life_year;
@@ -135,24 +142,24 @@ bool WriteLedger::add_this_year(gen::Var v, std::uint32_t target, std::int32_t a
   return true;
 }
 
-bool WriteLedger::restore(std::int32_t day, std::int32_t life_year, std::span<const LedgerEntry> saved) {
-  size_ = 0;
-  entries_.fill(LedgerEntry{});
-  bool good = saved.size() <= kCapacity;
+bool WriteLedger::restore(std::int32_t now_day, std::int32_t now_life_year, std::span<const LedgerEntry> saved) {
+  bool good = saved.size() <= kCapacity;          // validate first: `saved` may alias entries_
   for (std::size_t i = 0; good && i < saved.size(); ++i) {
     const LedgerEntry& e = saved[i];
     good = e.reserved == 0 && e.var < gen::kVariables.size() && e.day_moved >= 0 && e.day_moved <= kMaxMoved &&
-           e.year_moved >= 0 && e.year_moved <= kMaxMoved && e.day_stamp <= day && e.year_stamp <= life_year;
+           e.year_moved >= 0 && e.year_moved <= kMaxMoved && e.day_stamp <= now_day && e.year_stamp <= now_life_year;
     for (std::size_t j = 0; good && j < i; ++j)
       good = !(saved[j].target == saved[i].target && saved[j].var == saved[i].var);
   }
-  day_ = day;
-  life_year_ = life_year;
+  const std::size_t n = good ? saved.size() : 0;
+  if (n > 0) std::memmove(entries_.data(), saved.data(), n * sizeof(LedgerEntry));
+  std::fill(entries_.begin() + static_cast<std::ptrdiff_t>(n), entries_.end(), LedgerEntry{});
+  size_ = n;
+  day_ = now_day;
+  life_year_ = now_life_year;
+  synced_ = true;
   lock_day_ = lock_year_ = !good;                 // a corrupt save locks the bounds, it never refills them
-  if (!good) return false;
-  std::copy(saved.begin(), saved.end(), entries_.begin());
-  size_ = saved.size();
-  return true;
+  return good;
 }
 
 // ---- Governor: writes ------------------------------------------------------------------------------------

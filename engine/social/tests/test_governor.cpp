@@ -404,6 +404,42 @@ TEST(a_failed_restore_locks_the_bounds_and_an_aberrant_jump_is_ignored) {
   CHECK_EQ(led.day(), 7);
 }
 
+TEST(a_new_ledger_adopts_the_clock_and_jumps_are_bounded_exactly) {
+  Governor g;                                                   // review 15
+  WriteLedger late;
+  late.roll(1500, 120);                                         // an NPC whose ledger starts late
+  CHECK_EQ(late.day(), 1500);
+  CHECK_EQ(late.life_year(), 120);
+  for (int d = 1501; d <= 1504; ++d) {
+    late.roll(d, 120);
+    CHECK(g.check_write(request(gen::Var::r_affection, 0, 100, 7), late).allowed);
+  }
+  WriteLedger led(0, 0);
+  led.roll(gen::kMaxDayJump, gen::kMaxYearJump);                // exactly the bound: accepted
+  CHECK_EQ(led.day(), gen::kMaxDayJump);
+  CHECK_EQ(led.life_year(), gen::kMaxYearJump);
+  led.roll(2 * gen::kMaxDayJump + 1, 2 * gen::kMaxYearJump + 1);   // one past: ignored
+  CHECK_EQ(led.day(), gen::kMaxDayJump);
+  CHECK_EQ(led.life_year(), gen::kMaxYearJump);
+}
+
+TEST(restore_takes_the_engine_clock_and_may_alias_its_entries) {
+  Governor g;
+  WriteLedger led(10, 3);
+  for (std::uint32_t t = 1; t <= 3; ++t) CHECK(g.check_write(request(gen::Var::r_affection, 0, 100, t), led).allowed);
+  const std::size_t n = led.entries().size();
+  CHECK(led.restore(10, 3, led.entries()));                     // its own entries: accepted, unchanged
+  CHECK_EQ(led.entries().size(), n);
+  CHECK(led.moved_today(gen::Var::r_affection, 2) > 0);
+  std::vector<LedgerEntry> bad(led.entries().begin(), led.entries().end());
+  bad.front().reserved = 1;
+  CHECK(!led.restore(10, 3, bad));                              // locked until the next day
+  CHECK(!g.check_write(request(gen::Var::r_affection, 0, 100, 9), led).allowed);
+  const std::vector<LedgerEntry> none;
+  CHECK(led.restore(10, 3, none));                              // a good restore unlocks
+  CHECK(g.check_write(request(gen::Var::r_affection, 0, 100, 9), led).allowed);
+}
+
 TEST(check_writes_with_a_short_output_keeps_nothing) {
   Governor g;
   const std::array<WriteKey, 6> keys{WriteKey{1, gen::Var::r_affection}, WriteKey{2, gen::Var::r_affection},

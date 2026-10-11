@@ -28,7 +28,7 @@ WRITES_PER_DECISION = 4
 LEDGER_CAPACITY = 512          # live (target, variable) entries per NPC; beyond, a NEW key is refused (ledger_full)
 MAX_AGE_TENTHS = 32767         # an age beyond this (int16 tenths) is absurd: it reads as UNKNOWN (a possible minor)
 MAX_DAY_JUMP, MAX_YEAR_JUMP = 1000, 100   # a larger jump of the clock in one roll is aberrant: ignored (review 13)
-CITE = re.compile(r"^[bmg]:\d+$")         # a cited record of the speaker: its frozen content is what is said
+CITE = re.compile(r"^([bmg]:|@V)[0-9]+$")  # a cited record or perceived event: its frozen content is what is said
 _CAT = Catalogue.load()
 ADULT_AGE = float(_CAT["hard_rule"]["D10_minors"].adult_age_years)   # pinned in hard_rules.toml (18)
 SCALE_BOUNDS = {"bipolar10": (-100, 100), "unipolar10": (0, 100)}     # in tenths
@@ -102,6 +102,11 @@ class WriteLedger:
     year_moved: dict = field(default_factory=dict)
     day: int = 0
     life_year: int = 0
+    synced: bool = False         # the first roll adopts the engine's clock whatever the jump (review 15)
+
+    @classmethod
+    def at(cls, day: int, life_year: int) -> "WriteLedger":
+        return cls(day=day, life_year=life_year, synced=True)
 
     def live(self) -> int:
         return sum(1 for x in self.day_moved.values() if x) + sum(1 for x in self.year_moved.values() if x)
@@ -112,7 +117,13 @@ class WriteLedger:
 
     def roll(self, day: int, life_year: int):
         """Time never goes back: an earlier day or life-year is ignored (review 11: an oscillating clock must not
-        refill the daily bounds). A bogus far-future day freezes the accounts: deny, never a bound that resets."""
+        refill the daily bounds), and so is an aberrant jump (review 13). The FIRST roll of a new ledger adopts the
+        clock whatever its value: an NPC born late is not stuck on day 0 (review 15)."""
+        if not self.synced:
+            self.synced = True
+            if (day, life_year) != (self.day, self.life_year):
+                self.day, self.life_year, self.day_moved, self.year_moved = day, life_year, {}, {}
+            return
         if self.day < day <= self.day + MAX_DAY_JUMP:
             self.day, self.day_moved = day, {}
         if self.life_year < life_year <= self.life_year + MAX_YEAR_JUMP:
@@ -134,7 +145,8 @@ class PartyResolver:
         if not isinstance(ref, str):
             return UNKNOWN                                    # (described …) or any node: not identified
         if ref in self.parties:
-            return self.parties[ref]
+            p = self.parties[ref]
+            return p if isinstance(p, Party) else UNKNOWN          # a missing or malformed party: deny by default
         if ref.startswith(self.THING_PREFIXES) or ref in ("here", "this") or ref.isdigit():
             return THING
         if self.vocab is not None:
@@ -272,13 +284,15 @@ class Governor:
                 import language
                 e = params[p.name]
                 e = e if isinstance(e, language.Expression) else language.Expression(str(e), self.vocab)
-                heard = hearers
-                if heard is None:
-                    heard = [parties.get(q.name, UNKNOWN) for q in a.params
+                addressed = [parties.get(q.name, UNKNOWN) for q in a.params
                              if q.type == "ref" and "agent" in q.accepts and q.name not in a.party_params
                              and (q.name in params or q.name in parties)]
-                    if params.get("volume") in ("loud", "shout"):
-                        heard.append(UNKNOWN)                 # overheard by anyone around
+                if hearers is not None:                       # the engine knows who is in earshot
+                    heard = list(hearers) + addressed         # ... and the addressee always hears (review 15)
+                else:
+                    heard = addressed or [UNKNOWN]
+                    if params.get("volume") != "whisper":
+                        heard.append(UNKNOWN)                 # passers-by in earshot (deny by default, review 15)
                 v = self.check_utterance(e, actor, content_parties, addressees=heard or None, expand=expand)
                 if not v.allowed:
                     return v
@@ -333,9 +347,25 @@ class Governor:
         return out
 
     @staticmethod
+    def _once(expand):
+        """expand called at most once per reference; an exception is a missing copy (review 15)."""
+        if expand is None:
+            return None
+        memo: dict = {}
+
+        def unfold(ref):
+            if ref not in memo:
+                try:
+                    memo[ref] = expand(ref)
+                except Exception:                     # noqa: BLE001  (any failure: refused as unexpanded)
+                    memo[ref] = None
+            return memo[ref]
+        return unfold
+
+    @staticmethod
     def _unfold(ref, expand, depth):
-        """The frozen copy of a cited record (b:, m:, g:), or None: refused as unexpanded (no copy, too deep, or
-        not a valid expression)."""
+        """The frozen copy of a cited record (b:, m:, g:) or perceived event (@V), or None: refused as unexpanded
+        (no copy, too deep, or not a valid Expression - an utterance or a bare proposition)."""
         import language
         if expand is None or depth > 2 or not isinstance(ref, str):
             return None
@@ -393,6 +423,7 @@ class Governor:
         links such as spouse or lover remain social facts a child may hear). addressees None = unknown hearers."""
         if not expression.ok:
             return no("invalid_value", "invalid expression: " + "; ".join(expression.problems))
+        expand = self._once(expand)                   # one frozen copy per citation, shared by both checks
         if said and any(self._hearer_sensitive(x) for x in self._said_symbols(expression.root, expand)):
             hearers = list(addressees) if addressees else [UNKNOWN]
             if any((h or UNKNOWN).may_be_minor() for h in hearers):

@@ -156,17 +156,50 @@ class TestGovernor(unittest.TestCase):
         self.assertEqual(self.g.check_utterance(e, ADULT, adults, [ADULT2], expand=lambda r: broken).code, "unexpanded")
         self.assertEqual(self.g.check_utterance(e, ADULT, adults, [ADULT2], expand=lambda r: "text").code, "unexpanded")
 
-    def test_engine_hearers_and_shouting(self):
-        """The engine passes everyone in earshot; without it, shouting is heard by unknown people."""
-        vocab = language.Vocabulary(self.cat)
+    def test_engine_hearers_and_passers_by(self):
+        """Review 15: without the engine's list of hearers, anyone in earshot may hear (except a whisper); the
+        addressee always hears."""
         act = "(assert (past (did @E2 touch @E3 (how romantic))))"
         content = {"me": ADULT, "@E2": ADULT2, "@E3": ADULT}
         base = dict(params={"content": act, "to": "@E2"}, actor=ADULT, parties={"to": ADULT2}, executed=False,
                     content_parties=content)
-        self.assertTrue(self.g.check_gesture("speak", **base).allowed)
+        whisper = dict(base, params={"content": act, "to": "@E2", "volume": "whisper"})
+        self.assertTrue(self.g.check_gesture("speak", **whisper).allowed)
+        self.assertEqual(self.g.check_gesture("speak", **base).code, "d10_hearer")              # passers-by unknown
+        self.assertTrue(self.g.check_gesture("speak", **base, hearers=[ADULT2]).allowed)
         self.assertEqual(self.g.check_gesture("speak", **base, hearers=[ADULT2, CHILD]).code, "d10_hearer")
-        loud = dict(base, params={"content": act, "to": "@E2", "volume": "shout"})
-        self.assertEqual(self.g.check_gesture("speak", **loud).code, "d10_hearer")
+        to_child = dict(base, parties={"to": CHILD})
+        self.assertEqual(self.g.check_gesture("speak", **to_child, hearers=[ADULT2]).code, "d10_hearer")
+
+    def test_expand_is_called_once_and_may_fail(self):
+        vocab = language.Vocabulary(self.cat)
+        act = language.Expression("(assert (past (did @E2 touch @E3 (how romantic))))", vocab)
+        calm = language.Expression("(assert (at @E2 @PLACE))", vocab)
+        adults = {"me": ADULT, "@E2": ADULT2, "@E3": ADULT}
+        e = language.Expression("(assert b:1)", vocab)
+        answers = iter([calm, act])                                   # an impure expand: benign first, then not
+        v = self.g.check_utterance(e, ADULT, adults, [CHILD], expand=lambda r: next(answers))
+        self.assertTrue(v.allowed)                                    # the SAME copy was checked twice: calm
+        self.assertEqual(self.g.check_utterance(e, ADULT, adults, [ADULT2], expand=lambda r: 1 / 0).code, "unexpanded")
+
+    def test_a_perceived_event_is_unfolded_like_a_citation(self):
+        vocab = language.Vocabulary(self.cat)
+        e = language.Expression("(assert (caused @E2 @V4))", vocab)
+        self.assertTrue(e.ok, e.problems)
+        adults = {"me": ADULT, "@E2": ADULT2, "@E3": ADULT}
+        self.assertEqual(self.g.check_utterance(e, ADULT, adults, [ADULT2]).code, "unexpanded")
+        seen = language.Expression("(assert (past (did @E2 touch @E3 (how romantic))))", vocab)
+        self.assertEqual(self.g.check_utterance(e, ADULT, adults, [CHILD], expand=lambda r: seen).code, "d10_hearer")
+
+    def test_a_new_ledger_adopts_the_clock(self):
+        led = WriteLedger()
+        led.roll(1500, 120)                                           # an NPC whose ledger starts late
+        self.assertEqual((led.day, led.life_year), (1500, 120))
+        led.roll(1501, 120)
+        self.assertEqual(led.day, 1501)
+        late = WriteLedger.at(3000, 40)
+        late.roll(3000 + 1001, 40)                                    # once synced, an aberrant jump is ignored
+        self.assertEqual(late.day, 3000)
 
     def test_an_intimate_judgement_without_parties_is_refused_not_a_crash(self):
         self.assertFalse(self.g.check_value("m_interpretation", "adultery", ADULT, None).allowed)

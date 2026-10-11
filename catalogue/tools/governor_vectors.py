@@ -126,7 +126,8 @@ def gen_writes(cat, g, rng, L, counts):
     for vid, runs, steps in write_variables(cat, g):
         for _run in range(runs):
             seq += 1
-            led, day, life_year = WriteLedger(), 0, 0
+            # most ledgers start with the world, some late (an NPC born on day 1500): the first roll adopts it
+            led, day, life_year = (WriteLedger(), 1500, 120) if rng.random() < 0.15 else (WriteLedger(), 0, 0)
             held = {t: 0 for t in TARGETS}
             for _ in range(steps):
                 r = rng.random()
