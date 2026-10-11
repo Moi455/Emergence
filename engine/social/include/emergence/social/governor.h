@@ -65,7 +65,8 @@ static_assert(sizeof(LedgerEntry) == 24 && std::is_trivially_copyable_v<LedgerEn
 // Per-NPC memory of what the model already moved, for the per-game-day and per-life-year bounds. A small flat
 // table, deterministic, no allocation: an entry whose stamp is not the current day (or life-year) reads as zero
 // and its slot is reused. Time never goes back (review 11): roll() ignores an earlier value, so an oscillating
-// clock cannot refill the bounds; a bogus far-future day freezes them (deny, never a bound that resets).
+// clock cannot refill the bounds, and an aberrant jump (more than gen::kMaxDayJump days or gen::kMaxYearJump
+// life-years at once) is ignored too (review 13).
 // When the table holds kCapacity live entries a write to a NEW (target, variable) cannot be recorded and is
 // refused (Reason::ledger_full, nothing moves): deny, never a bound that silently disappears.
 class WriteLedger {
@@ -83,7 +84,8 @@ class WriteLedger {
 
   // Save / load. restore() refuses (returns false, leaves the ledger empty) more than kCapacity entries, a
   // duplicated (target, variable), a non-zero `reserved`, an unknown variable, a moved amount outside
-  // [0, kMaxMoved] or a stamp later than the day / life-year restored.
+  // [0, kMaxMoved] or a stamp later than the day / life-year restored. A failed restore LOCKS the bounds: no
+  // write moves anything until the next day (T_step) or life-year (T_slow) - a corrupt save never refills them.
   static constexpr std::int32_t kMaxMoved = 1 << 20;
   std::span<const LedgerEntry> entries() const { return {entries_.data(), size_}; }
   bool restore(std::int32_t day, std::int32_t life_year, std::span<const LedgerEntry> saved);
@@ -96,6 +98,7 @@ class WriteLedger {
   std::array<LedgerEntry, kCapacity> entries_{};
   std::size_t size_ = 0;
   std::int32_t day_ = 0, life_year_ = 0;
+  bool lock_day_ = false, lock_year_ = false;   // set by a failed restore
 };
 
 // One write proposed by the model.

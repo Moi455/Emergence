@@ -75,8 +75,11 @@ std::string_view to_string(Reason r) {
 // ---- WriteLedger -----------------------------------------------------------------------------------------
 
 void WriteLedger::roll(std::int32_t day, std::int32_t life_year) {
-  if (day > day_) day_ = day;
-  if (life_year > life_year_) life_year_ = life_year;
+  if (day > day_ && std::int64_t{day} - day_ <= gen::kMaxDayJump) { day_ = day; lock_day_ = false; }
+  if (life_year > life_year_ && std::int64_t{life_year} - life_year_ <= gen::kMaxYearJump) {
+    life_year_ = life_year;
+    lock_year_ = false;
+  }
 }
 
 std::size_t WriteLedger::find(gen::Var v, std::uint32_t target) const {
@@ -115,6 +118,7 @@ std::int32_t WriteLedger::moved_this_year(gen::Var v, std::uint32_t target) cons
 }
 
 bool WriteLedger::add_today(gen::Var v, std::uint32_t target, std::int32_t amount) {
+  if (lock_day_) return false;
   LedgerEntry* e = acquire(v, target);
   if (!e) return false;
   if (e->day_stamp != day_) { e->day_stamp = day_; e->day_moved = 0; }
@@ -123,6 +127,7 @@ bool WriteLedger::add_today(gen::Var v, std::uint32_t target, std::int32_t amoun
 }
 
 bool WriteLedger::add_this_year(gen::Var v, std::uint32_t target, std::int32_t amount) {
+  if (lock_year_) return false;
   LedgerEntry* e = acquire(v, target);
   if (!e) return false;
   if (e->year_stamp != life_year_) { e->year_stamp = life_year_; e->year_moved = 0; }
@@ -132,7 +137,6 @@ bool WriteLedger::add_this_year(gen::Var v, std::uint32_t target, std::int32_t a
 
 bool WriteLedger::restore(std::int32_t day, std::int32_t life_year, std::span<const LedgerEntry> saved) {
   size_ = 0;
-  day_ = life_year_ = 0;
   entries_.fill(LedgerEntry{});
   bool good = saved.size() <= kCapacity;
   for (std::size_t i = 0; good && i < saved.size(); ++i) {
@@ -142,11 +146,12 @@ bool WriteLedger::restore(std::int32_t day, std::int32_t life_year, std::span<co
     for (std::size_t j = 0; good && j < i; ++j)
       good = !(saved[j].target == saved[i].target && saved[j].var == saved[i].var);
   }
+  day_ = day;
+  life_year_ = life_year;
+  lock_day_ = lock_year_ = !good;                 // a corrupt save locks the bounds, it never refills them
   if (!good) return false;
   std::copy(saved.begin(), saved.end(), entries_.begin());
   size_ = saved.size();
-  day_ = day;
-  life_year_ = life_year;
   return true;
 }
 

@@ -140,6 +140,45 @@ class TestGovernor(unittest.TestCase):
         self.assertTrue(self.g.check_record("belief", language.Expression("(assert (past (did @E2 touch @E3 (how romantic))))",
                                                                           vocab), ADULT, adults).allowed)
 
+    def test_d10_bare_citations_are_unfolded_too(self):
+        """Review 13: b:1 said without `that` carries the record as well."""
+        vocab = language.Vocabulary(self.cat)
+        act = language.Expression("(assert (past (did @E2 touch @E3 (how romantic))))", vocab)
+        adults = {"me": ADULT, "@E2": ADULT2, "@E3": ADULT}
+        for text in ("(assert b:1)", "(assert (not b:1))", "(assert (believes @E2 b:1))", "(assert (and b:1 b:1))"):
+            e = language.Expression(text, vocab)
+            self.assertTrue(e.ok, (text, e.problems))
+            self.assertEqual(self.g.check_utterance(e, ADULT, adults, [CHILD], expand=lambda r: act).code, "d10_hearer", text)
+            self.assertEqual(self.g.check_utterance(e, ADULT, adults, [ADULT2]).code, "unexpanded", text)
+            self.assertTrue(self.g.check_utterance(e, ADULT, adults, [ADULT2], expand=lambda r: act).allowed, text)
+        broken = language.Expression("(assert (no_such_word))", vocab)
+        e = language.Expression("(assert b:1)", vocab)
+        self.assertEqual(self.g.check_utterance(e, ADULT, adults, [ADULT2], expand=lambda r: broken).code, "unexpanded")
+        self.assertEqual(self.g.check_utterance(e, ADULT, adults, [ADULT2], expand=lambda r: "text").code, "unexpanded")
+
+    def test_engine_hearers_and_shouting(self):
+        """The engine passes everyone in earshot; without it, shouting is heard by unknown people."""
+        vocab = language.Vocabulary(self.cat)
+        act = "(assert (past (did @E2 touch @E3 (how romantic))))"
+        content = {"me": ADULT, "@E2": ADULT2, "@E3": ADULT}
+        base = dict(params={"content": act, "to": "@E2"}, actor=ADULT, parties={"to": ADULT2}, executed=False,
+                    content_parties=content)
+        self.assertTrue(self.g.check_gesture("speak", **base).allowed)
+        self.assertEqual(self.g.check_gesture("speak", **base, hearers=[ADULT2, CHILD]).code, "d10_hearer")
+        loud = dict(base, params={"content": act, "to": "@E2", "volume": "shout"})
+        self.assertEqual(self.g.check_gesture("speak", **loud).code, "d10_hearer")
+
+    def test_an_intimate_judgement_without_parties_is_refused_not_a_crash(self):
+        self.assertFalse(self.g.check_value("m_interpretation", "adultery", ADULT, None).allowed)
+
+    def test_an_aberrant_jump_of_the_clock_is_ignored(self):
+        led = WriteLedger()
+        led.roll(3, 1)
+        led.roll(10 ** 9, 10 ** 6)
+        self.assertEqual((led.day, led.life_year), (3, 1))
+        led.roll(4, 2)
+        self.assertEqual((led.day, led.life_year), (4, 2))
+
     def test_the_speaker_is_never_a_content_party(self):
         vocab = language.Vocabulary(self.cat)
         e = language.Expression("(offer (future (link me spouse @E2)))", vocab)

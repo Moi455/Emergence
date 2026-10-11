@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "tools"))
 from schema import Catalogue  # noqa: E402
 import model_interface  # noqa: E402
-from governor import ADULT_AGE, LEDGER_CAPACITY, SELF_HOLDERS, tenths  # noqa: E402
+from governor import ADULT_AGE, LEDGER_CAPACITY, MAX_DAY_JUMP, MAX_YEAR_JUMP, SELF_HOLDERS, tenths  # noqa: E402
 
 FP_MARK = "@@FINGERPRINT@@"   # placeholder of the fingerprint line while the body is hashed
 OUT = ROOT.parent / "engine" / "social" / "generated" / "emergence" / "social" / "catalogue_gen.h"
@@ -159,7 +159,8 @@ class CppGenerator:
         self.emit(FP_MARK)
         self.emit(f"inline constexpr int kMaxParams = {MAX_PARAMS};\ninline constexpr int kMaxValues = {MAX_VALUES};")
         self.emit(f"inline constexpr int kAdultAgeYears = {int(ADULT_AGE)};   // D10, read from life_stage")
-        self.emit(f"inline constexpr int kLedgerCapacity = {LEDGER_CAPACITY};   // governor.py LEDGER_CAPACITY\n")
+        self.emit(f"inline constexpr int kLedgerCapacity = {LEDGER_CAPACITY};   // governor.py LEDGER_CAPACITY")
+        self.emit(f"inline constexpr int kMaxDayJump = {MAX_DAY_JUMP}, kMaxYearJump = {MAX_YEAR_JUMP};   // governor.py\n")
         self.emit("enum class Scale : std::uint8_t { " + ", ".join(ident(x) for x in SCALES) + " };")
         self.emit("enum class Family : std::uint8_t { " + ", ".join(ident(x) for x in FAMILIES) + " };")
         self.emit("enum class ParamType : std::uint8_t { " + ", ".join(ident(x) for x in PARAM_TYPES) + " };")

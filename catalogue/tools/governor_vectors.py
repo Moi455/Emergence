@@ -12,8 +12,8 @@ Deterministic (fixed seed, sorted iteration). The vectors compare the REASON COD
     accepts any string there), so its expected reason is written directly: invalid_value.
   * an EXPRESSION param given (speak, write): the oracle checks its content (here a neutral "(help)") inside
     check_gesture; the C++ port has no language yet and refuses it (structured) until check_utterance is ported;
-  * the ledger: days that go back (any change of day starts a new account) and a ledger filled to
-    LEDGER_CAPACITY live keys (the next new key: ledger_full).
+  * the ledger: days that go back and aberrant jumps (both ignored: time never goes back, review 11 and 13)
+    and a ledger filled to LEDGER_CAPACITY live keys (the next new key: ledger_full).
 """
 from __future__ import annotations
 
@@ -135,10 +135,11 @@ def gen_writes(cat, g, rng, L, counts):
                 elif r < 0.12:
                     day += rng.randint(2, 5)
                 elif r < 0.13 and day > 0:
-                    day -= 1                             # time going back: a new account, as any change of day
+                    day -= 1                             # time going back: ignored by the ledger
                 if rng.random() < 0.04:
                     life_year += 1
-                led.roll(day, life_year)
+                roll_day = day + 10 ** 6 if rng.random() < 0.01 else day   # one aberrant jump: ignored
+                led.roll(roll_day, life_year)
                 target = rng.choice(TARGETS)
                 x = held[target]
                 r = rng.random()
@@ -150,7 +151,7 @@ def gen_writes(cat, g, rng, L, counts):
                                   actor=party_ref(ai), creating=creating)
                 val = 0 if v.value is None else tenths(v.value)
                 counts["write"][v.code] += 1
-                L.append(f"  {{{seq}, {day}, {life_year}, em::social::gen::Var::{ident(vid)}, {x}, {proposed}, {str(creating).lower()}, "
+                L.append(f"  {{{seq}, {roll_day}, {life_year}, em::social::gen::Var::{ident(vid)}, {x}, {proposed}, {str(creating).lower()}, "
                          f"{target}, {ti}, {ai}, {str(v.allowed).lower()}, {reason(v.code)}, {val}}},")
                 if v.allowed and v.value is not None:
                     held[target] = val

@@ -7,7 +7,8 @@ It sits between the Transformer and the world. Whatever the model outputs, the g
   * keeps at most WRITES_PER_DECISION writes per decision, one per (target, variable);
   * enforces hard rule D10 on gestures, utterances and records, DENY BY DEFAULT: a minor by real, believed OR
     apparent age, an unknown age, or a person known only by name or description counts as a minor. D10 looks at
-    the PARTICIPANTS of an intimate act or link, never at the hearers.
+    the PARTICIPANTS of an intimate act or link; the hearers matter only when an intimate act or desire is SAID
+    (P30). Every cited record (b:, m:, g:, bare or in `that`) is unfolded and checked as said.
 
 It never decides anything: it only clips or refuses. Values on the charter scale (-10..+10), computed in integer
 TENTHS like the C++ port (the engine stores tenths).
@@ -15,6 +16,7 @@ TENTHS like the C++ port (the engine stores tenths).
 from __future__ import annotations
 
 import math
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -25,6 +27,8 @@ from schema import Catalogue  # noqa: E402
 WRITES_PER_DECISION = 4
 LEDGER_CAPACITY = 512          # live (target, variable) entries per NPC; beyond, a NEW key is refused (ledger_full)
 MAX_AGE_TENTHS = 32767         # an age beyond this (int16 tenths) is absurd: it reads as UNKNOWN (a possible minor)
+MAX_DAY_JUMP, MAX_YEAR_JUMP = 1000, 100   # a larger jump of the clock in one roll is aberrant: ignored (review 13)
+CITE = re.compile(r"^[bmg]:\d+$")         # a cited record of the speaker: its frozen content is what is said
 _CAT = Catalogue.load()
 ADULT_AGE = float(_CAT["hard_rule"]["D10_minors"].adult_age_years)   # pinned in hard_rules.toml (18)
 SCALE_BOUNDS = {"bipolar10": (-100, 100), "unipolar10": (0, 100)}     # in tenths
@@ -109,9 +113,9 @@ class WriteLedger:
     def roll(self, day: int, life_year: int):
         """Time never goes back: an earlier day or life-year is ignored (review 11: an oscillating clock must not
         refill the daily bounds). A bogus far-future day freezes the accounts: deny, never a bound that resets."""
-        if day > self.day:
+        if self.day < day <= self.day + MAX_DAY_JUMP:
             self.day, self.day_moved = day, {}
-        if life_year > self.life_year:
+        if self.life_year < life_year <= self.life_year + MAX_YEAR_JUMP:
             self.life_year, self.year_moved = life_year, {}
 
 
@@ -217,7 +221,7 @@ class Governor:
                 interp = self.cat["interpretation"].get(value)
                 if interp is None:
                     return no("invalid_value")
-                if interp.intimate and any(PartyResolver(parties)(r).may_be_minor() for r in (parties or {UNKNOWN: 0})):
+                if interp.intimate and (not parties or any(PartyResolver(parties)(r).may_be_minor() for r in parties)):
                     return no("d10_intimate", "D10: an intimate judgement about a possible minor")
                 return ok(value)
             return ok(value) if isinstance(value, str) and value in self.vocab.cats else no("invalid_value")
@@ -242,11 +246,14 @@ class Governor:
 
     # ---- gestures ---------------------------------------------------------------------------------
     def check_gesture(self, action_id: str, params: dict, actor: Party | None, parties: dict | None = None,
-                      executed: bool = False, content_parties: dict | None = None, expand=None) -> Verdict:
+                      executed: bool = False, content_parties: dict | None = None, expand=None,
+                      hearers: list | None = None) -> Verdict:
         """params: param name -> value; parties: param name -> Party for every param that designates someone or
         something. executed=True (the model's own output): every non-optional param must be present.
         An expression param (speak, write) is checked here with check_utterance (review 10): the content is part of
-        the gesture. content_parties / expand are those of check_utterance (None: deny by default)."""
+        the gesture. content_parties / expand are those of check_utterance (None: deny by default). hearers: every
+        person in earshot as the ENGINE knows them (a group as a Party that may be a minor if any member may be);
+        None: the addressee (`to`), plus unknown hearers when it is absent or when one speaks loud or shouts."""
         a = self.cat["action"].get(action_id)
         if a is None:
             return no("unknown_gesture")
@@ -265,10 +272,14 @@ class Governor:
                 import language
                 e = params[p.name]
                 e = e if isinstance(e, language.Expression) else language.Expression(str(e), self.vocab)
-                hearers = [parties.get(q.name, UNKNOWN) for q in a.params
-                           if q.type == "ref" and "agent" in q.accepts and q.name not in a.party_params
-                           and (q.name in params or q.name in parties)]
-                v = self.check_utterance(e, actor, content_parties, addressees=hearers or None, expand=expand)
+                heard = hearers
+                if heard is None:
+                    heard = [parties.get(q.name, UNKNOWN) for q in a.params
+                             if q.type == "ref" and "agent" in q.accepts and q.name not in a.party_params
+                             and (q.name in params or q.name in parties)]
+                    if params.get("volume") in ("loud", "shout"):
+                        heard.append(UNKNOWN)                 # overheard by anyone around
+                v = self.check_utterance(e, actor, content_parties, addressees=heard or None, expand=expand)
                 if not v.allowed:
                     return v
         persons = [actor or UNKNOWN]
@@ -321,17 +332,28 @@ class Governor:
                 out.append(x.args[0])
         return out
 
+    @staticmethod
+    def _unfold(ref, expand, depth):
+        """The frozen copy of a cited record (b:, m:, g:), or None: refused as unexpanded (no copy, too deep, or
+        not a valid expression)."""
+        import language
+        if expand is None or depth > 2 or not isinstance(ref, str):
+            return None
+        inner = expand(ref)
+        return inner if isinstance(inner, language.Expression) and inner.ok else None
+
     def _check_node(self, node, resolve, expand, depth=0) -> Verdict:
         from language import Node
+        if isinstance(node, str) and CITE.match(node):         # a bare citation says the record too (review 13)
+            inner = self._unfold(node, expand, depth)
+            if inner is None:
+                return no("unexpanded", "the content of a cited belief/memory/goal must be checked (frozen copy)")
+            return self._check_node(inner.root, resolve, expand, depth + 1)
         if not isinstance(node, Node):
             return ok()
         if node.head == "that":
-            if expand is None or depth > 2:
-                return no("unexpanded", "the content of a cited belief/memory/goal must be checked (frozen copy)")
-            inner = expand(node.args[0]) if node.args else None
-            if inner is None:
-                return no("unexpanded")
-            return self._check_node(inner.root, resolve, expand, depth + 1)
+            return self._check_node(node.args[0] if node.args else None, resolve, expand, depth) if node.args \
+                else no("unexpanded")
         if node.head == "did" and len(node.args) >= 2 and isinstance(node.args[1], str) and node.args[1] in self.cat["action"]:
             a = self.cat["action"][node.args[1]]
             params, parties = {}, {}
@@ -382,11 +404,13 @@ class Governor:
     def _said_symbols(self, node, expand, depth=0) -> list:
         """Every symbol the hearer receives, cited records (that b:7) unfolded."""
         from language import Node
+        if isinstance(node, str) and CITE.match(node):
+            inner = self._unfold(node, expand, depth)
+            return self._said_symbols(inner.root, expand, depth + 1) if inner is not None else [node]
         if not isinstance(node, Node):
             return [node]
-        if node.head == "that" and expand is not None and depth <= 2 and node.args:
-            inner = expand(node.args[0])
-            return self._said_symbols(inner.root, expand, depth + 1) if inner is not None else []
+        if node.head == "that" and node.args:
+            return self._said_symbols(node.args[0], expand, depth)
         out = [node.head]
         for a in node.args:
             out += self._said_symbols(a, expand, depth)

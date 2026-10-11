@@ -6,11 +6,12 @@
 
 namespace em::social::gen {
 
-inline constexpr std::uint64_t kCatalogueFingerprint = 0xb084040d06ff87c6ull;  // FNV-1a 64 of model_interface.json text + this file without this line
+inline constexpr std::uint64_t kCatalogueFingerprint = 0x2b248f06a4c8395bull;  // FNV-1a 64 of model_interface.json text + this file without this line
 inline constexpr int kMaxParams = 6;
 inline constexpr int kMaxValues = 12;
 inline constexpr int kAdultAgeYears = 18;   // D10, read from life_stage
 inline constexpr int kLedgerCapacity = 512;   // governor.py LEDGER_CAPACITY
+inline constexpr int kMaxDayJump = 1000, kMaxYearJump = 100;   // governor.py
 
 enum class Scale : std::uint8_t { bipolar10, unipolar10, qty, ratio, enum_, id, mref, word, bool_, list, proposition, time };
 enum class Family : std::uint8_t { move, posture, grasp, force, tool, transform, consume, care, perceive, communicate, meta };

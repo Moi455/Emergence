@@ -387,6 +387,23 @@ TEST(ledger_can_be_saved_and_restored) {
   CHECK(b.restore(a.day(), a.life_year(), saved));
 }
 
+TEST(a_failed_restore_locks_the_bounds_and_an_aberrant_jump_is_ignored) {
+  Governor g;                                                   // review 13
+  WriteLedger led;
+  std::vector<LedgerEntry> bad(1);
+  bad.front().reserved = 7;
+  CHECK(!led.restore(5, 2, bad));
+  CHECK_EQ(led.day(), 5);
+  const Verdict locked = g.check_write(request(gen::Var::r_affection, 0, 100, 7), led);
+  CHECK(!locked.allowed && locked.reason == Reason::ledger_full);
+  led.roll(6, 2);                                               // the next day unlocks the daily bounds
+  CHECK(g.check_write(request(gen::Var::r_affection, 0, 100, 7), led).allowed);
+  led.roll(6 + gen::kMaxDayJump + 1, 2);                        // aberrant: ignored
+  CHECK_EQ(led.day(), 6);
+  led.roll(7, 2);
+  CHECK_EQ(led.day(), 7);
+}
+
 TEST(check_writes_with_a_short_output_keeps_nothing) {
   Governor g;
   const std::array<WriteKey, 6> keys{WriteKey{1, gen::Var::r_affection}, WriteKey{2, gen::Var::r_affection},
