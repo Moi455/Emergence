@@ -5,6 +5,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 fail=0
 run() { echo "== $*"; if ! "$@"; then echo "!! ÉCHEC : $*"; fail=1; fi; }
 
+cd "$ROOT"
+run python3 catalogue/tools/check.py
+run python3 -m unittest discover -s catalogue/tests
+run python3 -m unittest discover -s ai/tok2/tests -t ai
+
 cd "$ROOT/ai/npc_pipeline"
 run python3 plan_contract.py
 run python3 memory_service.py

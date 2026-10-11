@@ -37,20 +37,25 @@ class ModelInterface:
         "REQUEST": "from (mref), prop (expression), age",
         "SKILL": "technique (word), self_estimate",
     }
+    # Record keys: the speaker's pointers of the inner language (@E3, b:7...), and private prefixes for records the
+    # language cannot point to (h:, q:, c:, p:, k:, t:). "me" is the NPC himself (SELF); a key is unique per decision.
+    KEYS = {"SELF": "me", "SELF_MIND": "me.mind", "SELF_STATE": "me.state", "TASTE": "t:", "ENTITY": "@E", "GROUP": "@G",
+            "BELIEF": "b:", "HEARD": "h:", "MEMORY": "m:", "GOAL": "g:", "PLAN": "p:", "REQUEST": "q:", "COMMIT": "c:",
+            "INV": "@T", "SKILL": "k:", "PLACE": "@PLACE", "THING": "@T", "EVENT": "@V", "LOCUS": "@L"}
     ALIASES = {"HEARD": "BELIEF", "INV": "THING"}
     EXPLICIT = {
-        "TASTE": {"concept": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": []},
-                  "attitude": {"scale": "bipolar10", "values": [], "unit": "", "list_of": "", "components": []}},
-        "COMMIT": {"counterparty": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": []},
-                   "mine": {"scale": "bool", "values": [], "unit": "", "list_of": "", "components": []},
-                   "prop": {"scale": "proposition", "values": [], "unit": "", "list_of": "", "components": []},
-                   "deadline": {"scale": "time", "values": [], "unit": "", "list_of": "", "components": []},
-                   "status": {"scale": "enum", "values": ["open", "fulfilled", "broken", "released"], "unit": "", "list_of": "", "components": []},
-                   "witnesses": {"scale": "list", "values": [], "unit": "", "list_of": "mref", "components": []}},
-        "PLAN": {"step": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": []},
-                 "goal": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": []},
-                 "progress": {"scale": "ratio", "values": [], "unit": "", "list_of": "", "components": []},
-                 "commitment": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": []}},
+        "TASTE": {"concept": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                  "attitude": {"scale": "bipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
+        "COMMIT": {"counterparty": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                   "mine": {"scale": "bool", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                   "prop": {"scale": "proposition", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                   "deadline": {"scale": "time", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                   "status": {"scale": "enum", "values": ["open", "fulfilled", "broken", "released"], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                   "witnesses": {"scale": "list", "values": [], "unit": "", "list_of": "mref", "components": [], "component_scales": []}},
+        "PLAN": {"step": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "goal": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "progress": {"scale": "ratio", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "commitment": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
     }
     ACCEPT_TOKENS = {"agent": "ENTITY", "animal": "THING", "item": "THING|INV", "structure": "THING", "terrain": "THING",
                      "voxel": "THING", "water": "THING", "fire": "THING", "trace": "THING", "plant": "THING",
@@ -67,9 +72,13 @@ class ModelInterface:
                     continue
                 key = m.group(1) + ("." + m.group(2) if m.group(2) else "")
                 values = v.values or sorted(c.id for c in self.cat["concept"].values() if v.values_from and c.category == v.values_from)
-                comps = self.cat.object_vector() if v.components == ["@object_vector"] else list(v.components)
+                if v.components == ["@object_vector"]:            # each property on its own scale
+                    comps = self.cat.object_vector()
+                    scales = [self.cat["property"][c].scale for c in comps]
+                else:                                             # named axes, given normalised in [-1, 1]
+                    comps, scales = list(v.components), ["unit"] * len(v.components)
                 out.setdefault(key, {"from": v.id, "scale": v.scale, "values": values, "unit": v.unit, "list_of": v.list_of,
-                                     "components": comps})
+                                     "components": comps, "component_scales": scales})
         return out
 
     def input_spec(self) -> dict:
@@ -81,6 +90,8 @@ class ModelInterface:
             types[typ] = {"count": count,
                           "fields": {n: fields.get(f"{typ}.{n}", fields.get(typ, {})) for n in names if n != typ},
                           "layout": self.RECORD_LAYOUTS.get(typ, "")}
+        for typ, key in self.KEYS.items():                         # how a record of this type is designated
+            types[typ]["key"] = key
         for typ, base in self.ALIASES.items():                     # same layout as another record type
             types[typ]["fields"] = dict(types[base]["fields"])
             types[typ]["alias_of"] = base
