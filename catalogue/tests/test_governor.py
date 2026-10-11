@@ -126,6 +126,48 @@ class TestGovernor(unittest.TestCase):
         parents = language.Expression("(assert (link @E1 spouse @E2))", vocab)
         self.assertTrue(self.g.check_utterance(parents, CHILD, {"me": CHILD, "@E1": ADULT, "@E2": ADULT2}).allowed)
 
+    def test_d10_intimate_acts_are_not_told_to_a_possible_minor(self):
+        """Review 11: an intimate act or desire between adults, said to a child or to unknown hearers, is refused;
+        to adults it is allowed; a cited record is unfolded; a private record is not said."""
+        vocab = language.Vocabulary(self.cat)
+        act = language.Expression("(assert (past (did @E2 touch @E3 (how romantic))))", vocab)
+        adults = {"me": ADULT, "@E2": ADULT2, "@E3": ADULT}
+        self.assertEqual(self.g.check_utterance(act, ADULT, adults, [CHILD]).code, "d10_hearer")
+        self.assertEqual(self.g.check_utterance(act, ADULT, adults).code, "d10_hearer")          # hearers unknown
+        self.assertTrue(self.g.check_utterance(act, ADULT, adults, [ADULT2]).allowed)
+        cite = language.Expression("(assert (that b:1))", vocab)
+        self.assertEqual(self.g.check_utterance(cite, ADULT, adults, [CHILD], expand=lambda r: act).code, "d10_hearer")
+        self.assertTrue(self.g.check_record("belief", language.Expression("(assert (past (did @E2 touch @E3 (how romantic))))",
+                                                                          vocab), ADULT, adults).allowed)
+
+    def test_the_speaker_is_never_a_content_party(self):
+        vocab = language.Vocabulary(self.cat)
+        e = language.Expression("(offer (future (link me spouse @E2)))", vocab)
+        self.assertFalse(self.g.check_utterance(e, CHILD, {"me": ADULT, "@E2": ADULT2}, [ADULT2]).allowed)
+
+    def test_an_absent_param_that_cannot_be_a_person_is_not_an_unknown_person(self):
+        """Review 11: put.where (a place) or tie.with (a cord) left out is not a possible minor."""
+        vocab = language.Vocabulary(self.cat)
+        for text in ("(assert (past (did @E1 put @T1)))", "(assert (past (did @E1 tie @E2)))"):
+            e = language.Expression(text, vocab)
+            self.assertTrue(e.ok, e.problems)
+            self.assertTrue(self.g.check_utterance(e, ADULT, {"me": ADULT, "@E1": ADULT2, "@E2": ADULT, "@T1": THING},
+                                                   [ADULT2]).allowed, text)
+
+    def test_ages_that_are_not_numbers_are_unknown(self):
+        from governor import age_tenths
+        for x in (10 ** 400, "30", True, None, float("inf"), -0.5, 3276.8):
+            self.assertEqual(age_tenths(x), -1, x)
+        self.assertEqual(age_tenths(3276.7), 32767)
+        self.assertEqual(age_tenths(17.96), 179)
+
+    def test_time_never_goes_back(self):
+        led = WriteLedger()
+        self.g.check_write("r_affection", 0, 1, led, target="7")
+        led.roll(5, 0)
+        led.roll(3, 0)
+        self.assertEqual(led.day, 5)
+
     def test_d10_cited_content_must_be_expanded(self):
         vocab = language.Vocabulary(self.cat)
         e = language.Expression("(offer (that g:1))", vocab)

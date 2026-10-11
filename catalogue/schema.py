@@ -499,6 +499,8 @@ class Catalogue:
                 p.append(f"action {a.id}: a ref accepts an agent, contact must be declared (D10)")
             if a.contact and not a.party_params:
                 p.append(f"action {a.id}: contact gesture without party_params (D10)")
+            if (a.intimate or any(prm.intimate_values for prm in a.params)) and not a.contact:
+                p.append(f"action {a.id}: an intimate gesture or manner must be a contact gesture (D10 counts its persons)")
             if a.contact:                               # any pointer of a contact gesture may be handed a person (review 10)
                 for prm in a.params:
                     if prm.type == "ref" and prm.name not in a.party_params:

@@ -1,20 +1,21 @@
-# État du catalogue (`catalogue/`), 10 octobre 2026
+# État du catalogue (`catalogue/`), 11 octobre 2026
 
 Source unique de tout ce qui existe dans la simulation (D20, D28) : TOML dans `data/`, outils Python dans `tools/`, tests dans `tests/`. Le document lisible est `CATALOGUE.md` (généré).
 
-## Fait (étapes 0 à 17 du plan, relues huit fois)
+## Fait (étapes 0 à 18 du plan, relues onze fois)
 
 | Domaine | Contenu |
 |---|---|
-| Monde | 16 types d'entités, 49 composants (avec leur canal de connaissance), 89 propriétés (perceptibles ou non), 84 matières, 31 processus, 63 formes de parties, 421 types d'objets connus, 79 espèces |
-| PNJ | 333 variables : corps, besoins, esprit stable (33 dimensions), esprit mouvant, croyances, relations (dossiers mentaux), souvenirs, objectifs, accords, perception par observateur |
+| Monde | 16 types d'entités, 50 composants (avec leur canal de connaissance), 89 propriétés (perceptibles ou non), 84 matières, 31 processus, 63 formes de parties, 421 types d'objets connus, 79 espèces |
+| PNJ | 342 variables : corps, besoins, esprit stable (33 dimensions), esprit mouvant, croyances, relations (dossiers mentaux), souvenirs, objectifs, accords, perception par observateur |
 | Actions | 40 gestes paramétrés par la manière ; 23 conditions perceptives |
-| Langue | 293 concepts et 652 mots ; grammaire typée (20 symboles, 2 niveaux) ; 14 sondes de parole sans verbe social |
+| Langue | 295 concepts et 654 mots ; grammaire typée (20 symboles, 2 niveaux) ; 14 sondes de parole sans verbe social |
 | Jugements | 45 interprétations (faits physiques, indices perceptibles, normes dans la langue) |
 | Règles | 4 règles dures dont D10 (refus par défaut, liste blanche par geste) ; gouverneur de référence |
 | Interface IA | `generated/model_interface.json` : jetons d'entrée, têtes de sortie, écritures |
 | C++ | `tools/gen_cpp.py` → `engine/social/generated/…/` : `catalogue_gen.h` (gestes, conditions, variables et bornes), `npc_state_gen.h` (une structure par composant, 11 réserves d'enregistrements), `vocab_gen.h` (mots et sortes) ; vecteurs partagés du gouverneur. Mesuré : 95,5 Ko par PNJ, 45,5 Mo pour 500 (estimation de docs/06 : 32 Mo ; à compacter : les propositions des croyances et souvenirs) |
 | Ancien contrat | 112 fonctions et 20 conditions migrées (`data/migration.toml`) |
+| Sondes | Étape 18 (11 oct.) : 146 sondes décomposées, 128 exprimables, 18 trous déclarés (`status = "gap"`, `note` dit ce qui manque) ; 198 paroles validées |
 
 ## Commandes
 
@@ -29,6 +30,6 @@ python3 catalogue/tools/governor_vectors.py # régénère les vecteurs partagés
 
 ## Pas fait
 
-- Étape 18 : revue de couverture des 146 sondes (une vingtaine seulement sont décomposées).
+- Étape 19 : combler les 18 trous par des primitives générales. Langue : repères de temps, sortes de lieux, sujets quantifiés, référence par lien, questions enchâssées, évidentiels alignés sur les sources, rôles d'événement tirés des paramètres des gestes. Moteur : conception et naissance entre adultes, cours des maladies, percept collectif, odorat, choses absentes saillantes. Fuite de vérité à corriger : `channel.requires` lit `shapes_matter`, non perceptible.
 - Les rails légers (coutumes connues des PNJ), prévus après la langue.
 - Questions ouvertes pour Monsieur : O16 à O21 (`docs/01_decisions.md`).

@@ -121,7 +121,8 @@ class CppGenerator:
                 vals = ", ".join(cpp_str(v) for v in p.values)
                 ps.append(f"ParamSpec{{{cpp_str(p.name)}, ParamType::{ident(p.type)}, {len(p.values)}, {{{vals}}}, "
                           f"0x{imask:x}, 0x{mmask:x}, {str(p.ordinal).lower()}, {str(p.optional).lower()}, "
-                          f"{str(p.name in a.party_params).lower()}, {str(p.name in a.minor_whitelist).lower()}}}")
+                          f"{str(p.name in a.party_params).lower()}, {str(p.name in a.minor_whitelist).lower()}, "
+                          f"{str('agent' in p.accepts).lower()}}}")
             if a.family not in FAMILIES:
                 raise SystemExit(f"{a.id}: unknown family {a.family}")
             self.emit(f"  GestureSpec{{{cpp_str(a.id)}, Family::{ident(a.family)}, {str(bool(a.contact)).lower()}, "
@@ -167,7 +168,8 @@ class CppGenerator:
                   "  std::array<std::string_view, kMaxValues> values;\n  std::uint16_t intimate_mask;   // D10: refused with a minor\n"
                   "  std::uint16_t minor_mask;      // D10: values allowed when a minor is involved\n  bool ordinal;\n  bool optional;\n"
                   "  bool party;                    // D10: may designate a person involved\n"
-                  "  bool whitelisted;              // D10: REQUIRED and checked against minor_mask when a minor is involved\n};\n")
+                  "  bool whitelisted;              // D10: REQUIRED and checked against minor_mask when a minor is involved\n"
+                  "  bool accepts_agent;            // may designate a person (an absent one counts unknown, D10)\n};\n")
         self.emit("struct GestureSpec {\n  std::string_view id;\n  Family family;\n  bool contact;           // a ref param accepts an agent (D10)\n"
                   "  bool intimate;          // D10: refused as soon as a possible minor is involved\n  bool minor_person_ok;   // D10\n  std::uint8_t n_params;\n"
                   "  std::array<ParamSpec, kMaxParams> params;\n};\n")

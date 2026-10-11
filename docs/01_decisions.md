@@ -73,6 +73,7 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | P27 | Esprit stable en 33 dimensions (31 vues par l'IA, plus l'attirance ; mémoire et finesse de perception restent au moteur) : 18 traits HEXACO, 5 aptitudes, 2 de tempérament, 8 valeurs, attirance, goûts singuliers (attitudes envers un concept) ; les normes précises sont des croyances | `catalogue/data/mind_static.toml` |
 | P28 | Les objets sont des assemblages de parties (forme × matière) ; les 421 types sont un savoir commun, jamais une limite | `catalogue/data/forms.toml`, `items_*.toml` |
 | P29 | Les jetons ne contiennent aucune vérité : dossiers mentaux, événements remémorés, lieux reconnus, accords tels que crus | règle `no_truth_in_tokens`, `catalogue/data/hard_rules.toml` |
+| P30 | (11 oct., défaut pris) D10 et la parole : un acte ou un désir intime (geste ou manière intime, attirance, besoin d'intimité) n'est jamais DIT à un auditeur qui peut être mineur, ni à des auditeurs inconnus ; les liens (conjoint, amant) et les jugements (adultère) restent des faits sociaux qu'un enfant peut entendre ; une pensée privée n'est pas une parole | `catalogue/tools/governor.py` (`d10_hearer`), relecture 11 |
 
 ## Ouvert
 
@@ -98,4 +99,5 @@ Chaque ligne a un statut : **Décidé** (par Monsieur), **Proposé** (par Claude
 | O19 | Version Steam : NVIDIA seule (CUDA) en version 1, ou Vulkan dès le départ ? (docs/07 § 6) | CUDA d'abord (mesures faites ainsi) |
 | O20 | Profondeur de simulation (charte § 24) : tirée à la naissance et ne réglant que la taille du contexte lu (pas la fréquence de décision) ; faut-il qu'elle puisse évoluer au cours de la vie (un inconnu qui devient central) ? | fixe en attendant |
 | O21 | Précalculer les plongements des données statiques d'un PNJ (personnalité, valeurs) une fois par jour plutôt qu'à chaque décision : est-ce compatible avec « sans cache » (D18) ? Ce n'est pas un cache de décision (docs/07) | non en attendant : tout est recalculé |
+| O22 | P30 : faut-il aussi interdire de dire à un enfant que deux adultes sont amants (lien « lover », jugement « adultère ») ? | non : ce sont des faits sociaux, sans acte décrit |
 | O14 | Textures bitmap sur les voxels. Monsieur les a demandées (D20) ; l'essai du prototype village (9 oct., `prototypes/village-web/RENDU.md`) s'en passe : grain procédural, biseau des arêtes, éclairage PRT et grille de ciel, sur le modèle de Teardown (affirmation du fil, non vérifiée ici) | textures maintenues tant que Monsieur n'a pas tranché ; comparer les deux sur captures |

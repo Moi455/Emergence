@@ -38,9 +38,14 @@ def tenths(x: float) -> int:
 
 def age_tenths(years: float | None) -> int:
     """Years -> tenths of years, rounded DOWN (toward 'minor'): 17.96 years stays a minor."""
-    if years is None or not math.isfinite(years) or years < 0 or years * 10 >= MAX_AGE_TENTHS + 1:
-        return -1                                   # unknown, negative or absurd: deny by default
-    return math.floor(years * 10)
+    if years is None or isinstance(years, bool) or not isinstance(years, (int, float)):
+        return -1                                   # unknown or not a number: deny by default
+    try:
+        if not math.isfinite(years) or years < 0 or years * 10 >= MAX_AGE_TENTHS + 1:
+            return -1                               # non-finite, negative or absurd
+        return math.floor(years * 10)
+    except OverflowError:
+        return -1
 
 
 @dataclass
@@ -102,9 +107,11 @@ class WriteLedger:
         return bool(self.day_moved.get(key) or self.year_moved.get(key)) or self.live() < LEDGER_CAPACITY
 
     def roll(self, day: int, life_year: int):
-        if day != self.day:
+        """Time never goes back: an earlier day or life-year is ignored (review 11: an oscillating clock must not
+        refill the daily bounds). A bogus far-future day freezes the accounts: deny, never a bound that resets."""
+        if day > self.day:
             self.day, self.day_moved = day, {}
-        if life_year != self.life_year:
+        if life_year > self.life_year:
             self.life_year, self.year_moved = life_year, {}
 
 
@@ -258,7 +265,10 @@ class Governor:
                 import language
                 e = params[p.name]
                 e = e if isinstance(e, language.Expression) else language.Expression(str(e), self.vocab)
-                v = self.check_utterance(e, actor, content_parties, expand=expand)
+                hearers = [parties.get(q.name, UNKNOWN) for q in a.params
+                           if q.type == "ref" and "agent" in q.accepts and q.name not in a.party_params
+                           and (q.name in params or q.name in parties)]
+                v = self.check_utterance(e, actor, content_parties, addressees=hearers or None, expand=expand)
                 if not v.allowed:
                     return v
         persons = [actor or UNKNOWN]
@@ -266,7 +276,7 @@ class Governor:
             prm = known[pn]
             if pn in params or pn in parties:
                 party = parties.get(pn, UNKNOWN)
-            elif a.contact and not prm.optional:
+            elif a.contact and not prm.optional and "agent" in prm.accepts:
                 party = UNKNOWN                               # a contact gesture with its person left out
             else:
                 continue
@@ -354,17 +364,41 @@ class Governor:
         return ok()
 
     def check_utterance(self, expression, speaker: Party | None, parties: dict | None = None,
-                        addressees: list | None = None, expand=None) -> Verdict:
+                        addressees: list | None = None, expand=None, said: bool = True) -> Verdict:
         """parties: symbol (me, you, @E2, n:7...) -> Party; expand: b:/m:/g: -> the frozen Expression of that record.
-        D10 looks at the participants of an intimate act or link, not at the hearers (addressees are ignored)."""
+        D10 looks at the participants of an intimate act or link. The hearers matter only for an intimate ACT or
+        DESIRE (an intimate gesture or manner, an intimate variable): never said to a possible minor (review 11;
+        links such as spouse or lover remain social facts a child may hear). addressees None = unknown hearers."""
         if not expression.ok:
             return no("invalid_value", "invalid expression: " + "; ".join(expression.problems))
+        if said and any(self._hearer_sensitive(x) for x in self._said_symbols(expression.root, expand)):
+            hearers = list(addressees) if addressees else [UNKNOWN]
+            if any((h or UNKNOWN).may_be_minor() for h in hearers):
+                return no("d10_hearer", "D10: an intimate act or desire told to a possible minor")
         p = dict(parties or {})
-        p.setdefault("me", speaker or UNKNOWN)
+        p["me"] = speaker or UNKNOWN                  # the speaker is who the engine says, never a content party
         return self._check_node(expression.root, PartyResolver(p, self.vocab), expand)
+
+    def _said_symbols(self, node, expand, depth=0) -> list:
+        """Every symbol the hearer receives, cited records (that b:7) unfolded."""
+        from language import Node
+        if not isinstance(node, Node):
+            return [node]
+        if node.head == "that" and expand is not None and depth <= 2 and node.args:
+            inner = expand(node.args[0])
+            return self._said_symbols(inner.root, expand, depth + 1) if inner is not None else []
+        out = [node.head]
+        for a in node.args:
+            out += self._said_symbols(a, expand, depth)
+        return out
+
+    def _hearer_sensitive(self, sym) -> bool:
+        a = self.cat["action"].get(sym)
+        v = self.cat["variable"].get(sym)
+        return bool(sym in self.vocab.manner_intimate or (a is not None and a.intimate) or (v is not None and v.intimate))
 
     def check_record(self, kind: str, expression, owner: Party | None, parties: dict | None = None, expand=None) -> Verdict:
         """A goal, a belief, a memory, an agreement or a plan written by the model."""
         if kind not in ("goal", "belief", "memory", "agreement", "plan"):
             return no("invalid_value", "unknown record kind")
-        return self.check_utterance(expression, owner, parties, expand=expand)
+        return self.check_utterance(expression, owner, parties, expand=expand, said=False)   # a record is not said

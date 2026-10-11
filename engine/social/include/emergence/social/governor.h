@@ -63,8 +63,9 @@ struct LedgerEntry {
 static_assert(sizeof(LedgerEntry) == 24 && std::is_trivially_copyable_v<LedgerEntry>);
 
 // Per-NPC memory of what the model already moved, for the per-game-day and per-life-year bounds. A small flat
-// table, deterministic, no allocation. Any change of day (or life-year), in either direction, starts a new
-// account, as in the oracle: roll() zeroes what was moved and the slots are reused.
+// table, deterministic, no allocation: an entry whose stamp is not the current day (or life-year) reads as zero
+// and its slot is reused. Time never goes back (review 11): roll() ignores an earlier value, so an oscillating
+// clock cannot refill the bounds; a bogus far-future day freezes them (deny, never a bound that resets).
 // When the table holds kCapacity live entries a write to a NEW (target, variable) cannot be recorded and is
 // refused (Reason::ledger_full, nothing moves): deny, never a bound that silently disappears.
 class WriteLedger {
@@ -119,8 +120,10 @@ struct WriteKey {
 //   -1             absent
 //   enum param     0 <= v < n_values
 //   any other      v == 0 means "given"
-// Anything else is Reason::invalid_value. For every param that designates someone, party[i] is that person
-// (null = not identified). `fill` makes a call start with every value absent.
+// Anything else is Reason::invalid_value. For every GIVEN party param, party[i] must be what it designates: a
+// person, or a thing as Party{.person = false}; null counts as an unknown person (a possible minor). An absent
+// non-optional party param of a contact gesture counts as an unknown person only if it may designate an agent.
+// The model's own outputs are always checked with executed = true (every non-optional param present).
 struct GestureCall {
   gen::Gesture gesture{};
   std::array<std::int8_t, gen::kMaxParams> value;
@@ -140,7 +143,7 @@ class Governor {
 
   // Sparse writes: one per (target, variable), the first kWritesPerDecision kept. out[i] is the verdict of
   // keys[i]: ok (kept), duplicate, or too_many_writes; returns how many are kept. `out` shorter than `keys`:
-  // every out[i] is refused (invalid_value) and nothing is kept.
+  // every out[i] is refused (invalid_value) and nothing is kept; out[keys.size()..] is left untouched.
   std::size_t check_writes(std::span<const WriteKey> keys, std::span<Verdict> out) const;
 };
 

@@ -339,14 +339,16 @@ TEST(relation_steps_then_hits_the_daily_rate_then_rolls_over) {
   CHECK_EQ(led.moved_today(gen::Var::r_affection, 8), 0);       // another target has its own account
   led.roll(1, 0);
   CHECK_EQ(led.moved_today(gen::Var::r_affection, 7), 0);       // a new day, a new account
-  CHECK(g.check_write(request(gen::Var::r_affection, x, x + 100, 7), led).value > x);
-  led.roll(0, 0);                                               // any change of day, even back, as the oracle
-  CHECK_EQ(led.day(), 0);
-  CHECK_EQ(led.moved_today(gen::Var::r_affection, 7), 0);
-  led.roll(std::numeric_limits<std::int32_t>::max(), 0);        // a bogus day does not freeze the ledger
-  led.roll(2, 0);
-  CHECK_EQ(led.day(), 2);
-  CHECK(g.check_write(request(gen::Var::r_affection, x, x + 100, 7), led).value > x);
+  const int before = x;
+  x = g.check_write(request(gen::Var::r_affection, x, x + 100, 7), led).value;
+  CHECK(x > before);
+  led.roll(0, 0);                                               // time never goes back (review 11)
+  CHECK_EQ(led.day(), 1);
+  CHECK(led.moved_today(gen::Var::r_affection, 7) > 0);         // an oscillating clock refills nothing
+  const std::vector<LedgerEntry> saved(led.entries().begin(), led.entries().end());
+  WriteLedger copy;                                             // and what was saved restores
+  CHECK(copy.restore(led.day(), led.life_year(), saved));
+  CHECK_EQ(copy.moved_today(gen::Var::r_affection, 7), led.moved_today(gen::Var::r_affection, 7));
 }
 
 TEST(ledger_can_be_saved_and_restored) {
@@ -393,6 +395,17 @@ TEST(check_writes_with_a_short_output_keeps_nothing) {
   std::array<Verdict, 3> out{};
   CHECK_EQ(g.check_writes(keys, out), std::size_t{0});
   for (const Verdict& v : out) CHECK(!v.allowed && v.reason == Reason::invalid_value);
+}
+
+TEST(an_absent_param_that_cannot_be_a_person_is_not_an_unknown_person) {
+  Governor g;                                                   // review 11: put without `where`, adult actor
+  GestureCall call;
+  call.gesture = gen::Gesture::put;
+  const gen::GestureSpec& spec = gen::kGestures[static_cast<std::size_t>(gen::Gesture::put)];
+  const Party thing{-1, -1, -1, true, false};
+  for (int i = 0; i < spec.n_params; ++i)
+    if (spec.params[i].name == "item") { call.value[i] = 0; call.party[i] = &thing; }
+  CHECK(g.check_gesture(call, &kPalette[0]).reason == Reason::ok);
 }
 
 TEST(speech_content_is_refused_until_the_language_port) {

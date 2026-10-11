@@ -75,14 +75,8 @@ std::string_view to_string(Reason r) {
 // ---- WriteLedger -----------------------------------------------------------------------------------------
 
 void WriteLedger::roll(std::int32_t day, std::int32_t life_year) {
-  if (day != day_) {
-    day_ = day;
-    for (std::size_t i = 0; i < size_; ++i) entries_[i].day_moved = 0;
-  }
-  if (life_year != life_year_) {
-    life_year_ = life_year;
-    for (std::size_t i = 0; i < size_; ++i) entries_[i].year_moved = 0;
-  }
+  if (day > day_) day_ = day;
+  if (life_year > life_year_) life_year_ = life_year;
 }
 
 std::size_t WriteLedger::find(gen::Var v, std::uint32_t target) const {
@@ -250,7 +244,7 @@ Verdict Governor::check_gesture(const GestureCall& call, const Party* actor, boo
     const bool given = call.value[i] >= 0 || call.party[i] != nullptr;
     const Party* party;
     if (given) party = call.party[i] ? call.party[i] : &kUnknown;
-    else if (g.contact && !p.optional) party = &kUnknown;
+    else if (g.contact && !p.optional && p.accepts_agent) party = &kUnknown;
     else continue;
     if (!party->person) continue;
     ++persons;

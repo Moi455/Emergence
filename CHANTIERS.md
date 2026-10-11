@@ -1,6 +1,6 @@
-# Chantiers ouverts (mis à jour le 10 octobre 2026)
+# Chantiers ouverts (mis à jour le 11 octobre 2026)
 
-**En cours (9-10 oct.) : moteur social, puis entraînement.** Fait : le catalogue unique (`catalogue/`, chantier 3 ci-dessous), la conception de l'IA mesurée (`docs/07`), le gouverneur C++. Suite, dans l'ordre :
+**En cours (9-11 oct.) : moteur social, puis entraînement.** Fait : le catalogue unique (`catalogue/`, chantier 3 ci-dessous, étape 18 comprise), la conception de l'IA mesurée (`docs/07`), le gouverneur C++ (relu deux fois, parité exacte), l'oracle Python du tokeniseur tok-2 (`ai/tok2/`), l'explication pour Monsieur (`docs/08_comment_ca_marche.md`). Suite, dans l'ordre :
 1. mémoire des PNJ en C++ (variables et enregistrements générés depuis le catalogue) ;
 2. langue intérieure en C++ (analyseur typé, oracle `catalogue/tools/language.py`) ;
 3. perception par observateur et tokeniseur unique C++ exposé à Python ;
