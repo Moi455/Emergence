@@ -35,27 +35,37 @@ class ModelInterface:
         "COMMIT": "counterparty (mref), mine_or_theirs, prop (expression), deadline_felt, status_believed, witnesses_believed",
         "PLAN": "steps (gesture + params), goal (mref), progress, commitment",
         "REQUEST": "from (mref), prop (expression), age",
+        "WAKE": "why this decision happens now: mode, cause, trigger (the record that woke him), urgency",
         "SKILL": "technique (word), self_estimate",
     }
     # Record keys: the speaker's pointers of the inner language (@E3, b:7...), and private prefixes for records the
     # language cannot point to (h:, q:, c:, p:, k:, t:). "me" is the NPC himself (SELF); a key is unique per decision.
     KEYS = {"SELF": "me", "SELF_MIND": "me.mind", "SELF_STATE": "me.state", "TASTE": "t:", "ENTITY": "@E", "GROUP": "@G",
             "BELIEF": "b:", "HEARD": "h:", "MEMORY": "m:", "GOAL": "g:", "PLAN": "p:", "REQUEST": "q:", "COMMIT": "c:",
-            "INV": "@T", "SKILL": "k:", "PLACE": "@PLACE", "THING": "@T", "EVENT": "@V", "LOCUS": "@L"}
+            "INV": "@T", "SKILL": "k:", "PLACE": "@PLACE", "THING": "@T", "EVENT": "@V", "LOCUS": "@L", "WAKE": "wake"}
     ALIASES = {"HEARD": "BELIEF", "INV": "THING"}
+    # A deadline is a point in the FUTURE (hours until it; negative = overdue): the model reads a signed log. A
+    # variable declared scale=time is an age (hours since); only these fields are rewritten.
+    TIME_UNTIL_FIELDS = {"deadline"}
     EXPLICIT = {
         "TASTE": {"concept": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                   "attitude": {"scale": "bipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
         "COMMIT": {"counterparty": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "mine": {"scale": "bool", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "prop": {"scale": "proposition", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
-                   "deadline": {"scale": "time", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                   "deadline": {"scale": "time_until", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "status": {"scale": "enum", "values": ["open", "fulfilled", "broken", "released"], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "witnesses": {"scale": "list", "values": [], "unit": "", "list_of": "mref", "components": [], "component_scales": []}},
         "PLAN": {"step": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                  "goal": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                  "progress": {"scale": "ratio", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
-                 "commitment": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
+                 "commitment": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "target": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "next": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
+        "WAKE": {"mode": {"scale": "enum", "values": ["act", "listen", "reflect"], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "cause": {"scale": "enum", "values": ["perception", "speech", "request", "body", "plan", "timer", "routine"], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "trigger": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "urgency": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
     }
     ACCEPT_TOKENS = {"agent": "ENTITY", "animal": "THING", "item": "THING|INV", "structure": "THING", "terrain": "THING",
                      "voxel": "THING", "water": "THING", "fire": "THING", "trace": "THING", "plant": "THING",
@@ -77,8 +87,12 @@ class ModelInterface:
                     scales = [self.cat["property"][c].scale for c in comps]
                 else:                                             # named axes, given normalised in [-1, 1]
                     comps, scales = list(v.components), ["unit"] * len(v.components)
-                out.setdefault(key, {"from": v.id, "scale": v.scale, "values": values, "unit": v.unit, "list_of": v.list_of,
-                                     "components": comps, "component_scales": scales})
+                scale = v.scale
+                if scale == "time" and key.rpartition(".")[2] in self.TIME_UNTIL_FIELDS:
+                    scale = "time_until"
+                units = [self.cat["property"][c].unit for c in comps] if v.components == ["@object_vector"] else [""] * len(comps)
+                out.setdefault(key, {"from": v.id, "scale": scale, "values": values, "unit": v.unit, "list_of": v.list_of,
+                                     "components": comps, "component_scales": scales, "component_units": units})
         return out
 
     def input_spec(self) -> dict:
@@ -99,8 +113,16 @@ class ModelInterface:
             types[typ]["fields"] = {k: dict(v) for k, v in flds.items()}
         return {"max_tokens": budget.MAX_TOKENS, "token_types": types,
                 "object_vector": self.cat.object_vector(),
-                "encoding": "bipolar10 and unipolar10 read as int8 tenths / 100; qty log-scaled; enum and word as vocabulary ids; time as age in game hours (log)",
-                "pointer_encoding": "an mref field holds the index of a token slot of the same decision (1..128); 0 = none; 129 = exists but out of this decision's context"}
+                "encoding": ("numbers are normalised in double precision and stored as float16: bipolar10 and unipolar10 as x / 10, ratio and unit as x, "
+                             "qty as log1p(x) (signed log for degC), time (an age, hours since) as log1p(x), time_until (a deadline, hours until, "
+                             "negative = overdue) as a signed log1p, bool as 0 or 1; every number, word and pointer has a known flag (unknown is "
+                             "not zero, an empty list or 'nobody' is known); enum and word as vocabulary ids"),
+                "pointer_encoding": ("an mref field holds the index of a token slot of the same decision (1..128); 0 = none (a known 'nobody', "
+                                     "told apart from an unknown pointer by ptr_known); 129 + k = a GHOST: a record of the NPC's mind that this "
+                                     "decision does not carry (k = 0..31, numbered by first appearance in the encoding order: rows, then "
+                                     "columns, then proposition positions; two pointers to the same ghost give the same slot, two different "
+                                     "ghosts give different slots); 161 = a ghost beyond the 32nd. A pointer to something the NPC's mind "
+                                     "does not hold is refused (never encoded)")}
 
     def output_spec(self) -> dict:
         # a manner head is SHARED when every gesture using that param name has the same values; otherwise every

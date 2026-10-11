@@ -19,7 +19,7 @@ BUDGET = {"SELF": 64, "SELF_MIND": 64, "SELF_STATE": 64, "ENTITY": 32, "BELIEF":
 # events) are defined at step 11-12 and reserved here
 TOKENS = {"SELF": 1, "SELF_MIND": 1, "SELF_STATE": 1, "TASTE": 2, "ENTITY": 10, "GROUP": 2, "BELIEF": 12,
           "HEARD": 2, "MEMORY": 9, "GOAL": 4, "PLAN": 1, "REQUEST": 2, "COMMIT": 3, "INV": 8, "SKILL": 3,
-          "PLACE": 1, "THING": 16, "EVENT": 6, "LOCUS": 3}
+          "PLACE": 1, "THING": 16, "EVENT": 6, "LOCUS": 3, "WAKE": 1}   # WAKE: why this decision happens now
 GRAMMAR_WORDS_MAX = 768    # the real speech vocabulary (language.Vocabulary): concepts, gestures, manners,
                            # interpretations, nameable variables and properties, directions
 KINDS_MAX = 1024           # item types, materials, species, forms: a separate, factored table

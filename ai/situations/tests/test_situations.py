@@ -50,6 +50,46 @@ class TestSituations(unittest.TestCase):
         self.assertGreater(partners, 10)                   # adults do have partners
         self.assertGreater(minors, 10)                     # and children are NPCs too
 
+    def test_every_situation_has_a_coherent_wake_token(self):
+        causes = set()
+        for s in SITS:
+            recs = {r.key: r for r in s.context.records}
+            w = recs["wake"].fields
+            causes.add(w["cause"])
+            types = {r.type for r in s.context.records}
+            if w["cause"] == "request":
+                self.assertEqual(recs[w["trigger"]].type, "REQUEST")
+            if "REQUEST" in types:
+                self.assertEqual(w["cause"], "request")
+            if w["cause"] == "perception":
+                self.assertEqual(recs[w["trigger"]].type, "EVENT")
+            if w["cause"] in ("body", "routine"):
+                self.assertEqual(w["trigger"], "")
+            else:
+                self.assertIn(recs[w["trigger"]].type, ("REQUEST", "HEARD", "EVENT", "GOAL", "PLAN"))
+            self.assertIn(w["mode"], ("act", "listen", "reflect"))
+        self.assertGreaterEqual(len(causes), 5)
+
+    def test_plans_have_a_target_and_a_next_gesture(self):
+        plans = [r for s in SITS for r in s.context.records if r.type == "PLAN"]
+        self.assertGreater(len(plans), 20)
+        for p in plans:
+            self.assertIn("target", p.fields)
+            self.assertNotEqual(p.fields["next"], p.fields["step"])
+
+    def test_some_deadlines_are_overdue_and_some_pointers_are_ghosts(self):
+        deadlines = [r.fields["deadline"] for s in SITS for r in s.context.records if r.fields.get("deadline") is not None]
+        self.assertTrue(any(d < 0 for d in deadlines) and any(d > 0 for d in deadlines))
+        self.assertGreater(sum(1 for s in SITS if s.encoded.ghosts), N // 10)
+
+    def test_known_empty_is_not_unknown(self):
+        beliefs = [r for s in SITS for r in s.context.records if r.type == "BELIEF"]
+        self.assertTrue(any(r.fields["informant"] == "" for r in beliefs))        # nobody told him: he saw it
+        for s in SITS:                                                               # he always knows what he holds
+            me = next(r for r in s.context.records if r.type == "SELF")
+            self.assertIsInstance(me.fields["held"], list)
+        self.assertTrue(any(next(r for r in s.context.records if r.type == "SELF").fields["held"] == [] for s in SITS))
+
     def test_the_audit_refuses_an_orientation_field_on_a_young_npc(self):
         s = next(x for x in SITS if x.scene.self_.age < ADULT)
         recs = [Record(r.type, r.key, dict(r.fields)) for r in s.context.records]

@@ -24,7 +24,7 @@ MAX_SYMBOLS = 20
 MAX_DEPTH = 2                                  # propositions nested as arguments (believes, wants, says, that...)
 MAX_POINTERS = 3                               # per proposition
 MAX_ROLES = 3                                  # per event frame: 2 inline (with, to, into, how) + says
-POINTER = re.compile(r"^(@E\d+|@T\d+|@G\d+|@L\d+|@V\d+|@PLACE|[bmg]:\d+|n:\d+)$")
+POINTER = re.compile(r"^(@E\d+|@T\d+|@G\d+|@L\d+|@V\d+|@PLACE|[bmg]:\d+|n:\d+)$", re.ASCII)   # ASCII digits only
 NESTING_HEADS = {"believes", "wants", "intends", "says", "may", "owes", "norm", "custom", "recipe", "that"}
 NAMEABLE_HOLDERS = {"mind_static", "relation"}
 NAMEABLE_VARIABLES = {"pain", "hunger", "thirst", "sleepiness", "exhaustion", "sickness_felt", "intoxication",
@@ -145,10 +145,10 @@ class Vocabulary:
         base, _, qty = sym.partition(":")
         out: set[str] = set()
         if base in self.kinds or "lookalike" in self.cats.get(base, ()):
-            if qty and not qty.isdigit():
+            if qty and not (qty.isascii() and qty.isdigit()):
                 raise LanguageError(f"bad quantity in '{sym}'")
             out |= CATEGORY_TYPES["kind_qty" if qty else "kind"]
-        if sym.isdigit():
+        if sym.isascii() and sym.isdigit():
             out |= {"quantity"}
         for c in self.cats.get(sym, ()):
             out |= CATEGORY_TYPES.get(c, set())
@@ -204,11 +204,16 @@ class Parser:
 
 
 class Expression:
-    """A validated utterance (or the proposition of a record written by the model)."""
+    """A validated utterance (or the proposition of a record written by the model).
 
-    def __init__(self, text: str, vocab: Vocabulary):
+    bare=True validates a BARE proposition, `(owns me @T1)`, as stored in a belief, a goal or a memory: no mood or
+    formula around it (the content of a record is not an utterance), same predicates, arguments, pointer budget,
+    symbol count and nesting limits."""
+
+    def __init__(self, text: str, vocab: Vocabulary, bare: bool = False):
         self.text = text
         self.vocab = vocab
+        self.bare = bare
         self.problems: list[str] = []
         try:
             self.root = Parser().parse(text)
@@ -226,7 +231,10 @@ class Expression:
         syms = self.root.symbols()
         if len(syms) > MAX_SYMBOLS:
             self.problems.append(f"{len(syms)} symbols > {MAX_SYMBOLS}")
-        self._utterance(self.root)
+        if self.bare:
+            self._prop(self.root)
+        else:
+            self._utterance(self.root)
         depth = self._depth(self.root)
         if depth > MAX_DEPTH:
             self.problems.append(f"nesting depth {depth} > {MAX_DEPTH}")

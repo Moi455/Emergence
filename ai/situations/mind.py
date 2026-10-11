@@ -81,6 +81,11 @@ class MindBuilder:
     def _hours_ago(self, lo: float, hi: float) -> float:
         return round(math.exp(self.rng.uniform(math.log(lo), math.log(hi))), 3)
 
+    def _until(self, lo: float, hi: float) -> float:
+        """Hours until a deadline: mostly ahead, sometimes already overdue (negative)."""
+        h = self._hours_ago(lo, hi)
+        return -h if self.rng.random() < 0.2 else h
+
     @staticmethod
     def stage(age: float, values: list[str]) -> str:
         want = "infant" if age < 3 else "child" if age < 14 else "teen" if age < ADULT else "adult" if age < 60 else "elder"
@@ -104,8 +109,7 @@ class MindBuilder:
              "body.consciousness": 10.0, "body.breath": round(r.uniform(8, 10), 1), "body.bleeding": 0.0,
              "body.pain": round(min(10.0, abs(r.gauss(0, 1.5))), 1), "body.load": round(r.uniform(0, 0.5), 2),
              "body.mobility": 1.0, "body.manipulation": 1.0}
-        if carried_vectors:
-            s["held"] = carried_vectors[:2]
+        s["held"] = carried_vectors[:2]                           # [] = he knows his hands are empty
         mind = {}
         if adult:
             mind["attracted_to"] = r.choice([["male"], ["female"], ["female", "male"]])
@@ -158,7 +162,9 @@ class MindBuilder:
         ikeys = [f"@T{len(things) + i + 1}" for i in range(len(carried))]
         loci = [f"@L{i + 1}" for i in range(r.randint(0, T["LOCUS"]))]
         groups = [f"@G{i + 1}" for i in range(r.randint(0, T["GROUP"]))]
-        refs = Refs(pkeys, tkeys + ikeys, loci, groups, [k for k, (_, _, x) in zip(pkeys, people) if x is None])
+        # people he knows but whose files the context selector left out: ghosts for the tokenizer (known_keys)
+        self.extra_known = [f"@E{len(pkeys) + 1 + i}" for i in range(r.randint(0, 3))]
+        refs = Refs(pkeys + self.extra_known, tkeys + ikeys, loci, groups, [k for k, (_, _, x) in zip(pkeys, people) if x is None])
         owner_key = {p.pid: k for (p, _, _), k in zip(people, pkeys)} | {sc.self_.pid: "me"}
 
         out: list[Record] = []
@@ -185,7 +191,7 @@ class MindBuilder:
             "air_felt": self._enum("PLACE", "air_felt")})))
         for key in loci:
             out.append(Record("LOCUS", key, {"dist": round(r.uniform(20, 3000), 0), "dir": self._dir(r.uniform(-3.14, 3.14)),
-                                             "owner": r.choice(["me", None] + pkeys)}))
+                                             "owner": r.choice(["me", ""] + pkeys)}))
         for key in groups:
             out.append(Record("GROUP", key, self._fill("GROUP", {"known_by": "seen"})))
         bkeys = []
@@ -199,7 +205,7 @@ class MindBuilder:
             out.append(Record("BELIEF", key, self._fill("BELIEF", {
                 "prop": prop, "source": src, "age": self._hours_ago(0.1, 3000), "contradicted": False,
                 "hops": 0 if src == "seen" else r.randint(1, 4),
-                "informant": r.choice(pkeys) if src in ("told", "heard") and pkeys else None,
+                "informant": (r.choice(pkeys) if pkeys else None) if src in ("told", "heard") else "",   # "" = nobody told him
                 "shared": r.sample(pkeys, min(len(pkeys), r.randint(0, 2)))})))
         present_keys = [k for k, (_, _, x) in zip(pkeys, people) if x is not None]
         for i in range(r.randint(0, T["HEARD"]) if present_keys else 0):
@@ -229,11 +235,14 @@ class MindBuilder:
             gkeys.append(key)
             out.append(Record("GOAL", key, self._fill("GOAL", {
                 "prop": prop, "mode": "achieve", "status": "active", "origin": self._enum("GOAL", "origin"),
-                "origin_ref": r.choice(bkeys + mkeys + [None]), "age": self._hours_ago(0.1, 500),
-                "deadline": self._hours_ago(1, 500) if r.random() < 0.4 else None})))
+                "origin_ref": r.choice(bkeys + mkeys + [""]), "age": self._hours_ago(0.1, 500),
+                "deadline": self._until(1, 500) if r.random() < 0.4 else None})))
         if gkeys and r.random() < 0.6:
             steps = [g for fam, gs in self.pools.gestures.items() if fam != "communicate" for g in gs]
-            out.append(Record("PLAN", "p:1", self._fill("PLAN", {"step": r.choice(steps), "goal": r.choice(gkeys)})))
+            step = r.choice(steps)
+            out.append(Record("PLAN", "p:1", self._fill("PLAN", {
+                "step": step, "next": r.choice([g for g in steps if g != step]), "goal": r.choice(gkeys),
+                "target": r.choice(["me"] + pkeys + tkeys)})))
         for i in range(r.randint(0, T["REQUEST"]) if present_keys else 0):
             asker = r.choice(present_keys)
             prop = P.request(refs, asker)
@@ -246,7 +255,7 @@ class MindBuilder:
             prop = f"(did {'me' if mine else who} give {kind} (to {who if mine else 'me'}))"
             if P._ok(prop) is not None:
                 out.append(Record("COMMIT", f"c:{i + 1}", {
-                    "counterparty": who, "mine": mine, "prop": prop, "deadline": self._hours_ago(1, 300),
+                    "counterparty": who, "mine": mine, "prop": prop, "deadline": self._until(1, 300),
                     "status": "open", "witnesses": r.sample(pkeys, min(len(pkeys), r.randint(0, 2)))}))
         techs = self.pools.enum("SKILL", "technique")
         for i, t in enumerate(r.sample(techs, r.randint(0, min(T["SKILL"], len(techs))))):
@@ -273,4 +282,29 @@ class MindBuilder:
                 "actor": key, "gesture": g, "target": target,
                 "sense": "seen", "age": self._hours_ago(0.0005, 0.05),
                 "manner": manners}))
+        out.append(self._wake(out))
         return out
+
+    # ---- why he decides now --------------------------------------------------------------------------
+    def _wake(self, records: list[Record]) -> Record:
+        """A coherent reason: a request he has heard, then words he has heard, then an event he has perceived,
+        then a goal whose deadline has passed, his plan, his body or his routine. The trigger is the record that
+        woke him (@V, h:, q:, g:, p:); a body or a routine has none ("" = known: nobody)."""
+        r = self.rng
+        first = lambda typ: next((x.key for x in records if x.type == typ), None)  # noqa: E731
+        late = [x.key for x in records if x.type == "GOAL" and (x.fields.get("deadline") or 0) < 0]
+        if first("REQUEST"):
+            cause, trigger, mode, urgency = "request", first("REQUEST"), r.choice(["listen", "act", "act"]), r.uniform(3, 8)
+        elif first("HEARD"):
+            cause, trigger, mode, urgency = "speech", first("HEARD"), r.choice(["listen", "listen", "reflect"]), r.uniform(1, 7)
+        elif first("EVENT"):
+            cause, trigger, mode, urgency = "perception", first("EVENT"), r.choice(["act", "act", "listen"]), r.uniform(2, 9)
+        elif late:
+            cause, trigger, mode, urgency = "timer", late[0], "act", r.uniform(3, 8)
+        elif first("PLAN"):
+            cause, trigger, mode, urgency = "plan", first("PLAN"), "act", r.uniform(1, 6)
+        elif r.random() < 0.5:
+            cause, trigger, mode, urgency = "body", "", "act", r.uniform(3, 9)
+        else:
+            cause, trigger, mode, urgency = "routine", "", r.choice(["act", "reflect"]), r.uniform(0, 3)
+        return Record("WAKE", "wake", {"mode": mode, "cause": cause, "trigger": trigger, "urgency": round(urgency, 1)})

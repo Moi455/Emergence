@@ -9,7 +9,9 @@ Fabrique des moments plausibles de la vie d'un PNJ : ce qu'il voit, croit, se ra
 
 Rien n'est écrit à la main hors des archétypes de lieux : tous les mots viennent du catalogue. L'échantillonneur ne décide jamais à la place du PNJ.
 
-Mesuré (11 oct.) : 2,9 ms par situation, 41 jetons en moyenne (21 à 60).
+Mesuré (11 oct., après la correction de tok-2) : 3,9 ms par situation (dont 2,1 ms de mise en jetons et de validation des propositions par la grammaire), 42 jetons en moyenne (25 à 63), 59 Ko de tableaux par décision, 0,016 ms par empreinte.
+
+Chaque situation porte aussi un jeton `WAKE` cohérent (requête entendue, parole entendue, événement perçu, échéance dépassée, plan, corps ou routine), un `PLAN` avec `target` et `next`, des échéances parfois dépassées (négatives), des personnes connues mais hors du lot (`known_keys` : fantômes pour le tokeniseur), et les conventions inconnu / vide (`informant: ""` quand personne ne l'a dit, `held: []` mains vides).
 
 Limites : pas encore de mots pour les tenues, les marques, la météo vue ni les sortes de lieux (trous H et C de l'étape 18) ; les affordances des objets ne sont données que quand elles sont sûres.
 

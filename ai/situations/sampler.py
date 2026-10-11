@@ -36,8 +36,8 @@ class SituationSampler:
     def __init__(self, seed: int = 0, pools: Pools | None = None):
         self.seed = seed
         self.pools = pools or Pools()
-        self.tokenizer = Tokenizer(self.pools.interface)
         self.props = PropositionFactory(random.Random(0), self.pools)       # its vocabulary is built once
+        self.tokenizer = Tokenizer(self.pools.interface, grammar=self.props.vocab)
         self.audit = D10Audit(self.pools)
 
     def sample(self, index: int) -> Situation:
@@ -47,7 +47,7 @@ class SituationSampler:
         builder = MindBuilder(rng, self.pools, self.props)
         records = builder.build(scene)
         self.audit.check(scene.self_, records, builder.people)
-        ctx = DecisionContext(records)
+        ctx = DecisionContext(records, known_keys=[r.key for r in records] + builder.extra_known)
         return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx))
 
 
