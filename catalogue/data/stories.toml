@@ -10,18 +10,22 @@
 [[story]]
 id = "slap_after_insult"
 status = "expressible"
-actions = ["strike", "go"]
-variables = ["pain", "expression", "involuntary_signs", "anger", "shame"]
-note = "strike(head, open_hand, swing, light, c_done) puis go : une gifle"
+actions = ["strike", "go", "speak"]
+variables = ["pain", "expression", "involuntary_signs", "anger", "shame", "r_resentment", "m_interpretation"]
+interpretations = ["insult", "assault"]
+utterances = ["(assert (quality you w_stupid very_high))"]
+note = "remarque : speak(loud, cold) ; gifle : strike(target=@E, zone=head, with=open_hand, motion=swing, intensity=light, until=c_done) ; go(relation=away, pace=brisk)"
 charter = ["§6", "§8"]
 text_fr = "Après une remarque humiliante, une femme gifle un homme devant la taverne, puis s'en va."
 
 [[story]]
 id = "punch_in_brawl"
 status = "expressible"
-actions = ["strike", "grab", "push"]
-variables = ["pain", "wounds", "condition", "intoxication", "anger"]
-note = "strike(head, fist, swing, firm, c_done) ; l'aubergiste : grab + push pour séparer"
+actions = ["take", "strike", "grab", "push", "speak"]
+variables = ["pain", "wounds", "condition", "intoxication", "anger", "posture"]
+interpretations = ["assault", "drunkenness"]
+utterances = ["(assert (owns me @T1))", "(request (not (did you strike @E2)))"]
+note = "take(target=chope, from=hand_of, hold=in_hand) ; strike(head, fist, swing, firm, c_done) ; aubergiste : grab(hold_zone=collar, firm, until=c_target_yields) + push(direction=away, firm)"
 charter = ["§8", "§27"]
 text_fr = "Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l'autre tombe, la bagarre s'arrête quand l'aubergiste les sépare."
 
@@ -29,8 +33,10 @@ text_fr = "Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l
 id = "beating_near_death"
 status = "expressible"
 actions = ["strike", "go"]
-variables = ["wounds", "consciousness", "bleeding", "condition", "r_resentment"]
-note = "strike(any, fist, swing, hard, c_target_still) puis go (away) ; le rival survit, inconscient"
+variables = ["wounds", "consciousness", "bleeding", "condition", "r_resentment", "fear"]
+interpretations = ["assault", "revenge"]
+utterances = ["(assert (seen_myself (past (did @E1 strike @E2 (how hard)))))"]
+note = "strike(zone=any, with=fist, swing, hard, until=c_target_still) puis go(relation=away, pace=run) ; le rival survit (moteur : heal_tissue)"
 charter = ["§6", "§25"]
 text_fr = "Un homme rancunier roue de coups son rival jusqu'à ce qu'il ne bouge plus, puis s'arrête et fuit ; le rival survit, blessé pour des semaines."
 
@@ -39,37 +45,76 @@ id = "killed_by_blows"
 status = "expressible"
 actions = ["strike"]
 variables = ["wounds", "consciousness", "blood_volume", "alive", "condition"]
-note = "strike(head, foot, swing, full, c_target_still) prolongé après la perte de conscience : la mort vient du corps, personne n'a choisi « tuer »"
+interpretations = ["manslaughter", "murder"]
+utterances = ["(exclaim (dead @E2))"]
+note = "strike(head, foot, swing, full, until=c_target_still) prolongé : la mort vient du corps (moteur)"
 charter = ["§25"]
 text_fr = "Une rixe dégénère : les coups continuent après la perte de connaissance et la victime meurt. Personne n'avait décidé de « tuer »."
 
 [[story]]
 id = "self_defense_kill"
+status = "expressible"
+actions = ["go", "strike", "guard", "speak"]
+variables = ["wounds", "blood_volume", "alive", "condition", "fear", "r_fear", "m_interpretation", "b_proposition", "b_certainty"]
+interpretations = ["self_defense", "murder"]
+utterances = ["(assert (because (past (did @E3 strike me (how thrust))) (past (did me strike @E3))))", "(assert (qualifies m:2 self_defense))", "(assert (think (qualifies m:2 murder)))"]
+note = "agresseur : go(toward, run) + strike(torso, held=couteau, thrust, hard) ; bûcheron : guard(block) + strike(head, held=hache, swing, full, until=c_target_down) ; l'instrument ne peut pas être nommé dans la parole (with refusé sur strike)"
 charter = ["§5", "§25"]
 text_fr = "Attaqué au couteau sur un chemin, un bûcheron frappe avec sa hache et tue son agresseur ; au village, certains parlent de légitime défense, d'autres de meurtre."
 
 [[story]]
 id = "knife_interrupts_drink"
+status = "expressible"
+actions = ["drink", "put", "set_posture", "go", "look"]
+variables = ["ep_held", "fear", "r_fear", "i_steps", "i_commitment", "attention"]
+interpretations = ["threat_felt"]
+note = "PLAN drink(ale_mug, little) i_commitment bas ; réveil sur perception (ENTITY.look.held : tranche/perce) ; put(chope, where=table) ; set_posture(stand) ; go(target=@L porte, toward, walk) en gardant look(watch) sur l'homme"
 charter = ["§8"]
 text_fr = "Un PNJ boit tranquillement depuis deux minutes quand un homme entre avec un couteau ; il pose sa chope, se lève et recule vers la porte."
 
 [[story]]
 id = "restrain_drunk"
+status = "expressible"
+actions = ["grab", "speak"]
+variables = ["intoxication", "anger", "r_trust", "need_autonomy"]
+interpretations = ["kindness"]
+utterances = ["(request (not (did you strike @E4)))", "(assert (state you intoxication high))"]
+note = "grab(hold_zone=arm, firm, until=c_target_yields) ; speak(volume=low, tone=calm) ; l'ivrogne est retenu : condition c_stopped sur son strike"
 charter = ["§8", "§12"]
 text_fr = "Un ami retient par les bras un homme ivre qui veut frapper, et lui parle pour le calmer."
 
 [[story]]
 id = "shove_in_queue"
+status = "expressible"
+actions = ["push", "speak"]
+variables = ["pain", "posture", "anger", "r_respect", "patience"]
+properties = ["wetness"]
+interpretations = ["assault"]
+utterances = ["(ouch (assert (past (did you push me))))"]
+note = "push(target=vieillard, firm, direction=aside) ; le seau renversé : processus flow (moteur)"
 charter = ["§6"]
 text_fr = "Au puits, une femme impatiente bouscule un vieillard qui renverse son seau."
 
 [[story]]
 id = "throw_stone"
+status = "expressible"
+actions = ["throw"]
+variables = ["r_resentment", "m_content", "anger", "r_affection"]
+properties = ["integrity", "toughness"]
+interpretations = ["vandalism", "revenge"]
+utterances = ["(assert (past (did @E6 throw stone_loose)))"]
+note = "throw(item=stone_loose, at=fenêtre (structure), intensity=hard) ; la vitre casse (fracture, moteur) ; mobile : souvenir did(@E5 strike chien) et relation envers la bête ; la cible 'at' ne peut pas être dite (rôle absent)"
 charter = ["§16"]
 text_fr = "Un gamin lance une pierre sur la fenêtre de celui qui a battu son chien ; la vitre se brise."
 
 [[story]]
 id = "wolf_attack_rescue"
+status = "expressible"
+actions = ["guard", "speak", "go", "take", "strike"]
+variables = ["animal_aggression", "animal_fear_humans", "pc_display", "wounds", "fear", "r_affection", "gratitude", "r_obligation"]
+interpretations = ["rescue", "heroism"]
+utterances = ["(help (assert (at wolf here)))"]
+note = "loup : loi du moteur ; frère : go(target=@E, toward, run), take(bâton, from=ground), strike(target=loup, any, held, swing, hard, until=c_target_gone)"
 charter = ["§19", "§12"]
 text_fr = "Un loup attaque un berger à la lisière ; son frère accourt avec un bâton, frappe la bête, qui s'enfuit."
 
@@ -78,7 +123,10 @@ text_fr = "Un loup attaque un berger à la lisière ; son frère accourt avec un
 id = "blackmail_affair"
 status = "expressible"
 actions = ["speak"]
+variables = ["b_secret", "commitments_seen", "fear", "r_resentment"]
+interpretations = ["extortion"]
 utterances = ["(offer (if (not (did you give silver_coin:3 (to me))) (did me speak (to @E2) (says (that b:7)))))"]
+note = "(existant) chaque mois ≈ each_season (le calendrier D30 n'a ni semaine ni mois)"
 charter = ["§5", "§10"]
 text_fr = "Un homme a vu la femme du forgeron embrasser un autre ; il lui dit qu'il se taira si elle lui donne de l'argent chaque mois."
 
@@ -86,7 +134,10 @@ text_fr = "Un homme a vu la femme du forgeron embrasser un autre ; il lui dit qu
 id = "promise_and_break"
 status = "expressible"
 actions = ["speak"]
+variables = ["commitments_seen", "a_status", "r_trust", "m_importance"]
+interpretations = ["broken_promise"]
 utterances = ["(offer (future (did me work @T1 (with plank))))"]
+note = "(existant) « au printemps » ne peut pas être dit (pas de mot de saison)"
 charter = ["§9", "§12"]
 text_fr = "Un charpentier promet d'aider son voisin à refaire son toit au printemps, puis ne vient pas ; le voisin s'en souvient longtemps."
 
@@ -94,7 +145,10 @@ text_fr = "Un charpentier promet d'aider son voisin à refaire son toit au print
 id = "lie_about_whereabouts"
 status = "expressible"
 actions = ["speak"]
+variables = ["b_proposition", "b_certainty", "b_source"]
+interpretations = ["lie"]
 utterances = ["(assert (past (did me sleep @L1)))"]
+note = "(existant)"
 charter = ["§5"]
 text_fr = "Interrogé sur sa nuit, un homme affirme qu'il dormait chez lui alors qu'il était à la mine ; celui qui l'interroge le croit."
 
@@ -102,12 +156,21 @@ text_fr = "Interrogé sur sa nuit, un homme affirme qu'il dormait chez lui alors
 id = "false_rumor_spreads"
 status = "expressible"
 actions = ["speak"]
+variables = ["b_hops", "b_certainty", "r_trust"]
+interpretations = ["slander", "fraud"]
 utterances = ["(assert (heard_said (habitual (did @E4 pour sand_sack (into flour_sack)))))"]
+note = "(existant)"
 charter = ["§5", "§10"]
 text_fr = "Une rumeur fausse (le meunier coupe sa farine avec du sable) passe de bouche en bouche et ses ventes chutent, alors que personne ne l'a vu faire."
 
 [[story]]
 id = "gossip_true_secret"
+status = "expressible"
+actions = ["speak"]
+variables = ["b_secret", "b_told_to", "b_hops", "heard_unprocessed", "b_certainty", "r_trust"]
+interpretations = ["betrayal"]
+utterances = ["(assert (state @E5 pregnancy high))", "(request (not (did you speak (to anyone) (says (that b:3)))))"]
+note = "speak(volume=whisper, tone=warm) ; si la fille n'est ni présente ni connue de l'amie, « la fille du chef » ne se dit pas (pas de référence relationnelle)"
 charter = ["§5"]
 text_fr = "Une servante raconte à son amie, sous le sceau du secret, que la fille du chef est enceinte ; deux jours plus tard tout le marché le sait."
 
@@ -115,12 +178,21 @@ text_fr = "Une servante raconte à son amie, sous le sceau du secret, que la fil
 id = "invite_walk_refused"
 status = "expressible"
 actions = ["speak"]
+variables = ["r_trust", "q_content"]
+interpretations = ["lie"]
 utterances = ["(hello (request (and (did me go @L2) (did you go me (how along)))))"]
+note = "(existant)"
 charter = ["§15"]
 text_fr = "« Salut Georgette, ça te dirait de venir te promener en forêt ? » Georgette, méfiante envers lui depuis un mensonge, refuse poliment."
 
 [[story]]
 id = "invite_walk_accepted_later"
+status = "expressible"
+actions = ["speak", "work", "shape", "go"]
+variables = ["i_steps", "commitments_seen", "q_content", "r_affection"]
+interpretations = ["nothing_special"]
+utterances = ["(yes (offer (soon (did me go you (how along)))))", "(assert (now (did me work @T3)))"]
+note = "PLAN : work(pâte, press, firm, a_while), shape, puis go(target=@E, relation=along) ; « après » n'existe pas comme connecteur : l'ordre est porté par le PLAN et deux paroles"
 charter = ["§15", "§12"]
 text_fr = "Georgette, occupée à pétrir, répond qu'elle viendra après avoir fini sa fournée, et vient vraiment."
 
@@ -128,39 +200,54 @@ text_fr = "Georgette, occupée à pétrir, répond qu'elle viendra après avoir 
 id = "threat_conditional"
 status = "expressible"
 actions = ["speak"]
+variables = ["fear", "r_fear", "anxiety"]
+interpretations = ["threat_felt"]
 utterances = ["(assert (if (not (did you give silver_coin:20 (to me))) (did me work @T2 (with torch))))"]
+note = "(existant)"
 charter = ["§10"]
 text_fr = "Un créancier dit à un débiteur que s'il ne rembourse pas avant la fête, il brûlera sa grange."
 
 [[story]]
 id = "bribe_guard"
 status = "expressible"
-actions = ["speak"]
+actions = ["speak", "give"]
+variables = ["commitments_seen"]
+interpretations = ["bribery"]
 utterances = ["(offer (if (not (did you look @L3)) (did me give silver_coin:3 (to you))))"]
+note = "(existant)"
 charter = ["§10", "§24"]
 text_fr = "Un contrebandier propose à un garde trois pièces pour qu'il regarde ailleurs pendant la nuit."
 
 [[story]]
 id = "apology_accepted"
 status = "expressible"
-actions = ["speak"]
+actions = ["speak", "touch"]
+variables = ["guilt", "r_affection", "r_resentment", "forgiveness"]
+interpretations = ["nothing_special"]
 utterances = ["(sorry (assert (caused me m:4)))"]
+note = "(existant) l'accolade : touch(with=arms, zone=back, gentle)"
 charter = ["§12"]
 text_fr = "Après une dispute, un frère va voir sa sœur, reconnaît qu'il a eu tort et lui demande pardon ; elle hésite puis l'embrasse."
 
 [[story]]
 id = "negotiation_price"
 status = "expressible"
-actions = ["speak"]
-utterances = ["(offer (if (did you give @T5 (to me)) (did me give silver_coin:11 (to you))))"]
+actions = ["speak", "give"]
+variables = ["b_proposition", "commitments_seen"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (did you give @T5 (to me)) (did me give silver_coin:11 (to you))))", "(offer (and (did me give silver_coin:11 (to you)) (did me give salt_bag (to you))))"]
+note = "(existant) contre-offres 8 / 14 / 11 + sac de sel"
 charter = ["§13"]
 text_fr = "Une marchande et un fermier marchandent le prix d'un cochon : elle offre 8, il demande 14, ils s'accordent à 11 avec un sac de sel en plus."
 
 [[story]]
 id = "seduction_courtship"
 status = "expressible"
-actions = ["speak"]
+actions = ["speak", "go", "touch"]
+variables = ["r_attraction", "joy", "need_intimacy"]
+interpretations = ["nothing_special"]
 utterances = ["(assert (quality you w_beautiful very_high))"]
+note = "(existant) adultes ; baiser : touch(with=lips, zone=face, manner=romantic), gouverneur D10"
 charter = ["§6", "§12"]
 text_fr = "Deux adultes se plaisent : compliments, rires partagés, une promenade, puis un premier baiser au bord de la rivière."
 
@@ -168,71 +255,131 @@ text_fr = "Deux adultes se plaisent : compliments, rires partagés, une promenad
 id = "insult_without_word_insult"
 status = "expressible"
 actions = ["speak"]
+variables = ["anger", "shame", "r_resentment"]
+interpretations = ["insult"]
 utterances = ["(assert (not (state @T2 nutrition high)))"]
+note = "(existant)"
 charter = ["§6"]
 text_fr = "Un homme dit à voix haute devant tous que le pain du boulanger ne nourrirait pas un rat ; le boulanger rougit de colère."
 
 [[story]]
 id = "ask_for_directions_wrong"
 status = "expressible"
-actions = ["speak"]
+actions = ["speak", "sign"]
+variables = ["b_proposition", "b_certainty"]
+interpretations = ["nothing_special"]
 utterances = ["(ask (at n:31 where))"]
+note = "(existant)"
 charter = ["§5"]
 text_fr = "Un voyageur demande le chemin du village de la mer ; un PNJ qui se trompe sur la route l'envoie dans la mauvaise vallée."
 
 [[story]]
 id = "warn_danger"
 status = "expressible"
-actions = ["speak"]
+actions = ["speak", "go"]
+variables = ["fear", "visible_damage", "load_margin"]
+interpretations = ["rescue"]
 utterances = ["(watch_out (assert (state @T4 integrity very_low)))"]
+note = "(existant)"
 charter = ["§12"]
 text_fr = "Une femme crie aux enfants de s'écarter du mur qui se fissure ; ils courent, le mur s'effondre."
 
 [[story]]
 id = "call_for_help"
 status = "expressible"
-actions = ["speak"]
+actions = ["speak", "go"]
+variables = ["pain", "fear", "need_security"]
+interpretations = ["rescue"]
 utterances = ["(help (assert (at me @PLACE)))"]
+note = "(existant)"
 charter = ["§12", "§21"]
 text_fr = "Blessé dans la mine, un homme appelle à l'aide ; ceux qui l'entendent hésitent, l'un descend."
 
 [[story]]
 id = "joke_falls_flat"
+status = "gap"
+actions = ["speak"]
+variables = ["ep_expression", "m_importance", "r_resentment", "shame"]
+interpretations = ["mockery", "insult"]
+utterances = ["(laugh (assert (quality @E1 w_ugly high)))"]
+note = "la calvitie ne se dit pas : les descripteurs sont une liste courte, sans lien avec ce que perçoit ep_build / ep_marks"
 charter = ["§27"]
 text_fr = "Un PNJ maladroit fait une plaisanterie sur la calvitie du chef pendant une assemblée ; personne ne rit, le chef s'en souvient."
 
 [[story]]
 id = "comfort_grieving"
+status = "expressible"
+actions = ["go", "set_posture", "touch", "speak"]
+variables = ["grief", "sadness", "need_company", "r_affection", "tenderness", "gratitude"]
+interpretations = ["kindness"]
+utterances = ["(assert (past (quality @E7 w_good very_high)))", "(assert (attitude everyone r_affection @E7 high))"]
+note = "go(stop_at=near), set_posture(sit), touch(with=hand, zone=hands, gentle, a_while), speak(low, warm) ; le défunt = absent saillant (present=faux)"
 charter = ["§12", "§25"]
 text_fr = "Une voisine s'assoit près d'une veuve, lui prend la main et lui parle du défunt."
 
 [[story]]
 id = "teach_by_explaining"
+status = "expressible"
+actions = ["speak", "shape", "look"]
+variables = ["k_mastery", "k_self_estimate", "self_regard", "b_proposition", "r_respect"]
+properties = ["quality"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (recipe clay_pot (did you shape clay_lump (how firm))))", "(request (did you shape @T4 (how light)))"]
+note = "la potière fait shape pendant que l'apprenti fait look(watch) ; k_mastery monte plus vite avec un maître présent (moteur)"
 charter = ["§17"]
 text_fr = "Une potière explique à un apprenti comment tenir l'argile et lui montre le geste ; il réessaie, rate, recommence."
 
 [[story]]
 id = "order_refused"
+status = "expressible"
+actions = ["speak"]
+variables = ["r_respect", "v_authority", "q_content", "anger", "shame", "r_resentment"]
+interpretations = ["rebellion"]
+utterances = ["(request (did you look @L4 (how watch)))", "(no (assert (not (holds @E1 chief))))"]
+note = "refus dit fort (volume=loud) devant les autres"
 charter = ["§11"]
 text_fr = "Le chef ordonne à un jeune de monter la garde ; le jeune, qui ne reconnaît pas son autorité, refuse devant les autres."
 
 [[story]]
 id = "written_note_anonymous"
+status = "expressible"
+actions = ["write", "put", "read", "speak"]
+variables = ["b_source", "b_informant", "b_certainty", "b_hops", "r_trust"]
+interpretations = ["theft", "slander"]
+utterances = ["(assert (and (holds @E8 treasurer) (habitual (did @E8 take silver_coin:40))))", "(assert (heard_said (habitual (did @E8 take silver_coin:40))))"]
+note = "write(on=parchemin, content=…) sans nom d'auteur ; put(where=porte du temple) ; lecture (t_literacy) → croyance source read, sans informateur ; pas d'évidentiel « c'est écrit »"
 charter = ["§5"]
 text_fr = "Quelqu'un cloue sur la porte du temple un billet anonyme accusant le trésorier de voler ; ceux qui savent lire le racontent aux autres."
 
 [[story]]
 id = "secret_kept_loyal"
+status = "gap"
+actions = ["speak"]
+variables = ["b_secret", "r_trust", "fear"]
+interpretations = ["loyalty", "lie"]
+utterances = ["(ask (at @E9 where))", "(no)"]
+note = "« je ne sais pas où il est » ne se dit pas : trou WH refusé hors de ask"
 charter = ["§5", "§12"]
 text_fr = "Interrogée par le juge, une amie refuse de dire où se cache son ami, et prétend ne rien savoir."
 
 [[story]]
 id = "flattery_manipulation"
+status = "expressible"
+actions = ["speak"]
+variables = ["self_regard", "need_esteem", "r_affection", "r_trust", "pride", "modesty"]
+interpretations = ["lie", "nothing_special"]
+utterances = ["(assert (quality you w_clever very_high))", "(request (holds me treasurer))", "(yes (assert (holds you treasurer)))"]
 charter = ["§7", "§27"]
 text_fr = "Un intrigant flatte sans cesse un chef très susceptible pour obtenir une charge ; le chef la lui donne."
 
 [[story]]
 id = "misunderstood_reference"
+status = "expressible"
+actions = ["speak"]
+variables = ["r_known_by", "r_name_believed", "confusion"]
+interpretations = ["nothing_special"]
+utterances = ["(ask (at n:12 where))", "(ask (named who n:12))"]
+note = "le moteur crée un dossier « un certain Aldric » (r_known_by=name_only) ; « du moulin » exigerait un mot de sorte de lieu"
 charter = ["§15"]
 text_fr = "Le joueur parle à un PNJ d'« Aldric du moulin » ; le PNJ ne le connaît pas et demande de qui il s'agit."
 
@@ -241,8 +388,10 @@ text_fr = "Le joueur parle à un PNJ d'« Aldric du moulin » ; le PNJ ne le con
 id = "theft_seen"
 status = "expressible"
 actions = ["take", "look"]
-interpretations = ["theft", "nothing_special"]
 variables = ["b_proposition", "m_interpretation", "r_trust"]
+interpretations = ["theft", "nothing_special"]
+utterances = ["(assert (seen_myself (past (did @E2 take @T1))))"]
+note = "(existant)"
 charter = ["§5", "§10"]
 text_fr = "Un enfant affamé prend une miche sur l'étal pendant que la boulangère a le dos tourné ; une passante l'a vu, la boulangère non."
 
@@ -250,8 +399,10 @@ text_fr = "Un enfant affamé prend une miche sur l'étal pendant que la boulang�
 id = "take_back_own"
 status = "expressible"
 actions = ["take"]
-interpretations = ["taking_back", "theft"]
 variables = ["m_interpretation", "b_proposition"]
+interpretations = ["taking_back", "theft"]
+utterances = ["(assert (owns me @T1))"]
+note = "(existant)"
 charter = ["§5"]
 text_fr = "Un homme reprend chez son voisin la hache qu'il lui avait prêtée ; le fils du voisin, qui l'ignore, croit à un vol."
 
@@ -259,23 +410,43 @@ text_fr = "Un homme reprend chez son voisin la hache qu'il lui avait prêtée ; 
 id = "betrayal_emerges"
 status = "expressible"
 actions = ["speak", "give"]
-interpretations = ["betrayal", "nothing_special"]
 variables = ["a_status", "m_interpretation", "r_trust"]
+interpretations = ["betrayal", "nothing_special"]
+utterances = ["(offer (not (did me speak (to anyone) (says (that b:3)))))", "(offer (if (did you give silver_coin:30 (to me)) (did me speak (to you) (says (that b:3)))))"]
+note = "(existant)"
 charter = ["§6", "§10"]
 text_fr = "Un homme a promis à son associé de ne jamais vendre leur secret de teinture ; ruiné, il le vend à un rival. L'associé y voit une trahison, le rival une bonne affaire."
 
 [[story]]
 id = "adultery_discovered"
+status = "expressible"
+actions = ["look", "speak", "take", "go"]
+variables = ["jealousy", "r_trust", "r_affection", "masking", "m_secret", "m_interpretation", "a_status"]
+interpretations = ["adultery", "betrayal"]
+utterances = ["(assert (not (link me spouse you)))"]
+note = "adultes seulement ; EVENT touch(manner=romantic) perçu ; elle se tait (masking, m_secret) ; puis take(ses affaires) et go(away)"
 charter = ["§5", "§12"]
 text_fr = "Une femme surprend son mari avec une autre ; elle se tait des semaines, puis le quitte."
 
 [[story]]
 id = "injustice_verdict"
+status = "expressible"
+actions = ["speak", "tie"]
+variables = ["b_proposition", "b_certainty", "r_trust", "unrest"]
+interpretations = ["injustice"]
+utterances = ["(assert (past (did @E10 take @T6)))", "(assert (think (not (past (did @E10 take @T6)))))"]
+note = "le chef affirme et demande une peine ; les villageois croient l'accusé innocent (croyance inférée) ; confiance envers le rôle (jeton GROUP)"
 charter = ["§11"]
 text_fr = "Le chef condamne un pauvre pour un vol qu'il n'a pas commis ; une partie du village y voit une injustice et sa confiance dans le chef baisse."
 
 [[story]]
 id = "generosity_noticed"
+status = "expressible"
+actions = ["give", "speak"]
+variables = ["r_obligation", "r_affection", "gratitude", "m_importance", "m_defining", "b_hops"]
+interpretations = ["generosity"]
+utterances = ["(assert (long_ago (did @E13 give wheat_sack (to us))))"]
+note = "give(item=sac, to=voisin, mode=offer) ; la mémoire passe aux enfants par la parole (hops)"
 charter = ["§21"]
 text_fr = "Pendant la disette, une famille partage ses réserves avec les voisins ; on s'en souviendra à la génération suivante."
 
@@ -283,550 +454,1120 @@ text_fr = "Pendant la disette, une famille partage ses réserves avec les voisin
 id = "absence_at_funeral"
 status = "expressible"
 actions = ["go", "wait"]
-interpretations = ["disrespect_absence"]
 variables = ["r_present", "m_interpretation", "r_respect"]
+interpretations = ["disrespect_absence"]
+utterances = ["(assert (past (not (at @E1 @L3))))"]
+note = "(existant)"
 charter = ["§20", "§21"]
 text_fr = "Tout le village assiste aux funérailles d'une ancienne respectée ; le joueur ne vient pas ; plusieurs habitants le remarquent et le jugent."
 
 [[story]]
 id = "cowardice_judged"
+status = "expressible"
+actions = ["go", "speak"]
+variables = ["r_respect", "contempt", "m_interpretation", "r_affection"]
+interpretations = ["cowardice"]
+utterances = ["(assert (quality @E14 w_coward high))", "(no (assert (quality @E14 w_brave high)))"]
+note = "go(relation=away, pace=run) pendant l'attaque ; sa femme le défend"
 charter = ["§21"]
 text_fr = "Un homme fuit au lieu d'aider pendant l'attaque des loups ; ceux qui l'ont vu le méprisent, sa femme le défend."
 
 [[story]]
 id = "heroism_judged"
+status = "expressible"
+actions = ["go", "take", "speak"]
+variables = ["r_respect", "r_trust", "m_importance", "b_hops"]
+interpretations = ["rescue", "heroism"]
+utterances = ["(assert (past (did @E15 take @E16 (how in_arms))))"]
+note = "go(target=feu, toward, run) ; take(target=enfant, from=ground, hold=in_arms, contact_zone=back : liste blanche D10) ; go(away)"
 charter = ["§24"]
 text_fr = "Une inconnue sort un enfant d'une maison en feu ; elle devient quelqu'un dont on parle et qu'on écoute."
 
 [[story]]
 id = "hypocrisy_exposed"
+status = "expressible"
+actions = ["speak", "go", "look"]
+variables = ["b_certainty", "b_source", "anger", "r_respect", "r_trust"]
+interpretations = ["hypocrisy"]
+utterances = ["(assert (norm forbidden (did anyone touch someone (how romantic))))", "(assert (think (past (did @E17 touch @E18 (how romantic)))))"]
+note = "adultes ; vu sortir à l'aube : EVENT go + heure ressentie ; « à l'aube » ne se dit pas (pas de mot de moment du jour)"
 charter = ["§5", "§27"]
 text_fr = "Le prêtre qui prêche la fidélité est vu sortant de chez une veuve à l'aube ; les fidèles se partagent entre déni et colère."
 
 # ─── Boucle cognitive, perception, interruption ───────────────────────────────────────────────────
 [[story]]
 id = "smell_smoke_wake"
+status = "gap"
+actions = ["touch", "speak", "take", "go"]
+variables = ["smoke", "fire_extent", "sleepiness", "fear", "consciousness"]
+properties = ["burning"]
+interpretations = ["rescue"]
+utterances = ["(watch_out (assert (state @T5 burning high)))"]
+note = "manque : sentir une chose hors de vue (odeur de fumée) et la loi de réveil par l'odeur ; ensuite touch(enfant, hand, shoulder, firm, brief : liste blanche D10), take(by_arm), go(away, run)"
 charter = ["§8", "§16"]
 text_fr = "La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle."
 
 [[story]]
 id = "hear_scream_investigate"
+status = "expressible"
+actions = ["go", "look", "operate"]
+variables = ["fear", "inquisitiveness", "need_security", "attention"]
+interpretations = ["nothing_special"]
+utterances = ["(help)", "(ask (past (did who speak)))"]
+note = "EVENT(sense=heard, gesture=speak, manner=shout, actor=someone) ; l'un go(toward, brisk, stop_at=sight), l'autre operate(target=volet, mode=close)"
 charter = ["§8"]
 text_fr = "Un cri dans la ruelle : un PNJ curieux va voir, un autre ferme ses volets."
 
 [[story]]
 id = "rain_interrupts_harvest"
+status = "expressible"
+actions = ["take", "go", "put", "speak"]
+variables = ["precipitation", "pp_weather_seen", "i_steps", "plant_yield"]
+properties = ["wetness"]
+interpretations = ["nothing_special"]
+utterances = ["(request (and (did you take @T6) (did you go @L7)))"]
+note = "la pluie (PLACE.weather) interrompt le PLAN ; take(gerbes, in_arms), go(grange), put ; « la pluie arrive » ne se dit pas (pas de mot de météo)"
 charter = ["§8"]
 text_fr = "Une averse arrive pendant la moisson ; les moissonneurs rentrent les gerbes en hâte."
 
 [[story]]
 id = "notice_missing_item"
+status = "expressible"
+actions = ["search", "speak"]
+variables = ["b_contradicted", "b_source", "b_certainty", "r_trust", "anger"]
+interpretations = ["theft"]
+utterances = ["(ask (past (did you take smith_hammer)))", "(assert (think (past (did @E19 take smith_hammer))))"]
+note = "b_contradicted : le marteau n'est plus sur l'établi ; le marteau absent n'a pas de pointeur (@T = perçu) : on parle d'« un marteau »"
 charter = ["§5"]
 text_fr = "Un forgeron remarque que son meilleur marteau a disparu de l'établi et soupçonne son apprenti."
 
 [[story]]
 id = "mistaken_identity_dark"
+status = "expressible"
+actions = ["strike", "speak"]
+variables = ["r_id_certainty", "pain", "guilt", "r_affection"]
+interpretations = ["accident", "assault"]
+utterances = ["(sorry (assert (past (think (did you take @T8)))))"]
+note = "pénombre : ev_actor=someone, r_id_certainty bas ; strike(head, fist, swing, firm, until=c_target_down) ; puis reconnaissance"
 charter = ["§5"]
 text_fr = "Dans la pénombre, un homme prend son frère pour un voleur et le frappe avant de le reconnaître."
 
 [[story]]
 id = "eavesdrop_conspiracy"
+status = "expressible"
+actions = ["set_posture", "listen", "speak"]
+variables = ["b_source", "b_secret", "fear", "heard_unprocessed"]
+interpretations = ["rebellion", "usurpation"]
+utterances = ["(request (future (and (did us grab @E20) (holds @E21 chief))))"]
+note = "set_posture(crouch) derrière le tonneau (conceals) ; listen(stealth=discreet) → HEARD, source heard"
 charter = ["§5", "§11"]
 text_fr = "Caché derrière un tonneau, un garçon entend deux hommes préparer le renversement du chef."
 
 # ─── Planification longue ─────────────────────────────────────────────────────────────────────────
 [[story]]
 id = "save_for_house"
+status = "expressible"
+actions = ["work", "put", "speak", "give"]
+variables = ["g_desired", "g_progress", "g_priority", "plant_yield", "inv_seen", "recognized_claims", "commitments_seen"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (wants me (owns me @L7)))", "(offer (if (did you give silver_coin:200 (to me)) (owns you @L7)))", "(yes)"]
+note = "objectif owns(moi, maison) ; g_progress lit le prix cru (worth) et les pièces vues ; mauvaise récolte : plant_yield (moteur)"
 charter = ["§9", "§13"]
 text_fr = "Un jeune couple économise trois ans pour acheter la maison d'un vieux veuf ; une mauvaise récolte les retarde, ils y arrivent."
 
 [[story]]
 id = "long_revenge"
+status = "expressible"
+actions = ["speak"]
+variables = ["m_defining", "g_desired", "g_priority", "r_resentment", "grief"]
+interpretations = ["murder", "revenge"]
+utterances = ["(request (holds me guard))", "(assert (seen_myself (past (did @E22 strike @E23 (how full)))))"]
 charter = ["§9", "§6"]
 text_fr = "Un fils dont le père a été tué attend dix ans, devient garde, et fait condamner le meurtrier."
 
 [[story]]
 id = "leave_village_dream"
+status = "expressible"
+actions = ["speak", "go"]
+variables = ["need_novelty", "inquisitiveness", "g_desired", "r_affection", "sadness"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (wants me (at me n:44)))", "(request (and (did me go you (how along)) (did me go n:44)))", "(request (not (did you go n:44)))"]
+note = "un lieu connu seulement de nom (n:) ; go(target=marchande, relation=along)"
 charter = ["§9", "§19"]
 text_fr = "Une fille de pêcheur rêve de voir le village de la montagne ; elle part avec une caravane malgré sa mère."
 
 [[story]]
 id = "learn_trade_late"
+status = "expressible"
+actions = ["speak", "scoop", "strike", "shape"]
+variables = ["g_desired", "k_mastery", "k_self_estimate", "a_kind_label", "commitments_seen", "need_achievement"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (wants me (knows_how me t_smithing)))", "(offer (if (link you master me) (habitual (did me scoop @L8 (with hoe)))))"]
 charter = ["§9", "§24"]
 text_fr = "Un paysan de quarante ans décide de devenir forgeron, trouve un maître qui accepte contre du travail aux champs, et y parvient lentement."
 
 [[story]]
 id = "find_lost_brother"
+status = "expressible"
+actions = ["speak", "go"]
+variables = ["g_desired", "g_status", "r_affection", "anxiety", "r_present"]
+interpretations = ["nothing_special"]
+utterances = ["(ask (at @E24 where))", "(ask (past (at (described d_young o_fisher) where)))"]
+note = "le frère reste un absent saillant ; l'objectif dure des années"
 charter = ["§9"]
 text_fr = "Une femme cherche son frère parti vers les marches ; elle interroge les voyageurs pendant des années."
 
 [[story]]
 id = "goal_paused_for_crisis"
+status = "expressible"
+actions = ["go", "work", "give", "speak"]
+variables = ["g_status", "g_priority", "illnesses", "sickness_felt", "anxiety", "r_affection"]
+interpretations = ["kindness"]
+utterances = ["(request (did you drink @T9))"]
+note = "g_status paused puis active (T_jump) ; work(target=épouse, with=onguent, press, light) ; give(remède)"
 charter = ["§9"]
 text_fr = "Un homme qui préparait sa candidature à la charge de chef s'interrompt pour soigner sa femme malade, puis reprend."
 
 [[story]]
 id = "goal_abandoned"
+status = "expressible"
+actions = ["speak"]
+variables = ["g_desired", "g_status", "r_attraction", "sadness", "self_regard", "need_intimacy"]
+interpretations = ["nothing_special"]
+utterances = ["(request (did you go me (how along)))", "(no)"]
+note = "adultes ; objectif attitude(elle, r_attraction, moi, haut) abandonné après deux refus (g_status=abandoned)"
 charter = ["§9", "§6"]
 text_fr = "Après deux refus, un homme renonce à séduire une femme et se tourne vers son travail."
 
 [[story]]
 id = "get_rich_scheme"
+status = "expressible"
+actions = ["speak", "give", "take", "put"]
+variables = ["need_acquisition", "greed_avoidance", "b_proposition", "r_resentment", "envy", "wealth_objective"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (did you give wheat_sack:10 (to me)) (did me give silver_coin:10 (to you))))", "(offer (if (did you give silver_coin:30 (to me)) (did me give wheat_sack (to you))))"]
+note = "aucune interprétation ne nomme l'accaparement (candidat : profiter du besoin d'autrui)"
 charter = ["§9", "§24"]
 text_fr = "Un meunier achète tout le grain avant l'hiver pour le revendre cher pendant la disette ; il s'enrichit et se fait haïr."
 
 # ─── Émergence collective ─────────────────────────────────────────────────────────────────────────
 [[story]]
 id = "conflict_to_migration"
+status = "expressible"
+actions = ["speak", "push", "strike", "put", "go"]
+variables = ["r_resentment", "g_desired", "recognized_claims", "need_security"]
+interpretations = ["encroachment"]
+utterances = ["(assert (owns us @L9))", "(assert (wants me (lives_at me n:45)))"]
+note = "relations envers le groupe (jeton GROUP)"
 charter = ["§10"]
 text_fr = "Une querelle entre deux familles pour un champ dure des années ; la famille perdante finit par émigrer vers le village du désert."
 
 [[story]]
 id = "migration_changes_economy"
+status = "expressible"
+actions = ["speak", "give"]
+variables = ["b_proposition", "transactions", "need_achievement", "g_desired"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (did you give silver_coin:2 (to me)) (did me give clay_pot (to you))))"]
+note = "le prix (worth) se sait par les échanges perçus"
 charter = ["§10"]
 text_fr = "Trois familles de potiers s'installent au bourg ; le prix des pots chute, le potier local doit changer de métier."
 
 [[story]]
 id = "economy_to_politics"
+status = "gap"
+actions = ["speak", "sign"]
+variables = ["b_proposition", "role_holder_support"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (wants me (holds @E27 chief)))", "(offer (if (holds me chief) (owes everyone @G3 (did everyone give copper_coin:1 (to @G3)))))"]
+note = "manque : percevoir et dire un décompte collectif (mains levées, voix) ; « devoir au rôle » refusé par le validateur"
 charter = ["§10", "§11"]
 text_fr = "Les marchands enrichis par le sel soutiennent un candidat qui baissera la taxe du marché ; il est élu."
 
 [[story]]
 id = "village_war"
+status = "expressible"
+actions = ["tie", "go", "speak", "strike"]
+variables = ["r_resentment", "r_fear", "m_defining", "b_hops", "alive", "wounds"]
+interpretations = ["theft", "revenge", "murder"]
+utterances = ["(request (future (and (did us go n:46) (did us strike @G4))))", "(assert (long_ago (and (member @E49 @G4) (did @E49 strike @E48 (how full)))))"]
+note = "vol de bétail : tie(vache, with=corde, knot) + go(discreet) ; rancune envers le groupe transmise par la parole"
 charter = ["§10"]
 text_fr = "Après des vols de bétail répétés, les hommes du village de la forêt attaquent ceux du village de la montagne ; des morts, des rancunes pour des générations."
 
 [[story]]
 id = "war_property_change"
+status = "expressible"
+actions = ["go", "scoop", "speak"]
+variables = ["recognized_claims", "b_proposition", "r_fear"]
+interpretations = ["encroachment"]
+utterances = ["(assert (owns me @L9))"]
 charter = ["§10", "§25"]
 text_fr = "Après le conflit, les terres d'une famille décimée sont prises par un voisin ; personne n'ose contester."
 
 [[story]]
 id = "famine_riot"
+status = "expressible"
+actions = ["speak", "strike", "take", "go"]
+variables = ["hunger", "reserves", "anger", "fear", "unrest", "r_respect"]
+interpretations = ["theft", "rebellion"]
+utterances = ["(request (did us strike @T9))"]
+note = "strike(target=porte, with=foot, swing, hard, until=c_state_seen) ; take(sacs, on_back) ; le chef go(away, run)"
 charter = ["§10", "§11"]
 text_fr = "Pendant la disette, une foule affamée force le grenier du chef ; le chef s'enfuit."
 
 [[story]]
 id = "epidemic_fear_exclusion"
+status = "gap"
+actions = ["go", "speak"]
+variables = ["illnesses", "symptoms", "ep_health", "fear", "r_trust", "need_company"]
+interpretations = ["nothing_special"]
+utterances = ["(no)", "(assert (if (did me touch @E28) (future (state me sickness_felt high))))"]
+note = "manque : la loi de contagion et le cours d'une maladie (aucun processus déclaré)"
 charter = ["§10"]
 text_fr = "Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole."
 
 [[story]]
 id = "festival_brings_couples"
+status = "expressible"
+actions = ["perform", "drink", "touch", "speak", "push"]
+variables = ["joy", "intoxication", "r_attraction", "need_play", "r_resentment"]
+interpretations = ["nothing_special", "insult"]
+utterances = ["(assert (quality you w_beautiful high))", "(assert (past (did you take @T10)))"]
+note = "perform(with=luth, mood=lively, long) ; danser = perform sans instrument ; couples adultes"
 charter = ["§10", "§13"]
 text_fr = "Pendant la fête du village, on danse, on boit ; deux couples se forment et une vieille querelle se rallume."
 
 # ─── Les institutions sont des individus ─────────────────────────────────────────────────────────
 [[story]]
 id = "love_village_hate_mayor"
+status = "expressible"
+actions = ["speak"]
+variables = ["r_affection", "r_respect", "r_resentment"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (quality @E29 w_bad very_high))", "(assert (attitude me r_affection @G5 very_high))"]
+note = "village = jeton GROUP"
 charter = ["§11"]
 text_fr = "Un vieux pêcheur aime profondément son village, mais déteste le chef et le dit à qui veut l'entendre."
 
 [[story]]
 id = "loyal_person_hostile_group"
+status = "expressible"
+actions = ["speak"]
+variables = ["r_affection", "r_trust", "r_respect"]
+interpretations = ["loyalty"]
+utterances = ["(assert (quality @G6 w_bad high))", "(assert (attitude me r_trust @E30 very_high))"]
 charter = ["§11"]
 text_fr = "Une femme est l'amie fidèle d'un homme de la bande des collines tout en méprisant la bande elle-même."
 
 [[story]]
 id = "found_guild"
+status = "expressible"
+actions = ["speak"]
+variables = ["a_parties", "a_obligations", "commitments_seen", "b_proposition", "recognized_members"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (habitual (worth cloth_bolt_wool 12)))", "(offer (if (link anyone apprentice me) (member anyone us)))", "(assert (is_a us g_guild))"]
+note = "accord à quatre (offer puis yes) ; « us » doit être figé en un référent de groupe (non spécifié)"
 charter = ["§11", "§24"]
 text_fr = "Quatre tisserandes s'accordent pour vendre au même prix et ne former d'apprentis qu'entre elles : une guilde est née."
 
 [[story]]
 id = "criminal_band_forms"
+status = "expressible"
+actions = ["take", "grab", "give", "speak"]
+variables = ["r_fear", "r_respect", "a_obligations", "need_security"]
+interpretations = ["theft", "extortion", "assault"]
+utterances = ["(assert (if (not (did you give @T11 (to me))) (did me strike you (how hard))))", "(assert (leads me us))"]
 charter = ["§11", "§24"]
 text_fr = "Trois exilés se retrouvent dans la forêt, partagent ce qu'ils volent aux voyageurs ; l'un s'impose comme chef par la peur."
 
 [[story]]
 id = "election_campaign"
+status = "gap"
+actions = ["go", "speak", "sign"]
+variables = ["b_proposition", "role_holder_support", "r_trust"]
+interpretations = ["nothing_special"]
+utterances = ["(request (holds me chief))", "(assert (past (did @E32 take silver_coin:40)))"]
+note = "manque : le décompte collectif (qui l'emporte) ne se perçoit ni ne se dit"
 charter = ["§11", "§24"]
 text_fr = "Avant l'élection, deux candidats vont de maison en maison, promettent, rappellent les fautes de l'autre ; le moins riche gagne."
 
 [[story]]
 id = "decree_ignored"
+status = "gap"
+actions = ["speak", "go", "grab"]
+variables = ["b_proposition", "b_weight", "v_authority"]
+interpretations = ["rebellion"]
+utterances = ["(assert (norm forbidden (did anyone go @L10)))"]
+note = "manque : « la nuit » (couvre-feu) : aucun mot de moment du jour"
 charter = ["§11"]
 text_fr = "Le chef décrète un couvre-feu ; la moitié du village l'ignore, et il n'a pas assez de gardes pour le faire respecter."
 
 [[story]]
 id = "coup_against_chief"
+status = "expressible"
+actions = ["speak", "push", "grab", "go"]
+variables = ["role_holder_support", "legitimacy", "b_proposition", "r_fear", "r_respect"]
+interpretations = ["usurpation", "rebellion"]
+utterances = ["(offer (if (holds me chief) (did me give silver_coin:5 (to you))))", "(assert (holds me chief))"]
 charter = ["§11", "§24"]
 text_fr = "Un adjoint ambitieux rallie les gardes mécontents et chasse le chef de sa maison ; la moitié du village le reconnaît."
 
 [[story]]
 id = "employer_respected_policy_despised"
+status = "expressible"
+actions = ["speak"]
+variables = ["r_respect", "b_weight", "contempt", "assurance"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (norm shameful (habitual (did you strike @E32))))"]
+note = "« les apprentis » ne se décrivent pas sans pointeur (link refusé dans described)"
 charter = ["§11"]
 text_fr = "Un ouvrier respecte son maître de forge mais méprise sa façon de traiter les apprentis, et finit par le lui dire."
 
 [[story]]
 id = "ownership_contested"
+status = "expressible"
+actions = ["speak", "go", "put", "operate", "push"]
+variables = ["recognized_claims", "b_proposition", "r_resentment"]
+interpretations = ["trespass", "theft"]
+utterances = ["(assert (owns me @L11))"]
 charter = ["§11", "§13"]
 text_fr = "Deux frères revendiquent la maison de leur père mort ; chacun a ses soutiens ; l'un s'y installe de force."
 
 [[story]]
 id = "money_trust_collapses"
+status = "expressible"
+actions = ["put", "examine", "speak"]
+variables = ["pc_kind_seen", "b_proposition", "r_trust", "b_weight"]
+properties = ["quality"]
+interpretations = ["fraud"]
+utterances = ["(assert (state @T12 quality very_low))", "(offer (if (did you give @T13 (to me)) (did me give salt_bag (to you))))"]
+note = "examine(sense=weigh) révèle la pièce trop légère ; debased_coin a pour sosie silver_coin_look"
 charter = ["§11"]
 text_fr = "On découvre que le trésorier a fondu des pièces avec du plomb ; les marchands refusent les pièces du village et reviennent au troc."
 
 [[story]]
 id = "custom_shifts_slowly"
+status = "gap"
+actions = ["speak"]
+variables = ["b_weight", "custom_aggregate"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (norm shameful (link @E33 spouse @E34)))"]
+note = "manque : dire « épouser quelqu'un d'un autre village » (description par appartenance)"
 charter = ["§11", "§10"]
 text_fr = "En une génération, le mariage entre villages, mal vu autrefois, devient courant après que plusieurs couples heureux l'ont montré."
 
 # ─── Relations persistantes ──────────────────────────────────────────────────────────────────────
 [[story]]
 id = "friend_accompanies_mine"
+status = "expressible"
+actions = ["speak", "take", "go"]
+variables = ["fear", "r_affection", "load_ratio"]
+interpretations = ["kindness"]
+utterances = ["(request (and (did you go @L12) (did you go me (how along))))", "(yes)", "(goodbye (assert (attitude me e_fear @PLACE high)))"]
 charter = ["§12"]
 text_fr = "Le joueur demande à un ami de l'accompagner à la mine ; l'ami vient, l'aide à porter, puis rentre en disant qu'il a peur du noir."
 
 [[story]]
 id = "guard_house_absence"
+status = "expressible"
+actions = ["speak", "look", "throw", "go"]
+variables = ["commitments_seen", "a_kind_label", "r_fear", "r_trust"]
+interpretations = ["trespass"]
+utterances = ["(request (future (did you look @L13 (how watch))))", "(request (did you go (how away)))"]
 charter = ["§12"]
 text_fr = "Le joueur demande à sa voisine de surveiller sa maison pendant son voyage ; elle le fait, et chasse un rôdeur."
 
 [[story]]
 id = "entrust_object"
+status = "expressible"
+actions = ["give", "speak"]
+variables = ["commitments_seen", "a_status", "r_trust", "r_obligation", "guilt"]
+interpretations = ["betrayal", "theft"]
+utterances = ["(request (future (did you give necklace (to me))))", "(ask (at necklace where))", "(sorry (assert (past (did me give necklace (to @E35)))))"]
+note = "le collier absent n'a pas de pointeur propre : on dit « un collier »"
 charter = ["§12"]
 text_fr = "Le joueur confie un collier précieux à un ami ; à son retour, l'ami l'a vendu pour payer une dette."
 
 [[story]]
 id = "friendship_decays_distance"
+status = "expressible"
+variables = ["r_familiarity", "r_affection", "r_last_contact"]
+note = "loi du moteur : familiarité et affection s'effacent sans contact"
 charter = ["§12"]
 text_fr = "Deux amis d'enfance vivent dans des villages différents ; sans se voir, leur amitié s'éteint doucement."
 
 [[story]]
 id = "enemies_become_friends"
+status = "expressible"
+actions = ["speak", "pull", "scoop", "take"]
+variables = ["load_margin", "r_affection", "r_trust", "r_rivalry"]
+interpretations = ["kindness"]
+utterances = ["(request (and (did you pull @T13) (did me scoop @T14)))"]
 charter = ["§12", "§6"]
 text_fr = "Deux rivaux bloqués ensemble dans une galerie effondrée s'entraident pour sortir et deviennent amis."
 
 [[story]]
 id = "never_neutral_again"
+status = "expressible"
+actions = ["speak", "give"]
+variables = ["m_importance", "r_obligation", "gratitude", "r_id_certainty"]
+interpretations = ["hospitality", "kindness"]
+utterances = ["(welcome (offer (and (did you sleep @L14) (did me give stew (to you)))))"]
 charter = ["§12"]
 text_fr = "Le joueur a aidé un vieil homme une fois ; des années plus tard, l'homme le reconnaît et lui offre l'hospitalité."
 
 # ─── La vie ordinaire ────────────────────────────────────────────────────────────────────────────
 [[story]]
 id = "ordinary_day_farmer"
+status = "expressible"
+actions = ["sleep", "eat", "go", "scoop", "speak", "tie"]
+variables = ["hunger", "sleepiness", "exhaustion", "need_company", "i_steps"]
+utterances = ["(hello (ask (state you sickness_felt low)))"]
+note = "sleep(until=c_rested : « jusqu'à l'aube » n'est pas exprimable) ; scoop(champ, with=houe)"
 charter = ["§13"]
 text_fr = "Un fermier se lève, mange, va aux champs, bavarde avec le voisin, rentre, répare un outil, dort."
 
 [[story]]
 id = "buy_house"
+status = "expressible"
+actions = ["speak", "give"]
+variables = ["recognized_claims", "transactions", "b_proposition", "custody_log"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (did you give silver_coin:150 (to me)) (owns you @L16)))", "(assert (owns @E36 @L16))"]
+note = "give(clé)"
 charter = ["§13", "§11"]
 text_fr = "Le joueur achète une maison : il négocie avec le propriétaire, paie, et les voisins le reconnaissent désormais comme propriétaire."
 
 [[story]]
 id = "marriage_and_children"
+status = "gap"
+actions = ["speak", "go"]
+variables = ["a_kind_label", "r_affection", "pregnancy"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (future (link me spouse you)))", "(assert (link @E37 spouse @E38))"]
+note = "adultes ; manque : les lois du moteur qui commencent une grossesse et font naître un enfant"
 charter = ["§13", "§25"]
 text_fr = "Deux adultes se marient au temple, ont un enfant l'année suivante ; les deux familles se rapprochent."
 
 [[story]]
 id = "inheritance_split"
+status = "expressible"
+actions = ["speak", "take"]
+variables = ["alive", "recognized_claims", "r_resentment", "envy"]
+interpretations = ["injustice"]
+utterances = ["(offer (and (owns me @L17) (owns you @T15)))", "(assert (qualifies m:7 injustice))"]
 charter = ["§13", "§25"]
 text_fr = "À la mort d'une fermière, ses trois enfants se partagent terres et outils ; la cadette, lésée, en veut aux aînés."
 
 [[story]]
 id = "change_profession"
+status = "expressible"
+actions = ["take", "go", "give", "put", "speak"]
+variables = ["g_desired", "need_achievement", "k_mastery", "b_proposition"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (did you give copper_coin:2 (to me)) (did me take @T16 (how on_back))))"]
+note = "barque coulée (moteur) ; poisson séché : processus dry_preserve"
 charter = ["§24"]
 text_fr = "Un pêcheur dont la barque a coulé devient porteur au marché, puis marchand de poisson séché."
 
 [[story]]
 id = "hire_worker"
+status = "expressible"
+actions = ["speak"]
+variables = ["a_kind_label", "commitments_seen", "a_obligations"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (each_day (did you scoop @L16 (with hoe))) (and (did me give copper_coin:1 (to you)) (did you sleep @L17))))"]
+note = "« par semaine » n'existe pas (each_day / each_season / each_year)"
 charter = ["§13", "§11"]
 text_fr = "Une veuve embauche un jeune pour ses champs contre le gîte, le couvert et une pièce par semaine."
 
 [[story]]
 id = "lend_and_debt"
+status = "expressible"
+actions = ["speak", "give"]
+variables = ["commitments_seen", "r_obligation", "r_trust", "a_status"]
+interpretations = ["broken_promise"]
+utterances = ["(offer (and (did me give wheat_sack:2 (to you)) (future (did you give wheat_sack:2 (to me)))))"]
 charter = ["§12", "§13"]
 text_fr = "Un homme prête deux sacs de grain à son cousin ; le cousin rembourse tard et en partie ; la dette reste dans les esprits."
 
 [[story]]
 id = "neighbor_noise_feud"
+status = "expressible"
+actions = ["strike", "speak", "climb", "put"]
+variables = ["ambient_noise", "sleepiness", "anger", "r_resentment", "smoke"]
+interpretations = ["revenge", "vandalism"]
+utterances = ["(request (not (habitual (did you strike @T17))))"]
+note = "put(chiffon, where=cheminée) : la cible 'where' ne peut pas être dite dans la parole"
 charter = ["§13", "§27"]
 text_fr = "Un voisin martèle chaque nuit ; l'autre se plaint, puis finit par boucher sa cheminée en représailles."
 
 # ─── Liberté, langage du joueur, limites ─────────────────────────────────────────────────────────
 [[story]]
 id = "impossible_request"
+status = "gap"
+actions = ["speak", "look"]
+variables = ["confusion", "surprise"]
+interpretations = ["nothing_special"]
+utterances = ["(request (did you jump up))", "(ask (state you intoxication high))"]
+note = "manque : une marque « parole incompréhensible ou absurde » quand l'interface ne peut pas traduire ; ni lune ni ciel dans le vocabulaire"
 charter = ["§14", "§15"]
 text_fr = "Le joueur demande à un PNJ de voler jusqu'à la lune ; le PNJ le regarde bizarrement et lui demande s'il a bu."
 
 [[story]]
 id = "player_lies_npc_believes"
+status = "expressible"
+actions = ["speak", "sign", "operate"]
+variables = ["b_certainty", "b_source", "r_trust"]
+interpretations = ["lie"]
+utterances = ["(assert (link me niece_nephew (described chief)))"]
 charter = ["§5"]
 text_fr = "Le joueur affirme être le neveu du chef ; le garde, qui n'a aucune raison d'en douter, le laisse entrer."
 
 [[story]]
 id = "npc_lies_to_player"
+status = "expressible"
+actions = ["speak", "give"]
+variables = ["b_proposition", "b_contradicted", "r_trust", "m_interpretation"]
+properties = ["integrity"]
+interpretations = ["fraud", "lie"]
+utterances = ["(assert (state @T18 integrity very_high))"]
+note = "la corde casse : ténacité (moteur)"
 charter = ["§5"]
 text_fr = "Un marchand assure au joueur que sa corde est neuve ; elle casse le lendemain."
 
 [[story]]
 id = "player_ignored_busy"
+status = "expressible"
+actions = ["go", "speak"]
+variables = ["i_commitment", "q_since", "attention"]
+interpretations = ["nothing_special"]
+utterances = ["(hello)"]
+note = "PLAN go(toward, run) avec i_commitment haut : c_addressed n'interrompt pas"
 charter = ["§15"]
 text_fr = "Le joueur salue un PNJ qui court chercher le guérisseur ; celui-ci ne répond pas."
 
 # ─── Monde matériel, construction, magie ─────────────────────────────────────────────────────────
 [[story]]
 id = "dig_undermines_house"
+status = "expressible"
+actions = ["scoop", "strike", "speak"]
+variables = ["load_margin", "visible_damage", "deposit", "r_resentment", "b_proposition"]
+interpretations = ["negligence", "vandalism"]
+utterances = ["(request (did you give silver_coin:50 (to me)))", "(assert (caused you m:6))"]
 charter = ["§16"]
 text_fr = "Un mineur creuse trop près d'une maison ; le mur se fend puis s'effondre, le propriétaire exige réparation."
 
 [[story]]
 id = "pay_artisan_build"
+status = "gap"
+actions = ["speak", "give", "take", "put", "channel"]
+variables = ["k_mastery", "commitments_seen"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (did you channel @L18) (did me give silver_coin:40 (to you))))"]
+note = "manque : aucune sorte de construction (grange, maison, mur, pont) : ni la demande ni la recette (channel into) ne peuvent la nommer"
 charter = ["§17", "§13"]
 text_fr = "Le joueur paie une bâtisseuse pour construire une grange ; elle rassemble pierre et bois et la bâtit avec sa baguette."
 
 [[story]]
 id = "lent_wand_apprentice"
+status = "expressible"
+actions = ["give", "speak", "channel"]
+variables = ["k_mastery", "magic_attunement", "magic_stability", "r_trust", "k_self_estimate", "a_kind_label"]
+interpretations = ["generosity"]
+utterances = ["(request (future (did you give @T19 (to me))))", "(offer (owns you @T20))"]
 charter = ["§17"]
 text_fr = "Une bâtisseuse prête à son apprentie une baguette faible ; après des mois de pratique, elle lui confie la sienne."
 
 [[story]]
 id = "wand_lost"
+status = "expressible"
+actions = ["speak", "give"]
+variables = ["hands", "b_proposition", "need_achievement", "wealth_objective"]
+interpretations = ["accident"]
+utterances = ["(assert (past (located wand_strong in @L20)))", "(offer (if (did you give wand_strong (to me)) (did me give silver_coin:60 (to you))))"]
+note = "la chute est maladresse ou courant (moteur)"
 charter = ["§17"]
 text_fr = "Un artisan perd sa baguette dans la rivière ; il ne peut plus travailler et doit en racheter une très cher."
 
 [[story]]
 id = "smash_wall_hammer"
+status = "expressible"
+actions = ["strike", "take", "go", "put"]
+variables = ["load_margin", "visible_damage", "custody_log", "recognized_claims"]
+interpretations = ["nothing_special", "vandalism"]
+note = "strike(mur, held=masse, swing, hard, until=c_state_seen) ; take(stone_block, in_arms) ; put(where=enclos)"
 charter = ["§17", "§16"]
 text_fr = "Un ouvrier démolit à la masse le mur d'une maison abandonnée et récupère les pierres pour son enclos."
 
 [[story]]
 id = "fetch_water_well_dry"
+status = "expressible"
+actions = ["scoop", "speak", "push"]
+variables = ["water_volume", "water_level", "thirst", "r_resentment"]
+interpretations = ["encroachment"]
+utterances = ["(assert (owns us @L21))"]
+note = "scoop(target=eau du puits, with=seau, some)"
 charter = ["§2", "§16"]
 text_fr = "Pendant l'été sec, chacun puise au puits ; le niveau baisse, puis le puits tarit ; on se dispute la source."
 
 [[story]]
 id = "set_fire_barn"
 status = "expressible"
-actions = ["work", "scoop", "pour"]
-interpretations = ["arson"]
+actions = ["work", "scoop", "pour", "give", "speak"]
 variables = ["fire_extent", "m_interpretation"]
+interpretations = ["arson"]
+utterances = ["(request (did you give @T20 (to @E36)))"]
+note = "(existant) la chaîne : give(seau) de main en main"
 charter = ["§16"]
 text_fr = "Un homme vexé met le feu à la grange de son rival ; le feu gagne la maison voisine ; on fait la chaîne avec des seaux."
 
 [[story]]
 id = "bridge_destroyed_offscreen"
+status = "expressible"
+actions = ["go", "speak"]
+variables = ["water_flow", "water_level", "b_contradicted", "place_recognized", "pc_depth_seen"]
+interpretations = ["accident"]
+utterances = ["(assert (route @L22 @L23))"]
 charter = ["§3", "§16"]
 text_fr = "Loin du joueur, une crue emporte le pont ; quand il arrive, le pont n'existe plus et les voyageurs passent par le gué."
 
 [[story]]
 id = "craft_tool"
+status = "expressible"
+actions = ["put", "blow", "strike", "shape", "tie", "speak", "give"]
+variables = ["k_mastery", "transactions"]
+properties = ["temperature"]
+interpretations = ["nothing_special"]
+utterances = ["(offer (if (did you give silver_coin:8 (to me)) (did me give pickaxe (to you))))"]
+note = "processus smelt, forge ; shape(into=pick_head)"
 charter = ["§17", "§13"]
 text_fr = "Un forgeron transforme du minerai et du charbon en une pioche, qu'il vend à un mineur."
 
 [[story]]
 id = "farm_cycle"
+status = "expressible"
+actions = ["scoop", "put", "strike"]
+variables = ["soil_state", "soil_moisture", "soil_fertility", "plant_stage", "plant_yield", "season_felt"]
+note = "scoop(terrain, with=houe) = labour ; put(graine) = semis ; strike(plante, held=faucille) = moisson ; cueillir à la main est impossible (take/pull n'acceptent pas plant)"
 charter = ["§13"]
 text_fr = "Une paysanne laboure, sème, désherbe, récolte, et garde des graines pour l'année suivante."
 
 [[story]]
 id = "cook_meal_share"
+status = "expressible"
+actions = ["strike", "work", "pour", "put", "give", "speak"]
+variables = ["hunger", "sickness_felt", "r_affection", "gratitude"]
+interpretations = ["kindness"]
+utterances = ["(offer (did me give soup (to you)))"]
+note = "processus cook ; work(motion=stir)"
 charter = ["§13", "§12"]
 text_fr = "Un père cuisine une soupe avec les légumes du jardin et la partage avec une voisine malade."
 
 [[story]]
 id = "chop_tree_forest_shrinks"
+status = "expressible"
+actions = ["strike", "take", "go"]
+variables = ["plant_yield", "plant_stage", "lc_dist"]
+note = "strike(chêne, held=hache, swing, hard, until=c_state_seen) ; repousse lente (processus grow)"
 charter = ["§16", "§2"]
 text_fr = "Des années de coupe éclaircissent la forêt près du village ; il faut aller de plus en plus loin pour le bois."
 
 [[story]]
 id = "hide_object"
+status = "expressible"
+actions = ["put", "search", "speak"]
+variables = ["m_secret", "b_secret", "inv_seen"]
+interpretations = ["nothing_special"]
+utterances = ["(ask (past (located @T21 under here)))", "(request (not (did you speak (says (that b:4)))))"]
+note = "put(bourse, where=pierre du foyer, stealth=discreet) ; search(long) la révèle"
 charter = ["§5"]
 text_fr = "Une femme cache ses économies sous une pierre du foyer ; son fils les trouve en cherchant autre chose."
 
 [[story]]
 id = "lock_door"
+status = "expressible"
+actions = ["put", "operate", "speak"]
+variables = ["r_perceived_regard", "r_affection", "need_security"]
+interpretations = ["nothing_special"]
+utterances = ["(ask (attitude you r_trust me low))"]
 charter = ["§16"]
 text_fr = "Après un vol dans le quartier, une famille pose un verrou ; le voisin s'en offusque."
 
 # ─── Fantasy mystérieuse, exploration ─────────────────────────────────────────────────────────────
 [[story]]
 id = "strange_zone_legend"
+status = "gap"
+actions = ["sleep", "speak"]
+variables = ["phenomenon_effects", "pp_signs", "m_vividness", "b_hops"]
+interpretations = ["sorcery"]
+utterances = ["(assert (heard_said (habitual (if (did anyone sleep @L24) (state anyone e_confusion high)))))"]
+note = "manque : l'évidentiel « j'ai rêvé » (la source dreamt existe pour les croyances, pas dans la parole) ; aucun mot pour dire « les oiseaux se taisent »"
 charter = ["§18", "§19"]
 text_fr = "Une clairière où les oiseaux se taisent : ceux qui y dorment rêvent de choses étranges ; une légende naît, chacun la raconte à sa façon."
 
 [[story]]
 id = "magic_accident"
+status = "expressible"
+actions = ["channel", "speak"]
+variables = ["magic_stability", "k_mastery", "load_margin", "wounds", "pain", "shame"]
+interpretations = ["accident", "negligence"]
+utterances = ["(help)"]
+note = "channel(intensity=full) au-delà de la maîtrise"
 charter = ["§18"]
 text_fr = "Une apprentie trop ambitieuse utilise une baguette puissante et fait s'écrouler son atelier ; elle est blessée."
 
 [[story]]
 id = "hermit_in_mountains"
+status = "expressible"
+actions = ["examine", "speak", "go"]
+variables = ["sociability", "r_trust", "k_mastery", "need_company"]
+interpretations = ["nothing_special"]
+utterances = ["(no)", "(assert (state chamomile edible high))"]
 charter = ["§19", "§7"]
 text_fr = "Un vieil homme vit seul dans la montagne ; il connaît les plantes et refuse de parler aux gens du village, sauf aux enfants."
 
 [[story]]
 id = "lost_in_marches"
+status = "expressible"
+actions = ["go", "speak"]
+variables = ["frontier_depth", "place_recognized", "alive", "r_present", "b_certainty"]
+interpretations = ["accident"]
+utterances = ["(assert (maybe (dead @E38)))", "(assert (norm forbidden (did anyone go @L25)))"]
 charter = ["§19", "§3"]
 text_fr = "Un chasseur part trop loin dans la forêt profonde ; on ne le revoit jamais ; son histoire devient un avertissement."
 
 [[story]]
 id = "isolated_family_found"
+status = "expressible"
+actions = ["speak"]
+variables = ["r_trust", "r_familiarity", "r_link_believed"]
+interpretations = ["nothing_special"]
+utterances = ["(ask (lives_at you where))"]
 charter = ["§19"]
 text_fr = "Le joueur trouve une famille dans une ferme éloignée, qui ne sait rien des querelles du bourg et se méfie des étrangers."
 
 [[story]]
 id = "belief_in_beyond"
+status = "gap"
+actions = ["speak", "go"]
+variables = ["b_certainty", "g_desired", "need_novelty"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (sure (exists gold @L26)))", "(laugh)"]
+note = "manque : « une cité » (sorte de lieu) et « au-delà de »"
 charter = ["§18"]
 text_fr = "Un conteur jure qu'au-delà du désert il existe une cité d'or ; certains le croient, d'autres rient, un jeune part la chercher."
 
 # ─── Personnalités marquées, humour émergent ─────────────────────────────────────────────────────
 [[story]]
 id = "touchy_mayor_disaster"
+status = "gap"
+actions = ["speak", "push"]
+variables = ["anger", "self_regard", "modesty", "illnesses"]
+interpretations = ["injustice"]
+utterances = ["(no (assert (think (not (that b:2)))))", "(request (not (lives_at you here)))"]
+note = "l'expulsion est exprimable ; l'épidémie demande la loi de contagion"
 charter = ["§27", "§7"]
 text_fr = "Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant."
 
 [[story]]
 id = "clumsy_npc_chain"
+status = "expressible"
+actions = ["push", "speak"]
+variables = ["coordination", "pc_motion", "pc_display", "r_resentment"]
+interpretations = ["accident", "negligence"]
+utterances = ["(watch_out)"]
+note = "le tonneau roule (rolls), l'âne s'effraie et rue : lois du moteur"
 charter = ["§27"]
 text_fr = "Un maladroit renverse un tonneau qui roule jusqu'au marché, effraie un âne, qui piétine l'étal du chef."
 
 [[story]]
 id = "eccentric_collector"
+status = "gap"
+actions = ["take", "put"]
+variables = ["tastes", "r_affection"]
+interpretations = ["nothing_special"]
+note = "manque : la couleur (propriété perceptible) et les mots de couleur pour tastes"
 charter = ["§7"]
 text_fr = "Une vieille ramasse toutes les pierres bleues qu'elle trouve et en remplit sa maison ; les enfants l'adorent, les voisins s'agacent."
 
 [[story]]
 id = "shy_becomes_confident"
+status = "expressible"
+actions = ["speak"]
+variables = ["self_regard", "assurance", "need_esteem", "r_respect"]
+interpretations = ["nothing_special"]
+utterances = ["(assert (quality @T22 w_good very_high))", "(assert (may @E40 (did @E40 speak (to @G10))))"]
+note = "assurance T_slow sur des années de vie"
 charter = ["§6"]
 text_fr = "Un garçon timide, félicité pour son travail plusieurs fois, ose peu à peu parler à l'assemblée ; adulte, il est porte-parole."
 
 [[story]]
 id = "becomes_bitter"
+status = "expressible"
+actions = ["speak"]
+variables = ["forgiveness", "r_trust", "r_resentment", "g_desired", "b_weight"]
+interpretations = ["betrayal", "injustice"]
+utterances = ["(assert (quality @E41 w_bad very_high))"]
+note = "méfiance envers tous : jeton GROUP (communauté) + trait forgiveness"
 charter = ["§6"]
 text_fr = "Une femme trompée trois fois devient rancunière et méfiante envers tous, puis se radicalise contre le chef."
 
 [[story]]
 id = "isolation_spiral"
+status = "expressible"
+actions = ["rest", "drink"]
+variables = ["grief", "sadness", "intoxication", "need_company", "mood_valence", "r_familiarity"]
+interpretations = ["drunkenness"]
 charter = ["§6"]
 text_fr = "Après la mort de sa femme, un homme sort de moins en moins, boit, et ses amis cessent de venir."
 
 [[story]]
 id = "same_event_different_reactions"
+status = "expressible"
+actions = ["go", "take", "operate", "speak"]
+variables = ["fear", "pc_display", "fearfulness", "baseline_mood", "attention"]
+interpretations = ["heroism", "cowardice"]
+utterances = ["(laugh)"]
 charter = ["§7"]
 text_fr = "Un ours entre au village : l'un fuit, l'autre attrape une fourche, une troisième court sauver les poules, un quatrième rit."
 
 # ─── Temps, vie, mort ────────────────────────────────────────────────────────────────────────────
 [[story]]
 id = "child_grows_up"
+status = "expressible"
+actions = ["speak"]
+variables = ["age_years", "life_stage", "ep_age", "r_id_certainty", "m_vividness"]
+utterances = ["(ask (named you n:47))"]
+note = "horloge de vie (moteur)"
 charter = ["§25", "§3"]
 text_fr = "Le joueur part cinq ans ; à son retour, l'enfant à qui il apprenait à pêcher est un jeune adulte marié."
 
 [[story]]
 id = "elder_dies_naturally"
+status = "expressible"
+actions = ["go", "work", "take"]
+variables = ["senescence", "alive", "grief", "animal_attachment", "recognized_claims"]
 charter = ["§25"]
 text_fr = "Une vieille tisserande meurt dans son sommeil ; ses apprentis reprennent l'atelier, sa voisine prend son chat."
 
 [[story]]
 id = "chief_death_succession"
+status = "expressible"
+actions = ["speak"]
+variables = ["role_holder_support", "legitimacy", "b_proposition", "unrest", "r_rivalry"]
+interpretations = ["usurpation"]
+utterances = ["(assert (holds me chief))", "(request (holds me chief))"]
 charter = ["§25", "§11"]
 text_fr = "Le chef meurt sans successeur désigné ; trois prétendants s'affrontent, le village est divisé tout un hiver."
 
 [[story]]
 id = "isolated_death_unnoticed"
+status = "expressible"
+actions = ["examine", "speak"]
+variables = ["alive", "condition", "r_present", "r_last_contact"]
+utterances = ["(assert (dead @E43))"]
 charter = ["§25"]
 text_fr = "Un ermite meurt seul ; personne ne le sait pendant des semaines ; sa mort ne change presque rien."
 
 [[story]]
 id = "orphan_adopted"
+status = "expressible"
+actions = ["speak", "take", "go"]
+variables = ["grief", "r_affection", "a_kind_label"]
+interpretations = ["kindness"]
+utterances = ["(offer (future (lives_at @E42 @L28)))"]
+note = "take(enfant, hold=by_arm, contact_zone=hands : liste blanche D10)"
 charter = ["§25", "§12"]
 text_fr = "Deux enfants perdent leurs parents ; une tante en prend un, un voisin sans enfant l'autre."
 
 [[story]]
 id = "knowledge_lost_with_death"
+status = "expressible"
+actions = ["speak", "give"]
+variables = ["k_mastery", "b_proposition", "transactions"]
+utterances = ["(assert (not (knows_how anyone t_glass)))"]
 charter = ["§25", "§17"]
 text_fr = "Le seul verrier du village meurt sans apprenti ; plus personne ne sait faire le verre, il faut l'acheter ailleurs."
 
 [[story]]
 id = "illness_and_care"
+status = "gap"
+actions = ["go", "speak", "give", "drink", "work"]
+variables = ["illnesses", "sickness_felt", "r_affection"]
+properties = ["potency"]
+interpretations = ["kindness"]
+utterances = ["(request (did you give herbal_remedy (to me)))"]
+note = "manque : le cours d'une maladie et l'effet d'un remède sur elle (heal_tissue ne vaut que pour les plaies)"
 charter = ["§25", "§12"]
 text_fr = "Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement."
 
 [[story]]
 id = "pregnancy_birth"
+status = "gap"
+actions = ["work", "take"]
+variables = ["pregnancy", "mobility"]
+note = "grossesse et ralentissement exprimables ; manque : la loi de naissance (un nouvel agent, parents biologiques)"
 charter = ["§25"]
 text_fr = "Une femme mariée attend un enfant, ralentit son travail ; la sage-femme l'aide à accoucher."
 
 # ─── Le joueur dans le monde ─────────────────────────────────────────────────────────────────────
 [[story]]
 id = "player_inaction_noticed"
+status = "expressible"
+actions = ["wait", "speak"]
+variables = ["r_resentment", "r_respect", "m_interpretation"]
+interpretations = ["cowardice"]
+utterances = ["(assert (past (not (did you grab @E45))))"]
+note = "aucune interprétation « non-assistance » ; cowardice suppose un départ"
 charter = ["§20", "§21"]
 text_fr = "Le joueur voit une rixe et ne fait rien ; la victime le lui reproche ensuite."
 
 [[story]]
 id = "stranger_integration"
+status = "expressible"
+actions = ["speak", "scoop"]
+variables = ["r_trust", "r_familiarity", "r_affection", "b_proposition"]
+utterances = ["(assert (member you @G12))"]
 charter = ["§22", "§5"]
 text_fr = "Le joueur arrive en étranger ; d'abord ignoré et méfié, il travaille aux champs, se fait des amis et devient « du village »."
 
 [[story]]
 id = "player_becomes_criminal"
+status = "expressible"
+actions = ["take", "speak"]
+variables = ["r_trust", "r_fear", "r_respect"]
+interpretations = ["theft"]
+utterances = ["(assert (leads me @G13))"]
 charter = ["§22", "§24"]
 text_fr = "Le joueur vole, se fait connaître des malfrats, gagne leur confiance et finit par diriger la bande."
 
 [[story]]
 id = "player_runs_for_chief"
+status = "gap"
+actions = ["speak", "go"]
+variables = ["b_proposition", "role_holder_support"]
+utterances = ["(request (holds me chief))"]
+note = "manque : le décompte collectif"
 charter = ["§23", "§24"]
 text_fr = "Le joueur se présente comme chef ; il doit convaincre, faire des promesses et affronter les rumeurs."
 
 [[story]]
 id = "player_reputation_travels"
+status = "expressible"
+actions = ["speak", "look"]
+variables = ["b_hops", "r_reputation_seen", "r_trust"]
+interpretations = ["fraud"]
+utterances = ["(assert (heard_said (past (did (described d_stranger d_tall) give debased_coin (to @E46)))))"]
 charter = ["§21", "§5"]
 text_fr = "Le joueur a escroqué un marchand au bourg ; dans le village de la mer, on le regarde déjà de travers."
 
 [[story]]
 id = "start_as_existing_villager"
+status = "expressible"
+variables = ["commitments_seen", "m_content", "b_proposition"]
+note = "le joueur lit les mêmes jetons que le PNJ (croyances, souvenirs, COMMIT), jamais la vérité"
 charter = ["§4", "§22"]
 text_fr = "Le joueur incarne une tisserande existante : il hérite de ses relations, de ses dettes et de ses souvenirs (ce qu'elle sait, pas la vérité)."
 
 # ─── Économie et travail ─────────────────────────────────────────────────────────────────────────
 [[story]]
 id = "price_rises_shortage"
+status = "expressible"
+actions = ["speak", "strike", "put"]
+variables = ["air_temperature", "thermal_comfort", "b_proposition", "reserves"]
+utterances = ["(offer (if (did you give silver_coin:5 (to me)) (did me give firewood_bundle (to you))))"]
+note = "strike(chaise, held=hache) puis put(where=feu)"
 charter = ["§10"]
 text_fr = "Le bois manque après un hiver rigoureux ; les vendeurs montent leurs prix, les pauvres brûlent leurs meubles."
 
 [[story]]
 id = "trade_caravan"
+status = "expressible"
+actions = ["speak", "put", "tie", "go", "give"]
+variables = ["commitments_seen", "a_kind_label", "transactions"]
+utterances = ["(offer (if (did you go me (how along)) (did me give silver_coin:10 (to you))))"]
 charter = ["§10", "§19"]
 text_fr = "Une marchande organise une caravane de sel vers le village de la montagne, engage deux gardes, revient avec du minerai."
 
 [[story]]
 id = "barter_without_money"
+status = "expressible"
+actions = ["speak", "tie", "give"]
+variables = ["commitments_seen"]
+utterances = ["(offer (if (did you tie @T23) (did me give raw_fish:3 (to you))))"]
+note = "tie(filet, mode=sew, with=fil)"
 charter = ["§13"]
 text_fr = "Un pêcheur échange trois poissons contre une réparation de filet."
 
 [[story]]
 id = "tax_evasion"
+status = "expressible"
+actions = ["put", "speak"]
+variables = ["b_proposition", "b_certainty", "r_trust"]
+interpretations = ["fraud", "lie"]
+utterances = ["(ask (count wheat_sack how_much))", "(assert (count wheat_sack 5))", "(assert (think (has @E47 wheat_sack:20)))"]
+note = "put(sacs, where=sous le foin, stealth=discreet) ; « devoir l'impôt au chef (rôle) » refusé par le validateur"
 charter = ["§11"]
 text_fr = "Un fermier cache une partie de sa récolte pour payer moins d'impôt ; le percepteur s'en doute."
 
 [[story]]
 id = "strike_workers"
+status = "expressible"
+actions = ["speak"]
+variables = ["a_parties", "commitments_seen", "r_resentment", "need_autonomy"]
+utterances = ["(offer (if (not (did @E48 give silver_coin:4 (to us))) (not (did us go @L29))))"]
 charter = ["§11", "§10"]
 text_fr = "Les mineurs, mal payés, s'accordent pour ne plus descendre tant que le maître ne double pas leur paie."
 
 # ─── Faune, nature, phénomènes (pilotés par le moteur) ───────────────────────────────────────────
 [[story]]
 id = "livestock_care"
+status = "expressible"
+actions = ["go", "speak", "sign", "work"]
+variables = ["animal_attachment", "pp_weather_seen", "storm", "i_steps"]
+utterances = ["(request (did you go me (how along)))"]
+note = "work(brebis, motion=squeeze) avec milking_pail ; le troupeau suit la voix (loi du moteur)"
 charter = ["§13"]
 text_fr = "Une bergère mène ses moutons au pré, en trait une, et rentre le troupeau avant l'orage."
 
 [[story]]
 id = "hunt_deer"
+status = "expressible"
+actions = ["search", "go", "throw", "strike", "take"]
+variables = ["trace_kind", "trace_freshness", "pc_display", "wounds", "k_mastery"]
+utterances = ["(request (did you go @T24 (how along)))"]
+note = "throw(arrows, at=cerf, with=arc, hard) ; suivre la trace de sang"
 charter = ["§13", "§19"]
 text_fr = "Deux chasseurs pistent un cerf, le blessent, le suivent jusqu'au ruisseau et le ramènent au village."
 
 [[story]]
 id = "dog_loyal"
+status = "expressible"
+actions = ["give", "sign", "go"]
+variables = ["animal_attachment", "hunger"]
+interpretations = ["kindness"]
+note = "loi du moteur : l'attachement reste après la mort du maître, monte quand on nourrit"
 charter = ["§12"]
 text_fr = "Le chien d'un berger mort reste des jours sur la tombe ; un enfant le nourrit et l'adopte."
 
 [[story]]
 id = "flood_village"
+status = "expressible"
+actions = ["take", "go", "put", "speak"]
+variables = ["water_level", "water_flow", "reserves"]
+properties = ["wetness"]
+utterances = ["(watch_out (assert (state @L30 wetness very_high)))"]
 charter = ["§3", "§16"]
 text_fr = "La rivière déborde, inonde les caves ; les familles montent leurs réserves à l'étage et certaines perdent tout."
 
 [[story]]
 id = "storm_cold_death"
+status = "expressible"
+actions = ["go", "set_posture", "strike"]
+variables = ["body_temperature", "thermal_comfort", "storm", "snow_cover", "alive"]
+interpretations = ["accident"]
+note = "strike(silex) sans amadou sec : pas de feu ; mort de froid (moteur)"
 charter = ["§19", "§25"]
 text_fr = "Un voyageur surpris par la tempête de neige dans la montagne s'abrite dans une grotte ; sans feu, il meurt de froid."

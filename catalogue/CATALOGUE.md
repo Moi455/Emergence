@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 49, variable 336, property 89, action 40, concept 293, grammar 8, interpretation 45, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
+Compte : entity 16, component 50, variable 342, property 89, action 40, concept 295, grammar 8, interpretation 45, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
 
 ## Histoires (tests d'acceptation)
 
@@ -12,19 +12,19 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | punch_in_brawl | §8, §27 | expressible | Deux ivrognes se disputent une chope ; l'un donne un coup de poing, l'autre tombe, la bagarre s'arrête quand l'aubergiste les sépare. |
 | beating_near_death | §6, §25 | expressible | Un homme rancunier roue de coups son rival jusqu'à ce qu'il ne bouge plus, puis s'arrête et fuit ; le rival survit, blessé pour des semaines. |
 | killed_by_blows | §25 | expressible | Une rixe dégénère : les coups continuent après la perte de connaissance et la victime meurt. Personne n'avait décidé de « tuer ». |
-| self_defense_kill | §5, §25 | todo | Attaqué au couteau sur un chemin, un bûcheron frappe avec sa hache et tue son agresseur ; au village, certains parlent de légitime défense, d'autres de meurtre. |
-| knife_interrupts_drink | §8 | todo | Un PNJ boit tranquillement depuis deux minutes quand un homme entre avec un couteau ; il pose sa chope, se lève et recule vers la porte. |
-| restrain_drunk | §8, §12 | todo | Un ami retient par les bras un homme ivre qui veut frapper, et lui parle pour le calmer. |
-| shove_in_queue | §6 | todo | Au puits, une femme impatiente bouscule un vieillard qui renverse son seau. |
-| throw_stone | §16 | todo | Un gamin lance une pierre sur la fenêtre de celui qui a battu son chien ; la vitre se brise. |
-| wolf_attack_rescue | §19, §12 | todo | Un loup attaque un berger à la lisière ; son frère accourt avec un bâton, frappe la bête, qui s'enfuit. |
+| self_defense_kill | §5, §25 | expressible | Attaqué au couteau sur un chemin, un bûcheron frappe avec sa hache et tue son agresseur ; au village, certains parlent de légitime défense, d'autres de meurtre. |
+| knife_interrupts_drink | §8 | expressible | Un PNJ boit tranquillement depuis deux minutes quand un homme entre avec un couteau ; il pose sa chope, se lève et recule vers la porte. |
+| restrain_drunk | §8, §12 | expressible | Un ami retient par les bras un homme ivre qui veut frapper, et lui parle pour le calmer. |
+| shove_in_queue | §6 | expressible | Au puits, une femme impatiente bouscule un vieillard qui renverse son seau. |
+| throw_stone | §16 | expressible | Un gamin lance une pierre sur la fenêtre de celui qui a battu son chien ; la vitre se brise. |
+| wolf_attack_rescue | §19, §12 | expressible | Un loup attaque un berger à la lisière ; son frère accourt avec un bâton, frappe la bête, qui s'enfuit. |
 | blackmail_affair | §5, §10 | expressible | Un homme a vu la femme du forgeron embrasser un autre ; il lui dit qu'il se taira si elle lui donne de l'argent chaque mois. |
 | promise_and_break | §9, §12 | expressible | Un charpentier promet d'aider son voisin à refaire son toit au printemps, puis ne vient pas ; le voisin s'en souvient longtemps. |
 | lie_about_whereabouts | §5 | expressible | Interrogé sur sa nuit, un homme affirme qu'il dormait chez lui alors qu'il était à la mine ; celui qui l'interroge le croit. |
 | false_rumor_spreads | §5, §10 | expressible | Une rumeur fausse (le meunier coupe sa farine avec du sable) passe de bouche en bouche et ses ventes chutent, alors que personne ne l'a vu faire. |
-| gossip_true_secret | §5 | todo | Une servante raconte à son amie, sous le sceau du secret, que la fille du chef est enceinte ; deux jours plus tard tout le marché le sait. |
+| gossip_true_secret | §5 | expressible | Une servante raconte à son amie, sous le sceau du secret, que la fille du chef est enceinte ; deux jours plus tard tout le marché le sait. |
 | invite_walk_refused | §15 | expressible | « Salut Georgette, ça te dirait de venir te promener en forêt ? » Georgette, méfiante envers lui depuis un mensonge, refuse poliment. |
-| invite_walk_accepted_later | §15, §12 | todo | Georgette, occupée à pétrir, répond qu'elle viendra après avoir fini sa fournée, et vient vraiment. |
+| invite_walk_accepted_later | §15, §12 | expressible | Georgette, occupée à pétrir, répond qu'elle viendra après avoir fini sa fournée, et vient vraiment. |
 | threat_conditional | §10 | expressible | Un créancier dit à un débiteur que s'il ne rembourse pas avant la fête, il brûlera sa grange. |
 | bribe_guard | §10, §24 | expressible | Un contrebandier propose à un garde trois pièces pour qu'il regarde ailleurs pendant la nuit. |
 | apology_accepted | §12 | expressible | Après une dispute, un frère va voir sa sœur, reconnaît qu'il a eu tort et lui demande pardon ; elle hésite puis l'embrasse. |
@@ -34,126 +34,126 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | ask_for_directions_wrong | §5 | expressible | Un voyageur demande le chemin du village de la mer ; un PNJ qui se trompe sur la route l'envoie dans la mauvaise vallée. |
 | warn_danger | §12 | expressible | Une femme crie aux enfants de s'écarter du mur qui se fissure ; ils courent, le mur s'effondre. |
 | call_for_help | §12, §21 | expressible | Blessé dans la mine, un homme appelle à l'aide ; ceux qui l'entendent hésitent, l'un descend. |
-| joke_falls_flat | §27 | todo | Un PNJ maladroit fait une plaisanterie sur la calvitie du chef pendant une assemblée ; personne ne rit, le chef s'en souvient. |
-| comfort_grieving | §12, §25 | todo | Une voisine s'assoit près d'une veuve, lui prend la main et lui parle du défunt. |
-| teach_by_explaining | §17 | todo | Une potière explique à un apprenti comment tenir l'argile et lui montre le geste ; il réessaie, rate, recommence. |
-| order_refused | §11 | todo | Le chef ordonne à un jeune de monter la garde ; le jeune, qui ne reconnaît pas son autorité, refuse devant les autres. |
-| written_note_anonymous | §5 | todo | Quelqu'un cloue sur la porte du temple un billet anonyme accusant le trésorier de voler ; ceux qui savent lire le racontent aux autres. |
-| secret_kept_loyal | §5, §12 | todo | Interrogée par le juge, une amie refuse de dire où se cache son ami, et prétend ne rien savoir. |
-| flattery_manipulation | §7, §27 | todo | Un intrigant flatte sans cesse un chef très susceptible pour obtenir une charge ; le chef la lui donne. |
-| misunderstood_reference | §15 | todo | Le joueur parle à un PNJ d'« Aldric du moulin » ; le PNJ ne le connaît pas et demande de qui il s'agit. |
+| joke_falls_flat | §27 | gap | Un PNJ maladroit fait une plaisanterie sur la calvitie du chef pendant une assemblée ; personne ne rit, le chef s'en souvient. |
+| comfort_grieving | §12, §25 | expressible | Une voisine s'assoit près d'une veuve, lui prend la main et lui parle du défunt. |
+| teach_by_explaining | §17 | expressible | Une potière explique à un apprenti comment tenir l'argile et lui montre le geste ; il réessaie, rate, recommence. |
+| order_refused | §11 | expressible | Le chef ordonne à un jeune de monter la garde ; le jeune, qui ne reconnaît pas son autorité, refuse devant les autres. |
+| written_note_anonymous | §5 | expressible | Quelqu'un cloue sur la porte du temple un billet anonyme accusant le trésorier de voler ; ceux qui savent lire le racontent aux autres. |
+| secret_kept_loyal | §5, §12 | gap | Interrogée par le juge, une amie refuse de dire où se cache son ami, et prétend ne rien savoir. |
+| flattery_manipulation | §7, §27 | expressible | Un intrigant flatte sans cesse un chef très susceptible pour obtenir une charge ; le chef la lui donne. |
+| misunderstood_reference | §15 | expressible | Le joueur parle à un PNJ d'« Aldric du moulin » ; le PNJ ne le connaît pas et demande de qui il s'agit. |
 | theft_seen | §5, §10 | expressible | Un enfant affamé prend une miche sur l'étal pendant que la boulangère a le dos tourné ; une passante l'a vu, la boulangère non. |
 | take_back_own | §5 | expressible | Un homme reprend chez son voisin la hache qu'il lui avait prêtée ; le fils du voisin, qui l'ignore, croit à un vol. |
 | betrayal_emerges | §6, §10 | expressible | Un homme a promis à son associé de ne jamais vendre leur secret de teinture ; ruiné, il le vend à un rival. L'associé y voit une trahison, le rival une bonne affaire. |
-| adultery_discovered | §5, §12 | todo | Une femme surprend son mari avec une autre ; elle se tait des semaines, puis le quitte. |
-| injustice_verdict | §11 | todo | Le chef condamne un pauvre pour un vol qu'il n'a pas commis ; une partie du village y voit une injustice et sa confiance dans le chef baisse. |
-| generosity_noticed | §21 | todo | Pendant la disette, une famille partage ses réserves avec les voisins ; on s'en souviendra à la génération suivante. |
+| adultery_discovered | §5, §12 | expressible | Une femme surprend son mari avec une autre ; elle se tait des semaines, puis le quitte. |
+| injustice_verdict | §11 | expressible | Le chef condamne un pauvre pour un vol qu'il n'a pas commis ; une partie du village y voit une injustice et sa confiance dans le chef baisse. |
+| generosity_noticed | §21 | expressible | Pendant la disette, une famille partage ses réserves avec les voisins ; on s'en souviendra à la génération suivante. |
 | absence_at_funeral | §20, §21 | expressible | Tout le village assiste aux funérailles d'une ancienne respectée ; le joueur ne vient pas ; plusieurs habitants le remarquent et le jugent. |
-| cowardice_judged | §21 | todo | Un homme fuit au lieu d'aider pendant l'attaque des loups ; ceux qui l'ont vu le méprisent, sa femme le défend. |
-| heroism_judged | §24 | todo | Une inconnue sort un enfant d'une maison en feu ; elle devient quelqu'un dont on parle et qu'on écoute. |
-| hypocrisy_exposed | §5, §27 | todo | Le prêtre qui prêche la fidélité est vu sortant de chez une veuve à l'aube ; les fidèles se partagent entre déni et colère. |
-| smell_smoke_wake | §8, §16 | todo | La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle. |
-| hear_scream_investigate | §8 | todo | Un cri dans la ruelle : un PNJ curieux va voir, un autre ferme ses volets. |
-| rain_interrupts_harvest | §8 | todo | Une averse arrive pendant la moisson ; les moissonneurs rentrent les gerbes en hâte. |
-| notice_missing_item | §5 | todo | Un forgeron remarque que son meilleur marteau a disparu de l'établi et soupçonne son apprenti. |
-| mistaken_identity_dark | §5 | todo | Dans la pénombre, un homme prend son frère pour un voleur et le frappe avant de le reconnaître. |
-| eavesdrop_conspiracy | §5, §11 | todo | Caché derrière un tonneau, un garçon entend deux hommes préparer le renversement du chef. |
-| save_for_house | §9, §13 | todo | Un jeune couple économise trois ans pour acheter la maison d'un vieux veuf ; une mauvaise récolte les retarde, ils y arrivent. |
-| long_revenge | §9, §6 | todo | Un fils dont le père a été tué attend dix ans, devient garde, et fait condamner le meurtrier. |
-| leave_village_dream | §9, §19 | todo | Une fille de pêcheur rêve de voir le village de la montagne ; elle part avec une caravane malgré sa mère. |
-| learn_trade_late | §9, §24 | todo | Un paysan de quarante ans décide de devenir forgeron, trouve un maître qui accepte contre du travail aux champs, et y parvient lentement. |
-| find_lost_brother | §9 | todo | Une femme cherche son frère parti vers les marches ; elle interroge les voyageurs pendant des années. |
-| goal_paused_for_crisis | §9 | todo | Un homme qui préparait sa candidature à la charge de chef s'interrompt pour soigner sa femme malade, puis reprend. |
-| goal_abandoned | §9, §6 | todo | Après deux refus, un homme renonce à séduire une femme et se tourne vers son travail. |
-| get_rich_scheme | §9, §24 | todo | Un meunier achète tout le grain avant l'hiver pour le revendre cher pendant la disette ; il s'enrichit et se fait haïr. |
-| conflict_to_migration | §10 | todo | Une querelle entre deux familles pour un champ dure des années ; la famille perdante finit par émigrer vers le village du désert. |
-| migration_changes_economy | §10 | todo | Trois familles de potiers s'installent au bourg ; le prix des pots chute, le potier local doit changer de métier. |
-| economy_to_politics | §10, §11 | todo | Les marchands enrichis par le sel soutiennent un candidat qui baissera la taxe du marché ; il est élu. |
-| village_war | §10 | todo | Après des vols de bétail répétés, les hommes du village de la forêt attaquent ceux du village de la montagne ; des morts, des rancunes pour des générations. |
-| war_property_change | §10, §25 | todo | Après le conflit, les terres d'une famille décimée sont prises par un voisin ; personne n'ose contester. |
-| famine_riot | §10, §11 | todo | Pendant la disette, une foule affamée force le grenier du chef ; le chef s'enfuit. |
-| epidemic_fear_exclusion | §10 | todo | Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole. |
-| festival_brings_couples | §10, §13 | todo | Pendant la fête du village, on danse, on boit ; deux couples se forment et une vieille querelle se rallume. |
-| love_village_hate_mayor | §11 | todo | Un vieux pêcheur aime profondément son village, mais déteste le chef et le dit à qui veut l'entendre. |
-| loyal_person_hostile_group | §11 | todo | Une femme est l'amie fidèle d'un homme de la bande des collines tout en méprisant la bande elle-même. |
-| found_guild | §11, §24 | todo | Quatre tisserandes s'accordent pour vendre au même prix et ne former d'apprentis qu'entre elles : une guilde est née. |
-| criminal_band_forms | §11, §24 | todo | Trois exilés se retrouvent dans la forêt, partagent ce qu'ils volent aux voyageurs ; l'un s'impose comme chef par la peur. |
-| election_campaign | §11, §24 | todo | Avant l'élection, deux candidats vont de maison en maison, promettent, rappellent les fautes de l'autre ; le moins riche gagne. |
-| decree_ignored | §11 | todo | Le chef décrète un couvre-feu ; la moitié du village l'ignore, et il n'a pas assez de gardes pour le faire respecter. |
-| coup_against_chief | §11, §24 | todo | Un adjoint ambitieux rallie les gardes mécontents et chasse le chef de sa maison ; la moitié du village le reconnaît. |
-| employer_respected_policy_despised | §11 | todo | Un ouvrier respecte son maître de forge mais méprise sa façon de traiter les apprentis, et finit par le lui dire. |
-| ownership_contested | §11, §13 | todo | Deux frères revendiquent la maison de leur père mort ; chacun a ses soutiens ; l'un s'y installe de force. |
-| money_trust_collapses | §11 | todo | On découvre que le trésorier a fondu des pièces avec du plomb ; les marchands refusent les pièces du village et reviennent au troc. |
-| custom_shifts_slowly | §11, §10 | todo | En une génération, le mariage entre villages, mal vu autrefois, devient courant après que plusieurs couples heureux l'ont montré. |
-| friend_accompanies_mine | §12 | todo | Le joueur demande à un ami de l'accompagner à la mine ; l'ami vient, l'aide à porter, puis rentre en disant qu'il a peur du noir. |
-| guard_house_absence | §12 | todo | Le joueur demande à sa voisine de surveiller sa maison pendant son voyage ; elle le fait, et chasse un rôdeur. |
-| entrust_object | §12 | todo | Le joueur confie un collier précieux à un ami ; à son retour, l'ami l'a vendu pour payer une dette. |
-| friendship_decays_distance | §12 | todo | Deux amis d'enfance vivent dans des villages différents ; sans se voir, leur amitié s'éteint doucement. |
-| enemies_become_friends | §12, §6 | todo | Deux rivaux bloqués ensemble dans une galerie effondrée s'entraident pour sortir et deviennent amis. |
-| never_neutral_again | §12 | todo | Le joueur a aidé un vieil homme une fois ; des années plus tard, l'homme le reconnaît et lui offre l'hospitalité. |
-| ordinary_day_farmer | §13 | todo | Un fermier se lève, mange, va aux champs, bavarde avec le voisin, rentre, répare un outil, dort. |
-| buy_house | §13, §11 | todo | Le joueur achète une maison : il négocie avec le propriétaire, paie, et les voisins le reconnaissent désormais comme propriétaire. |
-| marriage_and_children | §13, §25 | todo | Deux adultes se marient au temple, ont un enfant l'année suivante ; les deux familles se rapprochent. |
-| inheritance_split | §13, §25 | todo | À la mort d'une fermière, ses trois enfants se partagent terres et outils ; la cadette, lésée, en veut aux aînés. |
-| change_profession | §24 | todo | Un pêcheur dont la barque a coulé devient porteur au marché, puis marchand de poisson séché. |
-| hire_worker | §13, §11 | todo | Une veuve embauche un jeune pour ses champs contre le gîte, le couvert et une pièce par semaine. |
-| lend_and_debt | §12, §13 | todo | Un homme prête deux sacs de grain à son cousin ; le cousin rembourse tard et en partie ; la dette reste dans les esprits. |
-| neighbor_noise_feud | §13, §27 | todo | Un voisin martèle chaque nuit ; l'autre se plaint, puis finit par boucher sa cheminée en représailles. |
-| impossible_request | §14, §15 | todo | Le joueur demande à un PNJ de voler jusqu'à la lune ; le PNJ le regarde bizarrement et lui demande s'il a bu. |
-| player_lies_npc_believes | §5 | todo | Le joueur affirme être le neveu du chef ; le garde, qui n'a aucune raison d'en douter, le laisse entrer. |
-| npc_lies_to_player | §5 | todo | Un marchand assure au joueur que sa corde est neuve ; elle casse le lendemain. |
-| player_ignored_busy | §15 | todo | Le joueur salue un PNJ qui court chercher le guérisseur ; celui-ci ne répond pas. |
-| dig_undermines_house | §16 | todo | Un mineur creuse trop près d'une maison ; le mur se fend puis s'effondre, le propriétaire exige réparation. |
-| pay_artisan_build | §17, §13 | todo | Le joueur paie une bâtisseuse pour construire une grange ; elle rassemble pierre et bois et la bâtit avec sa baguette. |
-| lent_wand_apprentice | §17 | todo | Une bâtisseuse prête à son apprentie une baguette faible ; après des mois de pratique, elle lui confie la sienne. |
-| wand_lost | §17 | todo | Un artisan perd sa baguette dans la rivière ; il ne peut plus travailler et doit en racheter une très cher. |
-| smash_wall_hammer | §17, §16 | todo | Un ouvrier démolit à la masse le mur d'une maison abandonnée et récupère les pierres pour son enclos. |
-| fetch_water_well_dry | §2, §16 | todo | Pendant l'été sec, chacun puise au puits ; le niveau baisse, puis le puits tarit ; on se dispute la source. |
+| cowardice_judged | §21 | expressible | Un homme fuit au lieu d'aider pendant l'attaque des loups ; ceux qui l'ont vu le méprisent, sa femme le défend. |
+| heroism_judged | §24 | expressible | Une inconnue sort un enfant d'une maison en feu ; elle devient quelqu'un dont on parle et qu'on écoute. |
+| hypocrisy_exposed | §5, §27 | expressible | Le prêtre qui prêche la fidélité est vu sortant de chez une veuve à l'aube ; les fidèles se partagent entre déni et colère. |
+| smell_smoke_wake | §8, §16 | gap | La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle. |
+| hear_scream_investigate | §8 | expressible | Un cri dans la ruelle : un PNJ curieux va voir, un autre ferme ses volets. |
+| rain_interrupts_harvest | §8 | expressible | Une averse arrive pendant la moisson ; les moissonneurs rentrent les gerbes en hâte. |
+| notice_missing_item | §5 | expressible | Un forgeron remarque que son meilleur marteau a disparu de l'établi et soupçonne son apprenti. |
+| mistaken_identity_dark | §5 | expressible | Dans la pénombre, un homme prend son frère pour un voleur et le frappe avant de le reconnaître. |
+| eavesdrop_conspiracy | §5, §11 | expressible | Caché derrière un tonneau, un garçon entend deux hommes préparer le renversement du chef. |
+| save_for_house | §9, §13 | expressible | Un jeune couple économise trois ans pour acheter la maison d'un vieux veuf ; une mauvaise récolte les retarde, ils y arrivent. |
+| long_revenge | §9, §6 | expressible | Un fils dont le père a été tué attend dix ans, devient garde, et fait condamner le meurtrier. |
+| leave_village_dream | §9, §19 | expressible | Une fille de pêcheur rêve de voir le village de la montagne ; elle part avec une caravane malgré sa mère. |
+| learn_trade_late | §9, §24 | expressible | Un paysan de quarante ans décide de devenir forgeron, trouve un maître qui accepte contre du travail aux champs, et y parvient lentement. |
+| find_lost_brother | §9 | expressible | Une femme cherche son frère parti vers les marches ; elle interroge les voyageurs pendant des années. |
+| goal_paused_for_crisis | §9 | expressible | Un homme qui préparait sa candidature à la charge de chef s'interrompt pour soigner sa femme malade, puis reprend. |
+| goal_abandoned | §9, §6 | expressible | Après deux refus, un homme renonce à séduire une femme et se tourne vers son travail. |
+| get_rich_scheme | §9, §24 | expressible | Un meunier achète tout le grain avant l'hiver pour le revendre cher pendant la disette ; il s'enrichit et se fait haïr. |
+| conflict_to_migration | §10 | expressible | Une querelle entre deux familles pour un champ dure des années ; la famille perdante finit par émigrer vers le village du désert. |
+| migration_changes_economy | §10 | expressible | Trois familles de potiers s'installent au bourg ; le prix des pots chute, le potier local doit changer de métier. |
+| economy_to_politics | §10, §11 | gap | Les marchands enrichis par le sel soutiennent un candidat qui baissera la taxe du marché ; il est élu. |
+| village_war | §10 | expressible | Après des vols de bétail répétés, les hommes du village de la forêt attaquent ceux du village de la montagne ; des morts, des rancunes pour des générations. |
+| war_property_change | §10, §25 | expressible | Après le conflit, les terres d'une famille décimée sont prises par un voisin ; personne n'ose contester. |
+| famine_riot | §10, §11 | expressible | Pendant la disette, une foule affamée force le grenier du chef ; le chef s'enfuit. |
+| epidemic_fear_exclusion | §10 | gap | Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole. |
+| festival_brings_couples | §10, §13 | expressible | Pendant la fête du village, on danse, on boit ; deux couples se forment et une vieille querelle se rallume. |
+| love_village_hate_mayor | §11 | expressible | Un vieux pêcheur aime profondément son village, mais déteste le chef et le dit à qui veut l'entendre. |
+| loyal_person_hostile_group | §11 | expressible | Une femme est l'amie fidèle d'un homme de la bande des collines tout en méprisant la bande elle-même. |
+| found_guild | §11, §24 | expressible | Quatre tisserandes s'accordent pour vendre au même prix et ne former d'apprentis qu'entre elles : une guilde est née. |
+| criminal_band_forms | §11, §24 | expressible | Trois exilés se retrouvent dans la forêt, partagent ce qu'ils volent aux voyageurs ; l'un s'impose comme chef par la peur. |
+| election_campaign | §11, §24 | gap | Avant l'élection, deux candidats vont de maison en maison, promettent, rappellent les fautes de l'autre ; le moins riche gagne. |
+| decree_ignored | §11 | gap | Le chef décrète un couvre-feu ; la moitié du village l'ignore, et il n'a pas assez de gardes pour le faire respecter. |
+| coup_against_chief | §11, §24 | expressible | Un adjoint ambitieux rallie les gardes mécontents et chasse le chef de sa maison ; la moitié du village le reconnaît. |
+| employer_respected_policy_despised | §11 | expressible | Un ouvrier respecte son maître de forge mais méprise sa façon de traiter les apprentis, et finit par le lui dire. |
+| ownership_contested | §11, §13 | expressible | Deux frères revendiquent la maison de leur père mort ; chacun a ses soutiens ; l'un s'y installe de force. |
+| money_trust_collapses | §11 | expressible | On découvre que le trésorier a fondu des pièces avec du plomb ; les marchands refusent les pièces du village et reviennent au troc. |
+| custom_shifts_slowly | §11, §10 | gap | En une génération, le mariage entre villages, mal vu autrefois, devient courant après que plusieurs couples heureux l'ont montré. |
+| friend_accompanies_mine | §12 | expressible | Le joueur demande à un ami de l'accompagner à la mine ; l'ami vient, l'aide à porter, puis rentre en disant qu'il a peur du noir. |
+| guard_house_absence | §12 | expressible | Le joueur demande à sa voisine de surveiller sa maison pendant son voyage ; elle le fait, et chasse un rôdeur. |
+| entrust_object | §12 | expressible | Le joueur confie un collier précieux à un ami ; à son retour, l'ami l'a vendu pour payer une dette. |
+| friendship_decays_distance | §12 | expressible | Deux amis d'enfance vivent dans des villages différents ; sans se voir, leur amitié s'éteint doucement. |
+| enemies_become_friends | §12, §6 | expressible | Deux rivaux bloqués ensemble dans une galerie effondrée s'entraident pour sortir et deviennent amis. |
+| never_neutral_again | §12 | expressible | Le joueur a aidé un vieil homme une fois ; des années plus tard, l'homme le reconnaît et lui offre l'hospitalité. |
+| ordinary_day_farmer | §13 | expressible | Un fermier se lève, mange, va aux champs, bavarde avec le voisin, rentre, répare un outil, dort. |
+| buy_house | §13, §11 | expressible | Le joueur achète une maison : il négocie avec le propriétaire, paie, et les voisins le reconnaissent désormais comme propriétaire. |
+| marriage_and_children | §13, §25 | gap | Deux adultes se marient au temple, ont un enfant l'année suivante ; les deux familles se rapprochent. |
+| inheritance_split | §13, §25 | expressible | À la mort d'une fermière, ses trois enfants se partagent terres et outils ; la cadette, lésée, en veut aux aînés. |
+| change_profession | §24 | expressible | Un pêcheur dont la barque a coulé devient porteur au marché, puis marchand de poisson séché. |
+| hire_worker | §13, §11 | expressible | Une veuve embauche un jeune pour ses champs contre le gîte, le couvert et une pièce par semaine. |
+| lend_and_debt | §12, §13 | expressible | Un homme prête deux sacs de grain à son cousin ; le cousin rembourse tard et en partie ; la dette reste dans les esprits. |
+| neighbor_noise_feud | §13, §27 | expressible | Un voisin martèle chaque nuit ; l'autre se plaint, puis finit par boucher sa cheminée en représailles. |
+| impossible_request | §14, §15 | gap | Le joueur demande à un PNJ de voler jusqu'à la lune ; le PNJ le regarde bizarrement et lui demande s'il a bu. |
+| player_lies_npc_believes | §5 | expressible | Le joueur affirme être le neveu du chef ; le garde, qui n'a aucune raison d'en douter, le laisse entrer. |
+| npc_lies_to_player | §5 | expressible | Un marchand assure au joueur que sa corde est neuve ; elle casse le lendemain. |
+| player_ignored_busy | §15 | expressible | Le joueur salue un PNJ qui court chercher le guérisseur ; celui-ci ne répond pas. |
+| dig_undermines_house | §16 | expressible | Un mineur creuse trop près d'une maison ; le mur se fend puis s'effondre, le propriétaire exige réparation. |
+| pay_artisan_build | §17, §13 | gap | Le joueur paie une bâtisseuse pour construire une grange ; elle rassemble pierre et bois et la bâtit avec sa baguette. |
+| lent_wand_apprentice | §17 | expressible | Une bâtisseuse prête à son apprentie une baguette faible ; après des mois de pratique, elle lui confie la sienne. |
+| wand_lost | §17 | expressible | Un artisan perd sa baguette dans la rivière ; il ne peut plus travailler et doit en racheter une très cher. |
+| smash_wall_hammer | §17, §16 | expressible | Un ouvrier démolit à la masse le mur d'une maison abandonnée et récupère les pierres pour son enclos. |
+| fetch_water_well_dry | §2, §16 | expressible | Pendant l'été sec, chacun puise au puits ; le niveau baisse, puis le puits tarit ; on se dispute la source. |
 | set_fire_barn | §16 | expressible | Un homme vexé met le feu à la grange de son rival ; le feu gagne la maison voisine ; on fait la chaîne avec des seaux. |
-| bridge_destroyed_offscreen | §3, §16 | todo | Loin du joueur, une crue emporte le pont ; quand il arrive, le pont n'existe plus et les voyageurs passent par le gué. |
-| craft_tool | §17, §13 | todo | Un forgeron transforme du minerai et du charbon en une pioche, qu'il vend à un mineur. |
-| farm_cycle | §13 | todo | Une paysanne laboure, sème, désherbe, récolte, et garde des graines pour l'année suivante. |
-| cook_meal_share | §13, §12 | todo | Un père cuisine une soupe avec les légumes du jardin et la partage avec une voisine malade. |
-| chop_tree_forest_shrinks | §16, §2 | todo | Des années de coupe éclaircissent la forêt près du village ; il faut aller de plus en plus loin pour le bois. |
-| hide_object | §5 | todo | Une femme cache ses économies sous une pierre du foyer ; son fils les trouve en cherchant autre chose. |
-| lock_door | §16 | todo | Après un vol dans le quartier, une famille pose un verrou ; le voisin s'en offusque. |
-| strange_zone_legend | §18, §19 | todo | Une clairière où les oiseaux se taisent : ceux qui y dorment rêvent de choses étranges ; une légende naît, chacun la raconte à sa façon. |
-| magic_accident | §18 | todo | Une apprentie trop ambitieuse utilise une baguette puissante et fait s'écrouler son atelier ; elle est blessée. |
-| hermit_in_mountains | §19, §7 | todo | Un vieil homme vit seul dans la montagne ; il connaît les plantes et refuse de parler aux gens du village, sauf aux enfants. |
-| lost_in_marches | §19, §3 | todo | Un chasseur part trop loin dans la forêt profonde ; on ne le revoit jamais ; son histoire devient un avertissement. |
-| isolated_family_found | §19 | todo | Le joueur trouve une famille dans une ferme éloignée, qui ne sait rien des querelles du bourg et se méfie des étrangers. |
-| belief_in_beyond | §18 | todo | Un conteur jure qu'au-delà du désert il existe une cité d'or ; certains le croient, d'autres rient, un jeune part la chercher. |
-| touchy_mayor_disaster | §27, §7 | todo | Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant. |
-| clumsy_npc_chain | §27 | todo | Un maladroit renverse un tonneau qui roule jusqu'au marché, effraie un âne, qui piétine l'étal du chef. |
-| eccentric_collector | §7 | todo | Une vieille ramasse toutes les pierres bleues qu'elle trouve et en remplit sa maison ; les enfants l'adorent, les voisins s'agacent. |
-| shy_becomes_confident | §6 | todo | Un garçon timide, félicité pour son travail plusieurs fois, ose peu à peu parler à l'assemblée ; adulte, il est porte-parole. |
-| becomes_bitter | §6 | todo | Une femme trompée trois fois devient rancunière et méfiante envers tous, puis se radicalise contre le chef. |
-| isolation_spiral | §6 | todo | Après la mort de sa femme, un homme sort de moins en moins, boit, et ses amis cessent de venir. |
-| same_event_different_reactions | §7 | todo | Un ours entre au village : l'un fuit, l'autre attrape une fourche, une troisième court sauver les poules, un quatrième rit. |
-| child_grows_up | §25, §3 | todo | Le joueur part cinq ans ; à son retour, l'enfant à qui il apprenait à pêcher est un jeune adulte marié. |
-| elder_dies_naturally | §25 | todo | Une vieille tisserande meurt dans son sommeil ; ses apprentis reprennent l'atelier, sa voisine prend son chat. |
-| chief_death_succession | §25, §11 | todo | Le chef meurt sans successeur désigné ; trois prétendants s'affrontent, le village est divisé tout un hiver. |
-| isolated_death_unnoticed | §25 | todo | Un ermite meurt seul ; personne ne le sait pendant des semaines ; sa mort ne change presque rien. |
-| orphan_adopted | §25, §12 | todo | Deux enfants perdent leurs parents ; une tante en prend un, un voisin sans enfant l'autre. |
-| knowledge_lost_with_death | §25, §17 | todo | Le seul verrier du village meurt sans apprenti ; plus personne ne sait faire le verre, il faut l'acheter ailleurs. |
-| illness_and_care | §25, §12 | todo | Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement. |
-| pregnancy_birth | §25 | todo | Une femme mariée attend un enfant, ralentit son travail ; la sage-femme l'aide à accoucher. |
-| player_inaction_noticed | §20, §21 | todo | Le joueur voit une rixe et ne fait rien ; la victime le lui reproche ensuite. |
-| stranger_integration | §22, §5 | todo | Le joueur arrive en étranger ; d'abord ignoré et méfié, il travaille aux champs, se fait des amis et devient « du village ». |
-| player_becomes_criminal | §22, §24 | todo | Le joueur vole, se fait connaître des malfrats, gagne leur confiance et finit par diriger la bande. |
-| player_runs_for_chief | §23, §24 | todo | Le joueur se présente comme chef ; il doit convaincre, faire des promesses et affronter les rumeurs. |
-| player_reputation_travels | §21, §5 | todo | Le joueur a escroqué un marchand au bourg ; dans le village de la mer, on le regarde déjà de travers. |
-| start_as_existing_villager | §4, §22 | todo | Le joueur incarne une tisserande existante : il hérite de ses relations, de ses dettes et de ses souvenirs (ce qu'elle sait, pas la vérité). |
-| price_rises_shortage | §10 | todo | Le bois manque après un hiver rigoureux ; les vendeurs montent leurs prix, les pauvres brûlent leurs meubles. |
-| trade_caravan | §10, §19 | todo | Une marchande organise une caravane de sel vers le village de la montagne, engage deux gardes, revient avec du minerai. |
-| barter_without_money | §13 | todo | Un pêcheur échange trois poissons contre une réparation de filet. |
-| tax_evasion | §11 | todo | Un fermier cache une partie de sa récolte pour payer moins d'impôt ; le percepteur s'en doute. |
-| strike_workers | §11, §10 | todo | Les mineurs, mal payés, s'accordent pour ne plus descendre tant que le maître ne double pas leur paie. |
-| livestock_care | §13 | todo | Une bergère mène ses moutons au pré, en trait une, et rentre le troupeau avant l'orage. |
-| hunt_deer | §13, §19 | todo | Deux chasseurs pistent un cerf, le blessent, le suivent jusqu'au ruisseau et le ramènent au village. |
-| dog_loyal | §12 | todo | Le chien d'un berger mort reste des jours sur la tombe ; un enfant le nourrit et l'adopte. |
-| flood_village | §3, §16 | todo | La rivière déborde, inonde les caves ; les familles montent leurs réserves à l'étage et certaines perdent tout. |
-| storm_cold_death | §19, §25 | todo | Un voyageur surpris par la tempête de neige dans la montagne s'abrite dans une grotte ; sans feu, il meurt de froid. |
+| bridge_destroyed_offscreen | §3, §16 | expressible | Loin du joueur, une crue emporte le pont ; quand il arrive, le pont n'existe plus et les voyageurs passent par le gué. |
+| craft_tool | §17, §13 | expressible | Un forgeron transforme du minerai et du charbon en une pioche, qu'il vend à un mineur. |
+| farm_cycle | §13 | expressible | Une paysanne laboure, sème, désherbe, récolte, et garde des graines pour l'année suivante. |
+| cook_meal_share | §13, §12 | expressible | Un père cuisine une soupe avec les légumes du jardin et la partage avec une voisine malade. |
+| chop_tree_forest_shrinks | §16, §2 | expressible | Des années de coupe éclaircissent la forêt près du village ; il faut aller de plus en plus loin pour le bois. |
+| hide_object | §5 | expressible | Une femme cache ses économies sous une pierre du foyer ; son fils les trouve en cherchant autre chose. |
+| lock_door | §16 | expressible | Après un vol dans le quartier, une famille pose un verrou ; le voisin s'en offusque. |
+| strange_zone_legend | §18, §19 | gap | Une clairière où les oiseaux se taisent : ceux qui y dorment rêvent de choses étranges ; une légende naît, chacun la raconte à sa façon. |
+| magic_accident | §18 | expressible | Une apprentie trop ambitieuse utilise une baguette puissante et fait s'écrouler son atelier ; elle est blessée. |
+| hermit_in_mountains | §19, §7 | expressible | Un vieil homme vit seul dans la montagne ; il connaît les plantes et refuse de parler aux gens du village, sauf aux enfants. |
+| lost_in_marches | §19, §3 | expressible | Un chasseur part trop loin dans la forêt profonde ; on ne le revoit jamais ; son histoire devient un avertissement. |
+| isolated_family_found | §19 | expressible | Le joueur trouve une famille dans une ferme éloignée, qui ne sait rien des querelles du bourg et se méfie des étrangers. |
+| belief_in_beyond | §18 | gap | Un conteur jure qu'au-delà du désert il existe une cité d'or ; certains le croient, d'autres rient, un jeune part la chercher. |
+| touchy_mayor_disaster | §27, §7 | gap | Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant. |
+| clumsy_npc_chain | §27 | expressible | Un maladroit renverse un tonneau qui roule jusqu'au marché, effraie un âne, qui piétine l'étal du chef. |
+| eccentric_collector | §7 | gap | Une vieille ramasse toutes les pierres bleues qu'elle trouve et en remplit sa maison ; les enfants l'adorent, les voisins s'agacent. |
+| shy_becomes_confident | §6 | expressible | Un garçon timide, félicité pour son travail plusieurs fois, ose peu à peu parler à l'assemblée ; adulte, il est porte-parole. |
+| becomes_bitter | §6 | expressible | Une femme trompée trois fois devient rancunière et méfiante envers tous, puis se radicalise contre le chef. |
+| isolation_spiral | §6 | expressible | Après la mort de sa femme, un homme sort de moins en moins, boit, et ses amis cessent de venir. |
+| same_event_different_reactions | §7 | expressible | Un ours entre au village : l'un fuit, l'autre attrape une fourche, une troisième court sauver les poules, un quatrième rit. |
+| child_grows_up | §25, §3 | expressible | Le joueur part cinq ans ; à son retour, l'enfant à qui il apprenait à pêcher est un jeune adulte marié. |
+| elder_dies_naturally | §25 | expressible | Une vieille tisserande meurt dans son sommeil ; ses apprentis reprennent l'atelier, sa voisine prend son chat. |
+| chief_death_succession | §25, §11 | expressible | Le chef meurt sans successeur désigné ; trois prétendants s'affrontent, le village est divisé tout un hiver. |
+| isolated_death_unnoticed | §25 | expressible | Un ermite meurt seul ; personne ne le sait pendant des semaines ; sa mort ne change presque rien. |
+| orphan_adopted | §25, §12 | expressible | Deux enfants perdent leurs parents ; une tante en prend un, un voisin sans enfant l'autre. |
+| knowledge_lost_with_death | §25, §17 | expressible | Le seul verrier du village meurt sans apprenti ; plus personne ne sait faire le verre, il faut l'acheter ailleurs. |
+| illness_and_care | §25, §12 | gap | Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement. |
+| pregnancy_birth | §25 | gap | Une femme mariée attend un enfant, ralentit son travail ; la sage-femme l'aide à accoucher. |
+| player_inaction_noticed | §20, §21 | expressible | Le joueur voit une rixe et ne fait rien ; la victime le lui reproche ensuite. |
+| stranger_integration | §22, §5 | expressible | Le joueur arrive en étranger ; d'abord ignoré et méfié, il travaille aux champs, se fait des amis et devient « du village ». |
+| player_becomes_criminal | §22, §24 | expressible | Le joueur vole, se fait connaître des malfrats, gagne leur confiance et finit par diriger la bande. |
+| player_runs_for_chief | §23, §24 | gap | Le joueur se présente comme chef ; il doit convaincre, faire des promesses et affronter les rumeurs. |
+| player_reputation_travels | §21, §5 | expressible | Le joueur a escroqué un marchand au bourg ; dans le village de la mer, on le regarde déjà de travers. |
+| start_as_existing_villager | §4, §22 | expressible | Le joueur incarne une tisserande existante : il hérite de ses relations, de ses dettes et de ses souvenirs (ce qu'elle sait, pas la vérité). |
+| price_rises_shortage | §10 | expressible | Le bois manque après un hiver rigoureux ; les vendeurs montent leurs prix, les pauvres brûlent leurs meubles. |
+| trade_caravan | §10, §19 | expressible | Une marchande organise une caravane de sel vers le village de la montagne, engage deux gardes, revient avec du minerai. |
+| barter_without_money | §13 | expressible | Un pêcheur échange trois poissons contre une réparation de filet. |
+| tax_evasion | §11 | expressible | Un fermier cache une partie de sa récolte pour payer moins d'impôt ; le percepteur s'en doute. |
+| strike_workers | §11, §10 | expressible | Les mineurs, mal payés, s'accordent pour ne plus descendre tant que le maître ne double pas leur paie. |
+| livestock_care | §13 | expressible | Une bergère mène ses moutons au pré, en trait une, et rentre le troupeau avant l'orage. |
+| hunt_deer | §13, §19 | expressible | Deux chasseurs pistent un cerf, le blessent, le suivent jusqu'au ruisseau et le ramènent au village. |
+| dog_loyal | §12 | expressible | Le chien d'un berger mort reste des jours sur la tombe ; un enfant le nourrit et l'adopte. |
+| flood_village | §3, §16 | expressible | La rivière déborde, inonde les caves ; les familles montent leurs réserves à l'étage et certaines perdent tout. |
+| storm_cold_death | §19, §25 | expressible | Un voyageur surpris par la tempête de neige dans la montagne s'abrite dans une grotte ; sans feu, il meurt de froid. |
 
 ## Types d'entités
 
@@ -229,6 +229,7 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | event_seen | un geste d'autrui perçu récemment (vu ou entendu) : qui, quel geste, sur quoi, comment | agent |
 | entity_percept | une personne (ou une bête) perçue par CET observateur : ce qu'il en voit d'où il est, avec sa lumière, son attention, son œil | agent |
 | place_percept | le lieu tel que CET observateur le perçoit (lumière, bruit, gens qu'il voit, air, temps qu'il fait, signes étranges) | agent |
+| locus | un lieu qu'il connaît et qui compte maintenant (sa maison, sa destination, la mine, le lieu d'un souvenir) | agent |
 
 ## Variables d'état
 
@@ -242,22 +243,22 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| a_parties | les parties | list | moteur |  | moteur seul | ceux qui ont proposé et accepté |  | 0 |
-| a_obligations | qui doit rendre vrai quoi, avant quand, à quelle condition, une fois ou à chaque période (chaque jour, chaque saison, chaque année), et la part déjà remplie | list | moteur |  | moteur seul | repris tel quel de la proposition acceptée (expression de la langue) |  | 0 |
+| a_parties | les parties | list | moteur |  | moteur seul | ceux qui ont proposé et accepté |  | 2 |
+| a_obligations | qui doit rendre vrai quoi, avant quand, à quelle condition, une fois ou à chaque période (chaque jour, chaque saison, chaque année), et la part déjà remplie | list | moteur |  | moteur seul | repris tel quel de la proposition acceptée (expression de la langue) |  | 3 |
 | a_witnesses | les témoins | list | moteur |  | moteur seul | ceux qui ont perçu l'échange de paroles, cachés compris ; un accord sans témoin ne se prouve que par la parole |  | 0 |
 | a_form | forme (dit, devant témoins, écrit, scellé, rituel) | enum (spoken, witnessed, written, sealed, ritual) | moteur |  | moteur seul | écrit quand une inscription le porte ; scellé si un sceau y est apposé ; rituel si fait selon une coutume crue (noces au temple) |  | 0 |
-| a_status | état objectif (en cours, tenu, rompu, délié, caduc) | enum (open, fulfilled, broken, released, void) | moteur |  | moteur seul | tenu quand les obligations deviennent vraies ; rompu à l'échéance dépassée ou sur refus dit ; délié quand le bénéficiaire le dit ; caduc à la mort d'une partie (que la dette passe aux héritiers est une croyance, pas une règle) |  | 1 |
+| a_status | état objectif (en cours, tenu, rompu, délié, caduc) | enum (open, fulfilled, broken, released, void) | moteur |  | moteur seul | tenu quand les obligations deviennent vraies ; rompu à l'échéance dépassée ou sur refus dit ; délié quand le bénéficiaire le dit ; caduc à la mort d'une partie (que la dette passe aux héritiers est une croyance, pas une règle) |  | 5 |
 | a_document | l'écrit qui le porte, s'il existe | id | moteur |  | privé |  |  | 0 |
-| a_kind_label | étiquette pour la chronique (prêt, vente, mariage, emploi, apprentissage, serment, alliance, garde…) | enum (promise, loan, sale, barter, employment, apprenticeship, marriage, betrothal, oath, alliance, custody, other) | calculé |  | moteur seul | tirée du contenu ; sert à l'affichage, jamais à décider |  | 0 |
+| a_kind_label | étiquette pour la chronique (prêt, vente, mariage, emploi, apprentissage, serment, alliance, garde…) | enum (promise, loan, sale, barter, employment, apprenticeship, marriage, betrothal, oath, alliance, custody, other) | calculé |  | moteur seul | tirée du contenu ; sert à l'affichage, jamais à décider |  | 7 |
 
 ### animal_behavior
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | animal_species | espèce | id | naissance |  | moteur seul |  |  | 0 |
-| animal_fear_humans | peur des humains | unipolar10 | moteur |  | moteur seul | monte quand on le chasse, baisse avec les soins ; le gibier fuit, le loup affamé ose |  | 0 |
-| animal_aggression | agressivité (faim, petits à défendre, blessure, meute) | unipolar10 | moteur |  | moteur seul |  |  | 0 |
-| animal_attachment | attachement à un humain (le chien au berger) | list | moteur |  | moteur seul | monte quand on le nourrit et le soigne ; reste après la mort du maître |  | 0 |
+| animal_fear_humans | peur des humains | unipolar10 | moteur |  | moteur seul | monte quand on le chasse, baisse avec les soins ; le gibier fuit, le loup affamé ose |  | 1 |
+| animal_aggression | agressivité (faim, petits à défendre, blessure, meute) | unipolar10 | moteur |  | moteur seul |  |  | 1 |
+| animal_attachment | attachement à un humain (le chien au berger) | list | moteur |  | moteur seul | monte quand on le nourrit et le soigne ; reste après la mort du maître |  | 3 |
 | animal_group | troupeau, meute, nid | id | moteur |  | observable |  |  | 0 |
 | animal_tameness | domestication (sauvage, apprivoisé, domestique) | enum (wild, tamed, domestic) | moteur |  | observable |  |  | 0 |
 
@@ -265,11 +266,11 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit |  | 3 |
-| symptoms | symptômes visibles (fièvre, toux, taches, pâleur, tremblements) | list | calculé |  | observable |  |  | 0 |
+| condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit |  | 5 |
+| symptoms | symptômes visibles (fièvre, toux, taches, pâleur, tremblements) | list | calculé |  | observable |  |  | 1 |
 | expression | expression du visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | tirée des émotions réelles, atténuée par la volonté de masquer (esprit mouvant, étape 5) et la maîtrise de soi |  | 1 |
 | involuntary_signs | signes involontaires (rougir, pâlir, transpirer, trembler, larmes, voix qui tremble) | list | calculé |  | observable | on les masque mal : c'est par eux qu'un mensonge ou une peur se trahit |  | 1 |
-| posture | posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  |  | 0 |
+| posture | posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  |  | 2 |
 | visible_injury | blessures visibles | unipolar10 | calculé |  | observable | plaies des zones non couvertes, sang sur les vêtements, boiterie |  | 0 |
 | attire_seen | ce qu'on voit de la tenue (sobre ou riche, de fête, de deuil, de travail, armure) | list | calculé |  | observable | tiré des vêtements portés : matières, qualité, teintes, emplacements |  | 0 |
 | held_seen | ce qu'il tient en main, vu par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable | vecteur d'usages de l'objet en main : qu'il coupe ou perce, et non son nom |  | 0 |
@@ -294,57 +295,57 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | place_bounds | étendue d'un lieu, lieu parent | list | moteur |  | observable |  |  | 0 |
 | indoors | intérieur ou dehors | bool | moteur |  | observable |  |  | 0 |
 | light_level | lumière (soleil, lune, nuages, feux, lampes, fenêtres) | unipolar10 | calculé |  | observable | calculée en temps réel (D23) ; règle ce qu'on voit et à quelle distance, et la certitude de ce qu'on perçoit |  | 0 |
-| ambient_noise | bruit ambiant (couvre les paroles, les pas) | unipolar10 | calculé |  | observable | foule, forge, pluie, rivière ; un murmure ne s'entend pas dans le bruit |  | 0 |
+| ambient_noise | bruit ambiant (couvre les paroles, les pas) | unipolar10 | calculé |  | observable | foule, forge, pluie, rivière ; un murmure ne s'entend pas dans le bruit |  | 1 |
 | crowding | nombre de gens présents | qty | calculé |  | observable |  |  | 0 |
-| frontier_depth | profondeur dans les marches, mesurée depuis leur bord intérieur (les marches sont la bande au bord de la carte, P9) | qty | calculé |  | moteur seul | pilote des variables PHYSIQUES qui empirent avec la profondeur (froid, prédateurs, tempêtes, relief, rareté de l'eau et du gibier), environ ×2 tous les 300 m (500 m en montagne) ; on meurt de ces causes, jamais d'une formule ; aucune limite visible (D26) |  | 0 |
+| frontier_depth | profondeur dans les marches, mesurée depuis leur bord intérieur (les marches sont la bande au bord de la carte, P9) | qty | calculé |  | moteur seul | pilote des variables PHYSIQUES qui empirent avec la profondeur (froid, prédateurs, tempêtes, relief, rareté de l'eau et du gibier), environ ×2 tous les 300 m (500 m en montagne) ; on meurt de ces causes, jamais d'une formule ; aucune limite visible (D26) |  | 1 |
 
 ### belief
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| b_proposition | ce qui est cru (proposition) | proposition | moteur, T saut |  | privé | le moteur crée les perçues et les entendues ; le Transformer crée les déduites et adopte les entendues | BELIEF.prop | 2 |
+| b_proposition | ce qui est cru (proposition) | proposition | moteur, T saut |  | privé | le moteur crée les perçues et les entendues ; le Transformer crée les déduites et adopte les entendues | BELIEF.prop | 30 |
 | b_polarity | cru vrai ou cru faux | bool | moteur, T saut |  | privé |  | BELIEF.polarity | 0 |
-| b_certainty | certitude | unipolar10 | moteur, T saut |  | privé | le moteur la fixe pour une perception (vue, lumière, distance, attention, ivresse) ; le Transformer la révise d'un coup devant une preuve | BELIEF.certainty | 0 |
-| b_weight | poids : combien on y tient (force d'une norme, valeur qu'on donne à une chose) | bipolar10 | T pas | 0.3 | privé | une norme change lentement chez chacun, par de nombreuses décisions ; la coutume d'un village suit | BELIEF.weight | 0 |
-| b_source | d'où vient la croyance (vu, entendu, dit, lu, déduit, supposé, rêvé) | enum | moteur, T saut |  | privé | le moteur pour vu, entendu, dit, lu ; le Transformer pour déduit | BELIEF.source | 0 |
-| b_informant | qui l'a dit (ou l'auteur de l'écrit) | mref | moteur |  | privé | un billet anonyme n'a pas d'informateur connu | BELIEF.informant (pointeur) | 0 |
-| b_hops | de combien de bouches elle est passée (0 vu, 1 dit par un témoin, 2 et plus : ouï-dire) | qty | moteur |  | privé | pris dans ce que dit l'informateur (« je l'ai vu », « on me l'a dit ») : il peut mentir dessus | BELIEF.hops | 0 |
+| b_certainty | certitude | unipolar10 | moteur, T saut |  | privé | le moteur la fixe pour une perception (vue, lumière, distance, attention, ivresse) ; le Transformer la révise d'un coup devant une preuve | BELIEF.certainty | 13 |
+| b_weight | poids : combien on y tient (force d'une norme, valeur qu'on donne à une chose) | bipolar10 | T pas | 0.3 | privé | une norme change lentement chez chacun, par de nombreuses décisions ; la coutume d'un village suit | BELIEF.weight | 5 |
+| b_source | d'où vient la croyance (vu, entendu, dit, lu, déduit, supposé, rêvé) | enum | moteur, T saut |  | privé | le moteur pour vu, entendu, dit, lu ; le Transformer pour déduit | BELIEF.source | 6 |
+| b_informant | qui l'a dit (ou l'auteur de l'écrit) | mref | moteur |  | privé | un billet anonyme n'a pas d'informateur connu | BELIEF.informant (pointeur) | 1 |
+| b_hops | de combien de bouches elle est passée (0 vu, 1 dit par un témoin, 2 et plus : ouï-dire) | qty | moteur |  | privé | pris dans ce que dit l'informateur (« je l'ai vu », « on me l'a dit ») : il peut mentir dessus | BELIEF.hops | 8 |
 | b_acquired | depuis quand on le croit | time | moteur |  | privé |  | BELIEF.age | 0 |
 | b_confirmed | dernière confirmation (revu, réentendu) | time | moteur |  | privé | une croyance confirmée résiste à l'oubli |  | 0 |
 | b_importance | importance pour soi (règle l'oubli et ce qui revient à l'esprit) | unipolar10 | moteur, T pas | 1.0 | privé | le moteur donne une valeur neutre à la création ; seul le Transformer juge ce qui compte | BELIEF.importance | 0 |
-| b_secret | à garder pour soi (choix de ne pas le répéter) | bool | T saut |  | privé | un secret confié peut avoir été promis (accord) ; le trahir est un fait que d'autres jugeront | BELIEF.secret | 0 |
-| b_told_to | à qui on l'a déjà dit | list | moteur |  | privé | rempli par les paroles réellement dites | BELIEF.shared (déjà répété ou non) | 0 |
+| b_secret | à garder pour soi (choix de ne pas le répéter) | bool | T saut |  | privé | un secret confié peut avoir été promis (accord) ; le trahir est un fait que d'autres jugeront | BELIEF.secret | 5 |
+| b_told_to | à qui on l'a déjà dit | list | moteur |  | privé | rempli par les paroles réellement dites | BELIEF.shared (déjà répété ou non) | 1 |
 | b_truth | vrai ou faux en réalité (le moteur seul le sait) | bool | moteur |  | moteur seul |  |  | 0 |
 | b_origin_fact | le fait d'origine (pour une perception) | id | moteur |  | moteur seul |  |  | 0 |
-| b_contradicted | démentie par ce qu'on voit (je croyais le marteau sur l'établi : il n'y est pas) | bool | moteur |  | privé | le moteur compare une croyance de lieu ou d'état avec la perception directe, quand la chose devrait être en vue ; c'est ainsi qu'on remarque un objet disparu ou une absence | BELIEF.contradicted | 0 |
+| b_contradicted | démentie par ce qu'on voit (je croyais le marteau sur l'établi : il n'y est pas) | bool | moteur |  | privé | le moteur compare une croyance de lieu ou d'état avec la perception directe, quand la chose devrait être en vue ; c'est ainsi qu'on remarque un objet disparu ou une absence | BELIEF.contradicted | 3 |
 
 ### beliefs
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | belief_capacity | nombre de croyances gardées | qty | calculé |  | moteur seul | de 128 à 384 selon la mémoire (memory_capacity) ; au-delà, la moins importante et la moins confirmée s'efface |  | 0 |
-| heard_unprocessed | ce qu'on vient d'entendre et qu'on n'a pas encore jugé | list | moteur |  | privé | « Y m'a dit que P » attend que le Transformer décide d'y croire ou non ; s'efface s'il n'en fait rien | HEARD (≤ 2 jetons) | 0 |
-| place_recognized | où l'on croit être (lieu reconnu par ses repères) | mref | moteur |  | privé | reconnu par la perception quand on connaît les repères ; hors des lieux connus : dernier lieu connu et direction approximative : on peut se perdre (charte § 19) | SELF.place | 0 |
-| inv_seen | ce qu'il croit porter sur lui (perçu en le rangeant, en le tâtant : une fausse pièce y est une pièce) | list | calculé |  | privé | mis à jour quand il prend, range ou examine ce qu'il porte | INV | 0 |
+| heard_unprocessed | ce qu'on vient d'entendre et qu'on n'a pas encore jugé | list | moteur |  | privé | « Y m'a dit que P » attend que le Transformer décide d'y croire ou non ; s'efface s'il n'en fait rien | HEARD (≤ 2 jetons) | 2 |
+| place_recognized | où l'on croit être (lieu reconnu par ses repères) | mref | moteur |  | privé | reconnu par la perception quand on connaît les repères ; hors des lieux connus : dernier lieu connu et direction approximative : on peut se perdre (charte § 19) | SELF.place | 2 |
+| inv_seen | ce qu'il croit porter sur lui (perçu en le rangeant, en le tâtant : une fausse pièce y est une pièce) | list | calculé |  | privé | mis à jour quand il prend, range ou examine ce qu'il porte | INV | 2 |
 | own_held_seen | ce qu’il croit tenir en main, par ses usages (perçus) | list | calculé |  | privé |  | SELF.held | 0 |
-| season_felt | saison qu'il croit (neige, feuilles, récoltes) | enum (spring, summer, autumn, winter) | calculé |  | privé |  | SELF.season | 0 |
+| season_felt | saison qu'il croit (neige, feuilles, récoltes) | enum (spring, summer, autumn, winter) | calculé |  | privé |  | SELF.season | 1 |
 | time_felt | heure du jour ressentie (soleil, lumière, cloches, faim) ; incertaine sous terre ou à l'intérieur | qty | calculé |  | privé | exacte à peu près dehors au soleil ; dérive dans le noir, sous terre, par temps couvert | SELF.time (sin, cos, certitude) | 0 |
 
 ### body
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| alive | vivant (la vérité) | bool | moteur |  | moteur seul |  |  | 1 |
-| consciousness | conscience (10 éveillé et lucide, 0 inconscient) | unipolar10 | moteur |  | observable | baisse avec coups à la tête, douleur extrême, sang perdu, ivresse, sommeil ; remonte au repos | SELF.body.consciousness | 2 |
-| blood_volume | volume de sang (100 = plein) | qty | moteur |  | moteur seul | baisse selon le saignement ; < 60 % faiblesse, < 40 % mort ; remonte lentement |  | 1 |
+| alive | vivant (la vérité) | bool | moteur |  | moteur seul |  |  | 8 |
+| consciousness | conscience (10 éveillé et lucide, 0 inconscient) | unipolar10 | moteur |  | observable | baisse avec coups à la tête, douleur extrême, sang perdu, ivresse, sommeil ; remonte au repos | SELF.body.consciousness | 3 |
+| blood_volume | volume de sang (100 = plein) | qty | moteur |  | moteur seul | baisse selon le saignement ; < 60 % faiblesse, < 40 % mort ; remonte lentement |  | 2 |
 | bleeding | saignement | unipolar10 | moteur |  | observable | somme des plaies ouvertes ; un bandage ou la pression le réduisent | SELF.body.bleeding | 1 |
-| pain | douleur | unipolar10 | moteur |  | privé | saute au coup, décroît en secondes à minutes réelles ; les blessures en entretiennent une part (calendrier) | SELF.body.pain | 2 |
+| pain | douleur | unipolar10 | moteur |  | privé | saute au coup, décroît en secondes à minutes réelles ; les blessures en entretiennent une part (calendrier) | SELF.body.pain | 6 |
 | breath | souffle (asphyxie : noyade, fumée, étranglement) | unipolar10 | moteur |  | observable | baisse en secondes sous l'eau, dans la fumée, la gorge serrée ; à 0, perte de conscience puis mort | SELF.body.breath | 0 |
-| body_temperature | température du corps | qty | moteur |  | moteur seul | suit le lieu, la tenue (isolation), l'humidité, le feu ; fièvre par infection ; < 33 °C ou > 41 °C : danger |  | 0 |
+| body_temperature | température du corps | qty | moteur |  | moteur seul | suit le lieu, la tenue (isolation), l'humidité, le feu ; fièvre par infection ; < 33 °C ou > 41 °C : danger |  | 1 |
 | zones | zones du corps | enum (head, neck, upper_torso, lower_torso, upper_arm_l, upper_arm_r, forearm_l, forearm_r, hand_l, hand_r, pelvis, thigh_l, thigh_r, calf_l, calf_r, feet) | naissance |  | moteur seul |  |  | 0 |
-| wounds | blessures : zone, type (contusion, coupure, perforation, brûlure, fracture, gelure, morsure), gravité, infectée, soignée, âge | list | moteur |  | observable | processus heal_tissue ; l'infection les aggrave ; une fracture non réduite laisse une séquelle | SELF.wound (les 2 pires : région grossière tête/torse/bras/jambes, type, gravité) | 3 |
+| wounds | blessures : zone, type (contusion, coupure, perforation, brûlure, fracture, gelure, morsure), gravité, infectée, soignée, âge | list | moteur |  | observable | processus heal_tissue ; l'infection les aggrave ; une fracture non réduite laisse une séquelle | SELF.wound (les 2 pires : région grossière tête/torse/bras/jambes, type, gravité) | 8 |
 | permanent_marks | séquelles et marques (cicatrice, boiterie, œil perdu, doigts manquants) | list | moteur |  | observable |  |  | 0 |
-| mobility | capacité à se déplacer | ratio | calculé |  | observable | jambes blessées, épuisement, charge, ivresse, âge | SELF.body.mobility | 0 |
+| mobility | capacité à se déplacer | ratio | calculé |  | observable | jambes blessées, épuisement, charge, ivresse, âge | SELF.body.mobility | 1 |
 | manipulation | capacité à manier (mains et bras) | ratio | calculé |  | observable | mains et bras blessés, froid, tremblements, ivresse | SELF.body.manipulation | 0 |
 | sex | sexe | enum (female, male) | naissance |  | observable |  | SELF.sex | 0 |
 | height | taille | qty | naissance, moteur |  | observable | croissance pendant l'enfance |  | 0 |
@@ -355,39 +356,39 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | robustness | robustesse (résistance aux coups et aux maladies) | unipolar10 | naissance, moteur |  | privé |  |  | 0 |
 | vision | acuité visuelle | unipolar10 | naissance, moteur |  | privé | baisse avec l'âge, une blessure à l'œil ; la nuit réduit ce qu'elle permet |  | 0 |
 | hearing | acuité auditive | unipolar10 | naissance, moteur |  | privé |  |  | 0 |
-| illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent |  | 0 |
+| illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent |  | 4 |
 | immunities | immunités acquises | list | moteur |  | moteur seul |  |  | 0 |
-| intoxication | ivresse, effet d'une drogue (alcool, pavot, somnifère : ce qu'on ressent) ; le poison est une maladie (illnesses), dont on ne sent que les symptômes | unipolar10 | moteur |  | observable | monte par la potency de ce qu'on ingère, redescend en heures | SELF.body.intox | 1 |
+| intoxication | ivresse, effet d'une drogue (alcool, pavot, somnifère : ce qu'on ressent) ; le poison est une maladie (illnesses), dont on ne sent que les symptômes | unipolar10 | moteur |  | observable | monte par la potency de ce qu'on ingère, redescend en heures | SELF.body.intox | 4 |
 | posture_felt | sa propre posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | privé |  | SELF.posture | 0 |
-| sickness_felt | malaise ressenti (fièvre, nausée, faiblesse) : les symptômes, pas la maladie | unipolar10 | calculé |  | privé | tiré des symptômes ; l'incubation ne se sent pas | SELF.body.sickness | 0 |
+| sickness_felt | malaise ressenti (fièvre, nausée, faiblesse) : les symptômes, pas la maladie | unipolar10 | calculé |  | privé | tiré des symptômes ; l'incubation ne se sent pas | SELF.body.sickness | 3 |
 
 ### carrier
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| hands | objets en main (gauche, droite) | list | moteur |  | observable | changent par les gestes saisir, lâcher, donner, prendre |  | 0 |
+| hands | objets en main (gauche, droite) | list | moteur |  | observable | changent par les gestes saisir, lâcher, donner, prendre |  | 1 |
 | worn | vêtements portés, par emplacement et couche | list | moteur |  | observable |  |  | 0 |
 | carried | contenants portés (sac, bourse, hotte) et leur contenu | list | moteur |  | privé | le contenu d'une bourse ne se voit pas ; son poids, un peu |  | 0 |
-| load_ratio | charge portée / capacité | ratio | calculé |  | observable |  | SELF.body.load | 0 |
-| wealth_objective | richesse réelle (biens détenus, monnaie, terres crues à soi) | qty | calculé |  | moteur seul | les autres n'en voient que des signes (tenue, maison, dépenses) |  | 0 |
+| load_ratio | charge portée / capacité | ratio | calculé |  | observable |  | SELF.body.load | 1 |
+| wealth_objective | richesse réelle (biens détenus, monnaie, terres crues à soi) | qty | calculé |  | moteur seul | les autres n'en voient que des signes (tenue, maison, dépenses) |  | 2 |
 
 ### chronicle
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| transactions | échanges qui ont eu lieu (quoi contre quoi, où, quand, entre qui) | list | moteur |  | moteur seul | les présents les perçoivent : c'est ainsi qu'un prix se sait au marché (croyance worth) |  | 0 |
+| transactions | échanges qui ont eu lieu (quoi contre quoi, où, quand, entre qui) | list | moteur |  | moteur seul | les présents les perçoivent : c'est ainsi qu'un prix se sait au marché (croyance worth) |  | 5 |
 
 ### climate
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| air_temperature | température de l'air | qty | moteur |  | observable | saison, heure, altitude, côté de la carte (désert, montagne, mer) |  | 0 |
+| air_temperature | température de l'air | qty | moteur |  | observable | saison, heure, altitude, côté de la carte (désert, montagne, mer) |  | 1 |
 | wind | vent (direction, force) | qty | moteur |  | observable | pousse le feu, les voiles, la pluie ; vent dominant venu de la mer |  | 0 |
 | cloud_cover | nuages | ratio | moteur |  | observable |  |  | 0 |
-| precipitation | pluie, neige, grêle (type, intensité) | list | moteur |  | observable | mouille (wetness), remplit les puits, gonfle les rivières, éteint les feux |  | 0 |
+| precipitation | pluie, neige, grêle (type, intensité) | list | moteur |  | observable | mouille (wetness), remplit les puits, gonfle les rivières, éteint les feux |  | 1 |
 | fog | brume, brouillard | ratio | moteur |  | observable | réduit la portée de la vue (perception) |  | 0 |
-| storm | orage, tempête (foudre, coups de vent) | unipolar10 | moteur |  | observable | la foudre peut allumer un feu ; la tempête tue en montagne et en mer ; elle se voit et s'entend (PLACE.weather) |  | 0 |
-| snow_cover | neige au sol | qty | moteur |  | observable | ralentit, efface les traces, isole les villages |  | 0 |
+| storm | orage, tempête (foudre, coups de vent) | unipolar10 | moteur |  | observable | la foudre peut allumer un feu ; la tempête tue en montagne et en mer ; elle se voit et s'entend (PLACE.weather) |  | 2 |
+| snow_cover | neige au sol | qty | moteur |  | observable | ralentit, efface les traces, isole les villages |  | 1 |
 
 ### clock
 
@@ -404,27 +405,27 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| fire_extent | étendue du feu | qty | moteur |  | observable |  |  | 1 |
+| fire_extent | étendue du feu | qty | moteur |  | observable |  |  | 2 |
 | fire_heat | chaleur | qty | moteur |  | observable |  |  | 0 |
 | fire_fuel | combustible restant | qty | moteur |  | observable |  |  | 0 |
 | fire_spread | propagation (selon inflammabilité, humidité, vent) | ratio | moteur |  | observable | l'eau versée, la terre jetée, l'absence de combustible l'arrêtent |  | 0 |
-| smoke | fumée (cache la vue, étouffe, se sent de loin) | unipolar10 | moteur |  | observable | baisse le souffle de ceux qui la respirent ; s'entend et se sent avant de se voir |  | 0 |
+| smoke | fumée (cache la vue, étouffe, se sent de loin) | unipolar10 | moteur |  | observable | baisse le souffle de ceux qui la respirent ; s'entend et se sent avant de se voir |  | 2 |
 
 ### entity_percept
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | ep_condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | tiré de l'apparence, brouillé par la distance et la lumière ; immobile ne dit pas mort | ENTITY.look.condition | 0 |
-| ep_expression | expression qu'il lit sur le visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | invisible de dos, de loin, dans le noir ; ce que l'autre masque reste masqué | ENTITY.look.expression | 0 |
+| ep_expression | expression qu'il lit sur le visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | invisible de dos, de loin, dans le noir ; ce que l'autre masque reste masqué | ENTITY.look.expression | 1 |
 | ep_signs | signes involontaires qu'il remarque (rougit, tremble, transpire, larmes, titube) | list | calculé |  | observable | plus il est fin (perceptiveness) et attentif, plus il en voit | ENTITY.look.signs | 0 |
-| ep_health | santé apparente (pâle, fiévreux, tousse, maigre) | list | calculé |  | observable |  | ENTITY.look.health | 0 |
+| ep_health | santé apparente (pâle, fiévreux, tousse, maigre) | list | calculé |  | observable |  | ENTITY.look.health | 1 |
 | ep_wounds | blessures qu'il voit (zones découvertes, sang sur les habits, boiterie) | unipolar10 | calculé |  | observable |  | ENTITY.look.wounds | 0 |
 | ep_posture | posture vue | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  | ENTITY.look.posture | 0 |
 | ep_attire | tenue et mise vues (sobre ou riche, de fête, de deuil, de travail, armure, soignée ou sale) | list | calculé |  | observable |  | ENTITY.look.attire | 0 |
-| ep_held | ce qu'il lui voit en main, par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable |  | ENTITY.look.held | 0 |
+| ep_held | ce qu'il lui voit en main, par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable |  | ENTITY.look.held | 1 |
 | ep_build | carrure apparente (taille, corpulence, force devinée) | list | calculé |  | observable |  | ENTITY.look.build | 0 |
 | ep_sex | sexe apparent | enum (female, male, unclear) | calculé |  | observable |  | ENTITY.look.sex | 0 |
-| ep_age | âge apparent pour cet observateur | qty | calculé |  | observable | âge vrai brouillé par la distance, la lumière, ce qui couvre le visage ; D10 le lit aussi | ENTITY.look.age | 0 |
+| ep_age | âge apparent pour cet observateur | qty | calculé |  | observable | âge vrai brouillé par la distance, la lumière, ce qui couvre le visage ; D10 le lit aussi | ENTITY.look.age | 1 |
 | ep_marks | marques qu'il voit (cicatrice, boiterie, œil perdu) | list | calculé |  | observable |  | ENTITY.look.marks | 0 |
 | ep_dist | distance apparente | qty | calculé |  | observable |  | ENTITY.dist | 0 |
 | ep_dir | direction apparente (sinus, cosinus) | qty | calculé |  | observable |  | ENTITY.dir | 0 |
@@ -435,18 +436,18 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| m_content | ce qui a été perçu (proposition : qui a fait quoi, sur quoi) | proposition | moteur, T saut |  | privé | le moteur l'écrit tel que perçu (pas tel qu'il s'est passé) ; il se déforme quand la netteté baisse ; le Transformer peut aussi créer un souvenir (charte § 8) | MEMORY.prop | 0 |
+| m_content | ce qui a été perçu (proposition : qui a fait quoi, sur quoi) | proposition | moteur, T saut |  | privé | le moteur l'écrit tel que perçu (pas tel qu'il s'est passé) ; il se déforme quand la netteté baisse ; le Transformer peut aussi créer un souvenir (charte § 8) | MEMORY.prop | 2 |
 | m_fact_ref | le fait réel (lien pour le moteur) | id | moteur |  | moteur seul |  |  | 0 |
 | m_when | quand | time | moteur |  | privé |  | MEMORY.age | 0 |
 | m_where | où | mref | moteur |  | privé |  | MEMORY.place (pointeur) | 0 |
 | m_role | son rôle dans ce fait (auteur, cible, témoin, l'a appris) | enum (actor, target, witness, told) | moteur |  | privé |  | MEMORY.role | 0 |
 | m_valence | ce que ce souvenir fait ressentir (−10 blessure, +10 bonheur) | bipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite réinterprété par pas de 1 | MEMORY.valence | 0 |
-| m_importance | importance (règle l'oubli et ce qui revient à l'esprit) | unipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite pas de 1 | MEMORY.importance | 0 |
-| m_interpretation | le jugement porté (vol, trahison, accident, générosité, injustice, rien de spécial…) | word | T saut |  | privé | une interprétation du catalogue (étape 14) ; peut changer quand on apprend autre chose | MEMORY.interp | 5 |
+| m_importance | importance (règle l'oubli et ce qui revient à l'esprit) | unipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite pas de 1 | MEMORY.importance | 5 |
+| m_interpretation | le jugement porté (vol, trahison, accident, générosité, injustice, rien de spécial…) | word | T saut |  | privé | une interprétation du catalogue (étape 14) ; peut changer quand on apprend autre chose | MEMORY.interp | 11 |
 | m_emotion | l'émotion dominante liée au souvenir | enum | T saut |  | privé | se réveille quand le souvenir revient (le moteur rappelle, le modèle ressent) | MEMORY.emotion | 0 |
-| m_defining | souvenir marquant (fait partie de qui l'on est ; ne s'oublie pas) | bool | T saut |  | privé |  | MEMORY.defining | 0 |
-| m_secret | souvenir qu'on cache | bool | T saut |  | privé |  | MEMORY.secret | 0 |
-| m_vividness | netteté (les détails s'estompent) | unipolar10 | moteur |  | privé | baisse avec le temps selon la mémoire de la personne ; les rappels et les récits la remontent ; basse, les détails (qui exactement, combien) deviennent incertains ou glissent | MEMORY.vividness | 0 |
+| m_defining | souvenir marquant (fait partie de qui l'on est ; ne s'oublie pas) | bool | T saut |  | privé |  | MEMORY.defining | 3 |
+| m_secret | souvenir qu'on cache | bool | T saut |  | privé |  | MEMORY.secret | 2 |
+| m_vividness | netteté (les détails s'estompent) | unipolar10 | moteur |  | privé | baisse avec le temps selon la mémoire de la personne ; les rappels et les récits la remontent ; basse, les détails (qui exactement, combien) deviennent incertains ou glissent | MEMORY.vividness | 2 |
 | m_rehearsals | combien de fois on y a repensé ou l'a raconté | qty | moteur |  | privé | consolide le souvenir ; un souvenir trop raconté s'embellit |  | 0 |
 
 ### event_seen
@@ -466,73 +467,83 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| water_level | niveau, profondeur | qty | moteur |  | observable | crue au-delà des berges : inondation |  | 0 |
-| water_flow | débit, courant | qty | moteur |  | observable | un fort courant emporte, noie, arrache un pont |  | 0 |
+| water_level | niveau, profondeur | qty | moteur |  | observable | crue au-delà des berges : inondation |  | 3 |
+| water_flow | débit, courant | qty | moteur |  | observable | un fort courant emporte, noie, arrache un pont |  | 2 |
 | ice | glace (épaisseur) | qty | moteur |  | observable | porte un homme au-delà d'une épaisseur ; sinon elle cède |  | 0 |
 
 ### goal
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| g_desired | ce qu'on veut (proposition) | proposition | T saut |  | privé | créé, réorienté (autre cible) ou abandonné par le Transformer ; au plus 8 gardés | GOAL.prop | 0 |
+| g_desired | ce qu'on veut (proposition) | proposition | T saut |  | privé | créé, réorienté (autre cible) ou abandonné par le Transformer ; au plus 8 gardés | GOAL.prop | 11 |
 | g_mode | rendre vrai, garder vrai, empêcher | enum | T saut |  | privé |  | GOAL.mode | 0 |
-| g_priority | priorité | unipolar10 | T pas | 1.0 | privé |  | GOAL.priority | 0 |
+| g_priority | priorité | unipolar10 | T pas | 1.0 | privé |  | GOAL.priority | 3 |
 | g_deadline | échéance (avant la fête, avant l'hiver…) | time | T saut, moteur |  | privé | quand l'objectif vient d'un accord, le moteur reprend l'échéance CRUE (commitments_seen), jamais la vraie | GOAL.deadline | 0 |
 | g_origin | d'où vient l'objectif (de soi, d'une demande, d'un rôle, d'un accord, d'une norme) | enum (self, asked, role, agreement, norm) | T saut, moteur |  | privé |  | GOAL.origin | 0 |
 | g_origin_ref | qui l'a demandé, quel accord, quel rôle | mref | moteur, T saut |  | privé |  | GOAL.origin_ref (pointeur) | 0 |
-| g_status | état (actif, en pause, atteint, échoué, abandonné) | enum (active, paused, achieved, failed, abandoned) | T saut, moteur |  | privé | le Transformer met en pause, reprend, abandonne ; le moteur constate atteint ou échoué d'après les CROYANCES de la personne, jamais d'après la vérité (un mort qu'elle n'a pas appris reste à venger) | GOAL.status | 0 |
-| g_progress | avancement (quand il se mesure : pièces économisées / prix cru de la maison) | ratio | calculé |  | privé |  | GOAL.progress | 0 |
+| g_status | état (actif, en pause, atteint, échoué, abandonné) | enum (active, paused, achieved, failed, abandoned) | T saut, moteur |  | privé | le Transformer met en pause, reprend, abandonne ; le moteur constate atteint ou échoué d'après les CROYANCES de la personne, jamais d'après la vérité (un mort qu'elle n'a pas appris reste à venger) | GOAL.status | 3 |
+| g_progress | avancement (quand il se mesure : pièces économisées / prix cru de la maison) | ratio | calculé |  | privé |  | GOAL.progress | 1 |
 | g_since | depuis quand | time | moteur |  | privé |  | GOAL.age | 0 |
 
 ### goals
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| commitments_seen | ses accords tels qu'elle s'en souvient et les croit : avec qui, qui doit quoi, échéance, tenu ou rompu à ses yeux, devant qui elle croit l'avoir conclu | list | calculé |  | privé | tiré de ses souvenirs et de ses croyances (party_to, owes) ; peut différer de l'accord réel | COMMIT (contrepartie, mien ou sien, échéance, état cru, témoins crus) | 0 |
+| commitments_seen | ses accords tels qu'elle s'en souvient et les croit : avec qui, qui doit quoi, échéance, tenu ou rompu à ses yeux, devant qui elle croit l'avoir conclu | list | calculé |  | privé | tiré de ses souvenirs et de ses croyances (party_to, owes) ; peut différer de l'accord réel | COMMIT (contrepartie, mien ou sien, échéance, état cru, témoins crus) | 17 |
 
 ### growth
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | plant_species | espèce | id | naissance |  | moteur seul |  |  | 0 |
-| plant_stage | stade (graine, pousse, adulte, en fleur, en fruit, sec, mort) | enum (seed, sprout, mature, flowering, fruiting, dry, dead) | moteur |  | observable |  |  | 0 |
-| plant_yield | ce qu'elle porte (fruits, grain, bois) | qty | moteur |  | observable | selon la saison, l'eau, le sol, la lumière, les soins |  | 0 |
+| plant_stage | stade (graine, pousse, adulte, en fleur, en fruit, sec, mort) | enum (seed, sprout, mature, flowering, fruiting, dry, dead) | moteur |  | observable |  |  | 2 |
+| plant_yield | ce qu'elle porte (fruits, grain, bois) | qty | moteur |  | observable | selon la saison, l'eau, le sol, la lumière, les soins |  | 4 |
 | plant_health | santé (sécheresse, maladie, piétinement, feu) | unipolar10 | moteur |  | observable |  |  | 0 |
 
 ### intention
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| i_steps | la suite de gestes choisie (1 à 6), chacun avec ses conditions d'arrêt et d'interruption | list | T saut |  | privé | gestes et conditions de l'étape 12 ; le moteur l'exécute seul jusqu'à la fin, l'échec ou l'interruption | PLAN | 0 |
+| i_steps | la suite de gestes choisie (1 à 6), chacun avec ses conditions d'arrêt et d'interruption | list | T saut |  | privé | gestes et conditions de l'étape 12 ; le moteur l'exécute seul jusqu'à la fin, l'échec ou l'interruption | PLAN | 5 |
 | i_serves | l'objectif qu'elle sert | mref | T saut |  | privé |  | PLAN.goal (pointeur) | 0 |
 | i_step_index | étape en cours, progression | qty | moteur |  | privé |  | PLAN.progress | 0 |
-| i_commitment | fermeté (résister aux interruptions mineures) | unipolar10 | T saut |  | privé | haute : seul un vrai danger interrompt ; basse : la moindre chose détourne | PLAN.commitment | 0 |
+| i_commitment | fermeté (résister aux interruptions mineures) | unipolar10 | T saut |  | privé | haute : seul un vrai danger interrompt ; basse : la moindre chose détourne | PLAN.commitment | 2 |
 
 ### ledger
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| custody_log | historique de détention (objet, bête, terre, maison : qui l'a tenu ou occupé, comment il est passé) | list | moteur |  | moteur seul | chaque passage est un fait objectif : de quelles mains à quelles mains, par quel geste (donné, posé, pris dans les mains, pris dans un contenant, trouvé, occupé) ; « vol » ou « cadeau » est ce que les témoins en concluent |  | 0 |
-| recognized_claims | à qui une chose, une terre, une maison, une bête est reconnue appartenir, et par combien de gens | list | calculé |  | moteur seul | agrégat des croyances owns ; une maison contestée a deux colonnes de soutiens |  | 0 |
+| custody_log | historique de détention (objet, bête, terre, maison : qui l'a tenu ou occupé, comment il est passé) | list | moteur |  | moteur seul | chaque passage est un fait objectif : de quelles mains à quelles mains, par quel geste (donné, posé, pris dans les mains, pris dans un contenant, trouvé, occupé) ; « vol » ou « cadeau » est ce que les témoins en concluent |  | 2 |
+| recognized_claims | à qui une chose, une terre, une maison, une bête est reconnue appartenir, et par combien de gens | list | calculé |  | moteur seul | agrégat des croyances owns ; une maison contestée a deux colonnes de soutiens |  | 8 |
 
 ### lifecycle
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | life_clock | temps vécu sur l'horloge de vie | time | moteur |  | moteur seul |  |  | 0 |
-| age_years | âge en années équivalentes | qty | calculé |  | observable | suit l'horloge de vie (≈ 2,8 ans d'âge par année de calendrier à l'âge adulte, plus vite dans l'enfance) ; les autres n'en voient qu'un âge apparent, à quelques années près | SELF.age | 0 |
-| life_stage | stade de vie | enum (infant, child, teen, adult, elder) | calculé |  | observable | infant < 3, child < 14, teen < 18, adult < 60, elder ; les règles dures se lisent ici | SELF.age_stage | 0 |
-| senescence | vieillissement (accélère les pertes de force, de vue, la mortalité) | unipolar10 | calculé |  | observable |  |  | 0 |
+| age_years | âge en années équivalentes | qty | calculé |  | observable | suit l'horloge de vie (≈ 2,8 ans d'âge par année de calendrier à l'âge adulte, plus vite dans l'enfance) ; les autres n'en voient qu'un âge apparent, à quelques années près | SELF.age | 1 |
+| life_stage | stade de vie | enum (infant, child, teen, adult, elder) | calculé |  | observable | infant < 3, child < 14, teen < 18, adult < 60, elder ; les règles dures se lisent ici | SELF.age_stage | 1 |
+| senescence | vieillissement (accélère les pertes de force, de vue, la mortalité) | unipolar10 | calculé |  | observable |  |  | 1 |
 | fecundity | fécondité | unipolar10 | moteur |  | moteur seul |  |  | 0 |
-| pregnancy | grossesse (aucune, précoce, visible, avancée) | enum (none, early, visible, late) | moteur |  | moteur seul | précoce : personne ne le sait, pas même elle ; ensuite ses signes (nausées, ventre) se perçoivent, et elle le CROIT (croyance state(moi, enceinte)) : jamais lu directement |  | 0 |
+| pregnancy | grossesse (aucune, précoce, visible, avancée) | enum (none, early, visible, late) | moteur |  | moteur seul | précoce : personne ne le sait, pas même elle ; ensuite ses signes (nausées, ventre) se perçoivent, et elle le CROIT (croyance state(moi, enceinte)) : jamais lu directement |  | 2 |
 | biological_parents | parents biologiques (un fait ; on peut l'ignorer ou le cacher) | list | naissance |  | moteur seul |  |  | 0 |
+
+### locus
+
+| id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
+|---|---|---|---|---|---|---|---|---|
+| lc_file | le dossier de ce lieu connu (pointeur @L) | mref | calculé |  | privé |  | LOCUS.file | 0 |
+| lc_kind | ce qu'il croit être ce lieu (maison, champ, forêt, mine, temple, marché…) | word | calculé |  | privé |  | LOCUS.kind | 0 |
+| lc_dist | distance crue | qty | calculé |  | privé |  | LOCUS.dist | 1 |
+| lc_dir | direction crue (sinus, cosinus) | qty | calculé |  | privé |  | LOCUS.dir | 0 |
+| lc_owner | à qui il croit qu'il appartient | mref | calculé |  | privé |  | LOCUS.owner | 0 |
 
 ### magic
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| magic_stability | stabilité d'un objet magique (une baguette fêlée peut éclater) | unipolar10 | moteur |  | moteur seul | baisse à l'usage au-delà de la maîtrise du porteur |  | 0 |
-| magic_attunement | accord d'un objet magique avec son porteur (meilleur rendement pour qui l'a longtemps manié) | list | moteur |  | moteur seul |  |  | 0 |
+| magic_stability | stabilité d'un objet magique (une baguette fêlée peut éclater) | unipolar10 | moteur |  | moteur seul | baisse à l'usage au-delà de la maîtrise du porteur |  | 2 |
+| magic_attunement | accord d'un objet magique avec son porteur (meilleur rendement pour qui l'a longtemps manié) | list | moteur |  | moteur seul |  |  | 1 |
 
 ### memory
 
@@ -544,40 +555,40 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| fear | peur (menace présente) | unipolar10 | T saut, moteur |  | privé | retombe vers 0 selon la résilience, en dizaines de secondes réelles si la menace a disparu ; la douleur l'entretient | SELF_STATE.emo.fear | 0 |
-| anxiety | inquiétude (menace à venir) | unipolar10 | T saut, moteur |  | privé | retombe lentement selon la résilience ; la douleur et la maladie ressenties l'entretiennent (le corps, pas un jugement) | SELF_STATE.emo.anxiety | 0 |
-| anger | colère | unipolar10 | T saut, moteur |  | privé | retombe selon la résilience, en minutes réelles ; la douleur, la faim, le manque de sommeil, l'ivresse la font monter plus vite | SELF_STATE.emo.anger | 2 |
-| joy | joie | unipolar10 | T saut, moteur |  | privé | retombe vers l'humeur de fond | SELF_STATE.emo.joy | 0 |
-| sadness | tristesse | unipolar10 | T saut, moteur |  | privé | retombe lentement | SELF_STATE.emo.sadness | 0 |
-| grief | deuil (perte d'un proche) | unipolar10 | T saut, moteur |  | privé | peut saisir d'un coup (une émotion) ; le moteur le fait retomber très lentement, sur des jours de jeu | SELF_STATE.emo.grief | 0 |
+| fear | peur (menace présente) | unipolar10 | T saut, moteur |  | privé | retombe vers 0 selon la résilience, en dizaines de secondes réelles si la menace a disparu ; la douleur l'entretient | SELF_STATE.emo.fear | 16 |
+| anxiety | inquiétude (menace à venir) | unipolar10 | T saut, moteur |  | privé | retombe lentement selon la résilience ; la douleur et la maladie ressenties l'entretiennent (le corps, pas un jugement) | SELF_STATE.emo.anxiety | 3 |
+| anger | colère | unipolar10 | T saut, moteur |  | privé | retombe selon la résilience, en minutes réelles ; la douleur, la faim, le manque de sommeil, l'ivresse la font monter plus vite | SELF_STATE.emo.anger | 12 |
+| joy | joie | unipolar10 | T saut, moteur |  | privé | retombe vers l'humeur de fond | SELF_STATE.emo.joy | 2 |
+| sadness | tristesse | unipolar10 | T saut, moteur |  | privé | retombe lentement | SELF_STATE.emo.sadness | 4 |
+| grief | deuil (perte d'un proche) | unipolar10 | T saut, moteur |  | privé | peut saisir d'un coup (une émotion) ; le moteur le fait retomber très lentement, sur des jours de jeu | SELF_STATE.emo.grief | 5 |
 | disgust | dégoût (physique ou moral) | unipolar10 | T saut, moteur |  | privé | retombe vite | SELF_STATE.emo.disgust | 0 |
-| surprise | surprise, choc | unipolar10 | T saut, moteur |  | privé | retombe en une dizaine de secondes réelles (quelques décisions) | SELF_STATE.emo.surprise | 0 |
-| shame | honte (devant les autres) | unipolar10 | T saut, moteur |  | privé | retombe lentement ; trahie par la rougeur | SELF_STATE.emo.shame | 1 |
-| guilt | culpabilité (devant sa conscience) | unipolar10 | T saut, moteur |  | privé | retombe lentement selon la résilience ; seul le Transformer juge s'il y a faute et s'il la ravive | SELF_STATE.emo.guilt | 0 |
-| pride | fierté | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.pride | 0 |
-| jealousy | jalousie (peur de perdre quelqu'un au profit d'un autre) | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.jealousy | 0 |
-| envy | envie (vouloir ce qu'a l'autre) | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.envy | 0 |
-| tenderness | tendresse, élan affectueux du moment | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.tenderness | 0 |
-| gratitude | gratitude | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.gratitude | 0 |
-| contempt | mépris | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.contempt | 0 |
+| surprise | surprise, choc | unipolar10 | T saut, moteur |  | privé | retombe en une dizaine de secondes réelles (quelques décisions) | SELF_STATE.emo.surprise | 1 |
+| shame | honte (devant les autres) | unipolar10 | T saut, moteur |  | privé | retombe lentement ; trahie par la rougeur | SELF_STATE.emo.shame | 5 |
+| guilt | culpabilité (devant sa conscience) | unipolar10 | T saut, moteur |  | privé | retombe lentement selon la résilience ; seul le Transformer juge s'il y a faute et s'il la ravive | SELF_STATE.emo.guilt | 3 |
+| pride | fierté | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.pride | 1 |
+| jealousy | jalousie (peur de perdre quelqu'un au profit d'un autre) | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.jealousy | 1 |
+| envy | envie (vouloir ce qu'a l'autre) | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.envy | 2 |
+| tenderness | tendresse, élan affectueux du moment | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.tenderness | 1 |
+| gratitude | gratitude | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.gratitude | 5 |
+| contempt | mépris | unipolar10 | T saut, moteur |  | privé |  | SELF_STATE.emo.contempt | 2 |
 | boredom | ennui | unipolar10 | T saut, moteur |  | privé | monte avec la répétition et l'inaction | SELF_STATE.emo.boredom | 0 |
-| confusion | confusion (ne pas comprendre ce qui se passe ou ce qu'on dit) | unipolar10 | T saut, moteur |  | privé | retombe en minutes ; l'ivresse, les coups à la tête et la fièvre l'augmentent (le corps) ; un phénomène ne la crée pas directement : il brouille la perception, le Transformer en juge | SELF_STATE.emo.confusion | 0 |
-| mood_valence | humeur (−10 sombre, +10 radieuse) | bipolar10 | calculé |  | privé | moyenne glissante des émotions sur quelques heures de jeu, tirée vers l'humeur de fond | SELF_STATE.mood.valence | 0 |
+| confusion | confusion (ne pas comprendre ce qui se passe ou ce qu'on dit) | unipolar10 | T saut, moteur |  | privé | retombe en minutes ; l'ivresse, les coups à la tête et la fièvre l'augmentent (le corps) ; un phénomène ne la crée pas directement : il brouille la perception, le Transformer en juge | SELF_STATE.emo.confusion | 2 |
+| mood_valence | humeur (−10 sombre, +10 radieuse) | bipolar10 | calculé |  | privé | moyenne glissante des émotions sur quelques heures de jeu, tirée vers l'humeur de fond | SELF_STATE.mood.valence | 1 |
 | mood_energy | entrain du moment (0 abattu, 10 survolté) | unipolar10 | calculé |  | privé | émotions, sommeil, faim, ivresse | SELF_STATE.mood.energy | 0 |
 | stress | tension accumulée | unipolar10 | calculé |  | privé | s'accumule quand la peur, l'inquiétude, la colère et les besoins non satisfaits durent ; se vide par le sommeil, le repos, la compagnie ; haute, elle use la santé (robustesse) | SELF_STATE.stress | 0 |
-| self_regard | estime de soi du moment (−10 se sent nul, +10 se sent fort) | bipolar10 | T pas, moteur | 0.5 | privé | le Transformer la déplace (réussite, éloge, humiliation : c'est lui qui juge) ; le moteur la ramène lentement vers le trait d’assurance (assurance) ; c'est aussi le Transformer qui fait évoluer ce trait, lentement | SELF_STATE.self_regard | 0 |
-| need_company | besoin de compagnie (solitude) | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps passé sans personne à portée de voix, plus vite si sociable ; baisse avec le temps passé à se parler (compte objectif) ; ce qui fait une bonne compagnie, le Transformer en juge | SELF_STATE.drive.company | 0 |
-| need_intimacy | désir d'intimité amoureuse (adultes seulement) | unipolar10 | moteur, T pas | 0.5 | privé | toujours 0 avant l'âge adulte (règle dure D10, appliquée par le moteur) ; le moteur : lente dérive avec le temps ; le reste, le Transformer | SELF_STATE.drive.intimacy | 0 |
-| need_esteem | besoin de reconnaissance | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : lente montée avec le temps ; ce qui la comble ou la blesse (éloge, humiliation) se juge : le Transformer | SELF_STATE.drive.esteem | 0 |
-| need_autonomy | besoin d'autonomie | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte quand on est retenu de force, attaché ou enfermé (faits physiques) ; ce que vaut un ordre reçu se juge : le Transformer | SELF_STATE.drive.autonomy | 0 |
-| need_achievement | besoin d'accomplir | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps passé sans geste de travail, baisse quand une intention se termine ; réussite et échec se jugent : le Transformer | SELF_STATE.drive.achievement | 0 |
-| need_novelty | besoin de nouveauté | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec la routine (mêmes lieux, mêmes gestes : compte objectif), plus vite si curieux | SELF_STATE.drive.novelty | 0 |
-| need_security | besoin de sécurité | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : le corps seulement (faim, froid, douleur, pas d'abri la nuit) ; une menace se juge : le Transformer | SELF_STATE.drive.security | 0 |
-| need_acquisition | envie d'amasser, de posséder | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : lente dérive selon l'avidité ; l'envie devant ce qu'ont les autres se juge : le Transformer | SELF_STATE.drive.acquisition | 0 |
-| need_play | besoin de jeu, de rire, de fête | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps de travail ; d'où viennent les farces (charte § 27) | SELF_STATE.drive.play | 0 |
+| self_regard | estime de soi du moment (−10 se sent nul, +10 se sent fort) | bipolar10 | T pas, moteur | 0.5 | privé | le Transformer la déplace (réussite, éloge, humiliation : c'est lui qui juge) ; le moteur la ramène lentement vers le trait d’assurance (assurance) ; c'est aussi le Transformer qui fait évoluer ce trait, lentement | SELF_STATE.self_regard | 5 |
+| need_company | besoin de compagnie (solitude) | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps passé sans personne à portée de voix, plus vite si sociable ; baisse avec le temps passé à se parler (compte objectif) ; ce qui fait une bonne compagnie, le Transformer en juge | SELF_STATE.drive.company | 5 |
+| need_intimacy | désir d'intimité amoureuse (adultes seulement) | unipolar10 | moteur, T pas | 0.5 | privé | toujours 0 avant l'âge adulte (règle dure D10, appliquée par le moteur) ; le moteur : lente dérive avec le temps ; le reste, le Transformer | SELF_STATE.drive.intimacy | 2 |
+| need_esteem | besoin de reconnaissance | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : lente montée avec le temps ; ce qui la comble ou la blesse (éloge, humiliation) se juge : le Transformer | SELF_STATE.drive.esteem | 2 |
+| need_autonomy | besoin d'autonomie | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte quand on est retenu de force, attaché ou enfermé (faits physiques) ; ce que vaut un ordre reçu se juge : le Transformer | SELF_STATE.drive.autonomy | 2 |
+| need_achievement | besoin d'accomplir | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps passé sans geste de travail, baisse quand une intention se termine ; réussite et échec se jugent : le Transformer | SELF_STATE.drive.achievement | 4 |
+| need_novelty | besoin de nouveauté | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec la routine (mêmes lieux, mêmes gestes : compte objectif), plus vite si curieux | SELF_STATE.drive.novelty | 2 |
+| need_security | besoin de sécurité | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : le corps seulement (faim, froid, douleur, pas d'abri la nuit) ; une menace se juge : le Transformer | SELF_STATE.drive.security | 5 |
+| need_acquisition | envie d'amasser, de posséder | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : lente dérive selon l'avidité ; l'envie devant ce qu'ont les autres se juge : le Transformer | SELF_STATE.drive.acquisition | 1 |
+| need_play | besoin de jeu, de rire, de fête | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : monte avec le temps de travail ; d'où viennent les farces (charte § 27) | SELF_STATE.drive.play | 1 |
 | need_meaning | besoin de sens, de foi | unipolar10 | moteur, T pas | 0.5 | privé | le moteur : très lente dérive ; un deuil, une catastrophe, un mystère se jugent : le Transformer | SELF_STATE.drive.meaning | 0 |
-| masking | volonté de cacher ce qu'on ressent (0 rien, 10 visage de marbre) | unipolar10 | T saut |  | privé | le moteur l'applique à l'expression, selon la maîtrise de soi ; les signes involontaires passent quand même | SELF_STATE.masking | 0 |
-| attention | ce sur quoi l'attention est fixée (une personne, une chose, un bruit) | mref | T saut |  | privé | le moteur perçoit plus finement ce qui est au centre de l'attention, moins bien le reste | SELF_STATE.attention (pointeur) | 0 |
+| masking | volonté de cacher ce qu'on ressent (0 rien, 10 visage de marbre) | unipolar10 | T saut |  | privé | le moteur l'applique à l'expression, selon la maîtrise de soi ; les signes involontaires passent quand même | SELF_STATE.masking | 1 |
+| attention | ce sur quoi l'attention est fixée (une personne, une chose, un bruit) | mref | T saut |  | privé | le moteur perçoit plus finement ce qui est au centre de l'attention, moins bien le reste | SELF_STATE.attention (pointeur) | 4 |
 
 ### mind_static
 
@@ -585,19 +596,19 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 |---|---|---|---|---|---|---|---|---|
 | sincerity | sincérité (−10 manipule et ment sans gêne, +10 ne peut pas mentir) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.sincerity | 0 |
 | fairness | équité (−10 triche et vole volontiers, +10 refuse tout gain injuste) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.fairness | 0 |
-| greed_avoidance | désintérêt pour la richesse (−10 avide, +10 indifférent au luxe) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.greed_avoidance | 0 |
-| modesty | modestie (−10 vaniteux, se croit au-dessus, +10 humble) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.modesty | 0 |
-| fearfulness | craintivité (−10 intrépide, prend des risques, +10 peureux, cherche la sécurité) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.fearfulness | 0 |
+| greed_avoidance | désintérêt pour la richesse (−10 avide, +10 indifférent au luxe) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.greed_avoidance | 1 |
+| modesty | modestie (−10 vaniteux, se croit au-dessus, +10 humble) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.modesty | 2 |
+| fearfulness | craintivité (−10 intrépide, prend des risques, +10 peureux, cherche la sécurité) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.fearfulness | 1 |
 | anxiousness | anxiété (−10 serein, +10 se fait du souci pour tout) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.anxiousness | 0 |
 | sentimentality | sensibilité affective (−10 froid et indépendant, +10 s'attache, s'émeut, a besoin des autres) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.sentimentality | 0 |
-| assurance | assurance (−10 timide, se sent nul devant les autres, +10 sûr de lui, prend la parole, mène) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.assurance | 0 |
-| sociability | sociabilité (−10 solitaire, +10 recherche la compagnie) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.sociability | 0 |
-| forgiveness | pardon (−10 rancunier à vie, +10 pardonne vite) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.forgiveness | 0 |
+| assurance | assurance (−10 timide, se sent nul devant les autres, +10 sûr de lui, prend la parole, mène) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.assurance | 2 |
+| sociability | sociabilité (−10 solitaire, +10 recherche la compagnie) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.sociability | 1 |
+| forgiveness | pardon (−10 rancunier à vie, +10 pardonne vite) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.forgiveness | 2 |
 | gentleness | douceur (−10 dur, cassant, têtu, +10 indulgent, accommodant) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.gentleness | 0 |
-| patience | patience (−10 s'emporte au moindre mot, +10 garde son calme) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.patience | 0 |
+| patience | patience (−10 s'emporte au moindre mot, +10 garde son calme) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.patience | 1 |
 | diligence | application (−10 paresseux, désordonné, bâcle, +10 acharné, méthodique, perfectionniste) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.diligence | 0 |
 | prudence | prudence (−10 impulsif, agit sans réfléchir, +10 pèse tout) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.prudence | 0 |
-| inquisitiveness | curiosité (−10 sans curiosité, +10 veut tout voir, tout savoir, attiré par l'inconnu) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.inquisitiveness | 0 |
+| inquisitiveness | curiosité (−10 sans curiosité, +10 veut tout voir, tout savoir, attiré par l'inconnu) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.inquisitiveness | 2 |
 | creativity | inventivité et sens du beau (−10 suit les recettes, indifférent, +10 invente, ému par la beauté) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.creativity | 0 |
 | unconventionality | originalité (−10 conformiste, attaché aux usages, +10 excentrique) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.unconventionality | 0 |
 | altruism | altruisme (−10 indifférent à la souffrance d'autrui, +10 ne supporte pas de voir souffrir) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.trait.altruism | 0 |
@@ -605,11 +616,11 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | memory_capacity | mémoire (combien et combien de temps on retient) | unipolar10 | naissance, moteur |  | moteur seul | le moteur l'applique : nombre de souvenirs gardés, vitesse d'oubli |  | 0 |
 | perceptiveness | finesse de perception sociale (lire un visage, un trouble) | unipolar10 | naissance, moteur |  | moteur seul | le moteur l'applique : plus elle est haute, plus il montre de signes involontaires fins |  | 0 |
 | self_control | maîtrise de soi (masquer ses émotions, résister à une envie) | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.ability.self_control | 0 |
-| coordination | adresse du corps (−10 maladroit, renverse tout, +10 adroit) | bipolar10 | naissance, moteur |  | observable | le moteur l'applique à la précision des gestes : un maladroit rate, renverse, fait tomber (charte § 27) | SELF_MIND.ability.coordination | 0 |
+| coordination | adresse du corps (−10 maladroit, renverse tout, +10 adroit) | bipolar10 | naissance, moteur |  | observable | le moteur l'applique à la précision des gestes : un maladroit rate, renverse, fait tomber (charte § 27) | SELF_MIND.ability.coordination | 1 |
 | resilience | retour au calme (vitesse à laquelle les émotions retombent) | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.temper.resilience | 0 |
-| baseline_mood | humeur de fond (−10 sombre et morne, +10 radieux, enjoué, blagueur) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.temper.baseline_mood | 0 |
+| baseline_mood | humeur de fond (−10 sombre et morne, +10 radieux, enjoué, blagueur) | bipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.temper.baseline_mood | 1 |
 | v_loyalty | valeur : fidélité aux siens (famille, amis, village) | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.loyalty | 0 |
-| v_authority | valeur : respect de l'autorité, de l'ordre, de la loi | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.authority | 0 |
+| v_authority | valeur : respect de l'autorité, de l'ordre, de la loi | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.authority | 2 |
 | v_sanctity | valeur : le sacré, la pureté, les tabous | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.sanctity | 0 |
 | v_liberty | valeur : liberté, ne pas être dominé | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.liberty | 0 |
 | v_achievement | valeur : réussir, être compétent, accomplir | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.achievement | 0 |
@@ -617,35 +628,35 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | v_honor | valeur : l'honneur, la réputation, ne pas perdre la face | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.honor | 0 |
 | v_pleasure | valeur : le plaisir, le confort, la bonne chère | unipolar10 | naissance, T lent | 0.1 | privé |  | SELF_MIND.value.pleasure | 0 |
 | attracted_to | attirance (par quel sexe la personne peut être attirée) | list (female, male) | naissance |  | privé |  | SELF_MIND.attracted_to | 0 |
-| tastes | goûts singuliers : attitude (−10..+10) envers un concept (une couleur, un aliment, un lieu, une activité, une sorte de gens, la nuit, l'eau…) | list | naissance, T lent | 0.1 | privé | quelques goûts marqués par personne, tirés à la naissance ; d'autres naissent de l'expérience | TASTE (≤ 2 jetons saillants, pointeur vers le concept) | 0 |
+| tastes | goûts singuliers : attitude (−10..+10) envers un concept (une couleur, un aliment, un lieu, une activité, une sorte de gens, la nuit, l'eau…) | list | naissance, T lent | 0.1 | privé | quelques goûts marqués par personne, tirés à la naissance ; d'autres naissent de l'expérience | TASTE (≤ 2 jetons saillants, pointeur vers le concept) | 1 |
 
 ### needs
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| hunger | faim | unipolar10 | moteur |  | privé | monte avec le temps et l'effort ; baisse en mangeant selon la nutrition | SELF.need.hunger | 0 |
-| thirst | soif | unipolar10 | moteur |  | privé | monte plus vite au chaud et à l'effort | SELF.need.thirst | 0 |
-| reserves | réserves du corps (la faim de plusieurs jours) | unipolar10 | moteur |  | observable | baissent en jeûne prolongé ; à 0, famine : force et robustesse s'effondrent | SELF.need.reserves | 0 |
-| exhaustion | épuisement (effort récent) | unipolar10 | moteur |  | observable | monte à l'effort (course, coups, charge), baisse au repos en dizaines de secondes à minutes réelles | SELF.need.exhaustion | 0 |
-| sleepiness | besoin de sommeil | unipolar10 | moteur |  | observable | dette de sommeil sur le jour ; seul le sommeil la rembourse | SELF.need.sleep | 0 |
-| thermal_comfort | confort thermique (−10 glacé, +10 étouffant) | bipolar10 | calculé |  | observable | écart entre température du corps et confort ; frissons et sueur visibles | SELF.need.thermal | 0 |
+| hunger | faim | unipolar10 | moteur |  | privé | monte avec le temps et l'effort ; baisse en mangeant selon la nutrition | SELF.need.hunger | 4 |
+| thirst | soif | unipolar10 | moteur |  | privé | monte plus vite au chaud et à l'effort | SELF.need.thirst | 1 |
+| reserves | réserves du corps (la faim de plusieurs jours) | unipolar10 | moteur |  | observable | baissent en jeûne prolongé ; à 0, famine : force et robustesse s'effondrent | SELF.need.reserves | 3 |
+| exhaustion | épuisement (effort récent) | unipolar10 | moteur |  | observable | monte à l'effort (course, coups, charge), baisse au repos en dizaines de secondes à minutes réelles | SELF.need.exhaustion | 1 |
+| sleepiness | besoin de sommeil | unipolar10 | moteur |  | observable | dette de sommeil sur le jour ; seul le sommeil la rembourse | SELF.need.sleep | 3 |
+| thermal_comfort | confort thermique (−10 glacé, +10 étouffant) | bipolar10 | calculé |  | observable | écart entre température du corps et confort ; frissons et sueur visibles | SELF.need.thermal | 2 |
 
 ### percept
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| pc_kind_seen | sorte apparente (classe de sosies : « champignon blanc ») ; la vraie sorte seulement pour un œil exercé | word | calculé |  | observable | le moteur montre la vraie sorte si la maîtrise de la technique utile (cueillette, chasse, forge…) et la lumière suffisent, sinon la classe de sosies (lookalike) | THING.kind | 0 |
+| pc_kind_seen | sorte apparente (classe de sosies : « champignon blanc ») ; la vraie sorte seulement pour un œil exercé | word | calculé |  | observable | le moteur montre la vraie sorte si la maîtrise de la technique utile (cueillette, chasse, forge…) et la lumière suffisent, sinon la classe de sosies (lookalike) | THING.kind | 1 |
 | pc_file | le dossier mental de cette chose, si on la connaît (« mon marteau », « la vache du voisin ») | mref | calculé |  | observable |  | THING.file | 0 |
 | pc_props_seen | propriétés et usages qui se voient (tranchant, lourd, contient, brûle…) : le vecteur perceptible | list | calculé |  | observable | seulement les propriétés perceptibles et les usages qui en découlent (Catalogue.object_vector : usages et états perceptibles + masse, taille, tranchant, pointe, allonge, contenance) ; toxicité, puissance magique, clé de quelle serrure : jamais | THING.props | 0 |
 | pc_state_seen | état apparent (intact, abîmé, fissuré, en feu, mouillé, pourri, vide, mûr…) | list | calculé |  | observable |  | THING.state | 0 |
 | pc_amount_seen | quantité apparente (aucun, un peu, assez, beaucoup, on ne sait pas) | enum (none, few, some, many, unknown) | calculé |  | observable |  | THING.amount | 0 |
-| pc_display | ce que fait une bête, vu de dehors (calme, broute, aux aguets, fuit, grogne, montre les dents, charge, rôde, joue) | enum (calm, grazing, alert, fleeing, growling, baring_teeth, charging, stalking, playing) | calculé |  | observable | tiré du comportement réel de la bête, sans dire pourquoi : le danger se juge | THING.display | 0 |
+| pc_display | ce que fait une bête, vu de dehors (calme, broute, aux aguets, fuit, grogne, montre les dents, charge, rôde, joue) | enum (calm, grazing, alert, fleeing, growling, baring_teeth, charging, stalking, playing) | calculé |  | observable | tiré du comportement réel de la bête, sans dire pourquoi : le danger se juge | THING.display | 4 |
 | pc_owner_believed | à qui on CROIT que c'est (croyance owns) | mref | calculé |  | privé |  | THING.owner | 0 |
 | pc_dist | distance apparente | qty | calculé |  | observable |  | THING.dist | 0 |
 | pc_dir | direction apparente (sinus, cosinus) | qty | calculé |  | observable |  | THING.dir | 0 |
 | pc_file_certainty | certitude que c'est bien la chose de ce dossier (mon marteau ? un marteau pareil ?) | unipolar10 | calculé |  | observable | le moteur rattache par l'apparence et le lieu cru, jamais par l'identité vraie : un sosie posé à la place passe pour l'original | THING.file_certainty | 0 |
-| pc_depth_seen | profondeur apparente d'une eau (à gué, à la taille, profonde, fond invisible) | enum (shallow, waist, deep, unseen_bottom) | calculé |  | observable |  | THING.depth | 0 |
-| pc_motion | mouvement apparent (immobile, s'approche, s'éloigne, tombe, roule) | enum (still, approaching, leaving, falling, rolling) | calculé |  | observable |  | THING.motion | 0 |
+| pc_depth_seen | profondeur apparente d'une eau (à gué, à la taille, profonde, fond invisible) | enum (shallow, waist, deep, unseen_bottom) | calculé |  | observable |  | THING.depth | 1 |
+| pc_motion | mouvement apparent (immobile, s'approche, s'éloigne, tombe, roule) | enum (still, approaching, leaving, falling, rolling) | calculé |  | observable |  | THING.motion | 1 |
 
 ### phenomenon_field
 
@@ -653,7 +664,7 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 |---|---|---|---|---|---|---|---|---|
 | phenomenon_kind | nature (zone de silence, lumières errantes, sol qui chante, vents contraires, sommeil étrange…) | id | naissance |  | moteur seul |  |  | 0 |
 | phenomenon_intensity | intensité, rayon, cycle (actif la nuit, à la pleine lune…) | list | moteur |  | moteur seul |  |  | 0 |
-| phenomenon_effects | effets sur ce qui entre (rêves, peur, confusion, objets qui changent, boussole folle) | list | moteur |  | moteur seul | le moteur n'applique que des effets physiques ou physiologiques (confusion, envie de dormir, perception brouillée, froid, sons) ; les rêves deviennent des souvenirs de source « rêvé » ; ce qu'on ressent (peur, émerveillement) se juge : le Transformer |  | 0 |
+| phenomenon_effects | effets sur ce qui entre (rêves, peur, confusion, objets qui changent, boussole folle) | list | moteur |  | moteur seul | le moteur n'applique que des effets physiques ou physiologiques (confusion, envie de dormir, perception brouillée, froid, sons) ; les rêves deviennent des souvenirs de source « rêvé » ; ce qu'on ressent (peur, émerveillement) se juge : le Transformer |  | 1 |
 
 ### place_percept
 
@@ -664,32 +675,33 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | pp_noise | bruit qu'il entend | unipolar10 | calculé |  | observable |  | PLACE.noise | 0 |
 | pp_crowd_seen | gens qu'il voit (pas ceux qui sont cachés) | qty | calculé |  | observable |  | PLACE.crowd | 0 |
 | pp_air_felt | air ressenti (glacial, froid, frais, doux, chaud, brûlant) | enum (freezing, cold, cool, mild, warm, hot) | calculé |  | observable |  | PLACE.air_felt | 0 |
-| pp_weather_seen | temps qu'il voit et entend (pluie, neige, orage, vent fort, brouillard) | list | calculé |  | observable |  | PLACE.weather | 0 |
+| pp_weather_seen | temps qu'il voit et entend (pluie, neige, orage, vent fort, brouillard) | list | calculé |  | observable |  | PLACE.weather | 2 |
 | pp_sun | où il voit le soleil ou la lune (hauteur apparente ; rien sous terre ou par ciel couvert) | qty | calculé |  | observable |  | PLACE.sun | 0 |
-| pp_signs | signes étranges qu'il perçoit (lumières errantes, silence soudain, froid brutal) | list | calculé |  | observable |  | PLACE.signs | 0 |
+| pp_signs | signes étranges qu'il perçoit (lumières errantes, silence soudain, froid brutal) | list | calculé |  | observable |  | PLACE.signs | 1 |
 
 ### relation
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| r_id_certainty | certitude que la personne vue est bien celle du dossier (pénombre, distance, déguisement, masque) | unipolar10 | calculé |  | privé | le moteur la calcule depuis la lumière, la distance, la familiarité, ce qui cache le visage ; basse, on peut se tromper de personne | ENTITY.id_certainty | 0 |
+| r_name_believed | le nom qu'il croit être le sien (n:…), ou aucun | word | calculé |  | privé |  | ENTITY.name | 1 |
+| r_id_certainty | certitude que la personne vue est bien celle du dossier (pénombre, distance, déguisement, masque) | unipolar10 | calculé |  | privé | le moteur la calcule depuis la lumière, la distance, la familiarité, ce qui cache le visage ; basse, on peut se tromper de personne | ENTITY.id_certainty | 3 |
 | r_true_entity | la vraie entité derrière ce dossier mental (le moteur seul la connaît) | id | moteur |  | moteur seul |  |  | 0 |
-| r_known_by | comment on le connaît (vu et reconnu, seulement de nom, seulement décrit) | enum (seen, name_only, described) | moteur |  | privé | un dossier « de nom » se lie à une personne vue quand on apprend que c'est elle (une croyance, qui peut être fausse) | ENTITY.known_by ; GROUP.known_by | 0 |
-| r_present | là maintenant pour CE PNJ (perçu), ou absent de sa perception | bool | calculé |  | privé | présent = une perception de la personne en ce moment (entity_percept) ; un absent saillant (un proche, quelqu'un attendu) reste montré : on remarque l'absence (charte § 20) ; quelqu'un de caché est absent pour lui | ENTITY.present | 1 |
-| r_affection | affection (−10 haine, +10 amour profond) | bipolar10 | T pas, moteur | 0.5 | privé | le moteur ne fait que l'effacement lent vers 0 après des années sans contact | ENTITY.rel.affection ; GROUP.rel.affection | 0 |
-| r_trust | confiance (−10 s'attend à être trompé, +10 confie sa vie) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.trust ; GROUP.rel.trust | 2 |
-| r_respect | respect, admiration (−10 mépris, +10 admiration) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.respect ; GROUP.rel.respect | 1 |
-| r_attraction | attirance amoureuse (adultes seulement) | unipolar10 | T pas, moteur | 0.5 | privé | règle dure D10 appliquée par le gouverneur ; le moteur ne fait que l'effacement | ENTITY.rel.attraction | 0 |
-| r_fear | crainte de cette personne | unipolar10 | T saut, moteur |  | privé | peut sauter (il a sorti un couteau) ; retombe lentement | ENTITY.rel.fear ; GROUP.rel.fear | 0 |
-| r_resentment | rancune | unipolar10 | T pas, moteur | 0.5 | privé | le moteur l'efface très lentement, d'autant plus lentement que la personne est peu portée au pardon | ENTITY.rel.resentment ; GROUP.rel.resentment | 1 |
-| r_obligation | dette morale ressentie (on lui doit quelque chose, sans contrat) | bipolar10 | T pas, moteur | 0.5 | privé | + : je lui dois ; − : il me doit | ENTITY.rel.obligation | 0 |
-| r_rivalry | rivalité (en concurrence pour une même chose : une place, une personne, un marché) | unipolar10 | T pas, moteur | 0.5 | privé |  | ENTITY.rel.rivalry | 0 |
-| r_familiarity | familiarité (combien on le connaît) | unipolar10 | moteur |  | privé | monte avec le temps passé ensemble et les échanges, baisse lentement sans contact | ENTITY.rel.familiarity | 0 |
-| r_perceived_regard | ce qu'on croit qu'il pense de soi (−10 il me hait, +10 il m'adore) | bipolar10 | calculé |  | privé | résumé des croyances attitude(lui, …, moi) : ce qu'on croit qu'il pense de soi ; peut être faux | ENTITY.rel.perceived_regard | 0 |
-| r_last_contact | dernière fois qu'on s'est vus ou parlé | time | moteur |  | privé |  | ENTITY.rel.since_contact | 0 |
+| r_known_by | comment on le connaît (vu et reconnu, seulement de nom, seulement décrit) | enum (seen, name_only, described) | moteur |  | privé | un dossier « de nom » se lie à une personne vue quand on apprend que c'est elle (une croyance, qui peut être fausse) | ENTITY.known_by ; GROUP.known_by | 1 |
+| r_present | là maintenant pour CE PNJ (perçu), ou absent de sa perception | bool | calculé |  | privé | présent = une perception de la personne en ce moment (entity_percept) ; un absent saillant (un proche, quelqu'un attendu) reste montré : on remarque l'absence (charte § 20) ; quelqu'un de caché est absent pour lui | ENTITY.present | 4 |
+| r_affection | affection (−10 haine, +10 amour profond) | bipolar10 | T pas, moteur | 0.5 | privé | le moteur ne fait que l'effacement lent vers 0 après des années sans contact | ENTITY.rel.affection ; GROUP.rel.affection | 25 |
+| r_trust | confiance (−10 s'attend à être trompé, +10 confie sa vie) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.trust ; GROUP.rel.trust | 33 |
+| r_respect | respect, admiration (−10 mépris, +10 admiration) | bipolar10 | T pas, moteur | 0.5 | privé | idem | ENTITY.rel.respect ; GROUP.rel.respect | 16 |
+| r_attraction | attirance amoureuse (adultes seulement) | unipolar10 | T pas, moteur | 0.5 | privé | règle dure D10 appliquée par le gouverneur ; le moteur ne fait que l'effacement | ENTITY.rel.attraction | 3 |
+| r_fear | crainte de cette personne | unipolar10 | T saut, moteur |  | privé | peut sauter (il a sorti un couteau) ; retombe lentement | ENTITY.rel.fear ; GROUP.rel.fear | 9 |
+| r_resentment | rancune | unipolar10 | T pas, moteur | 0.5 | privé | le moteur l'efface très lentement, d'autant plus lentement que la personne est peu portée au pardon | ENTITY.rel.resentment ; GROUP.rel.resentment | 23 |
+| r_obligation | dette morale ressentie (on lui doit quelque chose, sans contrat) | bipolar10 | T pas, moteur | 0.5 | privé | + : je lui dois ; − : il me doit | ENTITY.rel.obligation | 5 |
+| r_rivalry | rivalité (en concurrence pour une même chose : une place, une personne, un marché) | unipolar10 | T pas, moteur | 0.5 | privé |  | ENTITY.rel.rivalry | 2 |
+| r_familiarity | familiarité (combien on le connaît) | unipolar10 | moteur |  | privé | monte avec le temps passé ensemble et les échanges, baisse lentement sans contact | ENTITY.rel.familiarity | 4 |
+| r_perceived_regard | ce qu'on croit qu'il pense de soi (−10 il me hait, +10 il m'adore) | bipolar10 | calculé |  | privé | résumé des croyances attitude(lui, …, moi) : ce qu'on croit qu'il pense de soi ; peut être faux | ENTITY.rel.perceived_regard | 1 |
+| r_last_contact | dernière fois qu'on s'est vus ou parlé | time | moteur |  | privé |  |  | 2 |
 | r_shared_history | nombre de souvenirs partagés | qty | calculé |  | privé |  |  | 0 |
-| r_link_believed | le lien qu'on croit avoir (parent, conjoint, maître, employeur…) | enum | calculé |  | privé | tiré des croyances link et des accords tels que crus (commitments_seen) ; le plus fort est montré | ENTITY.link | 0 |
-| r_reputation_seen | ce qu'on croit de lui : honnête, dangereux, compétent, riche, pieux (réputation crue) | list | calculé |  | privé | tiré des croyances has_trait ; on peut se tromper | ENTITY.rep (honnêteté, danger, compétence, richesse, piété) | 0 |
+| r_link_believed | le lien qu'on croit avoir (parent, conjoint, maître, employeur…) | enum | calculé |  | privé | tiré des croyances link et des accords tels que crus (commitments_seen) ; le plus fort est montré | ENTITY.link | 1 |
+| r_reputation_seen | ce qu'on croit de lui : honnête, dangereux, compétent, riche, pieux (réputation crue) | list | calculé |  | privé | tiré des croyances has_trait ; on peut se tromper | ENTITY.rep (honnêteté, danger, compétence, richesse, piété) | 1 |
 
 ### relations
 
@@ -703,16 +715,16 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | q_from | qui demande | mref | moteur |  | privé |  | REQUEST.from (pointeur) | 0 |
-| q_content | ce qui est demandé (proposition : « que tu viennes te promener en forêt ») | proposition | moteur |  | privé |  | REQUEST.prop | 0 |
-| q_since | depuis quand on attend une réponse | time | moteur |  | privé | ne pas répondre est aussi une réponse (charte § 20) : la demande expire, le demandeur le perçoit | REQUEST.age | 0 |
+| q_content | ce qui est demandé (proposition : « que tu viennes te promener en forêt ») | proposition | moteur |  | privé |  | REQUEST.prop | 3 |
+| q_since | depuis quand on attend une réponse | time | moteur |  | privé | ne pas répondre est aussi une réponse (charte § 20) : la demande expire, le demandeur le perçoit | REQUEST.age | 1 |
 
 ### skill
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| k_self_estimate | ce qu'on croit valoir dans une technique (tiré de ce qu'on a vu de ses propres réussites et ratés) | unipolar10 | calculé |  | privé | moyenne glissante des résultats PERÇUS de ses propres gestes ; un vantard qui n'a jamais essayé se croit bon (croyance knows_how), son estimation, elle, reste vide | SKILL.self_estimate | 0 |
+| k_self_estimate | ce qu'on croit valoir dans une technique (tiré de ce qu'on a vu de ses propres réussites et ratés) | unipolar10 | calculé |  | privé | moyenne glissante des résultats PERÇUS de ses propres gestes ; un vantard qui n'a jamais essayé se croit bon (croyance knows_how), son estimation, elle, reste vide | SKILL.self_estimate | 3 |
 | k_technique | technique | enum | moteur |  | privé |  | SKILL.technique | 0 |
-| k_mastery | maîtrise (0 rien, 10 maître) | unipolar10 | moteur |  | privé | monte en pratiquant, plus vite avec un maître présent qui montre et corrige (faits objectifs : gestes de l'un vus par l'autre) ; baisse lentement sans pratique ; se perd à la mort si personne ne l'a apprise (charte § 25) |  | 0 |
+| k_mastery | maîtrise (0 rien, 10 maître) | unipolar10 | moteur |  | privé | monte en pratiquant, plus vite avec un maître présent qui montre et corrige (faits objectifs : gestes de l'un vus par l'autre) ; baisse lentement sans pratique ; se perd à la mort si personne ne l'a apprise (charte § 25) |  | 10 |
 | k_last_practice | dernière pratique | time | moteur |  | moteur seul |  |  | 0 |
 
 ### social_referent
@@ -723,21 +735,21 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | s_introduced_by | qui en a parlé le premier (tout agent peut créer un référent en le nommant ou le décrivant : « nous trois », « ceux de la forêt ») | id | moteur |  | moteur seul |  |  | 0 |
 | s_introduced_at | quand on en a parlé la première fois | time | moteur |  | moteur seul |  |  | 0 |
 | s_scope | pour un rôle : le groupe dans lequel il s'exerce (chef DU village de la forêt) | id | moteur |  | moteur seul |  |  | 0 |
-| recognized_members | qui est reconnu membre d'un groupe, et par combien de gens | list | calculé |  | moteur seul | agrégat des croyances member |  | 0 |
-| role_holder_support | qui est cru titulaire d'un rôle, et par combien (deux chefs peuvent coexister) | list | calculé |  | moteur seul | agrégat des croyances holds, pondéré par la familiarité au groupe |  | 0 |
-| legitimacy | légitimité d'un titulaire (part des membres qui croient qu'il a le droit) | ratio | calculé |  | moteur seul |  |  | 0 |
+| recognized_members | qui est reconnu membre d'un groupe, et par combien de gens | list | calculé |  | moteur seul | agrégat des croyances member |  | 1 |
+| role_holder_support | qui est cru titulaire d'un rôle, et par combien (deux chefs peuvent coexister) | list | calculé |  | moteur seul | agrégat des croyances holds, pondéré par la familiarité au groupe |  | 5 |
+| legitimacy | légitimité d'un titulaire (part des membres qui croient qu'il a le droit) | ratio | calculé |  | moteur seul |  |  | 2 |
 | group_cohesion | cohésion d'un groupe (affection et confiance moyennes entre membres) | unipolar10 | calculé |  | moteur seul |  |  | 0 |
-| custom_aggregate | coutume d'un village (force moyenne des normes tenues par ses membres) | list | calculé |  | moteur seul | change en une génération quand les normes individuelles changent (histoire custom_shifts_slowly) |  | 0 |
-| unrest | agitation d'un village (colère et peur moyennes, croyances que le chef est injuste) | unipolar10 | calculé |  | moteur seul |  |  | 0 |
+| custom_aggregate | coutume d'un village (force moyenne des normes tenues par ses membres) | list | calculé |  | moteur seul | change en une génération quand les normes individuelles changent (histoire custom_shifts_slowly) |  | 1 |
+| unrest | agitation d'un village (colère et peur moyennes, croyances que le chef est injuste) | unipolar10 | calculé |  | moteur seul |  |  | 3 |
 
 ### soil
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| soil_fertility | fertilité | unipolar10 | moteur |  | observable | s'épuise par les récoltes, remonte en jachère et avec le fumier |  | 0 |
-| soil_state | état (nu, labouré, semé, cultivé, en jachère, piétiné) | enum (bare, tilled, sown, growing, fallow, trampled) | moteur |  | observable |  |  | 0 |
-| soil_moisture | humidité du sol | unipolar10 | moteur |  | observable | pluie, arrosage, sécheresse |  | 0 |
-| deposit | gisement (minerai, pierre, sel, argile : nature, quantité, profondeur) | list | moteur |  | moteur seul | s'épuise quand on extrait |  | 0 |
+| soil_fertility | fertilité | unipolar10 | moteur |  | observable | s'épuise par les récoltes, remonte en jachère et avec le fumier |  | 1 |
+| soil_state | état (nu, labouré, semé, cultivé, en jachère, piétiné) | enum (bare, tilled, sown, growing, fallow, trampled) | moteur |  | observable |  |  | 1 |
+| soil_moisture | humidité du sol | unipolar10 | moteur |  | observable | pluie, arrosage, sécheresse |  | 1 |
+| deposit | gisement (minerai, pierre, sel, argile : nature, quantité, profondeur) | list | moteur |  | moteur seul | s'épuise quand on extrait |  | 1 |
 
 ### spatial
 
@@ -753,14 +765,14 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| load_margin | marge avant effondrement (charge / résistance, appuis) | ratio | moteur |  | moteur seul | creuser sous un mur, ôter un étai, le feu, l'eau la font baisser ; à 0, effondrement (une suite d'Operation) |  | 0 |
-| visible_damage | dégâts visibles (fissures, affaissement) | unipolar10 | calculé |  | observable | les fissures précèdent l'effondrement : on peut les voir et avertir |  | 0 |
+| load_margin | marge avant effondrement (charge / résistance, appuis) | ratio | moteur |  | moteur seul | creuser sous un mur, ôter un étai, le feu, l'eau la font baisser ; à 0, effondrement (une suite d'Operation) |  | 5 |
+| visible_damage | dégâts visibles (fissures, affaissement) | unipolar10 | calculé |  | observable | les fissures précèdent l'effondrement : on peut les voir et avertir |  | 3 |
 
 ### substance
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| water_volume | volume d'eau | qty | moteur |  | observable | puiser le baisse vraiment ; la pluie et la nappe le remontent ; un puits peut tarir |  | 0 |
+| water_volume | volume d'eau | qty | moteur |  | observable | puiser le baisse vraiment ; la pluie et la nappe le remontent ; un puits peut tarir |  | 1 |
 | water_quality | potabilité (une eau peut être souillée, empoisonnée, salée) | unipolar10 | moteur |  | moteur seul | les cadavres, les déchets, le sel la gâtent ; on ne le voit pas toujours |  | 0 |
 
 ### trace_record
@@ -768,8 +780,8 @@ Compte : entity 16, component 49, variable 336, property 89, action 40, concept 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | trace_maker_cue | ce qu'une trace dit de son auteur (taille du pied, botte, sabot, pieds nus, nombre, charge portée) | list | moteur |  | observable | s'efface avec la trace |  | 0 |
-| trace_kind | sorte (empreintes, sang, cendre, braises, branches cassées, objet tombé, odeur, traînée, marques d'outil) ; une place vide se remarque par une croyance démentie (b_contradicted) | enum (footprints, blood, ash, embers, broken_plants, dropped_item, smell, drag_marks, tool_marks) | moteur |  | observable |  |  | 0 |
-| trace_freshness | fraîcheur (s'efface avec le temps, la pluie, la neige, les passages) | unipolar10 | moteur |  | observable |  |  | 0 |
+| trace_kind | sorte (empreintes, sang, cendre, braises, branches cassées, objet tombé, odeur, traînée, marques d'outil) ; une place vide se remarque par une croyance démentie (b_contradicted) | enum (footprints, blood, ash, embers, broken_plants, dropped_item, smell, drag_marks, tool_marks) | moteur |  | observable |  |  | 1 |
+| trace_freshness | fraîcheur (s'efface avec le temps, la pluie, la neige, les passages) | unipolar10 | moteur |  | observable |  |  | 1 |
 | trace_direction | direction (des pas, d'un traînage) | qty | moteur |  | observable |  |  | 0 |
 | trace_fact | le fait qui l'a laissée (le moteur seul) | id | moteur |  | moteur seul |  |  | 0 |
 
@@ -1611,45 +1623,45 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 
 | id | famille | libellé | paramètres | effets | perception | histoires |
 |---|---|---|---|---|---|---|
-| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion | 3 |
-| climb | move | grimper, escalader, descendre une paroi | target:ref; pace:enum=slow/walk/brisk | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu | 0 |
+| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion | 53 |
+| climb | move | grimper, escalader, descendre une paroi | target:ref; pace:enum=slow/walk/brisk | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu | 1 |
 | swim | move | nager | target:ref; intensity:enum=faint/light/firm/hard/full | épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade | vu, entendu | 0 |
 | jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu | 0 |
 | mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu | 0 |
-| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie_down | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | 0 |
-| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 2 |
-| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 0 |
-| give | grasp | tendre, donner en main propre, nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | 1 |
-| throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) | 0 |
-| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | 1 |
+| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie_down | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | 4 |
+| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 26 |
+| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 22 |
+| give | grasp | tendre, donner en main propre, nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | 26 |
+| throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) | 3 |
+| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | 2 |
 | wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref?; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu | 0 |
-| operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) | 0 |
-| strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) | 4 |
-| push | force | pousser, bousculer, renverser | target:ref; intensity:enum=faint/light/firm/hard/full; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu | 1 |
-| pull | force | tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre) | target:ref; intensity:enum=faint/light/firm/hard/full; toward:ref? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu | 0 |
-| grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu | 1 |
-| guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu | 0 |
-| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | 1 |
-| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | 1 |
-| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu | 0 |
-| blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu | 0 |
-| shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu | 0 |
-| channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:ref; intent:enum=assemble/disassemble/mend/shape; intensity:enum=faint/light/firm/hard/full; into:ref? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu | 0 |
-| eat | consume | manger, ou faire manger (un enfant, un malade, une bête) | item:ref; amount:enum=little/some/all; to:ref? | faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté | vu | 0 |
-| drink | consume | boire, ou faire boire | item:ref; amount:enum=little/some/all; to:ref? | soif ; ivresse ou poison selon ce qu'il y a dedans | vu | 0 |
-| sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu | 0 |
-| rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu | 0 |
-| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | 0 |
-| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | 1 |
-| listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché | 0 |
-| search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu | 0 |
-| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu | 0 |
-| read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu | 0 |
-| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | 15 |
-| sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu | 0 |
-| write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:ref; content:expression | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu | 0 |
-| perform | communicate | chanter, jouer d'un instrument, danser (les paroles d'un chant passent par speak) | with:ref?; mood:enum=joyful/sad/solemn/lively/eerie; duration:enum=brief/a_while/long | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu | 0 |
-| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu | 1 |
+| operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) | 5 |
+| strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) | 21 |
+| push | force | pousser, bousculer, renverser | target:ref; intensity:enum=faint/light/firm/hard/full; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu | 9 |
+| pull | force | tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre) | target:ref; intensity:enum=faint/light/firm/hard/full; toward:ref? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu | 1 |
+| grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu | 5 |
+| guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu | 2 |
+| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | 9 |
+| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | 9 |
+| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu | 6 |
+| blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu | 1 |
+| shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu | 4 |
+| channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:ref; intent:enum=assemble/disassemble/mend/shape; intensity:enum=faint/light/firm/hard/full; into:ref? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu | 3 |
+| eat | consume | manger, ou faire manger (un enfant, un malade, une bête) | item:ref; amount:enum=little/some/all; to:ref? | faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté | vu | 1 |
+| drink | consume | boire, ou faire boire | item:ref; amount:enum=little/some/all; to:ref? | soif ; ivresse ou poison selon ce qu'il y a dedans | vu | 4 |
+| sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu | 2 |
+| rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu | 1 |
+| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | 5 |
+| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | 9 |
+| listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché | 1 |
+| search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu | 3 |
+| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu | 3 |
+| read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu | 1 |
+| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | 126 |
+| sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu | 6 |
+| write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:ref; content:expression | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu | 1 |
+| perform | communicate | chanter, jouer d'un instrument, danser (les paroles d'un chant passent par speak) | with:ref?; mood:enum=joyful/sad/solemn/lively/eerie; duration:enum=brief/a_while/long | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu | 1 |
+| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu | 2 |
 | stop | meta | s'arrêter, interrompre ce qu'on fait |  | interrompt l'intention en cours ; le PNJ repasse au Transformer | vu | 0 |
 
 ## Langue intérieure : concepts
@@ -1690,6 +1702,7 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | state | predicate | entity, variable, quantity | a tel état, à tel degré : une propriété (« le pont est cassé »), une quantité (« il reste peu de grain »), un trait (« il est malhonnête »), une émotion (« elle a peur »), un état du corps (« elle est enceinte », « il est malade ») |  |
 | quality | predicate | entity, concept, quantity | est (beau, fort, bête, riche, dangereux…) à tel degré : un jugement qualitatif |  |
 | attitude | predicate | agent, variable, entity, quantity | a telle attitude ou émotion envers (affection, confiance, crainte, colère contre…) |  |
+| count | predicate | entity, quantity | ils sont tant, il y en a tant (« nous sommes 12 », « 7 voix pour lui ») |  |
 | worth | predicate | entity, quantity | vaut tant (prix, valeur) |  |
 | route | predicate | place, place | on va de … à … (par là) |  |
 | exists | predicate | concept, place | il existe … à / au-delà de … (savoirs, légendes : « une cité d'or au-delà du désert ») |  |
@@ -1818,6 +1831,7 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | g_workshop | group_kind |  | atelier |  |
 | me | deictic |  | moi |  |
 | you | deictic |  | toi, vous (celui à qui l'on parle) |  |
+| us | deictic |  | nous |  |
 | anyone | quantifier |  | n'importe qui |  |
 | everyone | quantifier |  | tout le monde |  |
 | someone | quantifier |  | quelqu'un (inconnu) |  |
