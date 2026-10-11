@@ -6,7 +6,7 @@
 
 namespace em::social::gen {
 
-inline constexpr std::uint64_t kCatalogueFingerprint = 0x2d1b5b1abc68878full;  // of model_interface.json
+inline constexpr std::uint64_t kCatalogueFingerprint = 0x865076154665196eull;  // of model_interface.json
 inline constexpr int kMaxParams = 6;
 inline constexpr int kMaxValues = 12;
 inline constexpr int kAdultAgeYears = 18;   // D10, read from life_stage
@@ -169,8 +169,8 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
   }},
   GestureSpec{"strike", Family::force, true, true, 6, {
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false},
-    ParamSpec{"zone", ParamType::enum_, 5, {"head", "torso", "arms", "legs", "any"}, 0x0, 0x1f, false, false, false, false},
-    ParamSpec{"with", ParamType::enum_, 6, {"held", "open_hand", "fist", "foot", "head", "mouth"}, 0x0, 0x3f, false, false, false, false},
+    ParamSpec{"zone", ParamType::enum_, 5, {"head", "torso", "arms", "legs", "any"}, 0x0, 0xd, false, false, false, true},
+    ParamSpec{"with", ParamType::enum_, 6, {"held", "open_hand", "fist", "foot", "head", "mouth"}, 0x0, 0x1f, false, false, false, true},
     ParamSpec{"motion", ParamType::enum_, 2, {"swing", "thrust"}, 0x0, 0x3, false, false, false, false},
     ParamSpec{"intensity", ParamType::enum_, 5, {"faint", "light", "firm", "hard", "full"}, 0x0, 0x1f, true, false, false, false},
     ParamSpec{"until", ParamType::condition, 0, {}, 0x0, 0x0, false, false, false, false},

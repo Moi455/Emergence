@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "tools"))
 from schema import Catalogue  # noqa: E402
-from governor import Governor, Party, WriteLedger  # noqa: E402
+from governor import THING, Governor, Party, WriteLedger  # noqa: E402
 import language  # noqa: E402
 
 ADULT = Party(real_age=30, believed_age=30, apparent_age=31, resolved=True)
@@ -108,6 +108,52 @@ class TestGovernor(unittest.TestCase):
         self.assertFalse(self.g.check_record("goal", goal, ADULT, {"@E1": CHILD, "me": ADULT}).allowed)
         self.assertFalse(self.g.check_record("goal", goal, ADULT, {"me": ADULT}).allowed)      # @E1 unknown
         self.assertTrue(self.g.check_record("goal", goal, ADULT, {"@E1": ADULT2, "me": ADULT}).allowed)
+
+    def test_d10_described_or_unidentified_participants(self):
+        vocab = language.Vocabulary(self.cat)
+        for text in ("(offer (did me touch (described d_tall) (how romantic)))",
+                     "(offer (future (link me spouse (described d_tall))))",
+                     "(assert (attitude me r_attraction (described d_tall) high))",
+                     "(offer (did me touch someone (how romantic)))"):
+            e = language.Expression(text, vocab)
+            self.assertTrue(e.ok, (text, e.problems))
+            self.assertFalse(self.g.check_utterance(e, ADULT, {"me": ADULT}).allowed, text)
+
+    def test_d10_hearers_do_not_matter(self):
+        vocab = language.Vocabulary(self.cat)
+        married = language.Expression("(assert (link me spouse @E2))", vocab)
+        self.assertTrue(self.g.check_utterance(married, ADULT, {"me": ADULT, "@E2": ADULT2}, [CHILD]).allowed)
+        parents = language.Expression("(assert (link @E1 spouse @E2))", vocab)
+        self.assertTrue(self.g.check_utterance(parents, CHILD, {"me": CHILD, "@E1": ADULT, "@E2": ADULT2}).allowed)
+
+    def test_d10_cited_content_must_be_expanded(self):
+        vocab = language.Vocabulary(self.cat)
+        e = language.Expression("(offer (that g:1))", vocab)
+        self.assertFalse(self.g.check_utterance(e, ADULT, {"me": ADULT}).allowed)          # no frozen copy
+        benign = language.Expression("(assert (at me @L1))", vocab)
+        self.assertTrue(self.g.check_utterance(e, ADULT, {"me": ADULT}, expand=lambda r: benign).allowed)
+        bad = language.Expression("(offer (did me touch @E3 (how romantic)))", vocab)
+        self.assertFalse(self.g.check_utterance(e, ADULT, {"me": ADULT, "@E3": CHILD}, expand=lambda r: bad).allowed)
+
+    def test_gesture_validation_and_things(self):
+        self.assertFalse(self.g.check_gesture("touch", {"manner": "romantic"}, ADULT, {}).allowed)   # person left out
+        self.assertFalse(self.g.check_gesture("touch", {"duration": "forever"}, ADULT, {}).allowed)   # invalid value
+        self.assertFalse(self.g.check_gesture("touch", {"Target": "@E1"}, ADULT, {}).allowed)          # unknown param
+        stone = {"target": "@T1", "from": "ground", "hold": "in_hand", "stealth": "open"}
+        self.assertTrue(self.g.check_gesture("take", stone, CHILD, {"target": THING}).allowed)
+        bite = {"target": "@E1", "zone": "arms", "with": "mouth", "motion": "swing", "intensity": "faint"}
+        self.assertFalse(self.g.check_gesture("strike", bite, ADULT, {"target": CHILD}).allowed)
+        self.assertFalse(self.g.check_gesture("touch", {"target": "@E1"}, ADULT, {"target": ADULT2}, executed=True).allowed)
+
+    def test_writes_details(self):
+        self.assertEqual(len(self.g.check_writes([["f1", "r_trust", 1], ["f1", "r_trust", 2], ("f2", "r_trust", 3)])), 2)
+        self.assertFalse(self.g.check_write("r_affection", 0, True, WriteLedger(), "f1").allowed)       # bool is not a number
+        self.assertTrue(self.g.check_write("need_intimacy", 0, 0.5, WriteLedger(), "self", actor=ADULT).allowed)
+        self.assertFalse(self.g.check_write("need_intimacy", 0, 0.5, WriteLedger(), "self", actor=CHILD).allowed)
+        self.assertTrue(self.g.check_value("m_interpretation", "theft").allowed)
+        self.assertFalse(self.g.check_value("m_interpretation", "adultery", parties={"@E1": CHILD}).allowed)
+        self.assertFalse(self.g.check_value("g_mode", "conquer").allowed)
+        self.assertTrue(self.g.check_value("g_mode", "achieve").allowed)
 
     def test_memory_is_free_at_creation_then_steps(self):
         led = WriteLedger()

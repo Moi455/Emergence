@@ -97,6 +97,7 @@ norms = ["(norm obligatory (did anyone give this))"]
 
 [[interpretation]]
 id = "adultery"
+intimate = true
 label_fr = "adultère, infidélité"
 facts = ["un adulte lié par un accord de mariage a eu un touch romantique ou intime avec un autre adulte"]
 cues = ["EVENT.gesture=touch : on les a vus", "EVENT.manner=romantic : de façon tendre ou amoureuse", "ENTITY.link=spouse : l'un est marié à un autre"]

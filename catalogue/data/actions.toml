@@ -254,6 +254,7 @@ uses = ["t_fighting", "t_woodwork", "t_stonework", "t_digging", "t_smithing"]
 contact = true
 party_params = ["target"]
 minor_person_ok = true
+minor_whitelist = { zone = ["head", "arms", "legs"], with = ["held", "open_hand", "fist", "foot", "head"] }
 effects = "énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles"
 perceptibility = "vu, entendu (bruit selon l'impact)"
 duration = "un coup ≈ une seconde ; répété jusqu'à la condition"

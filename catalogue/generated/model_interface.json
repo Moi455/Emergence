@@ -2652,7 +2652,20 @@
    "strike": {
     "contact": true,
     "minor_person_ok": true,
-    "minor_whitelist": {},
+    "minor_whitelist": {
+     "with": [
+      "held",
+      "open_hand",
+      "fist",
+      "foot",
+      "head"
+     ],
+     "zone": [
+      "head",
+      "arms",
+      "legs"
+     ]
+    },
     "params": [
      {
       "name": "target",

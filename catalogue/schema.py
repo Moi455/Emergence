@@ -234,6 +234,7 @@ class Interpretation(Entry):
     facts: list[str] = field(default_factory=list)     # objective facts the engine records (truth, for the chronicle)
     cues: list[str] = field(default_factory=list)      # what an observer can perceive or believe that points to it
     norms: list[str] = field(default_factory=list)     # norm beliefs that make it salient
+    intimate: bool = False                             # D10: a judgement about an intimate act (adultery)
 
 
 @dataclass
