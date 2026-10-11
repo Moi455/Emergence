@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 49, variable 333, property 89, action 40, concept 293, grammar 8, interpretation 45, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
+Compte : entity 16, component 49, variable 336, property 89, action 40, concept 293, grammar 8, interpretation 45, hard_rule 4, story 146, material 84, process 31, form 63, item_type 421, species 79, migration 161
 
 ## Histoires (tests d'acceptation)
 
@@ -325,6 +325,8 @@ Compte : entity 16, component 49, variable 333, property 89, action 40, concept 
 | belief_capacity | nombre de croyances gardées | qty | calculé |  | moteur seul | de 128 à 384 selon la mémoire (memory_capacity) ; au-delà, la moins importante et la moins confirmée s'efface |  | 0 |
 | heard_unprocessed | ce qu'on vient d'entendre et qu'on n'a pas encore jugé | list | moteur |  | privé | « Y m'a dit que P » attend que le Transformer décide d'y croire ou non ; s'efface s'il n'en fait rien | HEARD (≤ 2 jetons) | 0 |
 | place_recognized | où l'on croit être (lieu reconnu par ses repères) | mref | moteur |  | privé | reconnu par la perception quand on connaît les repères ; hors des lieux connus : dernier lieu connu et direction approximative : on peut se perdre (charte § 19) | SELF.place | 0 |
+| inv_seen | ce qu'il croit porter sur lui (perçu en le rangeant, en le tâtant : une fausse pièce y est une pièce) | list | calculé |  | privé | mis à jour quand il prend, range ou examine ce qu'il porte | INV | 0 |
+| own_held_seen | ce qu’il croit tenir en main, par ses usages (perçus) | list | calculé |  | privé |  | SELF.held | 0 |
 | season_felt | saison qu'il croit (neige, feuilles, récoltes) | enum (spring, summer, autumn, winter) | calculé |  | privé |  | SELF.season | 0 |
 | time_felt | heure du jour ressentie (soleil, lumière, cloches, faim) ; incertaine sous terre ou à l'intérieur | qty | calculé |  | privé | exacte à peu près dehors au soleil ; dérive dans le noir, sous terre, par temps couvert | SELF.time (sin, cos, certitude) | 0 |
 
@@ -363,9 +365,9 @@ Compte : entity 16, component 49, variable 333, property 89, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| hands | objets en main (gauche, droite) | list | moteur |  | observable | changent par les gestes saisir, lâcher, donner, prendre | SELF.held (vecteur d'usages) | 0 |
+| hands | objets en main (gauche, droite) | list | moteur |  | observable | changent par les gestes saisir, lâcher, donner, prendre |  | 0 |
 | worn | vêtements portés, par emplacement et couche | list | moteur |  | observable |  |  | 0 |
-| carried | contenants portés (sac, bourse, hotte) et leur contenu | list | moteur |  | privé | le contenu d'une bourse ne se voit pas ; son poids, un peu | INV (≤ 8 objets saillants) | 0 |
+| carried | contenants portés (sac, bourse, hotte) et leur contenu | list | moteur |  | privé | le contenu d'une bourse ne se voit pas ; son poids, un peu |  | 0 |
 | load_ratio | charge portée / capacité | ratio | calculé |  | observable |  | SELF.body.load | 0 |
 | wealth_objective | richesse réelle (biens détenus, monnaie, terres crues à soi) | qty | calculé |  | moteur seul | les autres n'en voient que des signes (tenue, maison, dépenses) |  | 0 |
 
@@ -663,6 +665,7 @@ Compte : entity 16, component 49, variable 333, property 89, action 40, concept 
 | pp_crowd_seen | gens qu'il voit (pas ceux qui sont cachés) | qty | calculé |  | observable |  | PLACE.crowd | 0 |
 | pp_air_felt | air ressenti (glacial, froid, frais, doux, chaud, brûlant) | enum (freezing, cold, cool, mild, warm, hot) | calculé |  | observable |  | PLACE.air_felt | 0 |
 | pp_weather_seen | temps qu'il voit et entend (pluie, neige, orage, vent fort, brouillard) | list | calculé |  | observable |  | PLACE.weather | 0 |
+| pp_sun | où il voit le soleil ou la lune (hauteur apparente ; rien sous terre ou par ciel couvert) | qty | calculé |  | observable |  | PLACE.sun | 0 |
 | pp_signs | signes étranges qu'il perçoit (lumières errantes, silence soudain, froid brutal) | list | calculé |  | observable |  | PLACE.signs | 0 |
 
 ### relation

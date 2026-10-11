@@ -42,7 +42,7 @@ TOKEN_CHANNELS = {"SELF": ("own_mind", "interoception", "belief", "perception"),
                   "ENTITY": ("perception", "belief"), "GROUP": ("belief",), "THING": ("perception", "belief"),
                   "PLACE": ("perception",), "EVENT": ("perception",), "BELIEF": ("belief",), "HEARD": ("belief",),
                   "MEMORY": ("belief",), "GOAL": ("belief",), "PLAN": ("belief",), "REQUEST": ("belief",),
-                  "COMMIT": ("belief",), "INV": ("interoception", "perception")}   # real seconds | calendar (day 1 h 30, year 7 h, D30) | life clock
+                  "COMMIT": ("belief",), "INV": ("belief", "perception")}   # real seconds | calendar (day 1 h 30, year 7 h, D30) | life clock
 WRITERS = ("engine", "T_jump", "T_step", "T_slow", "birth", "action", "derived")
 VISIBILITY = ("private", "observable", "public", "engine")
 STATUS = ("N", "E", "R")                 # core, extension, postponed
@@ -101,6 +101,8 @@ class Variable(Entry):
     rate: float = 0.0                    # T_step bound: at most this much per GAME DAY (decisions come several times a second)
     values_from: str = ""                # enum whose values are the concepts of this category (single source)
     clock: str = ""                      # which clock its dynamics follow (CLOCKS); required when dynamics are given
+    list_of: str = ""                    # element type of a list that reaches a token (mref, word, enum, qty, proposition)
+    reads: list[str] = field(default_factory=list)   # derived variables in a BELIEF channel: the variables they read
     intimate: bool | None = None         # D10: never raised toward / from a minor (real, believed or apparent age);
                                          # MUST be declared on relations and drives
     visibility: str = "private"
@@ -238,6 +240,7 @@ class Interpretation(Entry):
 class HardRule(Entry):
     text_fr: str = ""
     applies_to: list[str] = field(default_factory=list)
+    adult_age_years: int = 0             # D10: pinned here, never parsed from free text
 
 
 @dataclass
@@ -418,6 +421,8 @@ class Catalogue:
                 p.append(f"variable {v.id}: an objective id cannot carry a token (use scale mref)")
             if v.token and v.visibility == "engine":
                 p.append(f"variable {v.id}: engine-only visibility cannot carry a token")
+            if v.token and v.scale == "list" and v.list_of not in ("mref", "word", "enum", "qty", "proposition"):
+                p.append(f"variable {v.id}: a list that reaches a token must declare list_of (mref, word, enum, qty, proposition)")
             if v.token and not v.holder:
                 p.append(f"variable {v.id}: a token needs a holder component")
             if v.token and v.holder in self["component"]:
@@ -616,6 +621,18 @@ class Catalogue:
         p = []
         if "D10_minors" not in self["hard_rule"]:
             p.append("hard_rule D10_minors missing")
+        elif self["hard_rule"]["D10_minors"].adult_age_years != 18:
+            p.append("hard_rule D10_minors: adult_age_years must be pinned to 18")
+        for v in self["variable"].values():               # a derived belief-channel variable reads beliefs only
+            if v.token and "derived" in v.writer and self._channel(v.holder) == "belief":
+                if not v.reads:
+                    p.append(f"variable {v.id}: derived in a belief channel, it must declare what it reads")
+                for r in v.reads:
+                    src = self["variable"].get(r)
+                    if src is None:
+                        p.append(f"variable {v.id}: reads unknown variable '{r}'")
+                    elif self._channel(src.holder) not in ("belief", "perception", "own_mind", "interoception"):
+                        p.append(f"variable {v.id}: reads '{r}', which carries objective truth")
         for v in self["variable"].values():
             if (v.holder == "relation" or v.id.startswith("need_") or v.id == "attracted_to") and v.intimate is None:
                 p.append(f"variable {v.id}: intimate must be declared (true or false) on relations and drives (D10)")

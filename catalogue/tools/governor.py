@@ -66,6 +66,24 @@ class Verdict:
     allowed: bool
     value: float | None = None
     reason: str = ""
+    code: str = ""          # stable reason code, shared with the C++ port (em::social::Reason)
+
+    def __post_init__(self):
+        if not self.code:
+            self.code = _code(self.reason)
+
+
+def _code(reason: str) -> str:
+    """Map a human reason to the shared code."""
+    for prefix, code in (("jump", "jump"), ("step", "step"), ("slow", "slow"), ("clipped", "clipped"),
+                         ("unknown variable", "unknown_variable"), ("engine-owned", "engine_owned"),
+                         ("structured", "structured"), ("non-finite", "non_finite"), ("no model writer", "no_writer"),
+                         ("unknown gesture", "unknown_gesture"), ("invalid value", "invalid_value"),
+                         ("D10: no intimate increase", "d10_intimate"), ("D10: intimate gesture", "d10_intimate"),
+                         ("D10: '", "d10_value"), ("D10: ", "d10_person"), ("ok", "ok")):
+        if reason.startswith(prefix):
+            return code
+    return "other"
 
 
 @dataclass
@@ -107,7 +125,7 @@ class Governor:
         if not all(isinstance(x, (int, float)) and math.isfinite(x) for x in (old, proposed)):
             return Verdict(False, None, "non-finite value refused")
         o, want = tenths(old), tenths(proposed)
-        if v.intimate and want > o:
+        if v.intimate and want > (0 if creating else o):    # a new record is compared with the neutral default
             for party in (actor or UNKNOWN, intimate_target or UNKNOWN):
                 if party.may_be_minor():
                     return Verdict(False, None, "D10: no intimate increase toward or from a possible minor (or unknown)")
@@ -149,6 +167,11 @@ class Governor:
         if a is None:
             return Verdict(False, None, "unknown gesture")
         parties = parties or {}
+        known = {p.name: p for p in a.params}
+        for name, val in params.items():           # an unknown param or an enum value outside its list is refused
+            p = known.get(name)
+            if p is None or (p.type == "enum" and val not in p.values):
+                return Verdict(False, None, f"invalid value {name}={val!r}", "invalid_value")
         involved = [actor or UNKNOWN]
         for pn in a.party_params:
             if pn in params or pn in parties:
@@ -164,10 +187,10 @@ class Governor:
         touched = len(involved) > 1
         if a.contact and touched:
             if not a.minor_person_ok:
-                return Verdict(False, None, f"D10: {a.id} on a possible minor is refused")
+                return Verdict(False, None, f"D10: {a.id} on a possible minor is refused", "d10_person")
             for pn, allowed in a.minor_whitelist.items():
                 if params.get(pn) not in allowed:
-                    return Verdict(False, None, f"D10: {pn}={params.get(pn)!r} missing or outside minor_whitelist")
+                    return Verdict(False, None, f"D10: {pn}={params.get(pn)!r} missing or outside minor_whitelist", "d10_whitelist")
         return Verdict(True, None, "ok")
 
     def _gesture_frames(self, node, vocab):

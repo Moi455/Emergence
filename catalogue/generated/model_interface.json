@@ -740,6 +740,12 @@
       "unit": "",
       "values": []
      },
+     "sun": {
+      "from": "pp_sun",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
      "weather": {
       "from": "pp_weather_seen",
       "scale": "list",
@@ -885,7 +891,7 @@
       "values": []
      },
      "held": {
-      "from": "hands",
+      "from": "own_held_seen",
       "scale": "list",
       "unit": "",
       "values": []

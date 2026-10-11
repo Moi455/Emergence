@@ -155,6 +155,8 @@ struct Activity {
 struct Beliefs {
   std::int32_t belief_capacity{};  // milli-units of its unit
   ListRef heard_unprocessed{};  // handle into a side table (variable-size data)
+  ListRef inv_seen{};  // handle into a side table (variable-size data)
+  ListRef own_held_seen{};  // handle into a side table (variable-size data)
   MRef place_recognized{};  // persistent id of one of the NPC's own records
   std::uint8_t season_felt{};  // value index
   std::int32_t time_felt{};  // milli-units of its unit
@@ -289,6 +291,7 @@ struct PlacePercept {
   std::int16_t pp_light{};  // tenths of the charter scale
   std::int16_t pp_noise{};  // tenths of the charter scale
   ListRef pp_signs{};  // handle into a side table (variable-size data)
+  std::int32_t pp_sun{};  // milli-units of its unit
   ListRef pp_weather_seen{};  // handle into a side table (variable-size data)
 };
 
