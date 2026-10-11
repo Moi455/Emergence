@@ -9,6 +9,7 @@ cd "$ROOT"
 run python3 catalogue/tools/check.py
 run python3 -m unittest discover -s catalogue/tests
 run python3 -m unittest discover -s ai/tok2/tests -t ai
+run python3 -m unittest discover -s ai/situations/tests -t ai
 
 cd "$ROOT/ai/npc_pipeline"
 run python3 plan_contract.py

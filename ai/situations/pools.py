@@ -72,19 +72,26 @@ class Pools:
     def object_vector(self) -> list[str]:
         return list(self.interface.object_vector)
 
+    # what an adult can do with a mass (kg): the engine decides from the real body; here a plausible bootstrap
+    MASS_AFFORDANCES = {"graspable": 25.0, "carryable": 40.0, "throwable": 3.0}
+
     def item_vector(self, kind: str) -> dict:
-        """The perceptible properties of a known kind, approximated from its parts (the engine will compute them
-        from the real assembly): affordances given by its forms, explicit values, mass."""
+        """The perceptible properties of a known kind at rest, as far as the catalogue makes them CERTAIN: mass,
+        explicit values, what its forms give, mass-based handling, not burning. Anything else stays unknown
+        (absent), never a false 'no' (the engine will compute the real assembly)."""
         it = self.cat["item_type"][kind]
         have = self.cat.item_properties(it.parts, it.properties)
         props = self.cat["property"]
-        out: dict = {}
+        out: dict = {"mass": float(it.mass_kg), "burning": False}
         for p in self.object_vector:
             pr = props[p]
-            if p == "mass":
-                out[p] = float(it.mass_kg)
-            elif p in it.properties and not isinstance(it.properties[p], bool) and pr.scale != "bool":
-                out[p] = float(it.properties[p]) if pr.scale == "qty" else min(10.0, max(0.0, float(it.properties[p])))
-            elif pr.scale == "bool":
-                out[p] = p in have or any(d in have for d in pr.derived_from)
-        return out
+            if p in it.properties and not isinstance(it.properties[p], bool) and pr.scale != "bool":
+                x = float(it.properties[p])
+                out[p] = x if pr.scale == "qty" else min(10.0, max(0.0, x))
+            elif pr.scale == "bool" and (p in have or it.properties.get(p) is True):
+                out[p] = True
+            elif p in self.MASS_AFFORDANCES and it.mass_kg > 0:
+                out[p] = it.mass_kg <= self.MASS_AFFORDANCES[p]
+        if "capacity" in have or "capacity" in it.properties:
+            out["contains"] = True
+        return {p: v for p, v in out.items() if p in self.object_vector}

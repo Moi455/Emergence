@@ -89,7 +89,7 @@ class MindBuilder:
     def _seen_age(self, p: Person, intimate_link: bool) -> float:
         noise = 1.0 if p.age < ADULT else 4.0
         seen = max(0.5, p.age + self.rng.uniform(-noise, noise))
-        return max(seen, ADULT + 1) if intimate_link else round(seen, 1)    # a partner is known to be an adult
+        return round(max(seen, ADULT + 1) if intimate_link else seen, 1)    # a partner is known to be an adult
 
     # ---- the NPC himself ----------------------------------------------------------------------------
     def _self(self, sc: Scene, carried_vectors: list[dict]) -> list[Record]:
@@ -151,13 +151,14 @@ class MindBuilder:
         people = [(x.person, x.link, x) for x in sc.present if x.known or x.dist < 15] + [(p, l, None) for p, l in sc.absent]
         people = people[:T["ENTITY"]]
         pkeys = [f"@E{i + 1}" for i in range(len(people))]
+        self.people = {k: p for k, (p, _, _) in zip(pkeys, people)}       # truth, for the D10 audit only
         things = sc.things[:T["THING"]]
         tkeys = [f"@T{i + 1}" for i in range(len(things))]
         carried = sc.carried[:T["INV"]]
         ikeys = [f"@T{len(things) + i + 1}" for i in range(len(carried))]
         loci = [f"@L{i + 1}" for i in range(r.randint(0, T["LOCUS"]))]
         groups = [f"@G{i + 1}" for i in range(r.randint(0, T["GROUP"]))]
-        refs = Refs(pkeys, tkeys + ikeys, loci, groups)
+        refs = Refs(pkeys, tkeys + ikeys, loci, groups, [k for k, (_, _, x) in zip(pkeys, people) if x is None])
         owner_key = {p.pid: k for (p, _, _), k in zip(people, pkeys)} | {sc.self_.pid: "me"}
 
         out: list[Record] = []
@@ -257,13 +258,19 @@ class MindBuilder:
         for key, (p, _, x) in zip(pkeys, people):
             if x is None or eid >= T["EVENT"] or r.random() < 0.5:
                 continue
-            g = r.choice([g for fam, gs in self.pools.gestures.items() if fam != "communicate" for g in gs])
+            target = r.choice(["me"] + tkeys + [k for k in pkeys if k != key])
+            kind = "item" if target.startswith("@T") else "agent"
+            g = r.choice(self.props.gestures_for.get(kind) or self.props.gestures)
             a = self.pools.cat["action"][g]
-            manners = [v for prm in a.params if prm.type == "enum" for v in prm.values
-                       if v not in self.pools.intimate_symbols]
+            # what is seen of the manner: at most one value per parameter, of at most two parameters
+            manners = []
+            for prm in r.sample([p for p in a.params if p.type == "enum"], min(2, sum(p.type == "enum" for p in a.params))):
+                vals = [v for v in prm.values if v not in self.pools.intimate_symbols]
+                if vals and r.random() < 0.7:
+                    manners.append(r.choice(vals))
             eid += 1
             out.append(Record("EVENT", f"@V{eid}", {
-                "actor": key, "gesture": g, "target": r.choice(["me"] + tkeys + [k for k in pkeys if k != key]),
+                "actor": key, "gesture": g, "target": target,
                 "sense": "seen", "age": self._hours_ago(0.0005, 0.05),
-                "manner": r.sample(manners, min(len(manners), r.randint(0, 3)))}))
+                "manner": manners}))
         return out

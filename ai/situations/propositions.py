@@ -19,6 +19,7 @@ import language  # noqa: E402  (path set by pools)
 class Refs:
     """The NPC's pointers usable in a proposition (keys of its records)."""
     persons: list[str] = field(default_factory=list)        # @E keys (present or absent)
+    absent: list[str] = field(default_factory=list)         # @E keys of persons not here
     things: list[str] = field(default_factory=list)         # @T keys
     loci: list[str] = field(default_factory=list)           # @L keys
     groups: list[str] = field(default_factory=list)         # @G keys
@@ -34,9 +35,17 @@ class PropositionFactory:
         bad = pools.intimate_symbols
         self.words = {c: [w for w in pools.concepts(c) if w not in bad] for c in (
             "degree", "quality", "occupation", "technique", "link", "deontic", "role_word")}
+        self.words["quality"] = [w for w in self.words["quality"] if w not in ("w_true", "w_false")]   # not of a person
+        self.words["link"] = [w for w in self.words["link"] if w != "stranger"]
         self.traits = sorted(w for w, cs in self.vocab.cats.items() if "variable" in cs and w not in bad)
         self.kinds = sorted(k for ks in pools.items_by_category.values() for k in ks)
         self.gestures = [g for fam, gs in pools.gestures.items() if fam != "communicate" for g in gs]
+        # gestures by what their first pointer accepts: a deed is only told about a fitting target
+        self.gestures_for: dict[str, list[str]] = {}
+        for g in self.gestures:
+            ref = next((p for p in pools.cat["action"][g].params if p.type == "ref"), None)
+            for t in (ref.accepts if ref else []):
+                self.gestures_for.setdefault(t, []).append(g)
         self.dropped = 0
         self.made = 0
 
@@ -69,10 +78,15 @@ class PropositionFactory:
         return f"{k}:{self.rng.randint(2, 12)}" if count and self.rng.random() < 0.3 else k
 
     def _deed(self, r: Refs, actor: str, target: str) -> str | None:
-        g = self.rng.choice(self.gestures)
+        kind = "agent" if target in ("me", "you", "someone", "anyone") or target.startswith("@E") else (
+            "place" if target.startswith(("@L", "@PLACE")) else "item")
+        g = self.rng.choice(self.gestures_for.get(kind) or self.gestures)
         a = self.pools.cat["action"][g]
-        manners = [v for p in a.params if p.type == "enum" for v in p.values if v not in self.pools.intimate_symbols]
-        how = f" (how {self.rng.choice(manners)})" if manners and self.rng.random() < 0.6 else ""
+        params = [p for p in a.params if p.type == "enum" and any(v not in self.pools.intimate_symbols for v in p.values)]
+        how = ""
+        if params and self.rng.random() < 0.6:                    # one manner, of one parameter
+            p = self.rng.choice(params)
+            how = f" (how {self.rng.choice([v for v in p.values if v not in self.pools.intimate_symbols])})"
         return f"(did {actor} {g} {target}{how})"
 
     # ---- beliefs ------------------------------------------------------------------------------------
@@ -120,7 +134,7 @@ class PropositionFactory:
             lambda: self._ok(f"({when()} {self._deed(r, P(rng), 'me')})"),
             lambda: self._ok(f"({when()} {self._deed(r, 'me', P(rng))})"),
             lambda: self._ok(f"({when()} {self._deed(r, P(rng), P(rng))})"),
-            lambda: self._ok(f"({when()} (dead {rng.choice(r.persons)}))") if r.persons else None,
+            lambda: self._ok(f"({when()} (dead {rng.choice(r.absent)}))") if r.absent else None,
         ]
         return self._first(makers)
 

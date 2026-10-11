@@ -1,1 +1,1 @@
-"""situations: bootstrap situations for the teacher pilot and the first training (WIP, untested)."""
+"""situations: plausible NPC situations (mind records) for the teacher pilot and the first training."""
