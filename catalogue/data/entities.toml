@@ -429,3 +429,11 @@ holder = "agent"
 part_of = "beliefs"
 channel = "perception"
 max_count = 1
+
+[[component]]
+id = "locus"
+label_fr = "un lieu qu'il connaît et qui compte maintenant (sa maison, sa destination, la mine, le lieu d'un souvenir)"
+holder = "agent"
+part_of = "beliefs"
+channel = "belief"
+max_count = 3

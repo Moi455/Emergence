@@ -34,6 +34,7 @@ concept = [
   { id = "state", category = "predicate", args = ["entity", "variable", "quantity"], label_fr = "a tel état, à tel degré : une propriété (« le pont est cassé »), une quantité (« il reste peu de grain »), un trait (« il est malhonnête »), une émotion (« elle a peur »), un état du corps (« elle est enceinte », « il est malade »)" },
   { id = "quality", category = "predicate", args = ["entity", "concept", "quantity"], label_fr = "est (beau, fort, bête, riche, dangereux…) à tel degré : un jugement qualitatif" },
   { id = "attitude", category = "predicate", args = ["agent", "variable", "entity", "quantity"], label_fr = "a telle attitude ou émotion envers (affection, confiance, crainte, colère contre…)" },
+  { id = "count", category = "predicate", args = ["entity", "quantity"], label_fr = "ils sont tant, il y en a tant (« nous sommes 12 », « 7 voix pour lui »)" },
   { id = "worth", category = "predicate", args = ["entity", "quantity"], label_fr = "vaut tant (prix, valeur)" },
   { id = "route", category = "predicate", args = ["place", "place"], label_fr = "on va de … à … (par là)" },
   { id = "exists", category = "predicate", args = ["concept", "place"], label_fr = "il existe … à / au-delà de … (savoirs, légendes : « une cité d'or au-delà du désert »)" },
@@ -174,6 +175,7 @@ concept = [
   # ─── Désigner sans nommer ───
   { id = "me", category = "deictic", label_fr = "moi" },
   { id = "you", category = "deictic", label_fr = "toi, vous (celui à qui l'on parle)" },
+  { id = "us", category = "deictic", label_fr = "nous" },
   { id = "anyone", category = "quantifier", label_fr = "n'importe qui" },
   { id = "everyone", category = "quantifier", label_fr = "tout le monde" },
   { id = "someone", category = "quantifier", label_fr = "quelqu'un (inconnu)" },

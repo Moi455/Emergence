@@ -42,7 +42,7 @@ TOKEN_CHANNELS = {"SELF": ("own_mind", "interoception", "belief", "perception"),
                   "ENTITY": ("perception", "belief"), "GROUP": ("belief",), "THING": ("perception", "belief"),
                   "PLACE": ("perception",), "EVENT": ("perception",), "BELIEF": ("belief",), "HEARD": ("belief",),
                   "MEMORY": ("belief",), "GOAL": ("belief",), "PLAN": ("belief",), "REQUEST": ("belief",),
-                  "COMMIT": ("belief",), "INV": ("belief", "perception")}   # real seconds | calendar (day 1 h 30, year 7 h, D30) | life clock
+                  "COMMIT": ("belief",), "INV": ("belief", "perception"), "LOCUS": ("belief",)}   # real seconds | calendar (day 1 h 30, year 7 h, D30) | life clock
 WRITERS = ("engine", "T_jump", "T_step", "T_slow", "birth", "action", "derived")
 VISIBILITY = ("private", "observable", "public", "engine")
 STATUS = ("N", "E", "R")                 # core, extension, postponed

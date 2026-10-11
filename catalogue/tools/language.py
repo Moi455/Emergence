@@ -29,7 +29,8 @@ NESTING_HEADS = {"believes", "wants", "intends", "says", "may", "owes", "norm", 
 NAMEABLE_HOLDERS = {"mind_static", "relation"}
 NAMEABLE_VARIABLES = {"pain", "hunger", "thirst", "sleepiness", "exhaustion", "sickness_felt", "intoxication",
                       "age_years", "strength", "wounds", "stress", "self_regard", "mood_valence", "pregnancy"}
-REF_WORDS = {"me": {"agent", "entity"}, "you": {"agent", "entity"}, "someone": {"agent", "entity"},
+REF_WORDS = {"me": {"agent", "entity"}, "you": {"agent", "entity"}, "us": {"group", "agent", "entity"},
+             "someone": {"agent", "entity"},
              "anyone": {"agent", "entity"}, "everyone": {"agent", "entity", "group"}, "no_one": {"agent", "entity"},
              "this": {"entity", "item"}, "here": {"place"}}
 # what a word category can stand for as an argument
@@ -52,6 +53,37 @@ ACCEPTS = {
     "variable": {"variable", "emotion"}, "emotion": {"emotion"}, "interpretation": {"interpretation"},
     "technique": {"technique"},
 }
+
+
+# what a referring symbol can be, as a gesture target (REF_TARGETS of catalogue/schema.py)
+def ref_targets(sym, vocab) -> set:
+    if not isinstance(sym, str):
+        return {"agent", "animal", "item"}                    # (described …)
+    if sym.startswith("@E") or sym in ("me", "you", "someone", "anyone", "everyone", "no_one") or sym.startswith("n:"):
+        return {"agent"} | ({"place", "group"} if sym.startswith("n:") else set())
+    if sym == "us" or sym.startswith("@G"):
+        return {"group", "agent"}
+    if sym.startswith("@T") or sym == "this":
+        return {"animal", "item", "structure", "terrain", "voxel", "water", "fire", "trace", "plant"}
+    if sym.startswith("@L") or sym in ("@PLACE", "here"):
+        return {"place", "water", "terrain"}
+    if sym.startswith("@V"):
+        return set()
+    if sym.startswith(("b:", "g:", "m:")):
+        return {"belief"}
+    if vocab.is_(sym, "direction"):
+        return {"direction"}
+    base = sym.partition(":")[0]
+    if base in vocab.cat["species"]:
+        return {"animal", "plant"}
+    if base in vocab.cat["form"]:
+        return {"form"}
+    if base in vocab.kinds or vocab.is_(base, "lookalike"):
+        return {"item", "structure", "plant"}
+    return set()
+
+
+DESCRIPTION_CATEGORIES = {"descriptor", "role_word", "occupation", "quality", "lookalike", "group_kind"}
 
 
 class LanguageError(ValueError):
@@ -275,8 +307,13 @@ class Expression:
             self.problems.append(f"'{g}' is not a gesture: social acts are said with words, not done (D28)")
             return
         rest = args[2:]
+        refs = [p for p in a.params if p.type == "ref"]
         if rest and (isinstance(rest[0], str) or (isinstance(rest[0], Node) and rest[0].head == "described")):
             self._arg(rest[0], "entity", allow_wh)
+            if refs and not v.is_(rest[0] if isinstance(rest[0], str) else "", "wh"):
+                if not ref_targets(rest[0], v) & set(refs[0].accepts):
+                    self.problems.append(f"'{g}' cannot be done to {rest[0] if isinstance(rest[0], str) else 'that'} "
+                                         f"(it accepts {refs[0].accepts})")
             rest = rest[1:]
         if len(rest) > MAX_ROLES:
             self.problems.append(f"{len(rest)} roles > {MAX_ROLES}")
@@ -297,8 +334,8 @@ class Expression:
                 if len(r.args) != 1 or not isinstance(r.args[0], str) or (r.args[0] not in vals and not v.is_(r.args[0], "degree")):
                     self.problems.append(f"(how …) takes one manner of '{g}'")
             else:
-                if r.head not in params:
-                    self.problems.append(f"'{g}' has no '{r.head}' role")
+                if r.head not in params or params[r.head].type != "ref":
+                    self.problems.append(f"'{g}' has no '{r.head}' role" + (" (it is a manner: use how)" if r.head in params else ""))
                 if len(r.args) != 1:
                     self.problems.append(f"({r.head} REF)")
                 else:
@@ -313,6 +350,8 @@ class Expression:
             if a.head == "described":
                 if not a.args or not all(isinstance(x, str) for x in a.args):
                     self.problems.append("(described WORD+)")
+                elif not all(v.cats.get(x, set()) & DESCRIPTION_CATEGORIES or x.partition(":")[0] in v.kinds for x in a.args):
+                    self.problems.append("(described …) takes descriptive words only (descriptor, role, occupation, quality, kind)")
                 elif not ACCEPTS.get(expected, set()) & {"agent", "item", "entity"}:
                     self.problems.append(f"a description cannot stand for a {expected}")
                 else:

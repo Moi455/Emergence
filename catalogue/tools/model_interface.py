@@ -39,7 +39,7 @@ class ModelInterface:
     }
     ACCEPT_TOKENS = {"agent": "ENTITY", "animal": "THING", "item": "THING|INV", "structure": "THING", "terrain": "THING",
                      "voxel": "THING", "water": "THING", "fire": "THING", "trace": "THING", "plant": "THING",
-                     "place": "PLACE (here) or a known place file (@L)", "belief": "BELIEF", "form": "kinds table (forms)",
+                     "place": "PLACE (here) or LOCUS (a known place, @L)", "belief": "BELIEF", "form": "kinds table (forms)",
                      "group": "GROUP", "direction": "relative_direction_head"}
 
     def _field_specs(self) -> dict:
@@ -66,7 +66,8 @@ class ModelInterface:
                           "layout": self.RECORD_LAYOUTS.get(typ, "")}
         return {"max_tokens": budget.MAX_TOKENS, "token_types": types,
                 "object_vector": self.cat.object_vector(),
-                "encoding": "bipolar10 and unipolar10 read as int8 tenths / 100; qty log-scaled; enum and word as vocabulary ids; mref as a pointer to a token slot of the same decision; time as age in game hours (log)"}
+                "encoding": "bipolar10 and unipolar10 read as int8 tenths / 100; qty log-scaled; enum and word as vocabulary ids; time as age in game hours (log)",
+                "pointer_encoding": "an mref field holds the index of a token slot of the same decision (1..128); 0 = none; 129 = exists but out of this decision's context"}
 
     def output_spec(self) -> dict:
         # a manner head is SHARED when every gesture using that param name has the same values; otherwise every
@@ -98,6 +99,7 @@ class ModelInterface:
             per_gesture[a.id] = {"params": params, "contact": bool(a.contact), "party_params": a.party_params,
                                  "minor_person_ok": a.minor_person_ok, "minor_whitelist": a.minor_whitelist}
         conditions = sorted(c.id for c in self.cat["concept"].values() if c.category == "condition")
+        condition_args = {c: self.cat["concept"][c].args for c in conditions}
         writable = {}
         for v in self.cat["variable"].values():
             comp = self.cat["component"].get(v.holder)
@@ -121,6 +123,7 @@ class ModelInterface:
             "relative_direction_head": self.vocab.directions,
             "feasibility_mask": "computed on the NPC's percepts and beliefs, never on the world; a gesture that the world refuses fails physically and that failure is perceived",
             "condition_head": conditions,
+            "condition_args": condition_args,
             "speech": {"max_symbols": language.MAX_SYMBOLS, "max_depth": language.MAX_DEPTH,
                        "grammar_words": sorted(self.vocab.words), "kinds": sorted(self.vocab.kinds),
                        "pointers": ["@E<n>", "@T<n>", "@G<n>", "@L<n>", "@V<n>", "@PLACE", "b:<n>", "m:<n>", "g:<n>", "n:<name id>"]},

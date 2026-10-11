@@ -9,14 +9,14 @@ Une relecture adverse a confronté ce document à ses scripts, à ses résultats
 1. **Ordonnanceur** (`ai/research/sim_scheduler.py`, refait et remesuré [Mesuré]) :
    - le seau à jetons ne se rechargeait pas sous charge : le nominal passe à 18 décisions par pas, sous la recharge de 20 ;
    - la latence est mesurée pour chaque perception jusqu'à la décision suivante, quelle que soit la classe qui l'emporte : l'ancien « P3 2,7 s » souffrait d'un biais du survivant ;
-   - le banc ajoute des dangers récurrents et des cascades de cris, et réveille chaque auditeur d'une parole. Une cascade sans identité d'événement s'emballait (500 000 alertes en 45 min) ; un danger porte donc une identité, et percevoir à nouveau le même danger n'est pas un nouvel indice.
+   - le banc ajoute des dangers récurrents et des cascades de cris ; une parole réveille son destinataire, les autres auditeurs la notent. Une cascade sans identité d'événement s'emballait (500 000 alertes en 45 min) ; un danger porte donc une identité, et percevoir à nouveau le même danger n'est pas un nouvel indice.
 
    Les résultats, refaits avec de l'espace (portée de la voix, des cris, de la vue) après une seconde relecture, sont au § 3.2.
 
 2. **Aucune entrée calculée sur la vérité.** Le masque de faisabilité, les réveils, la sélection du contexte et le dépliage de la parole reposent sur ce que le PNJ perçoit et croit. Un geste que le monde refuse échoue physiquement, et cet échec est perçu. L'auditeur apparie lui-même les noms, désignations et descriptions à ses dossiers, sans passer par l'identité vraie (`catalogue/data/language_grammar.toml`).
 3. **Têtes de sortie générées depuis le catalogue** (`catalogue/generated/model_interface.json`, `catalogue/tools/model_interface.py`) :
    - 40 gestes, 35 têtes de manière, au plus 3 pointeurs par geste, une tête de 10 directions, 23 conditions ;
-   - parole sur 592 mots et 643 sortes, en 20 symboles au plus ;
+   - parole sur 655 mots et 643 sortes (11 oct.), en 20 symboles au plus ;
    - 93 variables écrivables, au plus 4 écritures par décision.
 
    Créer une croyance, un objectif, un souvenir ou un plan compte pour une écriture, et sa proposition sort du **décodeur autorégressif contraint par un automate de grammaire** (20 pas). Le décodeur « par cadres » est abandonné, car il ne produisait ni la logique ni les rôles. À remesurer à 20 pas.
@@ -109,9 +109,9 @@ L'ordonnanceur choisit **quand** un PNJ pense, jamais **ce qu'il fait** : ce n'e
 - **P3 perception notable**, filtrée par `PLAN.commitment`, que le modèle écrit lui-même : le PNJ règle sa propre distraction.
 - **P4 battement** : rien depuis 8 s éveillé, 60 s endormi.
 
-À chaque pas de 100 ms, on sert 18 PNJ, du plus prioritaire au plus ancien, plus un par danger en attente (64 au plus), pris sur une réserve (seau à jetons) qui se recharge : la moyenne reste sous 200/s. Chaque geste porte sa **condition de réveil**, choisie par le modèle (cadre des « options » : Sutton, Precup, Singh, 1999). Un PNJ pense ainsi en moyenne toutes les 2,5 s, et aussitôt quand quelque chose le concerne.
+À chaque pas de 100 ms, on sert 18 PNJ, du plus prioritaire au plus ancien, plus un par danger en attente (64 au plus), pris sur une réserve (seau à jetons) qui se recharge : la moyenne reste sous 200/s. Chaque geste porte sa **condition de réveil**, choisie par le modèle (cadre des « options » : Sutton, Precup, Singh, 1999). Un PNJ pense ainsi en moyenne toutes les 2,8 s (0,36 décision/s mesurée), aussitôt quand un danger le menace ou qu'on lui parle ; ce qu'il remarque seulement attend sa prochaine décision.
 
-Simulation (`sim_scheduler.py`, refaite le 10 oct. après relecture, 45 min, 500 PNJ placés dans leur village ; paroles entendues à 8 m : le destinataire est réveillé, les autres le notent ; cris à 60 m, qui réveillent une partie des dormeurs ; dangers vus à 35 m et plus ; un danger porte une identité ; latence mesurée depuis l'instant de l'événement) [Mesuré] :
+Simulation (`sim_scheduler.py`, refaite le 10 oct. après relecture, 45 min, 500 PNJ placés dans leur village ; paroles entendues à 8 m : le destinataire est réveillé en priorité, les autres auditeurs ne reçoivent qu'une perception remarquable ; cris à 60 m, qui réveillent une partie des dormeurs ; dangers vus à 35 m et plus ; un danger porte une identité ; latence mesurée depuis l'ARRIVÉE de la perception ; s'y ajoutent le délai de vue ou d'ouïe, de 0 à 0,6 s) [Mesuré] :
 
 | Mesure | Valeur |
 |---|---|
@@ -120,7 +120,8 @@ Simulation (`sim_scheduler.py`, refaite le 10 oct. après relecture, 45 min, 500
 | danger vu | servi en 0,1 s au p95 |
 | parole adressée | servie en 0,1 s au p95 |
 | fin de geste | 0,37 s au p95 |
-| perception remarquable | 11 s au p95, jusqu'à la décision suivante de ce PNJ, quelle qu'elle soit |
+| perception remarquable | 11 s au p95, jusqu'à la décision suivante de ce PNJ, quelle qu'elle soit ; elle ne déclenche elle-même que 594 décisions sur 76 645 (0,8 %) |
+| réveil périodique | gagne 74 décisions sur 20 225, 16,6 s au p95 |
 | décision par PNJ | de 0,17 à 0,74 par seconde |
 
 - **Saturation, à dire franchement.** Les fins de geste prennent presque tout le budget : 446 000 décisions sur 490 000, contre 594 gagnées par une perception remarquable. La parade est dans la conception, pas dans l'ordonnanceur : des **intentions plus longues** (plusieurs gestes enchaînés par le moteur entre deux décisions, plan de 1 à 6 étapes) libèrent des décisions pour ce qu'on remarque.

@@ -1,6 +1,6 @@
 {
  "input": {
-  "encoding": "bipolar10 and unipolar10 read as int8 tenths / 100; qty log-scaled; enum and word as vocabulary ids; mref as a pointer to a token slot of the same decision; time as age in game hours (log)",
+  "encoding": "bipolar10 and unipolar10 read as int8 tenths / 100; qty log-scaled; enum and word as vocabulary ids; time as age in game hours (log)",
   "max_tokens": 128,
   "object_vector": [
    "mass",
@@ -47,6 +47,7 @@
    "joins",
    "rolls_load"
   ],
+  "pointer_encoding": "an mref field holds the index of a token slot of the same decision (1..128); 0 = none; 129 = exists but out of this decision's context",
   "token_types": {
    "BELIEF": {
     "count": 12,
@@ -327,6 +328,12 @@
       "unit": "",
       "values": []
      },
+     "name": {
+      "from": "r_name_believed",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
      "present": {
       "from": "r_present",
       "scale": "bool",
@@ -384,12 +391,6 @@
      "rel.rivalry": {
       "from": "r_rivalry",
       "scale": "unipolar10",
-      "unit": "",
-      "values": []
-     },
-     "rel.since_contact": {
-      "from": "r_last_contact",
-      "scale": "time",
       "unit": "",
       "values": []
      },
@@ -597,6 +598,42 @@
     "count": 8,
     "fields": {},
     "layout": "same fields as THING (kind, props = object vector, state, amount, owner, file)"
+   },
+   "LOCUS": {
+    "count": 3,
+    "fields": {
+     "dir": {
+      "from": "lc_dir",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "dist": {
+      "from": "lc_dist",
+      "scale": "qty",
+      "unit": "m",
+      "values": []
+     },
+     "file": {
+      "from": "lc_file",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "kind": {
+      "from": "lc_kind",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
+     "owner": {
+      "from": "lc_owner",
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     }
+    },
+    "layout": ""
    },
    "MEMORY": {
     "count": 9,
@@ -1561,6 +1598,62 @@
   }
  },
  "output": {
+  "condition_args": {
+   "c_addressed": [],
+   "c_attacked": [],
+   "c_blocked": [],
+   "c_done": [],
+   "c_elapsed": [
+    "quantity"
+   ],
+   "c_exhausted": [
+    "quantity"
+   ],
+   "c_hands_full": [],
+   "c_hears": [
+    "concept"
+   ],
+   "c_hunger_above": [
+    "quantity"
+   ],
+   "c_pain_above": [
+    "quantity"
+   ],
+   "c_reached": [
+    "place"
+   ],
+   "c_rested": [],
+   "c_sees": [
+    "kind"
+   ],
+   "c_sees_ref": [
+    "entity"
+   ],
+   "c_state_seen": [
+    "entity",
+    "concept"
+   ],
+   "c_stopped": [],
+   "c_target_down": [
+    "entity"
+   ],
+   "c_target_gone": [
+    "entity"
+   ],
+   "c_target_still": [
+    "entity"
+   ],
+   "c_target_yields": [
+    "entity"
+   ],
+   "c_thirst_above": [
+    "quantity"
+   ],
+   "c_time": [
+    "time"
+   ],
+   "c_tool_broken": []
+  },
   "condition_head": [
    "c_addressed",
    "c_attacked",
@@ -1910,7 +2003,7 @@
       ],
       "token": [
        "ENTITY",
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV",
        "relative_direction_head"
@@ -2022,7 +2115,7 @@
        "water"
       ],
       "token": [
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "relative_direction_head"
       ]
@@ -2050,7 +2143,7 @@
       ],
       "token": [
        "ENTITY",
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "relative_direction_head"
       ]
      },
@@ -2084,7 +2177,7 @@
       ],
       "token": [
        "ENTITY",
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV",
        "relative_direction_head"
@@ -2224,7 +2317,7 @@
       ],
       "token": [
        "ENTITY",
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV"
       ]
@@ -2276,7 +2369,7 @@
        "direction"
       ],
       "token": [
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "relative_direction_head"
       ]
      }
@@ -2356,7 +2449,7 @@
        "water"
       ],
       "token": [
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV"
       ]
@@ -2452,7 +2545,7 @@
        "terrain"
       ],
       "token": [
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV"
       ]
@@ -2479,7 +2572,7 @@
       ],
       "token": [
        "ENTITY",
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV"
       ]
@@ -2568,7 +2661,7 @@
       "token": [
        "ENTITY",
        "GROUP",
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV",
        "relative_direction_head"
@@ -2592,7 +2685,7 @@
        "terrain"
       ],
       "token": [
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV"
       ]
@@ -2729,7 +2822,7 @@
        "direction"
       ],
       "token": [
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "relative_direction_head"
       ]
@@ -2823,7 +2916,7 @@
       ],
       "token": [
        "ENTITY",
-       "PLACE (here) or a known place file (@L)",
+       "PLACE (here) or LOCUS (a known place, @L)",
        "THING",
        "THING|INV",
        "relative_direction_head"
@@ -3648,6 +3741,7 @@
     "container",
     "contains",
     "coordination",
+    "count",
     "cousin",
     "cover",
     "cowardice",
@@ -3969,8 +4063,8 @@
     "r_fear",
     "r_id_certainty",
     "r_known_by",
-    "r_last_contact",
     "r_link_believed",
+    "r_name_believed",
     "r_obligation",
     "r_perceived_regard",
     "r_present",
@@ -4127,6 +4221,7 @@
     "unlock",
     "unlocks",
     "up",
+    "us",
     "usurpation",
     "v_achievement",
     "v_authority",
