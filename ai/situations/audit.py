@@ -8,9 +8,13 @@ records (apparent age, beliefs about ages, how well each person is known), and a
     records (b:, m:, g:) and perceived events (@V) unfolded from the records;
   * every EVENT passes `check_gesture`, every PLAN step too;
   * no intimate symbol (flag `intimate` of the catalogue) in any text or list field of any record;
-  * intimate fields (attraction, drive for intimacy, orientation) and intimate links only for an adult NPC and
-    toward persons who are adults by truth, appearance and belief; a drive for intimacy stays low while his
-    attention is on a possible minor;
+  * intimate fields (the ones the interface takes from an intimate variable) and intimate links only for an adult
+    NPC and toward a person he knows by sight (`known_by == "seen"`) whom the governor does not take for a possible
+    minor: adult in truth, in appearance if he is here, in the age he believes if he is not (a belief
+    `(state X age_years N)` is then in his mind); a drive for intimacy stays low while his attention is on a
+    possible minor;
+  * the table key -> person is consistent with the file (the apparent age is within a few years of the true one),
+    and a person known by description carries no name;
   * no physical quality (beautiful, ugly) said of a possible minor.
 The age of majority is the governor's (hard_rules.toml); the intimate links are read from the concept flags.
 """
@@ -27,6 +31,7 @@ import language  # noqa: E402  (path set by pools)
 TOKEN = re.compile(r"\(|\)|[^\s()]+")
 PHYSICAL = ("w_beautiful", "w_ugly")
 ATTENTION_DRIVE_CAP = 2.0
+AGE_TOLERANCE = 5.0                 # years between the apparent age in a file and the true age of the person
 PROP_KINDS = {"BELIEF": "belief", "HEARD": "belief", "MEMORY": "memory", "GOAL": "goal", "COMMIT": "agreement"}
 
 
@@ -42,8 +47,19 @@ class D10Audit:
         self.vocab = self.gov.vocab
         self.adult = float(ADULT_AGE)
         self.intimate_links = frozenset(c.id for c in cat["concept"].values() if c.category == "link" and c.intimate)
+        self.intimate_fields = self._intimate_fields(pools.interface)
         self.bad = self._intimate_symbols()
         self.parser = language.Parser()
+
+    def _intimate_fields(self, interface) -> dict[str, frozenset[str]]:
+        """token type -> its fields that come from a variable flagged intimate (read from the interface)."""
+        variables = self.cat["variable"]
+        out = {}
+        for typ, spec in interface.token_types.items():
+            names = frozenset(n for n, f in spec["fields"].items() if getattr(variables.get(f.get("from", "")), "intimate", False))
+            if names:
+                out[typ] = names
+        return out
 
     def _intimate_symbols(self) -> frozenset[str]:
         cat = self.cat
@@ -80,9 +96,10 @@ class D10Audit:
         for r in records:
             if r.type == "ENTITY":
                 truth, seen = people.get(r.key), r.fields.get("look.age")
+                here = bool(r.fields.get("present"))
                 parties[r.key] = Party(real_age=truth.age if truth is not None else None,
-                                       believed_age=believed.get(r.key, seen), apparent_age=seen,
-                                       resolved=r.fields.get("known_by") == "seen")
+                                       believed_age=believed.get(r.key, seen if here else None), apparent_age=seen,
+                                       resolved=r.fields.get("known_by") == "seen", perceived=here)
             elif r.type == "GROUP":
                 parties[r.key] = UNKNOWN
         for r in records:                                     # a name stands for the file that carries it
@@ -113,12 +130,14 @@ class D10Audit:
                 problems += self._event(rec, parties)
             elif rec.type == "PLAN":
                 problems += self._plan(rec, parties)
-            elif rec.type == "SELF_MIND" and f.get("attracted_to") and not self_adult:
-                problems.append("an NPC who may be a minor has an orientation field")
+            elif rec.type == "SELF_MIND":
+                problems += self._own_intimate_fields(rec, self_adult)
             elif rec.type == "SELF_STATE":
-                problems += self._state(rec, self_adult, parties)
+                problems += self._own_intimate_fields(rec, self_adult) + self._attention(rec, parties)
             elif rec.type == "ENTITY":
-                problems += self._entity(rec, people, self_adult)
+                problems += self._entity(rec, people, self_adult, parties)
+            elif rec.type == "TASTE":
+                problems += self._taste(rec, me)
         if problems:
             raise D10Violation("; ".join(problems))
 
@@ -206,23 +225,32 @@ class D10Audit:
         return out
 
     # ---- fields -----------------------------------------------------------------------------------------------------
-    def _state(self, rec, self_adult, parties) -> list[str]:
-        f = rec.fields
-        drive = f.get("drive.intimacy")
-        if drive is None:
-            return []
-        if not self_adult:
-            return ["an NPC who may be a minor has a drive for intimacy"]
-        att = f.get("attention")
-        if att and att.startswith("@E") and self._party(parties, att).may_be_minor() and drive > ATTENTION_DRIVE_CAP:
-            return [f"drive.intimacy {drive} while his attention is on {att}, who may be a minor"]
-        return []
+    def _own_intimate_fields(self, rec, self_adult) -> list[str]:
+        have = [n for n in self.intimate_fields.get(rec.type, ()) if rec.fields.get(n) not in (None, [])]
+        return [f"{rec.key}.{n}: an NPC who may be a minor has an intimate field" for n in have] if have and not self_adult else []
 
-    def _entity(self, rec, people, self_adult) -> list[str]:
-        f = rec.fields
-        if not (f.get("link") in self.intimate_links or f.get("rel.attraction") is not None):
-            return []
+    def _attention(self, rec, parties) -> list[str]:
+        att = rec.fields.get("attention")
+        out = []
+        if att and att.startswith("@E") and self._party(parties, att).may_be_minor():
+            for n in self.intimate_fields.get("SELF_STATE", ()):
+                if (rec.fields.get(n) or 0) > ATTENTION_DRIVE_CAP:
+                    out.append(f"{n} {rec.fields[n]} while his attention is on {att}, who may be a minor")
+        return out
+
+    def _entity(self, rec, people, self_adult, parties) -> list[str]:
+        f, out = rec.fields, []
         p, seen = people.get(rec.key), f.get("look.age")
-        if self_adult and p is not None and p.age >= self.adult and (seen is None or seen >= self.adult):
-            return []
-        return [f"{rec.key}: intimate link or attraction with a possible minor"]
+        if f.get("known_by") == "described" and f.get("name"):
+            out.append(f"{rec.key}: a person known by description carries a name")
+        if p is not None and seen is not None and abs(seen - p.age) > AGE_TOLERANCE:
+            out.append(f"{rec.key}: looks {seen} but the table says {p.age:.1f}: the key map drifted")
+        intimate = f.get("link") in self.intimate_links or any(f.get(n) is not None for n in self.intimate_fields.get("ENTITY", ()))
+        if intimate and not (self_adult and p is not None and p.age >= self.adult and f.get("known_by") == "seen"
+                             and not self._party(parties, rec.key).may_be_minor()):
+            out.append(f"{rec.key}: intimate link or attraction toward a person who is not a clear adult he knows by sight")
+        return out
+
+    def _taste(self, rec, me) -> list[str]:
+        c = rec.fields.get("concept")
+        return [f"{rec.key}: a minor's taste for a physical quality"] if c in PHYSICAL and me.age < self.adult else []

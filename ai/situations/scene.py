@@ -12,12 +12,13 @@ import math
 import random
 from dataclasses import dataclass, field, replace
 
+from governor import ADULT_AGE
+
 from .draw import Draw
 from .pools import Pools
 
-from governor import ADULT_AGE  # noqa: E402  (path set by pools)
-
 ADULT = float(ADULT_AGE)
+CHILD_WEAPON_AGE = 12.0                         # under this age a weapon is rare
 PARTNER_MARGIN = 3.0                            # an intimate partner is this far past the age of majority, both sides
 
 
@@ -36,8 +37,9 @@ class Person:
 
 # ---------------------------------------------------------------------------------------------------- people
 class PersonFactory:
-    BANDS = {"child": (3, 13.99), "teen": (14, 17.99), "adult": (18, 59.99), "elder": (60, 75)}
-    WEIGHTS = {"child": 0.18, "teen": 0.1, "adult": 0.58, "elder": 0.14}
+    BANDS = {"infant": (0.0, 2.99), "child": (3, 13.99), "teen": (14, 17.99), "adult": (18, 59.99), "elder": (60, 92)}
+    WEIGHTS = {"infant": 0.035, "child": 0.16, "teen": 0.1, "adult": 0.56, "elder": 0.145}
+    MODE = {"elder": 68.0}                      # the old are mostly in their sixties and seventies, a few past ninety
 
     def __init__(self, draw: Draw, pools: Pools):
         self.d, self.pools = draw, pools
@@ -54,7 +56,8 @@ class PersonFactory:
             a, z = cands[band]
         else:                                    # outside every band: clamp to the bounds
             a = z = min(hi, max(lo, 3.0))
-        age = round(self.d.rng.uniform(a, z), 2)
+        mode = self.MODE.get(band) if cands else None
+        age = round(self.d.rng.triangular(a, z, min(max(mode, a), z)) if mode else self.d.rng.uniform(a, z), 1)   # a tenth of a year
         pid, self._next = self._next, self._next + 1
         occ = self.d.pick(self.occupations) if age >= 16 and self.occupations and self.d.chance(0.8) else ""
         return Person(pid, age, self.d.pick(("female", "male")), self._name(), occ)
@@ -74,7 +77,7 @@ class LinkSpec:
     offset: tuple[float, float]                 # other.age - me.age
     me_min: float = 0.0
     other_min: float = 0.0
-    other_max: float = 90.0
+    other_max: float = 95.0
     minor_offset: tuple[float, float] | None = None    # tighter when the NPC is a minor
     adult_with_adult: bool = False                     # an adult NPC's other is an adult too
 
@@ -84,9 +87,9 @@ class LinkRules:
     `intimate` flag); a link the table does not know is unconstrained."""
 
     TABLE = {
-        "parent": LinkSpec((16, 45), other_max=85),
-        "grandparent": LinkSpec((34, 70), other_max=90),
-        "aunt_uncle": LinkSpec((10, 40), other_max=85),
+        "parent": LinkSpec((16, 45), other_max=90),
+        "grandparent": LinkSpec((34, 70), other_max=95),
+        "aunt_uncle": LinkSpec((10, 40), other_max=90),
         "child": LinkSpec((-45, -16)),
         "grandchild": LinkSpec((-70, -34)),
         "niece_nephew": LinkSpec((-40, -10)),
@@ -127,7 +130,7 @@ class LinkRules:
         """The range of ages the other can have, or None when the NPC cannot have such a link."""
         s = self.table.get(link)
         if s is None:
-            return 0.0, 90.0
+            return 0.0, 95.0
         if me_age < s.me_min:
             return None
         off, other_min = s.offset, s.other_min
@@ -135,7 +138,7 @@ class LinkRules:
             off = s.minor_offset
         if me_age >= ADULT and s.adult_with_adult:
             other_min = max(other_min, ADULT)
-        lo, hi = max(other_min, PersonFactory.BANDS["child"][0], me_age + off[0]), min(s.other_max, me_age + off[1])
+        lo, hi = max(other_min, me_age + off[0]), min(s.other_max, me_age + off[1])
         return (lo, hi) if lo <= hi else None
 
     def fits(self, link: str, other_age: float, me_age: float) -> bool:
@@ -190,6 +193,7 @@ class Thing:
     owner: int | None = None                    # person id (truth); the NPC may believe otherwise
     animal: bool = False
     seen_use: bool = False                      # the NPC has seen the owner hold or use it
+    held_by: int | None = None                  # person id who holds it in his hands (the thing is where he is)
 
 
 def separation(a, b) -> float:
@@ -225,26 +229,54 @@ class SceneFactory:
         self.counts: dict[str, int] = {}
 
     # ---- the scene -----------------------------------------------------------------------------------
-    def make(self) -> Scene:
+    def make(self, needs_company: bool = False) -> Scene:
+        """`needs_company`: somebody is there (a request, words or a gesture to be heard or seen need a person)."""
         rng, d = self.rng, self.d
         long = d.chance(0.3)
         hour = round(rng.uniform(0, 24), 2)
         night = hour < 5.5 or hour >= 21.5
         place = d.weighted({p.name: (p.night if night else 1.0) for p in PLACES}, allowed=[p.name for p in PLACES])
         place = next(p for p in PLACES if p.name == place)
-        self_ = self.people.make(lo=12 if long else 0)
+        self_ = self.people.make()
         scene = Scene(place, hour, d.pick(("spring", "summer", "autumn", "winter")), self_, long=long)
         n = rng.randint(8, 12) if long else rng.randint(*place.crowd)
+        if needs_company:
+            n = max(n, 1)
         for _ in range(min(n, 9)):
             other, link = self._related(self_)
             scene.present.append(Present(other, link, self._distance(), rng.uniform(-3.14, 3.14),
                                          link != "stranger" or d.chance(0.2)))
+        if needs_company and not any(x.known or x.dist < 15 for x in scene.present):
+            scene.present[0].dist, scene.present[0].known = d.uniform(1.0, 10.0), True
         for _ in range(rng.randint(3, 5) if long else rng.randint(0, 3)):
             scene.absent.append(self._related(self_, known=True))
         for _ in range(rng.randint(1, 3)):
             scene.ghosts.append(self._related(self_, known=True))
         self._things(scene, long)
+        self._cluster(scene)
         return scene
+
+    def _cluster(self, scene: Scene) -> None:
+        """People stand together and things lie within reach of somebody: some persons are moved next to another
+        (or next to the NPC), some things next to a person, so that things are done between people who are close."""
+        d, rng = self.d, self.rng
+        spots = [(0.0, 0.0)]                                                  # the NPC
+        for i, x in enumerate(scene.present):
+            spots.append((x.dist * math.cos(x.bearing), x.dist * math.sin(x.bearing)))
+            if i and d.chance(0.6):
+                spots[-1] = self._near(spots[rng.randrange(len(spots) - 1)])
+                x.dist, x.bearing = self._polar(spots[-1])
+        for t in scene.things:
+            if t.held_by is None and d.chance(0.6):
+                t.dist, t.bearing = self._polar(self._near(d.pick(spots)))
+
+    def _near(self, spot: tuple[float, float]) -> tuple[float, float]:
+        a, r = self.rng.uniform(-math.pi, math.pi), self.d.uniform(0.3, 1.4, 2)
+        return spot[0] + r * math.cos(a), spot[1] + r * math.sin(a)
+
+    @staticmethod
+    def _polar(spot: tuple[float, float]) -> tuple[float, float]:
+        return round(max(0.3, math.hypot(*spot)), 1), math.atan2(spot[1], spot[0])
 
     def _distance(self) -> float:
         d = self.d
@@ -252,21 +284,29 @@ class SceneFactory:
 
     def _things(self, scene: Scene, long: bool) -> None:
         rng, d, place, self_ = self.rng, self.d, scene.place, scene.self_
-        owners = [p.person.pid for p in scene.present] + [self_.pid]
+        by_pid = {p.person.pid: p for p in scene.present}
+        owners = list(by_pid) + [self_.pid]
         for _ in range(rng.randint(12, 16) if long else rng.randint(1, 10)):
             kinds = self.pools.items_by_category.get(d.pick(place.items))
             if not kinds:
                 continue
             owner = d.pick(owners + [None])
-            dist = d.uniform(0.3, 3.0) if d.chance(0.35) else d.uniform(3.0, 20.0)
+            dist, bearing = (d.uniform(0.3, 3.0) if d.chance(0.35) else d.uniform(3.0, 20.0)), rng.uniform(-3.14, 3.14)
             seen = owner is not None and owner != self_.pid and d.chance(0.55 if dist < 3 else 0.3)
-            scene.things.append(Thing(d.pick(kinds), dist, rng.uniform(-3.14, 3.14), owner, seen_use=seen))
+            held = None
+            if seen and owner in by_pid and d.chance(0.6):           # in his hands: where he is
+                held, dist, bearing = owner, by_pid[owner].dist, by_pid[owner].bearing
+            scene.things.append(Thing(d.pick(kinds), dist, bearing, owner, seen_use=seen, held_by=held))
         if place.habitats and (long or d.chance(0.4)):
             animals = self.pools.animals_of(place.habitats)
             if animals:
                 scene.things.append(Thing(d.pick(animals), d.uniform(2, 40), rng.uniform(-3.14, 3.14), animal=True))
+        weapons = self.pools.weapon_categories
         for _ in range(rng.randint(5, 8) if long else rng.randint(0, 4)):
-            kinds = self.pools.items_by_category.get(d.pick(("carry", "currency", "bread", "household", "blade")))
+            cat = d.pick(("carry", "currency", "bread", "household", "blade"))
+            if cat in weapons and self_.age < CHILD_WEAPON_AGE and d.chance(0.99):
+                continue                                                # a weapon on a small child is rare
+            kinds = self.pools.items_by_category.get(cat)
             if kinds:
                 scene.carried.append(d.pick(kinds))
 

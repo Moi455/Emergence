@@ -6,16 +6,11 @@ changes the situations.
 """
 from __future__ import annotations
 
-import sys
 from functools import cached_property
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "catalogue")); sys.path.insert(0, str(ROOT / "catalogue" / "tools"))
-sys.path.insert(0, str(ROOT / "ai"))
-from schema import Catalogue  # noqa: E402
-from governor import Governor  # noqa: E402
-from tok2 import ModelInterface  # noqa: E402
+from governor import Governor
+from schema import Catalogue
+from tok2 import ModelInterface
 
 
 class Pools:
@@ -42,6 +37,21 @@ class Pools:
         return frozenset(out)
 
     @cached_property
+    def intimate_links(self) -> frozenset[str]:
+        return frozenset(c.id for c in self.cat["concept"].values() if c.category == "link" and c.intimate)
+
+    @cached_property
+    def intimate_fields(self) -> dict[str, tuple[str, ...]]:
+        """token type -> the fields that carry an intimate variable (read from the interface, never listed)."""
+        out: dict[str, tuple[str, ...]] = {}
+        for typ, spec in self.interface.token_types.items():
+            names = tuple(n for n, f in spec["fields"].items()
+                          if getattr(self.cat["variable"].get(f.get("from", "")), "intimate", False))
+            if names:
+                out[typ] = names
+        return out
+
+    @cached_property
     def interpretations(self) -> list[str]:
         return sorted(self.cat["interpretation"])
 
@@ -64,6 +74,26 @@ class Pools:
         for it in sorted(self.cat["item_type"].values(), key=lambda i: i.id):
             out.setdefault(it.category, []).append(it.id)
         return out
+
+    @cached_property
+    def weapon_categories(self) -> frozenset[str]:
+        """Item categories that are arms (a blade, a blunt weapon, a polearm, a ranged weapon, ammunition)."""
+        return frozenset(c for c in self.items_by_category if c in ("blade", "blunt", "polearm", "ranged", "ammo"))
+
+    @cached_property
+    def category_of(self) -> dict[str, str]:
+        return {it.id: it.category for it in self.cat["item_type"].values()}
+
+    def item_has(self, kind: str, prop: str) -> bool:
+        """True only when the catalogue makes it CERTAIN that the item has the property (edible and drinkable are
+        read from nutrition and hydration; the rest from the perceptible vector, see item_vector)."""
+        it = self.cat["item_type"].get(kind)
+        if it is None:
+            return False
+        if prop in ("edible", "drinkable"):
+            have = set(self.cat.item_properties(it.parts, it.properties))
+            return {"edible": "nutrition", "drinkable": "hydration"}[prop] in have
+        return self.item_vector(kind).get(prop) is True
 
     @cached_property
     def animals(self) -> list[str]:

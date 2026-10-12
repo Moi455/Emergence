@@ -1,10 +1,16 @@
 """gestures.py - which gesture an event or a told deed is made of, and with what manner.
 
-Only what the catalogue allows: targets must be accepted by the gesture's first pointer, contact gestures need the
-people to be within reach, families have a realistic frequency (looking, moving and taking are common, force is
-rare), a young child rarely strikes or throws or works, and D10 is asked of the GOVERNOR (check_gesture with the
-parties of the scene): a gesture it refuses is never offered. With a person who may be a minor, a contact gesture
-carries exactly the manner values of its minor_whitelist.
+Only what the catalogue allows, and what a person could really do:
+  * the target is accepted by the gesture's first pointer AND fits its affordance (eaten: edible; drunk: drinkable;
+    read: something written; thrown: throwable; worn: wearable; mounted: a mount...), see `Affordances`;
+  * a gesture that holds or uses its target needs the two to be within reach (the object is in the hands, or within
+    2 m); looking, listening and going do not;
+  * each gesture has a frequency of its own (going, looking, taking and working are common, force is rare), a young
+    child rarely strikes, throws or works, a baby only does what a baby does;
+  * what is SEEN of it follows the gesture's own `perceptibility` (seen, heard, or both);
+  * D10 is asked of the GOVERNOR (check_gesture with the parties of the scene): a gesture it refuses is never
+    offered. With a person who may be a minor, a contact gesture carries exactly the manner values of its
+    minor_whitelist, drawn toward hands, arms and shoulders.
 """
 from __future__ import annotations
 
@@ -15,8 +21,52 @@ from governor import Party
 from .draw import Draw
 from .pools import Pools
 
-REACH = 2.0                                     # metres: a contact gesture needs the two to be this close
+REACH = 2.0                                     # metres: a gesture that holds or uses its target needs this
 YOUNG = 8.0                                     # years: below, the child strikes, throws and works rarely
+INFANT = 3.0                                    # years: below, a baby looks, listens, sleeps, feeds and sits up
+MOUNTS = ("horse", "donkey", "camel", "ox")     # domestic species one can ride (no `mountable` flag on species yet)
+
+# how common each gesture is among the things people do in sight (no family weights: going and looking are not
+# everything people do)
+BASE_WEIGHT = {
+    "go": 0.45, "look": 0.35, "listen": 0.2, "examine": 0.5, "search": 0.3, "read": 1.0,
+    "take": 1.6, "put": 1.0, "give": 1.0, "throw": 0.4, "pour": 0.4, "wear": 0.4, "operate": 1.5,
+    "strike": 0.03, "push": 0.025, "pull": 0.025, "grab": 0.02, "guard": 0.01,
+    "scoop": 1.0, "work": 2.5, "tie": 1.0, "blow": 0.4, "shape": 1.0, "channel": 0.1,
+    "eat": 2.5, "drink": 2.5, "sleep": 0.3, "rest": 0.4, "touch": 0.12,
+    "set_posture": 0.8, "mount": 0.15, "climb": 0.2, "jump": 0.2, "swim": 0.1, "wait": 0.3, "stop": 0.2,
+}
+YOUNG_FACTOR_FAMILY = {"tool": 0.05, "transform": 0.05, "force": 0.15}
+YOUNG_FACTOR_GESTURE = {"throw": 0.15}
+INFANT_GESTURES = ("look", "listen", "sleep", "rest", "set_posture", "eat", "drink")
+AGENT_FACTOR = {"take": 0.2, "put": 0.2, "wear": 0.3, "examine": 0.5, "go": 0.5, "look": 0.6, "listen": 0.6, "touch": 1.0}     # these are mostly done to things
+# reaching a person or a thing: these need the two to be close
+NEEDS_REACH_FAMILIES = ("grasp", "force", "tool", "transform", "consume", "care")
+NEEDS_REACH = ("read", "mount", "climb", "write", "search", "examine", "sleep", "operate")
+NO_REACH = ("guard",)
+# item categories that make a target fit a gesture when the perceptible vector does not say it
+CATEGORIES = {
+    "read": ("writing",), "write": ("writing",),
+    "wear": ("clothing", "headwear", "footwear", "armor", "jewel"),
+    "operate": ("security", "fire", "pottery", "vehicle", "husbandry", "mining", "glass"),
+    "scoop": ("grain", "seed", "produce", "raw_mineral", "raw_stone", "preserve"),
+    "work": ("raw_wood", "raw_stone", "metal_stock", "leather", "fiber", "building", "pottery", "farming"),
+    "tie": ("binding", "fiber", "vehicle", "container", "raw_wood"),
+    "blow": ("fire", "glass"), "shape": ("raw_wood", "raw_stone", "metal_stock", "pottery", "fiber", "leather"),
+    "channel": ("magic_stock", "magic_tool"), "sleep": ("textile", "furniture"),
+}
+# the gestures only done to things (not to persons or animals)
+ONLY_ITEMS = ("eat", "drink", "read", "write", "wear", "operate", "scoop", "work", "shape", "channel", "blow", "pour",
+              "throw", "sleep")
+ZONE_WEIGHT = {"hands": 3.0, "hand": 3.0, "arms": 2.5, "arm": 2.5, "shoulder": 2.5, "back": 0.8, "head": 0.6,
+               "legs": 0.3, "collar": 0.3, "hair": 0.3}              # an adult touching a child: hands, arms, shoulder
+
+
+@dataclass(frozen=True)
+class Target:
+    """What a gesture is done to: its class (agent, animal, item, place) and, for a thing, its kind."""
+    cls: str
+    kind: str | None = None
 
 
 @dataclass(frozen=True)
@@ -26,59 +76,117 @@ class Choice:
     params: dict = field(default_factory=dict, compare=False)
 
 
+class Affordances:
+    """Whether a target can be the target of a gesture."""
+
+    def __init__(self, pools: Pools):
+        self.pools = pools
+        self.actions = pools.cat["action"]
+        self.first_ref = {g: next((p.name for p in a.params if p.type == "ref"), None) for g, a in self.actions.items()}
+        # the catalogue's own requirement on the target (graspable, throwable, contains...)
+        self.requires = {g: a.requires.get(self.first_ref[g]) for g, a in self.actions.items()}
+
+    def ok(self, g: str, t: Target) -> bool:
+        if t.cls == "agent":
+            return g not in ONLY_ITEMS and g != "tie"
+        if t.cls == "animal":
+            return t.kind in MOUNTS if g == "mount" else g not in ONLY_ITEMS and g != "take"
+        if t.cls != "item":
+            return g not in ONLY_ITEMS
+        kind, pools = t.kind, self.pools
+        need = self.requires[g]
+        if need and kind and not pools.item_has(kind, need):
+            return False
+        if g == "eat":
+            return pools.item_has(kind, "edible")
+        if g == "drink":
+            return pools.item_has(kind, "drinkable")
+        if g in CATEGORIES:
+            return pools.category_of.get(kind) in CATEGORIES[g]
+        if g in ("mount", "guard", "grab", "touch"):
+            return False
+        return True
+
+
 class GestureChooser:
-    FAMILY_WEIGHT = {"perceive": 5.0, "move": 5.0, "grasp": 4.0, "posture": 1.2, "consume": 1.8, "tool": 1.5,
-                     "transform": 0.6, "care": 0.7, "force": 0.45, "meta": 0.3}
-    YOUNG_FACTOR = {"tool": 0.05, "transform": 0.05, "force": 0.15}
-    YOUNG_RARE = ("throw",)
     ATTEMPTS = 14
 
     def __init__(self, pools: Pools):
         self.pools, self.gov = pools, pools.governor
         self.actions = pools.cat["action"]
-        # class of target -> family -> gestures whose first pointer accepts it; targetless ones apart
-        self.by_class: dict[str, dict[str, list[str]]] = {}
-        self.targetless: dict[str, list[str]] = {}
+        self.affordances = Affordances(pools)
+        # class of target -> gestures whose first pointer accepts it; targetless ones apart
+        self.by_class: dict[str, list[str]] = {}
+        self.targetless: list[str] = []
         for fam, ids in pools.gestures.items():
             if fam == "communicate":
                 continue
             for g in ids:
                 ref = next((p for p in self.actions[g].params if p.type == "ref"), None)
                 if ref is None:
-                    self.targetless.setdefault(fam, []).append(g)
+                    self.targetless.append(g)
                 for cls in (ref.accepts if ref else []):
-                    self.by_class.setdefault(cls, {}).setdefault(fam, []).append(g)
+                    self.by_class.setdefault(cls, []).append(g)
+
+    # ---- what a gesture asks of the scene -------------------------------------------------------------------
+    def needs_reach(self, g: str) -> bool:
+        a = self.actions[g]
+        return g not in NO_REACH and (a.contact or a.family in NEEDS_REACH_FAMILIES or g in NEEDS_REACH)
+
+    def senses(self, g: str) -> dict[str, float]:
+        """What is perceived of a gesture, from its `perceptibility` text (seen, heard, or both: the first named is
+        the more likely)."""
+        text = self.actions[g].perceptibility
+        found = sorted((text.find(w), s) for w, s in (("vu", "seen"), ("entendu", "heard")) if w in text)
+        if len(found) == 2:
+            return {found[0][1]: 0.72, found[1][1]: 0.28}
+        return {found[0][1]: 1.0} if found else {"seen": 1.0}
 
     # ---- the choice ---------------------------------------------------------------------------------------
-    def pick(self, d: Draw, cls: str | None, actor: Party, target: Party | None, contact_ok: bool = True,
-             young: bool = False, with_manner: bool = True) -> Choice | None:
-        """A gesture (and the manner seen) done by `actor` to a target of class `cls` (None: no target) that the
-        governor allows; None when nothing fits. with_manner=False: a bare gesture (a plan step has no manner)."""
-        pool = self.targetless if cls is None else self.by_class.get(cls, {})
+    def pick(self, d: Draw, target: Target | None, actor: Party, target_party: Party | None, reach_ok: bool = True,
+             age: float = 30.0, with_manner: bool = True) -> Choice | None:
+        """A gesture (and the manner seen) done by `actor` (of this age) to the target that the governor allows;
+        None when nothing fits. with_manner=False: a bare gesture (a plan step has no manner)."""
+        pool = self.targetless if target is None else self.by_class.get(target.cls, [])
         for attempt in range(self.ATTEMPTS):
-            ok_contact = contact_ok and attempt < self.ATTEMPTS - 3          # the last attempts renounce contact
-            g = self._draw(d, pool, ok_contact, young)
+            reach = reach_ok and attempt < self.ATTEMPTS - 3                 # the last attempts renounce reaching
+            g = self._draw(d, pool, target, reach, age)
             if g is None:
                 continue
             a = self.actions[g]
-            restricted = actor.may_be_minor() or bool(target is not None and target.may_be_minor())
+            restricted = actor.may_be_minor() or bool(target_party is not None and target_party.may_be_minor())
             manner = self._manners(d, a, restricted) if with_manner else []
             params = dict(manner)
-            ref = next((p.name for p in a.params if p.type == "ref"), None)
-            parties = {ref: target} if ref is not None and target is not None else {}
+            ref = self.affordances.first_ref[g]
+            parties = {ref: target_party} if ref is not None and target_party is not None else {}
             if self.gov.check_gesture(g, params, actor, parties).allowed:
                 return Choice(g, tuple(v for _, v in manner), params)
         return None
 
-    def _draw(self, d: Draw, pool: dict, contact_ok: bool, young: bool) -> str | None:
-        fams = {f: gs for f, gs in pool.items() if (contact_ok or any(not self.actions[g].contact for g in gs))}
-        if not fams:
-            return None
-        weights = {f: self.FAMILY_WEIGHT.get(f, 1.0) * (self.YOUNG_FACTOR.get(f, 1.0) if young else 1.0) for f in fams}
-        fam = d.weighted(weights, allowed=list(fams))
-        gs = [g for g in fams[fam] if contact_ok or not self.actions[g].contact]
-        g = d.pick(gs)
-        return None if young and g in self.YOUNG_RARE and d.chance(0.85) else g
+    def permits(self, g: str, target: Target | None, actor: Party, target_party: Party | None) -> bool:
+        """Can this bare gesture (no manner) be done to this target by this actor? Used for plan steps."""
+        a = self.actions.get(g)
+        if a is None:
+            return False
+        ref = next((p for p in a.params if p.type == "ref"), None)
+        if target is not None and ref is not None and (target.cls not in ref.accepts or not self.affordances.ok(g, target)):
+            return False
+        parties = {ref.name: target_party} if ref is not None and target_party is not None else {}
+        return self.gov.check_gesture(g, {}, actor, parties).allowed
+
+    def _draw(self, d: Draw, pool: list[str], target: Target | None, reach: bool, age: float) -> str | None:
+        cands = [g for g in pool if (reach or not self.needs_reach(g)) and (target is None or self.affordances.ok(g, target))]
+        if age < INFANT:
+            cands = [g for g in cands if g in INFANT_GESTURES]
+        weights = {}
+        for g in cands:
+            w = BASE_WEIGHT.get(g, 0.3)
+            if age < YOUNG:
+                w *= YOUNG_FACTOR_FAMILY.get(self.actions[g].family, 1.0) * YOUNG_FACTOR_GESTURE.get(g, 1.0)
+            if target is not None and target.cls == "agent":
+                w *= AGENT_FACTOR.get(g, 1.0)
+            weights[g] = w
+        return d.weighted(weights, allowed=cands) if cands else None
 
     def _manners(self, d: Draw, a, restricted: bool) -> list[tuple[str, str]]:
         """(parameter, value) pairs as far as they are SEEN: at most one value per parameter, of at most two
@@ -91,7 +199,7 @@ class GestureChooser:
                 p = next((x for x in enums if x.name == pn), None)
                 vals = [v for v in (allowed if p is None else clean(p)) if p is None or v in allowed]
                 if vals:
-                    out.append((pn, d.pick(vals)))
+                    out.append((pn, d.weighted(ZONE_WEIGHT, allowed=vals)))
             return out
         out = []
         for p in d.sample(enums, 2):

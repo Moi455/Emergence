@@ -17,10 +17,15 @@ from dataclasses import dataclass, field
 from tok2 import DecisionContext, Encoded, Tokenizer
 
 from .audit import D10Audit
+from .builders import WAKE_CAUSES
+from .draw import Draw
 from .mind import MindBuilder
 from .pools import Pools
-from .propositions import PropositionFactory
+from .propositions import PropositionGrammar
 from .scene import Person, Scene, SceneFactory
+
+
+NEEDS_COMPANY = ("perception", "speech", "request")      # words and gestures need somebody there
 
 
 @dataclass
@@ -37,15 +42,17 @@ class SituationSampler:
     def __init__(self, seed: int = 0, pools: Pools | None = None):
         self.seed = seed
         self.pools = pools or Pools()
-        self.props = PropositionFactory(random.Random(0), self.pools)       # its vocabulary is built once
-        self.tokenizer = Tokenizer(self.pools.interface, grammar=self.props.vocab)
+        self.grammar = PropositionGrammar(self.pools)               # the vocabulary and the chooser: built once
+        self.tokenizer = Tokenizer(self.pools.interface, grammar=self.grammar.vocab)
         self.audit = D10Audit(self.pools)
-        self.minds = MindBuilder(self.pools, self.props)            # builders are built once and reused
+        self.minds = MindBuilder(self.pools, self.grammar)          # builders are built once and reused
+        self.stats = self.grammar.stats
 
     def sample(self, index: int) -> Situation:
         rng = random.Random(f"situation:{self.seed}:{index}")
-        scene = SceneFactory(rng, self.pools, self.props.rules).make()
-        mind = self.minds.build(scene, rng)
+        cause = Draw(rng).weighted(WAKE_CAUSES)                      # why he wakes comes first; the rest justifies it
+        scene = SceneFactory(rng, self.pools, self.grammar.rules).make(needs_company=cause in NEEDS_COMPANY)
+        mind = self.minds.build(scene, rng, cause)
         self.audit.check(scene.self_, mind.records, mind.people)
         ctx = DecisionContext(mind.records, known_keys=mind.known_keys())
         return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx), mind.people)
@@ -70,7 +77,7 @@ def main(argv=None):
         tokens.append(sit.encoded.n)
         per_type.update(r.type for r in sit.context.records)
     dt = (time.perf_counter() - t0) / a.n
-    made, dropped, refused = s.props.made, s.props.dropped, s.props.refused
+    made, dropped, refused = s.stats.made, s.stats.invalid, s.stats.refused
     print(f"{a.n} situations, {dt * 1000:.1f} ms each; tokens min {min(tokens)} mean {sum(tokens) / len(tokens):.1f} "
           f"max {max(tokens)}; propositions kept {made}, invalid {dropped} ({dropped / max(1, made + dropped + refused):.2%}), "
           f"refused by the governor {refused} ({refused / max(1, made + dropped + refused):.2%})")

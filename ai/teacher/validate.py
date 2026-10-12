@@ -105,27 +105,28 @@ class TruthSource:
 
 
 class SceneTruth(TruthSource):
-    """Maps @E keys to the true ages of the scene. situations.mind assigns @E<i> in the order present(known or
-    near) then absent, cut at the ENTITY budget; the mapping is rebuilt here and cross-checked against the names in
-    the records (names, and the apparent age against the true one), so a change in the sampler is detected instead
-    of silently giving wrong ages."""
+    """Maps the NPC's keys to the true people of the scene. The key -> person table is the sampler's own
+    (`Situation.people`); it is cross-checked against the names and the apparent ages in the records, so a drift
+    between the table and the files is detected instead of silently giving wrong ages. Without a table (a scene
+    built by hand) the old order is rebuilt: present (known or near), then absent, cut at the ENTITY budget."""
 
     AGE_TOLERANCE = 5.0         # the sampler blurs a seen age by at most 4 years
 
-    def __init__(self, scene, records, entity_budget: int):
-        self.people: dict[str, object] = {"me": scene.self_}
-        self.ages: dict[str, float] = {"me": scene.self_.age}
-        people = [x.person for x in scene.present if x.known or x.dist < 15] + [p for p, _ in scene.absent]
-        for i, person in enumerate(people[:entity_budget]):
-            key = f"@E{i + 1}"
+    def __init__(self, scene, records, entity_budget: int, people: dict | None = None):
+        if people is None:
+            order = [x.person for x in scene.present if x.known or x.dist < 15] + [p for p, _ in scene.absent]
+            people = {"me": scene.self_} | {f"@E{i + 1}": p for i, p in enumerate(order[:entity_budget])}
+        self.people: dict[str, object] = dict(people)
+        self.ages: dict[str, float] = {k: p.age for k, p in self.people.items()}
+        for key, person in self.people.items():
             rec = next((r for r in records if r.key == key), None)
-            if rec is not None and rec.fields.get("name") not in (None, person.name):
+            if rec is None or rec.type != "ENTITY":
+                continue
+            if rec.fields.get("name") not in (None, person.name):
                 raise TruthError(f"{key}: record name {rec.fields.get('name')} != scene name {person.name}")
-            seen = rec.fields.get("look.age") if rec is not None else None
+            seen = rec.fields.get("look.age")
             if seen is not None and abs(seen - person.age) > self.AGE_TOLERANCE:      # strangers carry no name to compare
                 raise TruthError(f"{key}: looks {seen} but the scene person is {person.age}: the key map drifted")
-            self.ages[key] = person.age
-            self.people[key] = person
 
     def real_age(self, key: str) -> float | None:
         return self.ages.get(key)
@@ -466,7 +467,8 @@ class AnswerValidator:
         self.truth_factory = truth_factory or self._scene_truth
 
     def _scene_truth(self, situation) -> TruthSource:
-        return SceneTruth(situation.scene, situation.context.records, self.tk.interface.token_types["ENTITY"]["count"])
+        return SceneTruth(situation.scene, situation.context.records, self.tk.interface.token_types["ENTITY"]["count"],
+                          getattr(situation, "people", None) or None)
 
     def validate(self, text: str, situation) -> Outcome:
         why = ""

@@ -1,9 +1,10 @@
 """mind.py - the NPC's mind in a scene: the records tok-2 reads (what he perceives, believes, remembers, wants).
 
-Built from the TRUE scene with noise and ignorance: apparent ages are guessed, owners are believed, absent people
-are remembered. A numeric field the scene says nothing about gets a plausible value drawn from its scale only
-(NumericPrior): no meaning is invented. D10: intimate fields (attraction, drive for intimacy, sexual orientation)
-exist only for an adult NPC, toward a person who is an adult by truth, appearance and belief.
+Built from the TRUE scene with noise and ignorance: apparent ages are guessed, owners are believed, people are
+mistaken, absent people are remembered. A numeric field the scene says nothing about gets a plausible value drawn
+from its scale only (NumericPrior): no meaning is invented. D10: intimate fields (attraction, drive for intimacy,
+sexual orientation) exist only for an adult NPC, toward a person he sees who is an adult by truth and appearance
+(or whom he believes an adult, if absent).
 
 One builder per kind of record (builders.py); MindBuilder runs them in order and returns a `Mind`.
 """
@@ -14,11 +15,11 @@ from dataclasses import dataclass, field
 
 from tok2 import Record
 
-from .builders import (BeliefBuilder, BuildContext, EventBuilder, GoalBuilder, MemoryBuilder, PersonBuilder,
-                       PlaceBuilder, SelfBuilder, SkillBuilder, SocialBuilder, StateBuilder, ThingBuilder,
-                       WakeBuilder)
+from .builders import (BeliefBuilder, EventBuilder, GoalBuilder, MemoryBuilder, PersonBuilder, PlaceBuilder,
+                       SelfBuilder, SkillBuilder, SocialBuilder, StateBuilder, ThingBuilder, WakeBuilder)
+from .context import BuildContext
 from .pools import Pools
-from .propositions import PropositionFactory
+from .propositions import PropositionGrammar
 from .scene import Person, Scene
 
 # the order of the records in the context (the tokenizer groups them by type anyway)
@@ -39,18 +40,16 @@ class Mind:
 
 
 class MindBuilder:
-    # SELF_STATE needs the events and the body; WAKE needs everything: this is the order of construction
+    # the order matters: SELF_STATE needs the events and the body, WAKE needs everything
     PIPELINE = (SelfBuilder, PersonBuilder, ThingBuilder, PlaceBuilder, EventBuilder, BeliefBuilder, MemoryBuilder,
                 SocialBuilder, GoalBuilder, SkillBuilder, StateBuilder, WakeBuilder)
 
-    def __init__(self, pools: Pools, props: PropositionFactory):
-        self.pools, self.props = pools, props
+    def __init__(self, pools: Pools, grammar: PropositionGrammar):
+        self.pools, self.grammar = pools, grammar
         self.builders = [b() for b in self.PIPELINE]                 # built once, reused for every situation
 
-    def build(self, scene: Scene, rng: random.Random) -> Mind:
-        c = BuildContext(rng, self.pools, self.props, self.props.chooser, scene)
+    def build(self, scene: Scene, rng: random.Random, cause: str = "routine") -> Mind:
+        c = BuildContext(rng, self.pools, self.grammar, scene, cause)
         for b in self.builders:
             b.build(c)
-        records = [r for t in TYPE_ORDER for r in c.of(t)]
-        people = {"me": scene.self_} | {e.key: e.person for e in c.entries} | {g.key: g.person for g in c.ghosts}
-        return Mind(records, people, [g.key for g in c.ghosts])
+        return Mind(c.records.ordered(TYPE_ORDER), c.layout.people(scene.self_), [g.key for g in c.layout.ghosts])

@@ -19,15 +19,18 @@ class PartyBook:
         self.truth: dict[str, Person] = {"me": me}
         self.parties: dict[str, Party] = {"me": Party(real_age=me.age, believed_age=me.age, apparent_age=me.age, resolved=True)}
 
-    def add_person(self, key: str, person: Person, entity_fields: dict | None) -> None:
-        """A person of the NPC's mind: `entity_fields` are the fields of his ENTITY record (None: a ghost, no file)."""
+    def add_person(self, key: str, person: Person, entity_fields: dict | None, believed_age: float | None = None) -> None:
+        """A person of the NPC's mind: `entity_fields` are the fields of his ENTITY record (None: a ghost, no file).
+        A person who is not here is not perceived: no apparent age to check, but the age the NPC believes (a belief
+        `(state X age_years N)`) and the real age must be adult."""
         self.truth[key] = person
         if entity_fields is None:
             self.parties[key] = UNKNOWN
             return
         seen = entity_fields.get("look.age")
-        self.parties[key] = Party(real_age=person.age, believed_age=seen, apparent_age=seen,
-                                  resolved=entity_fields.get("known_by") == "seen")
+        here = bool(entity_fields.get("present"))
+        self.parties[key] = Party(real_age=person.age, believed_age=believed_age if believed_age is not None else (seen if here else None), apparent_age=seen,
+                                  resolved=entity_fields.get("known_by") == "seen", perceived=here)
 
     def party(self, key: str) -> Party:
         if key in self.parties:
