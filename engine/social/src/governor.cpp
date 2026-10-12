@@ -34,7 +34,7 @@ Verdict refuse(Reason r) { return {false, 0, r}; }
 bool Party::may_be_minor() const {
   if (!person) return false;
   if (!resolved) return true;
-  for (std::int16_t a : {real_age, believed_age, apparent_age})
+  for (std::int16_t a : {real_age, believed_age, perceived ? apparent_age : static_cast<std::int16_t>(kAdultTenths)})
     if (a < 0 || a < kAdultTenths) return true;     // unknown counts as minor (deny by default)
   return false;
 }

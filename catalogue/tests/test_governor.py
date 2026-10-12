@@ -191,6 +191,14 @@ class TestGovernor(unittest.TestCase):
         seen = language.Expression("(assert (past (did @E2 touch @E3 (how romantic))))", vocab)
         self.assertEqual(self.g.check_utterance(e, ADULT, adults, [CHILD], expand=lambda r: seen).code, "d10_hearer")
 
+    def test_an_absent_person_needs_no_apparent_age(self):
+        """Review 18: someone not perceived has no apparent age; the real and the believed age still decide."""
+        self.assertFalse(Party(30, 30, None, True, perceived=False).may_be_minor())
+        self.assertTrue(Party(9, 9, None, True, perceived=False).may_be_minor())
+        self.assertTrue(Party(30, None, None, True, perceived=False).may_be_minor())
+        self.assertTrue(Party(30, 30, None, False, perceived=False).may_be_minor())
+        self.assertTrue(Party(30, 30, None, True).may_be_minor())                # perceived: an apparent age is needed
+
     def test_a_new_ledger_adopts_the_clock(self):
         led = WriteLedger()
         led.roll(1500, 120)                                           # an NPC whose ledger starts late

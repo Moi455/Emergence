@@ -24,6 +24,7 @@ struct Party {
   std::int16_t apparent_age = -1;   // what the actor perceives
   bool resolved = false;            // tied to a seen, recognised person (not known only by name or description)
   bool person = true;               // false = a thing (a stone, a house): never a minor, never a party of D10
+  bool perceived = true;            // false = absent: no apparent age to check; real and believed must be adult
 
   bool may_be_minor() const;
 

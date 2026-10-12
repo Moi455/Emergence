@@ -61,13 +61,16 @@ class Party:
     apparent_age: float | None = None      # what the actor perceives (ep_age)
     resolved: bool = False                 # tied to a seen, recognised person
     person: bool = True
+    perceived: bool = True                 # False: not perceived now (absent): there is no apparent age to check,
+                                           # the real age (engine) and the believed age must still be adult (review 18)
 
     def may_be_minor(self) -> bool:
         if not self.person:
             return False
         if not self.resolved:
             return True
-        for a in (self.real_age, self.believed_age, self.apparent_age):
+        ages = (self.real_age, self.believed_age, self.apparent_age) if self.perceived else (self.real_age, self.believed_age)
+        for a in ages:
             t = age_tenths(a)
             if t < 0 or t < ADULT_AGE * 10:
                 return True
