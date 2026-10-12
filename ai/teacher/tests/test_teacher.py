@@ -635,6 +635,25 @@ class PilotTests(unittest.TestCase):
         self.assertTrue((self.out.path / "responses.jsonl").exists())
         self.assertIn("by_family", s)
 
+    def test_dataset_file_has_only_valid_answers_with_keys_and_header(self):
+        run, _ = self.pilot([good, garbage, good])
+        run.run(3)
+        from teacher.dataset import FILE_NAME, DatasetFile, LabelRecord
+        recs = list(DatasetFile(self.out.path / FILE_NAME))
+        self.assertEqual(len(recs), 2)                                       # the garbage answer is not a label
+        r = recs[0]
+        self.assertEqual(r.decision["gesture"], "wait")
+        self.assertEqual(r.verdict, "ok")
+        self.assertEqual(r.source["index"], 0)
+        self.assertEqual(r.source["seed"], 1)
+        self.assertIn("teacher", r.source)
+        tok = run.sampler.tokenizer
+        self.assertEqual(r.context["header"], tok.header())                 # fingerprints travel with the line
+        ctx = DecisionContext.loads(json.dumps(r.context), tok)              # and the context loads back
+        self.assertEqual(tok.encode(ctx).digest(), run.sampler.sample(0).encoded.digest())
+        self.assertNotIn("why", r.to_line())                                 # the teacher's prose is not state
+        self.assertEqual(LabelRecord.from_line(r.to_line()), r)
+
     def test_dry_run_writes_files_and_sizes(self):
         info = DryRun(TK, DecisionSchema(TK, "full"), RENDERER, SituationSampler(0)).run(3, self.out)
         for name in ("system.txt", "schema.gemini.json", "schema.json", "grammar.gbnf", "sizes.json", "prompts/0002.txt"):

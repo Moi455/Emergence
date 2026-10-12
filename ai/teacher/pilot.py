@@ -6,7 +6,8 @@
     python3 -m teacher.pilot --call --list-models     lists the models the key can use (network, free)
     python3 -m teacher.pilot --call --n 20            REAL CALLS (quota of the free tier; needs Monsieur's agreement)
 
-Outputs go OUTSIDE the repository. The key is read from GEMINI_API_KEY, else ~/.config/emergence/API_Keys, and is
+A real run writes responses.jsonl (everything) and dataset.jsonl (valid answers only: the student's labels, see
+teacher/dataset.py). Outputs go OUTSIDE the repository. The key is read from GEMINI_API_KEY, else ~/.config/emergence/API_Keys, and is
 never printed, logged or written.
 """
 from __future__ import annotations
@@ -22,6 +23,7 @@ from pathlib import Path
 
 from situations.sampler import SituationSampler
 
+from .dataset import FILE_NAME as DATASET_FILE, LabelRecord
 from .gemini import (ApiKeyError, ApiKeyLoader, ApiResult, GeminiClient, ModelCatalog, QuotaBook, QuotaTable,
                      RateLimiter, Redactor)
 from .render import SituationRenderer
@@ -196,6 +198,8 @@ class PilotRun:
                 rec.update(raw="", code="no_text", detail=r.finish, why="", decision=None, gesture="", family="")
             self.records.append(rec)
             self.out.append("responses.jsonl", json.dumps(rec, ensure_ascii=False))
+            if rec["code"] == "ok":                               # the training file: only valid answers, records by key
+                self.out.append(DATASET_FILE, LabelRecord.build(self.sampler.tokenizer, sit, o, model).to_line())
             self.log(f"[{i}] {model} {rec['latency_s']}s -> {rec['code']} {rec['gesture']}")
             self.unusable = self.unusable + 1 if rec["code"] in ("no_text", "truncated", "invalid_json") else 0
             if self.unusable >= self.MAX_UNUSABLE:
