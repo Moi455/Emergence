@@ -12,7 +12,7 @@ import argparse
 import random
 import time
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from tok2 import DecisionContext, Encoded, Tokenizer
 
@@ -20,7 +20,7 @@ from .audit import D10Audit
 from .mind import MindBuilder
 from .pools import Pools
 from .propositions import PropositionFactory
-from .scene import Scene, SceneFactory
+from .scene import Person, Scene, SceneFactory
 
 
 @dataclass
@@ -30,6 +30,7 @@ class Situation:
     scene: Scene
     context: DecisionContext
     encoded: Encoded
+    people: dict[str, Person] = field(default_factory=dict)    # key ('me', @E1…, ghosts) -> the TRUE person behind it
 
 
 class SituationSampler:
@@ -39,16 +40,15 @@ class SituationSampler:
         self.props = PropositionFactory(random.Random(0), self.pools)       # its vocabulary is built once
         self.tokenizer = Tokenizer(self.pools.interface, grammar=self.props.vocab)
         self.audit = D10Audit(self.pools)
+        self.minds = MindBuilder(self.pools, self.props)            # builders are built once and reused
 
     def sample(self, index: int) -> Situation:
         rng = random.Random(f"situation:{self.seed}:{index}")
-        self.props.rng = rng
-        scene = SceneFactory(rng, self.pools).make()
-        builder = MindBuilder(rng, self.pools, self.props)
-        records = builder.build(scene)
-        self.audit.check(scene.self_, records, builder.people)
-        ctx = DecisionContext(records, known_keys=[r.key for r in records] + builder.extra_known)
-        return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx))
+        scene = SceneFactory(rng, self.pools, self.props.rules).make()
+        mind = self.minds.build(scene, rng)
+        self.audit.check(scene.self_, mind.records, mind.people)
+        ctx = DecisionContext(mind.records, known_keys=mind.known_keys())
+        return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx), mind.people)
 
 
 def main(argv=None):
@@ -70,9 +70,10 @@ def main(argv=None):
         tokens.append(sit.encoded.n)
         per_type.update(r.type for r in sit.context.records)
     dt = (time.perf_counter() - t0) / a.n
-    made, dropped = s.props.made, s.props.dropped
+    made, dropped, refused = s.props.made, s.props.dropped, s.props.refused
     print(f"{a.n} situations, {dt * 1000:.1f} ms each; tokens min {min(tokens)} mean {sum(tokens) / len(tokens):.1f} "
-          f"max {max(tokens)}; propositions kept {made}, dropped {dropped} ({dropped / max(1, made + dropped):.0%})")
+          f"max {max(tokens)}; propositions kept {made}, invalid {dropped} ({dropped / max(1, made + dropped + refused):.2%}), "
+          f"refused by the governor {refused} ({refused / max(1, made + dropped + refused):.2%})")
     print("records per situation: " + ", ".join(f"{t} {c / a.n:.1f}" for t, c in sorted(per_type.items())))
 
 

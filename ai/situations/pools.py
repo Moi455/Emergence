@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "catalogue")); sys.path.insert(0, str(ROOT / "catalogue" / "tools"))
 sys.path.insert(0, str(ROOT / "ai"))
 from schema import Catalogue  # noqa: E402
+from governor import Governor  # noqa: E402
 from tok2 import ModelInterface  # noqa: E402
 
 
@@ -21,6 +22,10 @@ class Pools:
     def __init__(self, cat: Catalogue | None = None, interface: ModelInterface | None = None):
         self.cat = cat or Catalogue.load()
         self.interface = interface or ModelInterface()
+
+    @cached_property
+    def governor(self) -> Governor:
+        return Governor(self.cat)
 
     # ---- the language ---------------------------------------------------------------------------
     def concepts(self, category: str) -> list[str]:
