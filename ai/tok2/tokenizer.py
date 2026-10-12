@@ -22,7 +22,7 @@ from .errors import TokenError
 from .interface import InputVocabulary, ModelInterface, canonical_json
 from .keys import is_key, is_name
 from .layout import Layout
-from .proposition import Grammar, PropositionEncoder
+from .proposition import Grammar, PropositionEncoder, canonical_proposition
 
 if TYPE_CHECKING:
     from .registry import Registry
@@ -30,10 +30,14 @@ if TYPE_CHECKING:
 CONTEXT_SCHEMA = "tok2-context-1"
 
 
-def _plain(v, where: str):
+MAX_NESTING = 32
+
+
+def _plain(v, where: str, depth: int = 0):
     """A value as plain JSON (numpy scalars and tuples unwrapped, parsed propositions printed)."""
-    from .proposition import unparse
     from language import Node
+    if depth > MAX_NESTING:
+        raise TokenError(f"{where}: nested more than {MAX_NESTING} levels")
     if isinstance(v, np.generic):
         v = v.item()
     if v is None or isinstance(v, (bool, int, str)):
@@ -43,13 +47,17 @@ def _plain(v, where: str):
             raise TokenError(f"{where}: a non-finite number cannot be serialized")
         return v
     if isinstance(v, Node):
-        return unparse(v)
+        text = canonical_proposition(v)
+        if not isinstance(text, str):
+            raise TokenError(f"{where}: a proposition nested too deeply to print")
+        return text
     if isinstance(v, (list, tuple)):
-        return [_plain(x, where) for x in v]
+        return [_plain(x, where, depth + 1) for x in v]
     if isinstance(v, dict):
         if not all(isinstance(k, str) for k in v):
             raise TokenError(f"{where}: dict keys must be strings")
-        return {k: _plain(x, where) for k, x in v.items()}
+        return {k: _plain(x, where, depth + 1) if k != "prop" else canonical_proposition(_plain(x, where, depth + 1))
+                for k, x in v.items()}
     raise TokenError(f"{where}: {type(v).__name__} cannot be serialized")
 
 
@@ -63,12 +71,22 @@ class Record:
     fields: dict = field(default_factory=dict)    # field name -> value
 
     def to_dict(self) -> dict:
-        return {"type": self.type, "key": self.key, "fields": _plain(self.fields, f"{self.type} {self.key}")}
+        """Plain JSON. A proposition (the field `prop`) is written in its canonical form: re-serialised from its
+        tree, one space between symbols, so two spellings of the same proposition give the same text."""
+        where = f"{self.type} {self.key}"
+        if not isinstance(self.fields, dict):
+            raise TokenError(f"{where}: fields must be a dict")
+        try:
+            return {"type": _plain(self.type, where), "key": _plain(self.key, where), "fields": _plain(self.fields, where)}
+        except RecursionError:
+            raise TokenError(f"{where}: nested too deeply") from None
 
     @classmethod
     def from_dict(cls, d: dict) -> "Record":
         if not isinstance(d, dict) or set(d) != {"type", "key", "fields"} or not isinstance(d["fields"], dict):
             raise TokenError("a record is {type, key, fields}")
+        if not isinstance(d["type"], str) or not isinstance(d["key"], str):
+            raise TokenError("a record's type and key are strings")
         return cls(d["type"], d["key"], d["fields"])
 
 
@@ -78,7 +96,16 @@ class DecisionContext:
     of the records). A pointer to a key that is known but not in the batch becomes a ghost (an identity the model
     can follow without its record); a pointer to an unknown key is refused."""
     records: list[Record]
-    known_keys: Iterable[str] | None = None
+    known_keys: Iterable[str] | None = None        # materialised into a frozenset at construction
+
+    def __post_init__(self):
+        if self.known_keys is not None:
+            if isinstance(self.known_keys, (str, bytes)):
+                raise TokenError("known_keys is a collection of keys, not a string")
+            try:
+                self.known_keys = frozenset(self.known_keys)
+            except TypeError:
+                raise TokenError("known_keys must be a collection of strings") from None
 
     def mind_keys(self) -> frozenset[str]:
         if self.known_keys is None:
@@ -87,12 +114,7 @@ class DecisionContext:
                 raise TokenError("a DecisionContext holds a list of Records with string keys")
             keys = frozenset(r.key for r in self.records)
         else:
-            if isinstance(self.known_keys, (str, bytes)):
-                raise TokenError("known_keys is a collection of keys, not a string")
-            try:
-                keys = frozenset(self.known_keys)
-            except TypeError:
-                raise TokenError("known_keys must be a collection of strings") from None
+            keys = self.known_keys if isinstance(self.known_keys, frozenset) else frozenset(self.known_keys)
         bad = [k for k in keys if not is_key(k)]
         if bad:
             raise TokenError(f"known_keys: {bad[:3]} are not record keys")
@@ -108,6 +130,8 @@ class DecisionContext:
         """Canonical JSON (sorted keys, no spaces). Round trip: loads(dumps(c)) encodes to the same digest."""
         try:
             return canonical_json(self.to_dict(tokenizer)).decode("utf-8")
+        except RecursionError:
+            raise TokenError("cannot serialize: nested too deeply") from None
         except (TypeError, ValueError) as e:
             raise TokenError(f"cannot serialize: {e}") from None
 
@@ -115,12 +139,16 @@ class DecisionContext:
     def loads(cls, text: str, tokenizer: "Tokenizer") -> "DecisionContext":
         try:
             d = json.loads(text)
-        except ValueError as e:
-            raise TokenError(f"not JSON: {e}") from None
+        except (ValueError, TypeError, RecursionError) as e:
+            raise TokenError(f"not JSON: {type(e).__name__}") from None
         if not isinstance(d, dict) or set(d) != {"header", "records", "known_keys"}:
             raise TokenError("a serialized context is {header, records, known_keys}")
         if d["header"] != tokenizer.header():
             raise TokenError(f"this context was written for {d['header']}, the tokenizer is {tokenizer.header()}")
+        if not isinstance(d["records"], list):
+            raise TokenError("records must be a list")
+        if d["known_keys"] is not None and not isinstance(d["known_keys"], list):
+            raise TokenError("known_keys must be a list or null")
         return cls([Record.from_dict(r) for r in d["records"]], d["known_keys"])
 
 
@@ -161,7 +189,7 @@ class Encoded:
         return sum(getattr(self, a).nbytes for a in self.ARRAYS)
 
     def row(self, r: int) -> "Row":
-        return Row(self, r)
+        return Row(self, r, self.keys[r])
 
     def edges(self) -> list[tuple[int, int, str]]:
         """(from slot, to slot, kind) for every in-context pointer: the attention-bias graph the NPC believes."""
@@ -184,8 +212,8 @@ class Encoded:
 class Row:
     """A view on one token row (what the codecs write into)."""
 
-    def __init__(self, enc: Encoded, r: int):
-        self.r = r
+    def __init__(self, enc: Encoded, r: int, key: str):
+        self.r, self.key = r, key
         self.num, self.known, self.cat, self.cat_known = enc.num[r], enc.known[r], enc.cat[r], enc.cat_known[r]
         self.ptr, self.ptr_known = enc.ptr[r], enc.ptr_known[r]
         self.prop_sym, self.prop_arity, self.prop_depth = enc.prop_sym[r], enc.prop_arity[r], enc.prop_depth[r]
@@ -195,20 +223,37 @@ class Row:
 class EncodeState:
     """Per-decision state: which key sits in which slot, the ghosts, and the per-decision name aliases."""
 
-    def __init__(self, vocab: InputVocabulary, props: PropositionEncoder, keys: list[str], known: frozenset[str],
-                 enc: Encoded):
-        self.vocab, self.props, self.enc, self.known = vocab, props, enc, known
-        self.slots = {k: i + 1 for i, k in enumerate(keys)}
+    def __init__(self, vocab: InputVocabulary, props: PropositionEncoder, recs: list[Record], known: frozenset[str],
+                 enc: Encoded, layout: Layout):
+        self.vocab, self.props, self.enc, self.known, self.layout = vocab, props, enc, known, layout
+        self.slots = {r.key: i + 1 for i, r in enumerate(recs)}
+        self.rtypes = {r.key: r.type for r in recs}
+        self._kinds: dict[str, list[str]] = {}
         self.aliases: dict[str, int] = {}
         self.pending: list[tuple[int, int, int, str]] = []        # (row, block order, column, ghost key)
 
-    def pointer(self, key, where: str, row: Row, block: str, col: int) -> None:
-        """Write the slot of `key` at (row, block, col). "" is 'nobody' (ptr only: the slot stays 0)."""
+    def pointer(self, key, where: str, row: Row, block: str, col: int, ref_types: list[str] | None = None) -> None:
+        """Write the slot of `key` at (row, block, col). "" is 'nobody' (ptr only: the slot stays 0). A pointer
+        field accepts only the record types of `ref_types`; a proposition never cites its own record."""
         target = row.ptr if block == "ptr" else row.prop_slot
-        if key == "" and block == "ptr":
+        if isinstance(key, str) and key == "" and block == "ptr":
             return
         if not is_key(key):
             raise TokenError(f"{where}: {key!r:.40} is not a record key")
+        if block == "prop" and key == row.key:
+            raise TokenError(f"{where}: the proposition of {key} cites {key} itself")
+        if ref_types is not None:
+            rtype = self.rtypes.get(key)
+            if rtype is not None:
+                allowed = rtype in ref_types
+            else:                                              # a ghost: only the kind of its key is known
+                kinds = self._kinds.get(key)
+                if kinds is None:
+                    kinds = self._kinds[key] = self.layout.kind_of(key)
+                allowed = any(k in ref_types for k in kinds)
+                rtype = "/".join(kinds)
+            if not allowed:
+                raise TokenError(f"{where}: '{key}' is a {rtype} record; this field points to {'/'.join(ref_types)}")
         slot = self.slots.get(key)
         if slot is not None:
             target[col] = slot
@@ -326,7 +371,7 @@ class Tokenizer:
         recs = self.order(ctx, known)
         enc = Encoded(self.layout)
         enc.keys = [r.key for r in recs]
-        state = EncodeState(self.vocab, self.props, enc.keys, known, enc)
+        state = EncodeState(self.vocab, self.props, recs, known, enc, self.layout)
         for r, rec in enumerate(recs):
             t = self.layout.types[rec.type]
             enc.type_id[r] = t.type_id

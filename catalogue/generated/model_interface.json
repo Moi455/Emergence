@@ -108,6 +108,9 @@
       "components": [],
       "from": "b_informant",
       "list_of": "",
+      "ref_types": [
+       "ENTITY"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -148,6 +151,10 @@
       "components": [],
       "from": "b_told_to",
       "list_of": "mref",
+      "ref_types": [
+       "ENTITY",
+       "GROUP"
+      ],
       "scale": "list",
       "unit": "",
       "values": []
@@ -191,6 +198,9 @@
       "component_scales": [],
       "components": [],
       "list_of": "",
+      "ref_types": [
+       "ENTITY"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -236,6 +246,9 @@
       "component_scales": [],
       "components": [],
       "list_of": "mref",
+      "ref_types": [
+       "ENTITY"
+      ],
       "scale": "list",
       "unit": "",
       "values": []
@@ -411,6 +424,12 @@
       "components": [],
       "from": "ep_gaze",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "THING",
+       "INV",
+       "SELF"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -810,6 +829,10 @@
       "components": [],
       "from": "ev_actor",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "SELF"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -830,6 +853,15 @@
       "components": [],
       "from": "ev_from_to",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "GROUP",
+       "SELF",
+       "THING",
+       "INV",
+       "LOCUS",
+       "PLACE"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -874,6 +906,15 @@
       "components": [],
       "from": "ev_target",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "GROUP",
+       "SELF",
+       "THING",
+       "INV",
+       "LOCUS",
+       "PLACE"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -884,6 +925,10 @@
       "components": [],
       "from": "ev_with",
       "list_of": "",
+      "ref_types": [
+       "THING",
+       "INV"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -951,6 +996,15 @@
       "components": [],
       "from": "g_origin_ref",
       "list_of": "",
+      "ref_types": [
+       "BELIEF",
+       "HEARD",
+       "MEMORY",
+       "REQUEST",
+       "COMMIT",
+       "ENTITY",
+       "GROUP"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1136,6 +1190,9 @@
       "components": [],
       "from": "b_informant",
       "list_of": "",
+      "ref_types": [
+       "ENTITY"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1176,6 +1233,10 @@
       "components": [],
       "from": "b_told_to",
       "list_of": "mref",
+      "ref_types": [
+       "ENTITY",
+       "GROUP"
+      ],
       "scale": "list",
       "unit": "",
       "values": []
@@ -1302,6 +1363,10 @@
       "components": [],
       "from": "pc_file",
       "list_of": "",
+      "ref_types": [
+       "THING",
+       "INV"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1348,6 +1413,11 @@
       "components": [],
       "from": "pc_owner_believed",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "GROUP",
+       "SELF"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1546,6 +1616,9 @@
       "components": [],
       "from": "lc_file",
       "list_of": "",
+      "ref_types": [
+       "LOCUS"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1566,6 +1639,11 @@
       "components": [],
       "from": "lc_owner",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "GROUP",
+       "SELF"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1652,6 +1730,10 @@
       "components": [],
       "from": "m_where",
       "list_of": "",
+      "ref_types": [
+       "LOCUS",
+       "PLACE"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1824,6 +1906,9 @@
       "component_scales": [],
       "components": [],
       "list_of": "",
+      "ref_types": [
+       "GOAL"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -1856,13 +1941,22 @@
       "component_scales": [],
       "components": [],
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "THING",
+       "INV",
+       "LOCUS",
+       "PLACE",
+       "GROUP",
+       "SELF"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
      }
     },
     "key": "p:",
-    "layout": "steps (gesture + params), goal (mref), progress, commitment"
+    "layout": "step (the current gesture), next (the gesture after it; '' = end of plan), goal (g:), target (mref), progress, commitment"
    },
    "REQUEST": {
     "count": 2,
@@ -1883,6 +1977,9 @@
       "components": [],
       "from": "q_from",
       "list_of": "",
+      "ref_types": [
+       "ENTITY"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -2248,6 +2345,10 @@
       "components": [],
       "from": "place_recognized",
       "list_of": "",
+      "ref_types": [
+       "PLACE",
+       "LOCUS"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -2678,6 +2779,12 @@
       "components": [],
       "from": "attention",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "THING",
+       "INV",
+       "SELF"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -3182,6 +3289,10 @@
       "components": [],
       "from": "pc_file",
       "list_of": "",
+      "ref_types": [
+       "THING",
+       "INV"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -3228,6 +3339,11 @@
       "components": [],
       "from": "pc_owner_believed",
       "list_of": "",
+      "ref_types": [
+       "ENTITY",
+       "GROUP",
+       "SELF"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -3423,6 +3539,13 @@
       "component_scales": [],
       "components": [],
       "list_of": "",
+      "ref_types": [
+       "EVENT",
+       "HEARD",
+       "REQUEST",
+       "GOAL",
+       "PLAN"
+      ],
       "scale": "mref",
       "unit": "",
       "values": []
@@ -7184,7 +7307,7 @@
      "holder": "goal",
      "intimate": false,
      "rate_per_day": 0.0,
-     "scale": "time",
+     "scale": "time_until",
      "slow_per_life_year": 0.0,
      "step": 0.0,
      "structured": true,
@@ -8274,5 +8397,5 @@
    }
   }
  },
- "schema_version": "model-interface-1"
+ "schema_version": "model-interface-2"
 }

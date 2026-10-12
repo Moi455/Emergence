@@ -24,7 +24,7 @@ MAX_SYMBOLS = 20
 MAX_DEPTH = 2                                  # propositions nested as arguments (believes, wants, says, that...)
 MAX_POINTERS = 3                               # per proposition
 MAX_ROLES = 3                                  # per event frame: 2 inline (with, to, into, how) + says
-POINTER = re.compile(r"^(@E\d+|@T\d+|@G\d+|@L\d+|@V\d+|@PLACE|[bmg]:\d+|n:\d+)$", re.ASCII)   # ASCII digits only
+POINTER = re.compile(r"^(@E\d+|@T\d+|@G\d+|@L\d+|@V\d+|@PLACE|[bmg]:\d+|n:\d+)\Z", re.ASCII)   # ASCII digits only
 NESTING_HEADS = {"believes", "wants", "intends", "says", "may", "owes", "norm", "custom", "recipe", "that"}
 NAMEABLE_HOLDERS = {"mind_static", "relation"}
 NAMEABLE_VARIABLES = {"pain", "hunger", "thirst", "sleepiness", "exhaustion", "sickness_felt", "intoxication",
@@ -215,6 +215,10 @@ class Expression:
         self.vocab = vocab
         self.bare = bare
         self.problems: list[str] = []
+        if bare and POINTER.match(text.strip()) and text.strip()[0] in "bmg":      # a bare citation: `(assert b:7)` -> `b:7`
+            self.root = text.strip()
+            self._validate()
+            return
         try:
             self.root = Parser().parse(text)
         except LanguageError as e:
@@ -228,7 +232,7 @@ class Expression:
         return not self.problems
 
     def _validate(self):
-        syms = self.root.symbols()
+        syms = self.root.symbols() if isinstance(self.root, Node) else [self.root]
         if len(syms) > MAX_SYMBOLS:
             self.problems.append(f"{len(syms)} symbols > {MAX_SYMBOLS}")
         if self.bare:
@@ -397,7 +401,7 @@ class Expression:
     def intimate_symbols(self) -> list[str]:
         """Symbols flagged intimate (D10): the governor refuses them toward, from or about a possible minor."""
         out = []
-        for s in self.root.symbols():
+        for s in (self.root.symbols() if isinstance(self.root, Node) else [self.root]):
             c = self.vocab.cat["concept"].get(s)
             var = self.vocab.cat["variable"].get(s)
             if (c is not None and c.intimate) or (var is not None and var.intimate) or s in self.vocab.manner_intimate:

@@ -176,7 +176,7 @@ class InstructionBuilder:
         out.append('Creating a record: target "new" with variable b_proposition, g_desired or m_content and an '
                    "S-expression as value (a proposition, not an utterance: (PRED ARG...) or (past (did ...))). "
                    'Values: numbers like "3.5"; true/false for bool; a listed word for enum/word; a record key for mref; '
-                   "hours for time.")
+                   "hours for time (time_until: hours from now, 0 or more).")
         return "\n".join(out)
 
     @staticmethod

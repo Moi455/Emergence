@@ -16,6 +16,7 @@ The model encodes this short sequence into the token (a small encoder shared by 
 from __future__ import annotations
 
 import math
+import re
 import sys
 
 import numpy as np
@@ -23,17 +24,37 @@ import numpy as np
 from .codecs import to_half
 from .errors import TokenError
 from .interface import ROOT, InputVocabulary, ModelInterface
-from .keys import KEY, is_count, is_name
+from .keys import is_count, is_key, is_name
 
 sys.path.insert(0, str(ROOT / "catalogue")); sys.path.insert(0, str(ROOT / "catalogue" / "tools"))
-from language import POINTER, Expression, Node, Vocabulary  # noqa: E402
+from language import POINTER, Expression, LanguageError, Node, Parser, Vocabulary  # noqa: E402
 
 MAX_TEXT = 1000                                   # characters of a proposition (20 symbols never need more)
+
+
+_CLEAN = re.compile(r"[\t\n\r\x20-\x7e]*")
+_CITATION = re.compile(r"[bmg]:(?:0|[1-9][0-9]{0,11})", re.ASCII)
 
 
 def unparse(node) -> str:
     return "(" + " ".join(unparse(a) if isinstance(a, Node) else a for a in [node.head, *node.args]) + ")" \
         if isinstance(node, Node) else str(node)
+
+
+def canonical_proposition(value):
+    """The canonical text of a proposition: re-serialised from its tree, one space between symbols, no spaces
+    around parentheses. A text that does not parse is returned unchanged (the encoder refuses it)."""
+    try:
+        if isinstance(value, Node):
+            return unparse(value)
+        if not isinstance(value, str) or _CLEAN.fullmatch(value) is None:
+            return value
+        s = value.strip()
+        if _CITATION.fullmatch(s):
+            return s
+        return unparse(Parser().parse(s))
+    except (LanguageError, RecursionError):
+        return value
 
 
 def count_value(n: int) -> float:
@@ -79,11 +100,17 @@ class PropositionEncoder:
 
     def _validated(self, value, where: str, utterance: bool) -> Node:
         """Parse and type-check with the grammar of the catalogue; the tree comes from the validator's own parse."""
-        text = unparse(value) if isinstance(value, Node) else value
+        try:
+            text = unparse(value) if isinstance(value, Node) else value
+        except RecursionError:
+            raise TokenError(f"{where}: nested too deeply") from None
         if not isinstance(text, str):
             raise TokenError(f"{where}: a proposition (text) expected, got {type(value).__name__}")
         if len(text) > MAX_TEXT:
             raise TokenError(f"{where}: {len(text)} characters > {MAX_TEXT}")
+        if _CLEAN.fullmatch(text) is None:
+            raise TokenError(f"{where}: only printable ASCII, space, tab and newline are allowed in a proposition "
+                             "(no non-ASCII space, no control character)")
         try:
             e = Expression(text, self.grammar.vocab, bare=not utterance)
         except RecursionError:
@@ -106,7 +133,7 @@ class PropositionEncoder:
                 if not is_name(sym):
                     raise TokenError(f"{where}: '{sym}' is not a canonical name (no leading zero, at most 12 digits)")
                 return state.name_id(sym), 0, depth, None, 0.0
-            if KEY.match(sym) is None:
+            if not is_key(sym):
                 raise TokenError(f"{where}: '{sym}' is not a canonical pointer (no leading zero, at most 12 digits)")
             return self.vocab.id(self.vocab.pointer_kind(sym)), 0, depth, sym, 0.0
         if sym.isascii() and sym.isdigit():

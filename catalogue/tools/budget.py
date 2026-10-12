@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from schema import Catalogue  # noqa: E402
 
 BUDGET = {"SELF": 64, "SELF_MIND": 64, "SELF_STATE": 64, "ENTITY": 32, "BELIEF": 16, "MEMORY": 16, "GOAL": 16,
-          "GROUP": 16, "COMMIT": 16, "REQUEST": 8, "PLAN": 8, "THING": 16, "PLACE": 16, "SKILL": 8, "EVENT": 16, "LOCUS": 8}   # fields per token type (proposal, checked at step 16)
+          "GROUP": 16, "COMMIT": 16, "REQUEST": 8, "PLAN": 8, "THING": 16, "PLACE": 16, "SKILL": 8, "EVENT": 16, "LOCUS": 8,
+          "WAKE": 8, "TASTE": 4}   # fields per token type (proposal, checked at step 16)
 # how many tokens of each type one decision may hold; the perception tokens (place, things, dangers,
 # events) are defined at step 11-12 and reserved here
 TOKENS = {"SELF": 1, "SELF_MIND": 1, "SELF_STATE": 1, "TASTE": 2, "ENTITY": 10, "GROUP": 2, "BELIEF": 12,
@@ -30,6 +31,7 @@ WRITES_PER_DECISION = 4                       # sparse writes (pointer, variable
 
 
 def slots(cat):
+    """Fields per token type fed by the catalogue's variables."""
     out = defaultdict(set)
     for v in cat["variable"].values():
         for part in v.token.split(";"):
@@ -39,9 +41,19 @@ def slots(cat):
     return out
 
 
+def counted_slots(cat):
+    """Every field the model reads: the variables' fields plus those of the types written by hand in
+    model_interface.EXPLICIT (PLAN, COMMIT, TASTE, WAKE...), which no variable feeds."""
+    import model_interface
+    out = slots(cat)
+    for typ, fields in model_interface.ModelInterface.EXPLICIT.items():
+        out[typ] = out[typ] | set(fields)
+    return out
+
+
 def main():
     cat = Catalogue.load()
-    s = slots(cat)
+    s = counted_slots(cat)
     hidden = [v.id for v in cat["variable"].values() if not v.token]
     print(f"variables : {len(cat['variable'])}, vues par l'IA : {len(cat['variable']) - len(hidden)}, moteur seul : {len(hidden)}")
     for typ in sorted(s):

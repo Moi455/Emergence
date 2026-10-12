@@ -1,11 +1,5 @@
 {
- "schema": "tok2-golden-layout-1",
- "fingerprints": {
-  "schema": "tok2-context-1",
-  "interface": "5d9c8cc2c48204e7",
-  "layout": "33309a9824461083",
-  "vocabulary": "55e0b2ce110fa1c7"
- },
+ "schema": "tok2-layout-2",
  "constants": {
   "max_tokens": 128,
   "prop_len": 20,
@@ -16,14 +10,20 @@
   "bag_cap": 6,
   "ptr_list_cap": 4,
   "name_slots": 64,
+  "pad_id": 0,
+  "num_id": 2,
+  "name_other_id": 76,
+  "epsilon": "1e-09",
   "qty_max": 10000000,
+  "count_max": 10000000,
   "signed_units": [
    "°C"
   ],
   "pooled_by_sum": [
    "mass"
   ],
-  "count_encoding": "log1p(n + 1) for a count n in a proposition; 0 = no count"
+  "count_encoding": "log1p(n + 1) for a count n in a proposition; 0 = no count",
+  "proposition_chars": "printable ASCII and space/tab/newline/CR only"
  },
  "digest": "zlib.crc32 chained over pack('<I', n) then each array of `arrays` in order, C order, little endian, with its dtype; 8 lowercase hex digits",
  "arrays": [
@@ -133,8 +133,106 @@
    "id": 1,
    "count": 12,
    "key": "b:",
-   "columns": {
-    "source": {
+   "columns": [
+    {
+     "name": "age",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
+    },
+    {
+     "name": "certainty",
+     "block": "num",
+     "col": 1,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "contradicted",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "hops",
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "importance",
+     "block": "num",
+     "col": 4,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "informant",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY"
+     ]
+    },
+    {
+     "name": "polarity",
+     "block": "num",
+     "col": 5,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "prop",
+     "block": "prop",
+     "col": 0,
+     "width": 1,
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "normalisation": ""
+    },
+    {
+     "name": "secret",
+     "block": "num",
+     "col": 6,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "shared",
+     "block": "ptr",
+     "col": 1,
+     "width": 4,
+     "codec": "PointerListCodec",
+     "scale": "list",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "GROUP"
+     ]
+    },
+    {
+     "name": "source",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -151,71 +249,54 @@
       "told"
      ]
     },
-    "age": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "time",
-     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
-    },
-    "certainty": {
-     "block": "num",
-     "col": 1,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "contradicted": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "hops": {
-     "block": "num",
-     "col": 3,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "qty",
-     "normalisation": "log1p(x), x in [0, 1e7]"
-    },
-    "importance": {
-     "block": "num",
-     "col": 4,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "polarity": {
-     "block": "num",
-     "col": 5,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "secret": {
-     "block": "num",
-     "col": 6,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "weight": {
+    {
+     "name": "weight",
      "block": "num",
      "col": 7,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
+    }
+   ]
+  },
+  "COMMIT": {
+   "id": 2,
+   "count": 3,
+   "key": "c:",
+   "columns": [
+    {
+     "name": "counterparty",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY"
+     ]
     },
-    "prop": {
+    {
+     "name": "deadline",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "time_until",
+     "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 game hours until (negative: overdue)"
+    },
+    {
+     "name": "mine",
+     "block": "num",
+     "col": 1,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "prop",
      "block": "prop",
      "col": 0,
      "width": 1,
@@ -223,30 +304,8 @@
      "scale": "proposition",
      "normalisation": ""
     },
-    "informant": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    },
-    "shared": {
-     "block": "ptr",
-     "col": 1,
-     "width": 4,
-     "codec": "PointerListCodec",
-     "scale": "list",
-     "normalisation": ""
-    }
-   }
-  },
-  "COMMIT": {
-   "id": 2,
-   "count": 3,
-   "key": "c:",
-   "columns": {
-    "status": {
+    {
+     "name": "status",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -260,54 +319,71 @@
       "released"
      ]
     },
-    "deadline": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "time_until",
-     "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 game hours until (negative: overdue)"
-    },
-    "mine": {
-     "block": "num",
-     "col": 1,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "prop": {
-     "block": "prop",
-     "col": 0,
-     "width": 1,
-     "codec": "PropositionCodec",
-     "scale": "proposition",
-     "normalisation": ""
-    },
-    "counterparty": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    },
-    "witnesses": {
+    {
+     "name": "witnesses",
      "block": "ptr",
      "col": 1,
      "width": 4,
      "codec": "PointerListCodec",
      "scale": "list",
-     "normalisation": ""
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY"
+     ]
     }
-   }
+   ]
   },
   "ENTITY": {
    "id": 3,
    "count": 10,
    "key": "@E",
-   "columns": {
-    "known_by": {
+   "columns": [
+    {
+     "name": "dir",
+     "block": "num",
+     "col": 0,
+     "width": 2,
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "normalisation": "x, x in [-1, 1]",
+     "components": [
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      }
+     ]
+    },
+    {
+     "name": "dist",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]",
+     "unit": "m"
+    },
+    {
+     "name": "id_certainty",
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "known_by",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -320,7 +396,8 @@
       "described"
      ]
     },
-    "link": {
+    {
+     "name": "link",
      "block": "cat",
      "col": 1,
      "width": 1,
@@ -353,7 +430,18 @@
       "stranger"
      ]
     },
-    "look.attire": {
+    {
+     "name": "look.age",
+     "block": "num",
+     "col": 4,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]",
+     "unit": "ans"
+    },
+    {
+     "name": "look.attire",
      "block": "cat",
      "col": 2,
      "width": 6,
@@ -361,7 +449,8 @@
      "scale": "list",
      "normalisation": ""
     },
-    "look.build": {
+    {
+     "name": "look.build",
      "block": "cat",
      "col": 8,
      "width": 6,
@@ -369,7 +458,8 @@
      "scale": "list",
      "normalisation": ""
     },
-    "look.condition": {
+    {
+     "name": "look.condition",
      "block": "cat",
      "col": 14,
      "width": 1,
@@ -384,7 +474,8 @@
       "obviously_dead"
      ]
     },
-    "look.expression": {
+    {
+     "name": "look.expression",
      "block": "cat",
      "col": 15,
      "width": 1,
@@ -408,7 +499,23 @@
       "tenderness"
      ]
     },
-    "look.health": {
+    {
+     "name": "look.gaze",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "THING",
+      "INV",
+      "SELF"
+     ]
+    },
+    {
+     "name": "look.health",
      "block": "cat",
      "col": 16,
      "width": 6,
@@ -416,7 +523,364 @@
      "scale": "list",
      "normalisation": ""
     },
-    "look.marks": {
+    {
+     "name": "look.held",
+     "block": "num",
+     "col": 5,
+     "width": 43,
+     "codec": "VectorCodec",
+     "scale": "list",
+     "normalisation": {
+      "mass": "log1p(x), x in [0, 1e7]",
+      "size": "log1p(x), x in [0, 1e7]",
+      "edge": "x / 10, x in [0, 10]",
+      "point": "x / 10, x in [0, 10]",
+      "reach": "log1p(x), x in [0, 1e7]",
+      "capacity": "log1p(x), x in [0, 1e7]",
+      "temperature": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)",
+      "wetness": "x / 10, x in [0, 10]",
+      "burning": "1 if x else 0 (a real bool)",
+      "open": "1 if x else 0 (a real bool)",
+      "lit": "1 if x else 0 (a real bool)",
+      "dirtiness": "x / 10, x in [0, 10]",
+      "graspable": "1 if x else 0 (a real bool)",
+      "carryable": "1 if x else 0 (a real bool)",
+      "throwable": "1 if x else 0 (a real bool)",
+      "cuts": "1 if x else 0 (a real bool)",
+      "pierces": "1 if x else 0 (a real bool)",
+      "impacts": "1 if x else 0 (a real bool)",
+      "digs": "1 if x else 0 (a real bool)",
+      "contains": "1 if x else 0 (a real bool)",
+      "fuel": "1 if x else 0 (a real bool)",
+      "ignites": "1 if x else 0 (a real bool)",
+      "wearable": "1 if x else 0 (a real bool)",
+      "supports_body": "1 if x else 0 (a real bool)",
+      "climbable": "1 if x else 0 (a real bool)",
+      "openable": "1 if x else 0 (a real bool)",
+      "conceals": "1 if x else 0 (a real bool)",
+      "blocks_passage": "1 if x else 0 (a real bool)",
+      "floats_carries": "1 if x else 0 (a real bool)",
+      "shelters": "1 if x else 0 (a real bool)",
+      "writable": "1 if x else 0 (a real bool)",
+      "heats": "1 if x else 0 (a real bool)",
+      "light_source": "1 if x else 0 (a real bool)",
+      "binds": "1 if x else 0 (a real bool)",
+      "mountable": "1 if x else 0 (a real bool)",
+      "protects": "1 if x else 0 (a real bool)",
+      "launches": "1 if x else 0 (a real bool)",
+      "plays_music": "1 if x else 0 (a real bool)",
+      "reflects_image": "1 if x else 0 (a real bool)",
+      "wipes": "1 if x else 0 (a real bool)",
+      "sharpens": "1 if x else 0 (a real bool)",
+      "joins": "1 if x else 0 (a real bool)",
+      "rolls_load": "1 if x else 0 (a real bool)"
+     },
+     "components": [
+      {
+       "name": "mass",
+       "col": 5,
+       "scale": "qty",
+       "unit": "kg",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "size",
+       "col": 6,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "edge",
+       "col": 7,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "point",
+       "col": 8,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "reach",
+       "col": 9,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "capacity",
+       "col": 10,
+       "scale": "qty",
+       "unit": "l",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "temperature",
+       "col": 11,
+       "scale": "qty",
+       "unit": "°C",
+       "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
+      },
+      {
+       "name": "wetness",
+       "col": 12,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "burning",
+       "col": 13,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "open",
+       "col": 14,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "lit",
+       "col": 15,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "dirtiness",
+       "col": 16,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "graspable",
+       "col": 17,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "carryable",
+       "col": 18,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "throwable",
+       "col": 19,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "cuts",
+       "col": 20,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "pierces",
+       "col": 21,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "impacts",
+       "col": 22,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "digs",
+       "col": 23,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "contains",
+       "col": 24,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "fuel",
+       "col": 25,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "ignites",
+       "col": 26,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wearable",
+       "col": 27,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "supports_body",
+       "col": 28,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "climbable",
+       "col": 29,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "openable",
+       "col": 30,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "conceals",
+       "col": 31,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "blocks_passage",
+       "col": 32,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "floats_carries",
+       "col": 33,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "shelters",
+       "col": 34,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "writable",
+       "col": 35,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "heats",
+       "col": 36,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "light_source",
+       "col": 37,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "binds",
+       "col": 38,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "mountable",
+       "col": 39,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "protects",
+       "col": 40,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "launches",
+       "col": 41,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "plays_music",
+       "col": 42,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "reflects_image",
+       "col": 43,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wipes",
+       "col": 44,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "sharpens",
+       "col": 45,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "joins",
+       "col": 46,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "rolls_load",
+       "col": 47,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      }
+     ]
+    },
+    {
+     "name": "look.marks",
      "block": "cat",
      "col": 22,
      "width": 6,
@@ -424,7 +888,8 @@
      "scale": "list",
      "normalisation": ""
     },
-    "look.motion": {
+    {
+     "name": "look.motion",
      "block": "cat",
      "col": 28,
      "width": 1,
@@ -438,7 +903,8 @@
       "running"
      ]
     },
-    "look.posture": {
+    {
+     "name": "look.posture",
      "block": "cat",
      "col": 29,
      "width": 1,
@@ -460,7 +926,8 @@
       "carrying"
      ]
     },
-    "look.sex": {
+    {
+     "name": "look.sex",
      "block": "cat",
      "col": 30,
      "width": 1,
@@ -473,7 +940,8 @@
       "unclear"
      ]
     },
-    "look.signs": {
+    {
+     "name": "look.signs",
      "block": "cat",
      "col": 31,
      "width": 6,
@@ -481,150 +949,8 @@
      "scale": "list",
      "normalisation": ""
     },
-    "name": {
-     "block": "cat",
-     "col": 37,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "word",
-     "normalisation": ""
-    },
-    "dir": {
-     "block": "num",
-     "col": 0,
-     "width": 2,
-     "codec": "VectorCodec",
-     "scale": "qty",
-     "normalisation": "x, x in [-1, 1]",
-     "components": [
-      "sin",
-      "cos"
-     ]
-    },
-    "dist": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "qty",
-     "normalisation": "log1p(x), x in [0, 1e7]",
-     "unit": "m"
-    },
-    "id_certainty": {
-     "block": "num",
-     "col": 3,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "look.age": {
-     "block": "num",
-     "col": 4,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "qty",
-     "normalisation": "log1p(x), x in [0, 1e7]",
-     "unit": "ans"
-    },
-    "look.held": {
-     "block": "num",
-     "col": 5,
-     "width": 43,
-     "codec": "VectorCodec",
-     "scale": "list",
-     "normalisation": {
-      "mass": "log1p(x), x in [0, 1e7]",
-      "size": "log1p(x), x in [0, 1e7]",
-      "edge": "x / 10, x in [0, 10]",
-      "point": "x / 10, x in [0, 10]",
-      "reach": "log1p(x), x in [0, 1e7]",
-      "capacity": "log1p(x), x in [0, 1e7]",
-      "temperature": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)",
-      "wetness": "x / 10, x in [0, 10]",
-      "burning": "1 if x else 0 (a real bool)",
-      "open": "1 if x else 0 (a real bool)",
-      "lit": "1 if x else 0 (a real bool)",
-      "dirtiness": "x / 10, x in [0, 10]",
-      "graspable": "1 if x else 0 (a real bool)",
-      "carryable": "1 if x else 0 (a real bool)",
-      "throwable": "1 if x else 0 (a real bool)",
-      "cuts": "1 if x else 0 (a real bool)",
-      "pierces": "1 if x else 0 (a real bool)",
-      "impacts": "1 if x else 0 (a real bool)",
-      "digs": "1 if x else 0 (a real bool)",
-      "contains": "1 if x else 0 (a real bool)",
-      "fuel": "1 if x else 0 (a real bool)",
-      "ignites": "1 if x else 0 (a real bool)",
-      "wearable": "1 if x else 0 (a real bool)",
-      "supports_body": "1 if x else 0 (a real bool)",
-      "climbable": "1 if x else 0 (a real bool)",
-      "openable": "1 if x else 0 (a real bool)",
-      "conceals": "1 if x else 0 (a real bool)",
-      "blocks_passage": "1 if x else 0 (a real bool)",
-      "floats_carries": "1 if x else 0 (a real bool)",
-      "shelters": "1 if x else 0 (a real bool)",
-      "writable": "1 if x else 0 (a real bool)",
-      "heats": "1 if x else 0 (a real bool)",
-      "light_source": "1 if x else 0 (a real bool)",
-      "binds": "1 if x else 0 (a real bool)",
-      "mountable": "1 if x else 0 (a real bool)",
-      "protects": "1 if x else 0 (a real bool)",
-      "launches": "1 if x else 0 (a real bool)",
-      "plays_music": "1 if x else 0 (a real bool)",
-      "reflects_image": "1 if x else 0 (a real bool)",
-      "wipes": "1 if x else 0 (a real bool)",
-      "sharpens": "1 if x else 0 (a real bool)",
-      "joins": "1 if x else 0 (a real bool)",
-      "rolls_load": "1 if x else 0 (a real bool)"
-     },
-     "components": [
-      "mass",
-      "size",
-      "edge",
-      "point",
-      "reach",
-      "capacity",
-      "temperature",
-      "wetness",
-      "burning",
-      "open",
-      "lit",
-      "dirtiness",
-      "graspable",
-      "carryable",
-      "throwable",
-      "cuts",
-      "pierces",
-      "impacts",
-      "digs",
-      "contains",
-      "fuel",
-      "ignites",
-      "wearable",
-      "supports_body",
-      "climbable",
-      "openable",
-      "conceals",
-      "blocks_passage",
-      "floats_carries",
-      "shelters",
-      "writable",
-      "heats",
-      "light_source",
-      "binds",
-      "mountable",
-      "protects",
-      "launches",
-      "plays_music",
-      "reflects_image",
-      "wipes",
-      "sharpens",
-      "joins",
-      "rolls_load"
-     ]
-    },
-    "look.wounds": {
+    {
+     "name": "look.wounds",
      "block": "num",
      "col": 48,
      "width": 1,
@@ -632,7 +958,17 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "present": {
+    {
+     "name": "name",
+     "block": "cat",
+     "col": 37,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
+    },
+    {
+     "name": "present",
      "block": "num",
      "col": 49,
      "width": 1,
@@ -640,7 +976,8 @@
      "scale": "bool",
      "normalisation": "1 if x else 0 (a real bool)"
     },
-    "rel.affection": {
+    {
+     "name": "rel.affection",
      "block": "num",
      "col": 50,
      "width": 1,
@@ -648,7 +985,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "rel.attraction": {
+    {
+     "name": "rel.attraction",
      "block": "num",
      "col": 51,
      "width": 1,
@@ -656,7 +994,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "rel.familiarity": {
+    {
+     "name": "rel.familiarity",
      "block": "num",
      "col": 52,
      "width": 1,
@@ -664,7 +1003,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "rel.fear": {
+    {
+     "name": "rel.fear",
      "block": "num",
      "col": 53,
      "width": 1,
@@ -672,7 +1012,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "rel.obligation": {
+    {
+     "name": "rel.obligation",
      "block": "num",
      "col": 54,
      "width": 1,
@@ -680,7 +1021,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "rel.perceived_regard": {
+    {
+     "name": "rel.perceived_regard",
      "block": "num",
      "col": 55,
      "width": 1,
@@ -688,7 +1030,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "rel.resentment": {
+    {
+     "name": "rel.resentment",
      "block": "num",
      "col": 56,
      "width": 1,
@@ -696,7 +1039,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "rel.respect": {
+    {
+     "name": "rel.respect",
      "block": "num",
      "col": 57,
      "width": 1,
@@ -704,7 +1048,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "rel.rivalry": {
+    {
+     "name": "rel.rivalry",
      "block": "num",
      "col": 58,
      "width": 1,
@@ -712,7 +1057,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "rel.trust": {
+    {
+     "name": "rel.trust",
      "block": "num",
      "col": 59,
      "width": 1,
@@ -720,7 +1066,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "rep": {
+    {
+     "name": "rep",
      "block": "num",
      "col": 60,
      "width": 5,
@@ -728,29 +1075,92 @@
      "scale": "list",
      "normalisation": "x, x in [-1, 1]",
      "components": [
-      "honesty",
-      "danger",
-      "competence",
-      "wealth",
-      "piety"
+      {
+       "name": "honesty",
+       "col": 60,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "danger",
+       "col": 61,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "competence",
+       "col": 62,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "wealth",
+       "col": 63,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "piety",
+       "col": 64,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      }
      ]
-    },
-    "look.gaze": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
     }
-   }
+   ]
   },
   "EVENT": {
    "id": 4,
    "count": 6,
    "key": "@V",
-   "columns": {
-    "gesture": {
+   "columns": [
+    {
+     "name": "actor",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "SELF"
+     ]
+    },
+    {
+     "name": "age",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
+    },
+    {
+     "name": "from_to",
+     "block": "ptr",
+     "col": 1,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "GROUP",
+      "SELF",
+      "THING",
+      "INV",
+      "LOCUS",
+      "PLACE"
+     ]
+    },
+    {
+     "name": "gesture",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -758,7 +1168,8 @@
      "scale": "word",
      "normalisation": ""
     },
-    "manner": {
+    {
+     "name": "manner",
      "block": "cat",
      "col": 1,
      "width": 6,
@@ -766,7 +1177,8 @@
      "scale": "list",
      "normalisation": ""
     },
-    "sense": {
+    {
+     "name": "sense",
      "block": "cat",
      "col": 7,
      "width": 1,
@@ -779,7 +1191,46 @@
       "felt"
      ]
     },
-    "age": {
+    {
+     "name": "target",
+     "block": "ptr",
+     "col": 2,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "GROUP",
+      "SELF",
+      "THING",
+      "INV",
+      "LOCUS",
+      "PLACE"
+     ]
+    },
+    {
+     "name": "with",
+     "block": "ptr",
+     "col": 3,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "THING",
+      "INV"
+     ]
+    }
+   ]
+  },
+  "GOAL": {
+   "id": 5,
+   "count": 4,
+   "key": "g:",
+   "columns": [
+    {
+     "name": "age",
      "block": "num",
      "col": 0,
      "width": 1,
@@ -787,46 +1238,17 @@
      "scale": "time",
      "normalisation": "log1p(x), x in [0, 1e7] game hours since"
     },
-    "actor": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    },
-    "from_to": {
-     "block": "ptr",
+    {
+     "name": "deadline",
+     "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
+     "codec": "ScalarCodec",
+     "scale": "time_until",
+     "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 game hours until (negative: overdue)"
     },
-    "target": {
-     "block": "ptr",
-     "col": 2,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    },
-    "with": {
-     "block": "ptr",
-     "col": 3,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    }
-   }
-  },
-  "GOAL": {
-   "id": 5,
-   "count": 4,
-   "key": "g:",
-   "columns": {
-    "mode": {
+    {
+     "name": "mode",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -839,7 +1261,8 @@
       "maintain"
      ]
     },
-    "origin": {
+    {
+     "name": "origin",
      "block": "cat",
      "col": 1,
      "width": 1,
@@ -854,7 +1277,53 @@
       "norm"
      ]
     },
-    "status": {
+    {
+     "name": "origin_ref",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "BELIEF",
+      "HEARD",
+      "MEMORY",
+      "REQUEST",
+      "COMMIT",
+      "ENTITY",
+      "GROUP"
+     ]
+    },
+    {
+     "name": "priority",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "progress",
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "ratio",
+     "normalisation": "x, x in [0, 1]"
+    },
+    {
+     "name": "prop",
+     "block": "prop",
+     "col": 0,
+     "width": 1,
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "normalisation": ""
+    },
+    {
+     "name": "status",
      "block": "cat",
      "col": 2,
      "width": 1,
@@ -868,63 +1337,16 @@
       "failed",
       "abandoned"
      ]
-    },
-    "age": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "time",
-     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
-    },
-    "deadline": {
-     "block": "num",
-     "col": 1,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "time_until",
-     "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 game hours until (negative: overdue)"
-    },
-    "priority": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "progress": {
-     "block": "num",
-     "col": 3,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "ratio",
-     "normalisation": "x, x in [0, 1]"
-    },
-    "prop": {
-     "block": "prop",
-     "col": 0,
-     "width": 1,
-     "codec": "PropositionCodec",
-     "scale": "proposition",
-     "normalisation": ""
-    },
-    "origin_ref": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
     }
-   }
+   ]
   },
   "GROUP": {
    "id": 6,
    "count": 2,
    "key": "@G",
-   "columns": {
-    "known_by": {
+   "columns": [
+    {
+     "name": "known_by",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -937,7 +1359,8 @@
       "described"
      ]
     },
-    "rel.affection": {
+    {
+     "name": "rel.affection",
      "block": "num",
      "col": 0,
      "width": 1,
@@ -945,7 +1368,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "rel.fear": {
+    {
+     "name": "rel.fear",
      "block": "num",
      "col": 1,
      "width": 1,
@@ -953,7 +1377,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "rel.resentment": {
+    {
+     "name": "rel.resentment",
      "block": "num",
      "col": 2,
      "width": 1,
@@ -961,7 +1386,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "rel.respect": {
+    {
+     "name": "rel.respect",
      "block": "num",
      "col": 3,
      "width": 1,
@@ -969,7 +1395,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "rel.trust": {
+    {
+     "name": "rel.trust",
      "block": "num",
      "col": 4,
      "width": 1,
@@ -977,14 +1404,112 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     }
-   }
+   ]
   },
   "HEARD": {
    "id": 7,
    "count": 2,
    "key": "h:",
-   "columns": {
-    "source": {
+   "columns": [
+    {
+     "name": "age",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
+    },
+    {
+     "name": "certainty",
+     "block": "num",
+     "col": 1,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "contradicted",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "hops",
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "importance",
+     "block": "num",
+     "col": 4,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "informant",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY"
+     ]
+    },
+    {
+     "name": "polarity",
+     "block": "num",
+     "col": 5,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "prop",
+     "block": "prop",
+     "col": 0,
+     "width": 1,
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "normalisation": ""
+    },
+    {
+     "name": "secret",
+     "block": "num",
+     "col": 6,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "shared",
+     "block": "ptr",
+     "col": 1,
+     "width": 4,
+     "codec": "PointerListCodec",
+     "scale": "list",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "GROUP"
+     ]
+    },
+    {
+     "name": "source",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -1001,102 +1526,24 @@
       "told"
      ]
     },
-    "age": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "time",
-     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
-    },
-    "certainty": {
-     "block": "num",
-     "col": 1,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "contradicted": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "hops": {
-     "block": "num",
-     "col": 3,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "qty",
-     "normalisation": "log1p(x), x in [0, 1e7]"
-    },
-    "importance": {
-     "block": "num",
-     "col": 4,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "polarity": {
-     "block": "num",
-     "col": 5,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "secret": {
-     "block": "num",
-     "col": 6,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "weight": {
+    {
+     "name": "weight",
      "block": "num",
      "col": 7,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
-    },
-    "prop": {
-     "block": "prop",
-     "col": 0,
-     "width": 1,
-     "codec": "PropositionCodec",
-     "scale": "proposition",
-     "normalisation": ""
-    },
-    "informant": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    },
-    "shared": {
-     "block": "ptr",
-     "col": 1,
-     "width": 4,
-     "codec": "PointerListCodec",
-     "scale": "list",
-     "normalisation": ""
     }
-   }
+   ]
   },
   "INV": {
    "id": 8,
    "count": 8,
    "key": "@T",
-   "columns": {
-    "amount": {
+   "columns": [
+    {
+     "name": "amount",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -1111,7 +1558,8 @@
       "unknown"
      ]
     },
-    "depth": {
+    {
+     "name": "depth",
      "block": "cat",
      "col": 1,
      "width": 1,
@@ -1125,7 +1573,33 @@
       "unseen_bottom"
      ]
     },
-    "display": {
+    {
+     "name": "dir",
+     "block": "num",
+     "col": 0,
+     "width": 2,
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "normalisation": "x, x in [-1, 1]",
+     "components": [
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      }
+     ]
+    },
+    {
+     "name": "display",
      "block": "cat",
      "col": 2,
      "width": 1,
@@ -1144,7 +1618,40 @@
       "playing"
      ]
     },
-    "kind": {
+    {
+     "name": "dist",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]",
+     "unit": "m"
+    },
+    {
+     "name": "file",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "THING",
+      "INV"
+     ]
+    },
+    {
+     "name": "file_certainty",
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "kind",
      "block": "cat",
      "col": 3,
      "width": 1,
@@ -1152,7 +1659,8 @@
      "scale": "word",
      "normalisation": ""
     },
-    "motion": {
+    {
+     "name": "motion",
      "block": "cat",
      "col": 4,
      "width": 1,
@@ -1167,44 +1675,22 @@
       "rolling"
      ]
     },
-    "state": {
-     "block": "cat",
-     "col": 5,
-     "width": 6,
-     "codec": "BagCodec",
-     "scale": "list",
-     "normalisation": ""
-    },
-    "dir": {
-     "block": "num",
-     "col": 0,
-     "width": 2,
-     "codec": "VectorCodec",
-     "scale": "qty",
-     "normalisation": "x, x in [-1, 1]",
-     "components": [
-      "sin",
-      "cos"
+    {
+     "name": "owner",
+     "block": "ptr",
+     "col": 1,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "GROUP",
+      "SELF"
      ]
     },
-    "dist": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "qty",
-     "normalisation": "log1p(x), x in [0, 1e7]",
-     "unit": "m"
-    },
-    "file_certainty": {
-     "block": "num",
-     "col": 3,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "props": {
+    {
+     "name": "props",
      "block": "num",
      "col": 4,
      "width": 43,
@@ -1256,83 +1742,327 @@
       "rolls_load": "1 if x else 0 (a real bool)"
      },
      "components": [
-      "mass",
-      "size",
-      "edge",
-      "point",
-      "reach",
-      "capacity",
-      "temperature",
-      "wetness",
-      "burning",
-      "open",
-      "lit",
-      "dirtiness",
-      "graspable",
-      "carryable",
-      "throwable",
-      "cuts",
-      "pierces",
-      "impacts",
-      "digs",
-      "contains",
-      "fuel",
-      "ignites",
-      "wearable",
-      "supports_body",
-      "climbable",
-      "openable",
-      "conceals",
-      "blocks_passage",
-      "floats_carries",
-      "shelters",
-      "writable",
-      "heats",
-      "light_source",
-      "binds",
-      "mountable",
-      "protects",
-      "launches",
-      "plays_music",
-      "reflects_image",
-      "wipes",
-      "sharpens",
-      "joins",
-      "rolls_load"
+      {
+       "name": "mass",
+       "col": 4,
+       "scale": "qty",
+       "unit": "kg",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "size",
+       "col": 5,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "edge",
+       "col": 6,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "point",
+       "col": 7,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "reach",
+       "col": 8,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "capacity",
+       "col": 9,
+       "scale": "qty",
+       "unit": "l",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "temperature",
+       "col": 10,
+       "scale": "qty",
+       "unit": "°C",
+       "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
+      },
+      {
+       "name": "wetness",
+       "col": 11,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "burning",
+       "col": 12,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "open",
+       "col": 13,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "lit",
+       "col": 14,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "dirtiness",
+       "col": 15,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "graspable",
+       "col": 16,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "carryable",
+       "col": 17,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "throwable",
+       "col": 18,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "cuts",
+       "col": 19,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "pierces",
+       "col": 20,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "impacts",
+       "col": 21,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "digs",
+       "col": 22,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "contains",
+       "col": 23,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "fuel",
+       "col": 24,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "ignites",
+       "col": 25,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wearable",
+       "col": 26,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "supports_body",
+       "col": 27,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "climbable",
+       "col": 28,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "openable",
+       "col": 29,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "conceals",
+       "col": 30,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "blocks_passage",
+       "col": 31,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "floats_carries",
+       "col": 32,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "shelters",
+       "col": 33,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "writable",
+       "col": 34,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "heats",
+       "col": 35,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "light_source",
+       "col": 36,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "binds",
+       "col": 37,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "mountable",
+       "col": 38,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "protects",
+       "col": 39,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "launches",
+       "col": 40,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "plays_music",
+       "col": 41,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "reflects_image",
+       "col": 42,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wipes",
+       "col": 43,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "sharpens",
+       "col": 44,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "joins",
+       "col": 45,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "rolls_load",
+       "col": 46,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      }
      ]
     },
-    "file": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    },
-    "owner": {
-     "block": "ptr",
-     "col": 1,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
+    {
+     "name": "state",
+     "block": "cat",
+     "col": 5,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
      "normalisation": ""
     }
-   }
+   ]
   },
   "LOCUS": {
    "id": 9,
    "count": 3,
    "key": "@L",
-   "columns": {
-    "kind": {
-     "block": "cat",
-     "col": 0,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "word",
-     "normalisation": ""
-    },
-    "dir": {
+   "columns": [
+    {
+     "name": "dir",
      "block": "num",
      "col": 0,
      "width": 2,
@@ -1340,11 +2070,24 @@
      "scale": "qty",
      "normalisation": "x, x in [-1, 1]",
      "components": [
-      "sin",
-      "cos"
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      }
      ]
     },
-    "dist": {
+    {
+     "name": "dist",
      "block": "num",
      "col": 2,
      "width": 1,
@@ -1353,30 +2096,68 @@
      "normalisation": "log1p(x), x in [0, 1e7]",
      "unit": "m"
     },
-    "file": {
+    {
+     "name": "file",
      "block": "ptr",
      "col": 0,
      "width": 1,
      "codec": "PointerCodec",
      "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "LOCUS"
+     ]
+    },
+    {
+     "name": "kind",
+     "block": "cat",
+     "col": 0,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
      "normalisation": ""
     },
-    "owner": {
+    {
+     "name": "owner",
      "block": "ptr",
      "col": 1,
      "width": 1,
      "codec": "PointerCodec",
      "scale": "mref",
-     "normalisation": ""
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "GROUP",
+      "SELF"
+     ]
     }
-   }
+   ]
   },
   "MEMORY": {
    "id": 10,
    "count": 9,
    "key": "m:",
-   "columns": {
-    "emotion": {
+   "columns": [
+    {
+     "name": "age",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
+    },
+    {
+     "name": "defining",
+     "block": "num",
+     "col": 1,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "emotion",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -1404,7 +2185,17 @@
       "e_tenderness"
      ]
     },
-    "interp": {
+    {
+     "name": "importance",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "interp",
      "block": "cat",
      "col": 1,
      "width": 1,
@@ -1412,7 +2203,30 @@
      "scale": "word",
      "normalisation": ""
     },
-    "role": {
+    {
+     "name": "place",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "LOCUS",
+      "PLACE"
+     ]
+    },
+    {
+     "name": "prop",
+     "block": "prop",
+     "col": 0,
+     "width": 1,
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "normalisation": ""
+    },
+    {
+     "name": "role",
      "block": "cat",
      "col": 2,
      "width": 1,
@@ -1426,31 +2240,8 @@
       "told"
      ]
     },
-    "age": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "time",
-     "normalisation": "log1p(x), x in [0, 1e7] game hours since"
-    },
-    "defining": {
-     "block": "num",
-     "col": 1,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bool",
-     "normalisation": "1 if x else 0 (a real bool)"
-    },
-    "importance": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "secret": {
+    {
+     "name": "secret",
      "block": "num",
      "col": 3,
      "width": 1,
@@ -1458,7 +2249,8 @@
      "scale": "bool",
      "normalisation": "1 if x else 0 (a real bool)"
     },
-    "valence": {
+    {
+     "name": "valence",
      "block": "num",
      "col": 4,
      "width": 1,
@@ -1466,38 +2258,24 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "vividness": {
+    {
+     "name": "vividness",
      "block": "num",
      "col": 5,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
-    },
-    "prop": {
-     "block": "prop",
-     "col": 0,
-     "width": 1,
-     "codec": "PropositionCodec",
-     "scale": "proposition",
-     "normalisation": ""
-    },
-    "place": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
     }
-   }
+   ]
   },
   "PLACE": {
    "id": 11,
    "count": 1,
    "key": "@PLACE",
-   "columns": {
-    "air_felt": {
+   "columns": [
+    {
+     "name": "air_felt",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -1513,23 +2291,8 @@
       "hot"
      ]
     },
-    "signs": {
-     "block": "cat",
-     "col": 1,
-     "width": 6,
-     "codec": "BagCodec",
-     "scale": "list",
-     "normalisation": ""
-    },
-    "weather": {
-     "block": "cat",
-     "col": 7,
-     "width": 6,
-     "codec": "BagCodec",
-     "scale": "list",
-     "normalisation": ""
-    },
-    "crowd": {
+    {
+     "name": "crowd",
      "block": "num",
      "col": 0,
      "width": 1,
@@ -1537,7 +2300,8 @@
      "scale": "qty",
      "normalisation": "log1p(x), x in [0, 1e7]"
     },
-    "indoors": {
+    {
+     "name": "indoors",
      "block": "num",
      "col": 1,
      "width": 1,
@@ -1545,7 +2309,8 @@
      "scale": "bool",
      "normalisation": "1 if x else 0 (a real bool)"
     },
-    "light": {
+    {
+     "name": "light",
      "block": "num",
      "col": 2,
      "width": 1,
@@ -1553,7 +2318,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "noise": {
+    {
+     "name": "noise",
      "block": "num",
      "col": 3,
      "width": 1,
@@ -1561,38 +2327,42 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "sun": {
+    {
+     "name": "signs",
+     "block": "cat",
+     "col": 1,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
+     "normalisation": ""
+    },
+    {
+     "name": "sun",
      "block": "num",
      "col": 4,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "qty",
      "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "weather",
+     "block": "cat",
+     "col": 7,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
+     "normalisation": ""
     }
-   }
+   ]
   },
   "PLAN": {
    "id": 12,
    "count": 1,
    "key": "p:",
-   "columns": {
-    "next": {
-     "block": "cat",
-     "col": 0,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "word",
-     "normalisation": ""
-    },
-    "step": {
-     "block": "cat",
-     "col": 1,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "word",
-     "normalisation": ""
-    },
-    "commitment": {
+   "columns": [
+    {
+     "name": "commitment",
      "block": "num",
      "col": 0,
      "width": 1,
@@ -1600,7 +2370,29 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "progress": {
+    {
+     "name": "goal",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "GOAL"
+     ]
+    },
+    {
+     "name": "next",
+     "block": "cat",
+     "col": 0,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
+    },
+    {
+     "name": "progress",
      "block": "num",
      "col": 1,
      "width": 1,
@@ -1608,30 +2400,42 @@
      "scale": "ratio",
      "normalisation": "x, x in [0, 1]"
     },
-    "goal": {
-     "block": "ptr",
-     "col": 0,
+    {
+     "name": "step",
+     "block": "cat",
+     "col": 1,
      "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
+     "codec": "SymbolCodec",
+     "scale": "word",
      "normalisation": ""
     },
-    "target": {
+    {
+     "name": "target",
      "block": "ptr",
      "col": 1,
      "width": 1,
      "codec": "PointerCodec",
      "scale": "mref",
-     "normalisation": ""
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "THING",
+      "INV",
+      "LOCUS",
+      "PLACE",
+      "GROUP",
+      "SELF"
+     ]
     }
-   }
+   ]
   },
   "REQUEST": {
    "id": 13,
    "count": 2,
    "key": "q:",
-   "columns": {
-    "age": {
+   "columns": [
+    {
+     "name": "age",
      "block": "num",
      "col": 0,
      "width": 1,
@@ -1639,30 +2443,46 @@
      "scale": "time",
      "normalisation": "log1p(x), x in [0, 1e7] game hours since"
     },
-    "prop": {
+    {
+     "name": "from",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY"
+     ]
+    },
+    {
+     "name": "prop",
      "block": "prop",
      "col": 0,
      "width": 1,
      "codec": "PropositionCodec",
      "scale": "proposition",
      "normalisation": ""
-    },
-    "from": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
     }
-   }
+   ]
   },
   "SELF": {
    "id": 14,
    "count": 1,
    "key": "me",
-   "columns": {
-    "age_stage": {
+   "columns": [
+    {
+     "name": "age",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]",
+     "unit": "ans"
+    },
+    {
+     "name": "age_stage",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -1677,72 +2497,8 @@
       "elder"
      ]
     },
-    "posture": {
-     "block": "cat",
-     "col": 1,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "enum",
-     "normalisation": "",
-     "values": [
-      "standing",
-      "walking",
-      "running",
-      "sitting",
-      "kneeling",
-      "crouching",
-      "lying",
-      "prone",
-      "climbing",
-      "swimming",
-      "guard",
-      "carrying"
-     ]
-    },
-    "season": {
-     "block": "cat",
-     "col": 2,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "enum",
-     "normalisation": "",
-     "values": [
-      "spring",
-      "summer",
-      "autumn",
-      "winter"
-     ]
-    },
-    "sex": {
-     "block": "cat",
-     "col": 3,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "enum",
-     "normalisation": "",
-     "values": [
-      "female",
-      "male"
-     ]
-    },
-    "wound": {
-     "block": "cat",
-     "col": 4,
-     "width": 6,
-     "codec": "BagCodec",
-     "scale": "list",
-     "normalisation": ""
-    },
-    "age": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "qty",
-     "normalisation": "log1p(x), x in [0, 1e7]",
-     "unit": "ans"
-    },
-    "body.bleeding": {
+    {
+     "name": "body.bleeding",
      "block": "num",
      "col": 1,
      "width": 1,
@@ -1750,7 +2506,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "body.breath": {
+    {
+     "name": "body.breath",
      "block": "num",
      "col": 2,
      "width": 1,
@@ -1758,7 +2515,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "body.consciousness": {
+    {
+     "name": "body.consciousness",
      "block": "num",
      "col": 3,
      "width": 1,
@@ -1766,7 +2524,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "body.endurance": {
+    {
+     "name": "body.endurance",
      "block": "num",
      "col": 4,
      "width": 1,
@@ -1774,7 +2533,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "body.intox": {
+    {
+     "name": "body.intox",
      "block": "num",
      "col": 5,
      "width": 1,
@@ -1782,7 +2542,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "body.load": {
+    {
+     "name": "body.load",
      "block": "num",
      "col": 6,
      "width": 1,
@@ -1790,7 +2551,8 @@
      "scale": "ratio",
      "normalisation": "x, x in [0, 1]"
     },
-    "body.manipulation": {
+    {
+     "name": "body.manipulation",
      "block": "num",
      "col": 7,
      "width": 1,
@@ -1798,7 +2560,8 @@
      "scale": "ratio",
      "normalisation": "x, x in [0, 1]"
     },
-    "body.mobility": {
+    {
+     "name": "body.mobility",
      "block": "num",
      "col": 8,
      "width": 1,
@@ -1806,7 +2569,8 @@
      "scale": "ratio",
      "normalisation": "x, x in [0, 1]"
     },
-    "body.pain": {
+    {
+     "name": "body.pain",
      "block": "num",
      "col": 9,
      "width": 1,
@@ -1814,7 +2578,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "body.sickness": {
+    {
+     "name": "body.sickness",
      "block": "num",
      "col": 10,
      "width": 1,
@@ -1822,7 +2587,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "body.strength": {
+    {
+     "name": "body.strength",
      "block": "num",
      "col": 11,
      "width": 1,
@@ -1830,7 +2596,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "held": {
+    {
+     "name": "held",
      "block": "num",
      "col": 12,
      "width": 43,
@@ -1882,52 +2649,311 @@
       "rolls_load": "1 if x else 0 (a real bool)"
      },
      "components": [
-      "mass",
-      "size",
-      "edge",
-      "point",
-      "reach",
-      "capacity",
-      "temperature",
-      "wetness",
-      "burning",
-      "open",
-      "lit",
-      "dirtiness",
-      "graspable",
-      "carryable",
-      "throwable",
-      "cuts",
-      "pierces",
-      "impacts",
-      "digs",
-      "contains",
-      "fuel",
-      "ignites",
-      "wearable",
-      "supports_body",
-      "climbable",
-      "openable",
-      "conceals",
-      "blocks_passage",
-      "floats_carries",
-      "shelters",
-      "writable",
-      "heats",
-      "light_source",
-      "binds",
-      "mountable",
-      "protects",
-      "launches",
-      "plays_music",
-      "reflects_image",
-      "wipes",
-      "sharpens",
-      "joins",
-      "rolls_load"
+      {
+       "name": "mass",
+       "col": 12,
+       "scale": "qty",
+       "unit": "kg",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "size",
+       "col": 13,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "edge",
+       "col": 14,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "point",
+       "col": 15,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "reach",
+       "col": 16,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "capacity",
+       "col": 17,
+       "scale": "qty",
+       "unit": "l",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "temperature",
+       "col": 18,
+       "scale": "qty",
+       "unit": "°C",
+       "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
+      },
+      {
+       "name": "wetness",
+       "col": 19,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "burning",
+       "col": 20,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "open",
+       "col": 21,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "lit",
+       "col": 22,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "dirtiness",
+       "col": 23,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "graspable",
+       "col": 24,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "carryable",
+       "col": 25,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "throwable",
+       "col": 26,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "cuts",
+       "col": 27,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "pierces",
+       "col": 28,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "impacts",
+       "col": 29,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "digs",
+       "col": 30,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "contains",
+       "col": 31,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "fuel",
+       "col": 32,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "ignites",
+       "col": 33,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wearable",
+       "col": 34,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "supports_body",
+       "col": 35,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "climbable",
+       "col": 36,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "openable",
+       "col": 37,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "conceals",
+       "col": 38,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "blocks_passage",
+       "col": 39,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "floats_carries",
+       "col": 40,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "shelters",
+       "col": 41,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "writable",
+       "col": 42,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "heats",
+       "col": 43,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "light_source",
+       "col": 44,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "binds",
+       "col": 45,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "mountable",
+       "col": 46,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "protects",
+       "col": 47,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "launches",
+       "col": 48,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "plays_music",
+       "col": 49,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "reflects_image",
+       "col": 50,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wipes",
+       "col": 51,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "sharpens",
+       "col": 52,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "joins",
+       "col": 53,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "rolls_load",
+       "col": 54,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      }
      ]
     },
-    "need.exhaustion": {
+    {
+     "name": "need.exhaustion",
      "block": "num",
      "col": 55,
      "width": 1,
@@ -1935,7 +2961,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "need.hunger": {
+    {
+     "name": "need.hunger",
      "block": "num",
      "col": 56,
      "width": 1,
@@ -1943,7 +2970,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "need.reserves": {
+    {
+     "name": "need.reserves",
      "block": "num",
      "col": 57,
      "width": 1,
@@ -1951,7 +2979,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "need.sleep": {
+    {
+     "name": "need.sleep",
      "block": "num",
      "col": 58,
      "width": 1,
@@ -1959,7 +2988,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "need.thermal": {
+    {
+     "name": "need.thermal",
      "block": "num",
      "col": 59,
      "width": 1,
@@ -1967,7 +2997,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "need.thirst": {
+    {
+     "name": "need.thirst",
      "block": "num",
      "col": 60,
      "width": 1,
@@ -1975,7 +3006,72 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "time": {
+    {
+     "name": "place",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "PLACE",
+      "LOCUS"
+     ]
+    },
+    {
+     "name": "posture",
+     "block": "cat",
+     "col": 1,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "normalisation": "",
+     "values": [
+      "standing",
+      "walking",
+      "running",
+      "sitting",
+      "kneeling",
+      "crouching",
+      "lying",
+      "prone",
+      "climbing",
+      "swimming",
+      "guard",
+      "carrying"
+     ]
+    },
+    {
+     "name": "season",
+     "block": "cat",
+     "col": 2,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "normalisation": "",
+     "values": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+     ]
+    },
+    {
+     "name": "sex",
+     "block": "cat",
+     "col": 3,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "normalisation": "",
+     "values": [
+      "female",
+      "male"
+     ]
+    },
+    {
+     "name": "time",
      "block": "num",
      "col": 61,
      "width": 3,
@@ -1983,27 +3079,74 @@
      "scale": "qty",
      "normalisation": "x, x in [-1, 1]",
      "components": [
-      "sin",
-      "cos",
-      "certainty"
+      {
+       "name": "sin",
+       "col": 61,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "cos",
+       "col": 62,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "certainty",
+       "col": 63,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      }
      ]
     },
-    "place": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
+    {
+     "name": "wound",
+     "block": "cat",
+     "col": 4,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
      "normalisation": ""
     }
-   }
+   ]
   },
   "SELF_MIND": {
    "id": 15,
    "count": 1,
    "key": "me.mind",
-   "columns": {
-    "attracted_to": {
+   "columns": [
+    {
+     "name": "ability.coordination",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "normalisation": "x / 10, x in [-10, 10]"
+    },
+    {
+     "name": "ability.intellect",
+     "block": "num",
+     "col": 1,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "ability.self_control",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "attracted_to",
      "block": "cat",
      "col": 0,
      "width": 6,
@@ -2015,31 +3158,8 @@
       "male"
      ]
     },
-    "ability.coordination": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "bipolar10",
-     "normalisation": "x / 10, x in [-10, 10]"
-    },
-    "ability.intellect": {
-     "block": "num",
-     "col": 1,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "ability.self_control": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "temper.baseline_mood": {
+    {
+     "name": "temper.baseline_mood",
      "block": "num",
      "col": 3,
      "width": 1,
@@ -2047,7 +3167,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "temper.resilience": {
+    {
+     "name": "temper.resilience",
      "block": "num",
      "col": 4,
      "width": 1,
@@ -2055,7 +3176,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "trait.altruism": {
+    {
+     "name": "trait.altruism",
      "block": "num",
      "col": 5,
      "width": 1,
@@ -2063,7 +3185,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.anxiousness": {
+    {
+     "name": "trait.anxiousness",
      "block": "num",
      "col": 6,
      "width": 1,
@@ -2071,7 +3194,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.assurance": {
+    {
+     "name": "trait.assurance",
      "block": "num",
      "col": 7,
      "width": 1,
@@ -2079,7 +3203,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.creativity": {
+    {
+     "name": "trait.creativity",
      "block": "num",
      "col": 8,
      "width": 1,
@@ -2087,7 +3212,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.diligence": {
+    {
+     "name": "trait.diligence",
      "block": "num",
      "col": 9,
      "width": 1,
@@ -2095,7 +3221,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.fairness": {
+    {
+     "name": "trait.fairness",
      "block": "num",
      "col": 10,
      "width": 1,
@@ -2103,7 +3230,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.fearfulness": {
+    {
+     "name": "trait.fearfulness",
      "block": "num",
      "col": 11,
      "width": 1,
@@ -2111,7 +3239,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.forgiveness": {
+    {
+     "name": "trait.forgiveness",
      "block": "num",
      "col": 12,
      "width": 1,
@@ -2119,7 +3248,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.gentleness": {
+    {
+     "name": "trait.gentleness",
      "block": "num",
      "col": 13,
      "width": 1,
@@ -2127,7 +3257,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.greed_avoidance": {
+    {
+     "name": "trait.greed_avoidance",
      "block": "num",
      "col": 14,
      "width": 1,
@@ -2135,7 +3266,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.inquisitiveness": {
+    {
+     "name": "trait.inquisitiveness",
      "block": "num",
      "col": 15,
      "width": 1,
@@ -2143,7 +3275,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.modesty": {
+    {
+     "name": "trait.modesty",
      "block": "num",
      "col": 16,
      "width": 1,
@@ -2151,7 +3284,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.patience": {
+    {
+     "name": "trait.patience",
      "block": "num",
      "col": 17,
      "width": 1,
@@ -2159,7 +3293,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.prudence": {
+    {
+     "name": "trait.prudence",
      "block": "num",
      "col": 18,
      "width": 1,
@@ -2167,7 +3302,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.sentimentality": {
+    {
+     "name": "trait.sentimentality",
      "block": "num",
      "col": 19,
      "width": 1,
@@ -2175,7 +3311,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.sincerity": {
+    {
+     "name": "trait.sincerity",
      "block": "num",
      "col": 20,
      "width": 1,
@@ -2183,7 +3320,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.sociability": {
+    {
+     "name": "trait.sociability",
      "block": "num",
      "col": 21,
      "width": 1,
@@ -2191,7 +3329,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "trait.unconventionality": {
+    {
+     "name": "trait.unconventionality",
      "block": "num",
      "col": 22,
      "width": 1,
@@ -2199,7 +3338,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "value.achievement": {
+    {
+     "name": "value.achievement",
      "block": "num",
      "col": 23,
      "width": 1,
@@ -2207,7 +3347,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "value.authority": {
+    {
+     "name": "value.authority",
      "block": "num",
      "col": 24,
      "width": 1,
@@ -2215,7 +3356,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "value.honor": {
+    {
+     "name": "value.honor",
      "block": "num",
      "col": 25,
      "width": 1,
@@ -2223,7 +3365,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "value.liberty": {
+    {
+     "name": "value.liberty",
      "block": "num",
      "col": 26,
      "width": 1,
@@ -2231,7 +3374,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "value.loyalty": {
+    {
+     "name": "value.loyalty",
      "block": "num",
      "col": 27,
      "width": 1,
@@ -2239,7 +3383,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "value.pleasure": {
+    {
+     "name": "value.pleasure",
      "block": "num",
      "col": 28,
      "width": 1,
@@ -2247,7 +3392,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "value.power": {
+    {
+     "name": "value.power",
      "block": "num",
      "col": 29,
      "width": 1,
@@ -2255,7 +3401,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "value.sanctity": {
+    {
+     "name": "value.sanctity",
      "block": "num",
      "col": 30,
      "width": 1,
@@ -2263,14 +3410,30 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     }
-   }
+   ]
   },
   "SELF_STATE": {
    "id": 16,
    "count": 1,
    "key": "me.state",
-   "columns": {
-    "drive.achievement": {
+   "columns": [
+    {
+     "name": "attention",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "THING",
+      "INV",
+      "SELF"
+     ]
+    },
+    {
+     "name": "drive.achievement",
      "block": "num",
      "col": 0,
      "width": 1,
@@ -2278,7 +3441,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.acquisition": {
+    {
+     "name": "drive.acquisition",
      "block": "num",
      "col": 1,
      "width": 1,
@@ -2286,7 +3450,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.autonomy": {
+    {
+     "name": "drive.autonomy",
      "block": "num",
      "col": 2,
      "width": 1,
@@ -2294,7 +3459,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.company": {
+    {
+     "name": "drive.company",
      "block": "num",
      "col": 3,
      "width": 1,
@@ -2302,7 +3468,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.esteem": {
+    {
+     "name": "drive.esteem",
      "block": "num",
      "col": 4,
      "width": 1,
@@ -2310,7 +3477,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.intimacy": {
+    {
+     "name": "drive.intimacy",
      "block": "num",
      "col": 5,
      "width": 1,
@@ -2318,7 +3486,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.meaning": {
+    {
+     "name": "drive.meaning",
      "block": "num",
      "col": 6,
      "width": 1,
@@ -2326,7 +3495,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.novelty": {
+    {
+     "name": "drive.novelty",
      "block": "num",
      "col": 7,
      "width": 1,
@@ -2334,7 +3504,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.play": {
+    {
+     "name": "drive.play",
      "block": "num",
      "col": 8,
      "width": 1,
@@ -2342,7 +3513,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "drive.security": {
+    {
+     "name": "drive.security",
      "block": "num",
      "col": 9,
      "width": 1,
@@ -2350,7 +3522,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.anger": {
+    {
+     "name": "emo.anger",
      "block": "num",
      "col": 10,
      "width": 1,
@@ -2358,7 +3531,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.anxiety": {
+    {
+     "name": "emo.anxiety",
      "block": "num",
      "col": 11,
      "width": 1,
@@ -2366,7 +3540,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.boredom": {
+    {
+     "name": "emo.boredom",
      "block": "num",
      "col": 12,
      "width": 1,
@@ -2374,7 +3549,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.confusion": {
+    {
+     "name": "emo.confusion",
      "block": "num",
      "col": 13,
      "width": 1,
@@ -2382,7 +3558,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.contempt": {
+    {
+     "name": "emo.contempt",
      "block": "num",
      "col": 14,
      "width": 1,
@@ -2390,7 +3567,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.disgust": {
+    {
+     "name": "emo.disgust",
      "block": "num",
      "col": 15,
      "width": 1,
@@ -2398,7 +3576,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.envy": {
+    {
+     "name": "emo.envy",
      "block": "num",
      "col": 16,
      "width": 1,
@@ -2406,7 +3585,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.fear": {
+    {
+     "name": "emo.fear",
      "block": "num",
      "col": 17,
      "width": 1,
@@ -2414,7 +3594,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.gratitude": {
+    {
+     "name": "emo.gratitude",
      "block": "num",
      "col": 18,
      "width": 1,
@@ -2422,7 +3603,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.grief": {
+    {
+     "name": "emo.grief",
      "block": "num",
      "col": 19,
      "width": 1,
@@ -2430,7 +3612,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.guilt": {
+    {
+     "name": "emo.guilt",
      "block": "num",
      "col": 20,
      "width": 1,
@@ -2438,7 +3621,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.jealousy": {
+    {
+     "name": "emo.jealousy",
      "block": "num",
      "col": 21,
      "width": 1,
@@ -2446,7 +3630,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.joy": {
+    {
+     "name": "emo.joy",
      "block": "num",
      "col": 22,
      "width": 1,
@@ -2454,7 +3639,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.pride": {
+    {
+     "name": "emo.pride",
      "block": "num",
      "col": 23,
      "width": 1,
@@ -2462,7 +3648,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.sadness": {
+    {
+     "name": "emo.sadness",
      "block": "num",
      "col": 24,
      "width": 1,
@@ -2470,7 +3657,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.shame": {
+    {
+     "name": "emo.shame",
      "block": "num",
      "col": 25,
      "width": 1,
@@ -2478,7 +3666,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.surprise": {
+    {
+     "name": "emo.surprise",
      "block": "num",
      "col": 26,
      "width": 1,
@@ -2486,7 +3675,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "emo.tenderness": {
+    {
+     "name": "emo.tenderness",
      "block": "num",
      "col": 27,
      "width": 1,
@@ -2494,7 +3684,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "masking": {
+    {
+     "name": "masking",
      "block": "num",
      "col": 28,
      "width": 1,
@@ -2502,7 +3693,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "mood.energy": {
+    {
+     "name": "mood.energy",
      "block": "num",
      "col": 29,
      "width": 1,
@@ -2510,7 +3702,8 @@
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
     },
-    "mood.valence": {
+    {
+     "name": "mood.valence",
      "block": "num",
      "col": 30,
      "width": 1,
@@ -2518,7 +3711,8 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "self_regard": {
+    {
+     "name": "self_regard",
      "block": "num",
      "col": 31,
      "width": 1,
@@ -2526,30 +3720,33 @@
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
     },
-    "stress": {
+    {
+     "name": "stress",
      "block": "num",
      "col": 32,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
-    },
-    "attention": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
     }
-   }
+   ]
   },
   "SKILL": {
    "id": 17,
    "count": 3,
    "key": "k:",
-   "columns": {
-    "technique": {
+   "columns": [
+    {
+     "name": "self_estimate",
+     "block": "num",
+     "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "technique",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -2584,46 +3781,41 @@
       "t_textile",
       "t_woodwork"
      ]
-    },
-    "self_estimate": {
-     "block": "num",
-     "col": 0,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
     }
-   }
+   ]
   },
   "TASTE": {
    "id": 18,
    "count": 2,
    "key": "t:",
-   "columns": {
-    "concept": {
-     "block": "cat",
-     "col": 0,
-     "width": 1,
-     "codec": "SymbolCodec",
-     "scale": "word",
-     "normalisation": ""
-    },
-    "attitude": {
+   "columns": [
+    {
+     "name": "attitude",
      "block": "num",
      "col": 0,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
+    },
+    {
+     "name": "concept",
+     "block": "cat",
+     "col": 0,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
     }
-   }
+   ]
   },
   "THING": {
    "id": 19,
    "count": 16,
    "key": "@T",
-   "columns": {
-    "amount": {
+   "columns": [
+    {
+     "name": "amount",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -2638,7 +3830,8 @@
       "unknown"
      ]
     },
-    "depth": {
+    {
+     "name": "depth",
      "block": "cat",
      "col": 1,
      "width": 1,
@@ -2652,7 +3845,33 @@
       "unseen_bottom"
      ]
     },
-    "display": {
+    {
+     "name": "dir",
+     "block": "num",
+     "col": 0,
+     "width": 2,
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "normalisation": "x, x in [-1, 1]",
+     "components": [
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": "",
+       "normalisation": "x, x in [-1, 1]"
+      }
+     ]
+    },
+    {
+     "name": "display",
      "block": "cat",
      "col": 2,
      "width": 1,
@@ -2671,7 +3890,40 @@
       "playing"
      ]
     },
-    "kind": {
+    {
+     "name": "dist",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]",
+     "unit": "m"
+    },
+    {
+     "name": "file",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "THING",
+      "INV"
+     ]
+    },
+    {
+     "name": "file_certainty",
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "kind",
      "block": "cat",
      "col": 3,
      "width": 1,
@@ -2679,7 +3931,8 @@
      "scale": "word",
      "normalisation": ""
     },
-    "motion": {
+    {
+     "name": "motion",
      "block": "cat",
      "col": 4,
      "width": 1,
@@ -2694,44 +3947,22 @@
       "rolling"
      ]
     },
-    "state": {
-     "block": "cat",
-     "col": 5,
-     "width": 6,
-     "codec": "BagCodec",
-     "scale": "list",
-     "normalisation": ""
-    },
-    "dir": {
-     "block": "num",
-     "col": 0,
-     "width": 2,
-     "codec": "VectorCodec",
-     "scale": "qty",
-     "normalisation": "x, x in [-1, 1]",
-     "components": [
-      "sin",
-      "cos"
+    {
+     "name": "owner",
+     "block": "ptr",
+     "col": 1,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "GROUP",
+      "SELF"
      ]
     },
-    "dist": {
-     "block": "num",
-     "col": 2,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "qty",
-     "normalisation": "log1p(x), x in [0, 1e7]",
-     "unit": "m"
-    },
-    "file_certainty": {
-     "block": "num",
-     "col": 3,
-     "width": 1,
-     "codec": "ScalarCodec",
-     "scale": "unipolar10",
-     "normalisation": "x / 10, x in [0, 10]"
-    },
-    "props": {
+    {
+     "name": "props",
      "block": "num",
      "col": 4,
      "width": 43,
@@ -2783,75 +4014,327 @@
       "rolls_load": "1 if x else 0 (a real bool)"
      },
      "components": [
-      "mass",
-      "size",
-      "edge",
-      "point",
-      "reach",
-      "capacity",
-      "temperature",
-      "wetness",
-      "burning",
-      "open",
-      "lit",
-      "dirtiness",
-      "graspable",
-      "carryable",
-      "throwable",
-      "cuts",
-      "pierces",
-      "impacts",
-      "digs",
-      "contains",
-      "fuel",
-      "ignites",
-      "wearable",
-      "supports_body",
-      "climbable",
-      "openable",
-      "conceals",
-      "blocks_passage",
-      "floats_carries",
-      "shelters",
-      "writable",
-      "heats",
-      "light_source",
-      "binds",
-      "mountable",
-      "protects",
-      "launches",
-      "plays_music",
-      "reflects_image",
-      "wipes",
-      "sharpens",
-      "joins",
-      "rolls_load"
+      {
+       "name": "mass",
+       "col": 4,
+       "scale": "qty",
+       "unit": "kg",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "size",
+       "col": 5,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "edge",
+       "col": 6,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "point",
+       "col": 7,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "reach",
+       "col": 8,
+       "scale": "qty",
+       "unit": "m",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "capacity",
+       "col": 9,
+       "scale": "qty",
+       "unit": "l",
+       "normalisation": "log1p(x), x in [0, 1e7]"
+      },
+      {
+       "name": "temperature",
+       "col": 10,
+       "scale": "qty",
+       "unit": "°C",
+       "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
+      },
+      {
+       "name": "wetness",
+       "col": 11,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "burning",
+       "col": 12,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "open",
+       "col": 13,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "lit",
+       "col": 14,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "dirtiness",
+       "col": 15,
+       "scale": "unipolar10",
+       "unit": "",
+       "normalisation": "x / 10, x in [0, 10]"
+      },
+      {
+       "name": "graspable",
+       "col": 16,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "carryable",
+       "col": 17,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "throwable",
+       "col": 18,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "cuts",
+       "col": 19,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "pierces",
+       "col": 20,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "impacts",
+       "col": 21,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "digs",
+       "col": 22,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "contains",
+       "col": 23,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "fuel",
+       "col": 24,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "ignites",
+       "col": 25,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wearable",
+       "col": 26,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "supports_body",
+       "col": 27,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "climbable",
+       "col": 28,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "openable",
+       "col": 29,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "conceals",
+       "col": 30,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "blocks_passage",
+       "col": 31,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "floats_carries",
+       "col": 32,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "shelters",
+       "col": 33,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "writable",
+       "col": 34,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "heats",
+       "col": 35,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "light_source",
+       "col": 36,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "binds",
+       "col": 37,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "mountable",
+       "col": 38,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "protects",
+       "col": 39,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "launches",
+       "col": 40,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "plays_music",
+       "col": 41,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "reflects_image",
+       "col": 42,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "wipes",
+       "col": 43,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "sharpens",
+       "col": 44,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "joins",
+       "col": 45,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      },
+      {
+       "name": "rolls_load",
+       "col": 46,
+       "scale": "bool",
+       "unit": "",
+       "normalisation": "1 if x else 0 (a real bool)"
+      }
      ]
     },
-    "file": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
-    },
-    "owner": {
-     "block": "ptr",
-     "col": 1,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
+    {
+     "name": "state",
+     "block": "cat",
+     "col": 5,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
      "normalisation": ""
     }
-   }
+   ]
   },
   "WAKE": {
    "id": 20,
    "count": 1,
    "key": "wake",
-   "columns": {
-    "cause": {
+   "columns": [
+    {
+     "name": "cause",
      "block": "cat",
      "col": 0,
      "width": 1,
@@ -2868,7 +4351,8 @@
       "routine"
      ]
     },
-    "mode": {
+    {
+     "name": "mode",
      "block": "cat",
      "col": 1,
      "width": 1,
@@ -2881,23 +4365,32 @@
       "reflect"
      ]
     },
-    "urgency": {
+    {
+     "name": "trigger",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "EVENT",
+      "HEARD",
+      "REQUEST",
+      "GOAL",
+      "PLAN"
+     ]
+    },
+    {
+     "name": "urgency",
      "block": "num",
      "col": 0,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
-    },
-    "trigger": {
-     "block": "ptr",
-     "col": 0,
-     "width": 1,
-     "codec": "PointerCodec",
-     "scale": "mref",
-     "normalisation": ""
     }
-   }
+   ]
   }
  },
  "vocabulary": [
@@ -5649,5 +7142,4459 @@
   "yew_wood": 1449,
   "yoke": 1450,
   "you": 1451
- }
+ },
+ "fingerprints": {
+  "schema": "tok2-context-1",
+  "interface": "fdde0c8c8d775575",
+  "layout": "4231fe9380cdfe59",
+  "vocabulary": "55e0b2ce110fa1c7"
+ },
+ "grammar": {
+  "source": "catalogue/tools/language.py (Expression, Vocabulary.types, ref_targets): port those functions with these tables",
+  "limits": {
+   "max_symbols": 20,
+   "max_depth": 2,
+   "max_pointers": 3,
+   "max_roles": 3
+  },
+  "pointer_regex": "^(@E\\d+|@T\\d+|@G\\d+|@L\\d+|@V\\d+|@PLACE|[bmg]:\\d+|n:\\d+)\\Z (ASCII digits; tok-2 additionally requires canonical numbers)",
+  "nesting_heads": [
+   "believes",
+   "custom",
+   "intends",
+   "may",
+   "norm",
+   "owes",
+   "recipe",
+   "says",
+   "that",
+   "wants"
+  ],
+  "description_categories": [
+   "descriptor",
+   "group_kind",
+   "lookalike",
+   "occupation",
+   "quality",
+   "role_word"
+  ],
+  "ref_words": {
+   "anyone": [
+    "agent",
+    "entity"
+   ],
+   "everyone": [
+    "agent",
+    "entity",
+    "group"
+   ],
+   "here": [
+    "place"
+   ],
+   "me": [
+    "agent",
+    "entity"
+   ],
+   "no_one": [
+    "agent",
+    "entity"
+   ],
+   "someone": [
+    "agent",
+    "entity"
+   ],
+   "this": [
+    "entity",
+    "item"
+   ],
+   "us": [
+    "agent",
+    "entity",
+    "group"
+   ],
+   "you": [
+    "agent",
+    "entity"
+   ]
+  },
+  "category_types": {
+   "degree": [
+    "quantity"
+   ],
+   "deontic": [
+    "concept"
+   ],
+   "descriptor": [
+    "concept"
+   ],
+   "direction": [
+    "place"
+   ],
+   "emotion": [
+    "emotion",
+    "variable"
+   ],
+   "gesture": [
+    "gesture"
+   ],
+   "goal_mode": [
+    "concept"
+   ],
+   "group_kind": [
+    "concept",
+    "kind"
+   ],
+   "interpretation": [
+    "interpretation"
+   ],
+   "kind": [
+    "concept",
+    "entity",
+    "item",
+    "kind"
+   ],
+   "kind_qty": [
+    "entity",
+    "item",
+    "kind"
+   ],
+   "link": [
+    "concept"
+   ],
+   "lookalike": [
+    "concept",
+    "kind"
+   ],
+   "manner": [
+    "manner"
+   ],
+   "number": [
+    "quantity"
+   ],
+   "occupation": [
+    "concept"
+   ],
+   "property": [
+    "variable"
+   ],
+   "quality": [
+    "concept"
+   ],
+   "quantity": [
+    "quantity"
+   ],
+   "role_word": [
+    "concept",
+    "role"
+   ],
+   "source": [
+    "concept"
+   ],
+   "spatial": [
+    "concept"
+   ],
+   "technique": [
+    "concept",
+    "technique"
+   ],
+   "time": [
+    "time"
+   ],
+   "variable": [
+    "variable"
+   ]
+  },
+  "accepts": {
+   "agent": [
+    "agent"
+   ],
+   "agreement": [
+    "proposition"
+   ],
+   "concept": [
+    "concept",
+    "kind"
+   ],
+   "emotion": [
+    "emotion"
+   ],
+   "entity": [
+    "agent",
+    "entity",
+    "group",
+    "item",
+    "place"
+   ],
+   "event": [
+    "event"
+   ],
+   "gesture": [
+    "gesture"
+   ],
+   "group": [
+    "group",
+    "role"
+   ],
+   "interpretation": [
+    "interpretation"
+   ],
+   "item": [
+    "entity",
+    "item"
+   ],
+   "kind": [
+    "kind"
+   ],
+   "name": [
+    "name"
+   ],
+   "place": [
+    "place"
+   ],
+   "proposition": [
+    "proposition"
+   ],
+   "quantity": [
+    "quantity"
+   ],
+   "role": [
+    "group",
+    "role"
+   ],
+   "technique": [
+    "technique"
+   ],
+   "time": [
+    "time"
+   ],
+   "variable": [
+    "emotion",
+    "variable"
+   ]
+  },
+  "word_categories": {
+   "a_while": [
+    "manner"
+   ],
+   "able": [
+    "predicate"
+   ],
+   "above": [
+    "spatial"
+   ],
+   "abrasiveness": [
+    "property"
+   ],
+   "absorbency": [
+    "property"
+   ],
+   "accident": [
+    "interpretation"
+   ],
+   "achieve": [
+    "goal_mode"
+   ],
+   "activate": [
+    "manner"
+   ],
+   "adhesion": [
+    "property"
+   ],
+   "admirable": [
+    "deontic"
+   ],
+   "adultery": [
+    "interpretation"
+   ],
+   "affront": [
+    "interpretation"
+   ],
+   "age_years": [
+    "variable"
+   ],
+   "ahead": [
+    "direction"
+   ],
+   "ahead_left": [
+    "direction"
+   ],
+   "ahead_right": [
+    "direction"
+   ],
+   "all": [
+    "manner",
+    "quantity"
+   ],
+   "along": [
+    "manner"
+   ],
+   "altruism": [
+    "variable"
+   ],
+   "and": [
+    "logic"
+   ],
+   "angry": [
+    "manner"
+   ],
+   "animal_cruelty": [
+    "interpretation"
+   ],
+   "anxiousness": [
+    "variable"
+   ],
+   "any": [
+    "manner"
+   ],
+   "anyone": [
+    "quantifier"
+   ],
+   "applaud": [
+    "manner"
+   ],
+   "apprentice": [
+    "link"
+   ],
+   "arm": [
+    "manner"
+   ],
+   "arms": [
+    "manner"
+   ],
+   "arson": [
+    "interpretation"
+   ],
+   "aside": [
+    "manner"
+   ],
+   "ask": [
+    "mood"
+   ],
+   "assault": [
+    "interpretation"
+   ],
+   "assemble": [
+    "manner"
+   ],
+   "assert": [
+    "mood"
+   ],
+   "assumed": [
+    "source"
+   ],
+   "assurance": [
+    "variable"
+   ],
+   "at": [
+    "predicate"
+   ],
+   "at_festival": [
+    "time"
+   ],
+   "attitude": [
+    "predicate"
+   ],
+   "attracted_to": [
+    "variable"
+   ],
+   "aunt_uncle": [
+    "link"
+   ],
+   "avoid": [
+    "goal_mode"
+   ],
+   "away": [
+    "manner"
+   ],
+   "back": [
+    "manner"
+   ],
+   "baseline_mood": [
+    "variable"
+   ],
+   "because": [
+    "logic"
+   ],
+   "beckon": [
+    "manner"
+   ],
+   "before_winter": [
+    "time"
+   ],
+   "behind": [
+    "direction",
+    "spatial"
+   ],
+   "behind_left": [
+    "direction"
+   ],
+   "behind_right": [
+    "direction"
+   ],
+   "believes": [
+    "predicate"
+   ],
+   "beside": [
+    "spatial"
+   ],
+   "betrayal": [
+    "interpretation"
+   ],
+   "betrothed": [
+    "link"
+   ],
+   "bind": [
+    "manner"
+   ],
+   "binds": [
+    "property"
+   ],
+   "block": [
+    "manner"
+   ],
+   "blocks_passage": [
+    "property"
+   ],
+   "blow": [
+    "gesture"
+   ],
+   "body": [
+    "manner"
+   ],
+   "bow": [
+    "manner"
+   ],
+   "bribery": [
+    "interpretation"
+   ],
+   "brief": [
+    "manner"
+   ],
+   "brisk": [
+    "manner"
+   ],
+   "broken_promise": [
+    "interpretation"
+   ],
+   "buoyancy": [
+    "property"
+   ],
+   "burning": [
+    "property"
+   ],
+   "by_arm": [
+    "manner"
+   ],
+   "c_addressed": [
+    "condition"
+   ],
+   "c_attacked": [
+    "condition"
+   ],
+   "c_blocked": [
+    "condition"
+   ],
+   "c_done": [
+    "condition"
+   ],
+   "c_elapsed": [
+    "condition"
+   ],
+   "c_exhausted": [
+    "condition"
+   ],
+   "c_hands_full": [
+    "condition"
+   ],
+   "c_hears": [
+    "condition"
+   ],
+   "c_hunger_above": [
+    "condition"
+   ],
+   "c_pain_above": [
+    "condition"
+   ],
+   "c_reached": [
+    "condition"
+   ],
+   "c_rested": [
+    "condition"
+   ],
+   "c_sees": [
+    "condition"
+   ],
+   "c_sees_ref": [
+    "condition"
+   ],
+   "c_state_seen": [
+    "condition"
+   ],
+   "c_stopped": [
+    "condition"
+   ],
+   "c_target_down": [
+    "condition"
+   ],
+   "c_target_gone": [
+    "condition"
+   ],
+   "c_target_still": [
+    "condition"
+   ],
+   "c_target_yields": [
+    "condition"
+   ],
+   "c_thirst_above": [
+    "condition"
+   ],
+   "c_time": [
+    "condition"
+   ],
+   "c_tool_broken": [
+    "condition"
+   ],
+   "calm": [
+    "manner"
+   ],
+   "capacity": [
+    "property"
+   ],
+   "carryable": [
+    "property"
+   ],
+   "caused": [
+    "predicate"
+   ],
+   "channel": [
+    "gesture"
+   ],
+   "charge": [
+    "property"
+   ],
+   "chief": [
+    "role_word"
+   ],
+   "child": [
+    "link"
+   ],
+   "climb": [
+    "gesture"
+   ],
+   "climbable": [
+    "property"
+   ],
+   "close": [
+    "manner"
+   ],
+   "cold": [
+    "manner"
+   ],
+   "collar": [
+    "manner"
+   ],
+   "colleague": [
+    "link"
+   ],
+   "conceals": [
+    "property"
+   ],
+   "container": [
+    "manner"
+   ],
+   "contains": [
+    "property"
+   ],
+   "coordination": [
+    "variable"
+   ],
+   "count": [
+    "predicate"
+   ],
+   "cousin": [
+    "link"
+   ],
+   "cover": [
+    "manner"
+   ],
+   "cowardice": [
+    "interpretation"
+   ],
+   "creativity": [
+    "variable"
+   ],
+   "crouch": [
+    "manner"
+   ],
+   "cultivable": [
+    "property"
+   ],
+   "custom": [
+    "predicate"
+   ],
+   "cuts": [
+    "property"
+   ],
+   "d_bearded": [
+    "descriptor"
+   ],
+   "d_child": [
+    "descriptor"
+   ],
+   "d_fat": [
+    "descriptor"
+   ],
+   "d_limping": [
+    "descriptor"
+   ],
+   "d_man": [
+    "descriptor"
+   ],
+   "d_old": [
+    "descriptor"
+   ],
+   "d_ragged": [
+    "descriptor"
+   ],
+   "d_rich_clothes": [
+    "descriptor"
+   ],
+   "d_scarred": [
+    "descriptor"
+   ],
+   "d_short": [
+    "descriptor"
+   ],
+   "d_stranger": [
+    "descriptor"
+   ],
+   "d_tall": [
+    "descriptor"
+   ],
+   "d_thin": [
+    "descriptor"
+   ],
+   "d_woman": [
+    "descriptor"
+   ],
+   "d_young": [
+    "descriptor"
+   ],
+   "dark_berries": [
+    "lookalike"
+   ],
+   "dead": [
+    "predicate"
+   ],
+   "deputy": [
+    "role_word"
+   ],
+   "described": [
+    "logic"
+   ],
+   "did": [
+    "predicate"
+   ],
+   "digs": [
+    "property"
+   ],
+   "diligence": [
+    "variable"
+   ],
+   "dirtiness": [
+    "property"
+   ],
+   "disassemble": [
+    "manner"
+   ],
+   "discreet": [
+    "manner"
+   ],
+   "disrespect_absence": [
+    "interpretation"
+   ],
+   "divisible": [
+    "property"
+   ],
+   "dodge": [
+    "manner"
+   ],
+   "down": [
+    "direction",
+    "manner"
+   ],
+   "dreamt": [
+    "source"
+   ],
+   "drink": [
+    "gesture"
+   ],
+   "drinkable": [
+    "property"
+   ],
+   "drunkenness": [
+    "interpretation"
+   ],
+   "e_anger": [
+    "emotion"
+   ],
+   "e_anxiety": [
+    "emotion"
+   ],
+   "e_boredom": [
+    "emotion"
+   ],
+   "e_confusion": [
+    "emotion"
+   ],
+   "e_contempt": [
+    "emotion"
+   ],
+   "e_disgust": [
+    "emotion"
+   ],
+   "e_envy": [
+    "emotion"
+   ],
+   "e_fear": [
+    "emotion"
+   ],
+   "e_gratitude": [
+    "emotion"
+   ],
+   "e_grief": [
+    "emotion"
+   ],
+   "e_guilt": [
+    "emotion"
+   ],
+   "e_jealousy": [
+    "emotion"
+   ],
+   "e_joy": [
+    "emotion"
+   ],
+   "e_pride": [
+    "emotion"
+   ],
+   "e_sadness": [
+    "emotion"
+   ],
+   "e_shame": [
+    "emotion"
+   ],
+   "e_surprise": [
+    "emotion"
+   ],
+   "e_tenderness": [
+    "emotion"
+   ],
+   "each_day": [
+    "time"
+   ],
+   "each_season": [
+    "time"
+   ],
+   "each_year": [
+    "time"
+   ],
+   "eat": [
+    "gesture"
+   ],
+   "edge": [
+    "property"
+   ],
+   "edible": [
+    "property"
+   ],
+   "eerie": [
+    "manner"
+   ],
+   "elasticity": [
+    "property"
+   ],
+   "employee": [
+    "link"
+   ],
+   "employer": [
+    "link"
+   ],
+   "encroachment": [
+    "interpretation"
+   ],
+   "enemy": [
+    "link"
+   ],
+   "everyone": [
+    "quantifier"
+   ],
+   "examine": [
+    "gesture"
+   ],
+   "exclaim": [
+    "mood"
+   ],
+   "exhaustion": [
+    "variable"
+   ],
+   "exists": [
+    "predicate"
+   ],
+   "extortion": [
+    "interpretation"
+   ],
+   "face": [
+    "manner"
+   ],
+   "faint": [
+    "manner"
+   ],
+   "fairness": [
+    "variable"
+   ],
+   "fearfulness": [
+    "variable"
+   ],
+   "fertility": [
+    "property"
+   ],
+   "few": [
+    "quantity"
+   ],
+   "firm": [
+    "manner"
+   ],
+   "fist": [
+    "manner"
+   ],
+   "flammability": [
+    "property"
+   ],
+   "floats_carries": [
+    "property"
+   ],
+   "foot": [
+    "manner"
+   ],
+   "forbidden": [
+    "deontic"
+   ],
+   "forehead": [
+    "manner"
+   ],
+   "forgiveness": [
+    "variable"
+   ],
+   "former_spouse": [
+    "link"
+   ],
+   "fraud": [
+    "interpretation"
+   ],
+   "freshness": [
+    "property"
+   ],
+   "friend": [
+    "link"
+   ],
+   "fuel": [
+    "property"
+   ],
+   "full": [
+    "manner"
+   ],
+   "future": [
+    "time"
+   ],
+   "g_band": [
+    "group_kind"
+   ],
+   "g_community": [
+    "group_kind"
+   ],
+   "g_crew": [
+    "group_kind"
+   ],
+   "g_cult": [
+    "group_kind"
+   ],
+   "g_guild": [
+    "group_kind"
+   ],
+   "g_household": [
+    "group_kind"
+   ],
+   "g_lineage": [
+    "group_kind"
+   ],
+   "g_militia": [
+    "group_kind"
+   ],
+   "g_workshop": [
+    "group_kind"
+   ],
+   "generosity": [
+    "interpretation"
+   ],
+   "gentle": [
+    "manner"
+   ],
+   "gentleness": [
+    "variable"
+   ],
+   "get_off": [
+    "manner"
+   ],
+   "get_on": [
+    "manner"
+   ],
+   "give": [
+    "gesture"
+   ],
+   "glance": [
+    "manner"
+   ],
+   "go": [
+    "gesture"
+   ],
+   "goodbye": [
+    "formula"
+   ],
+   "grab": [
+    "gesture"
+   ],
+   "grandchild": [
+    "link"
+   ],
+   "grandparent": [
+    "link"
+   ],
+   "graspable": [
+    "property"
+   ],
+   "greed_avoidance": [
+    "variable"
+   ],
+   "ground": [
+    "manner"
+   ],
+   "guard": [
+    "gesture",
+    "role_word"
+   ],
+   "guest": [
+    "link"
+   ],
+   "habitual": [
+    "time"
+   ],
+   "hair": [
+    "manner"
+   ],
+   "hand": [
+    "manner"
+   ],
+   "hand_of": [
+    "manner"
+   ],
+   "handle": [
+    "property"
+   ],
+   "hands": [
+    "manner"
+   ],
+   "hard": [
+    "manner"
+   ],
+   "hardness": [
+    "property"
+   ],
+   "has": [
+    "predicate"
+   ],
+   "head": [
+    "manner"
+   ],
+   "heard": [
+    "source"
+   ],
+   "heard_said": [
+    "evidential"
+   ],
+   "heats": [
+    "property"
+   ],
+   "held": [
+    "manner"
+   ],
+   "hello": [
+    "formula"
+   ],
+   "help": [
+    "formula"
+   ],
+   "here": [
+    "deictic"
+   ],
+   "heroism": [
+    "interpretation"
+   ],
+   "high": [
+    "degree"
+   ],
+   "holds": [
+    "predicate"
+   ],
+   "hospitality": [
+    "interpretation"
+   ],
+   "how": [
+    "event_role"
+   ],
+   "how_much": [
+    "wh"
+   ],
+   "hunger": [
+    "variable"
+   ],
+   "hydration": [
+    "property"
+   ],
+   "hypocrisy": [
+    "interpretation"
+   ],
+   "if": [
+    "logic"
+   ],
+   "ignites": [
+    "property"
+   ],
+   "impacts": [
+    "property"
+   ],
+   "in": [
+    "spatial"
+   ],
+   "in_arms": [
+    "manner"
+   ],
+   "in_hand": [
+    "manner"
+   ],
+   "in_law": [
+    "link"
+   ],
+   "inferred": [
+    "source"
+   ],
+   "ingratitude": [
+    "interpretation"
+   ],
+   "injustice": [
+    "interpretation"
+   ],
+   "inquisitiveness": [
+    "variable"
+   ],
+   "insulation": [
+    "property"
+   ],
+   "insult": [
+    "interpretation"
+   ],
+   "integrity": [
+    "property"
+   ],
+   "intellect": [
+    "variable"
+   ],
+   "intends": [
+    "predicate"
+   ],
+   "intimate": [
+    "manner"
+   ],
+   "into": [
+    "event_role",
+    "manner"
+   ],
+   "intoxication": [
+    "variable"
+   ],
+   "is_a": [
+    "predicate"
+   ],
+   "joins": [
+    "property"
+   ],
+   "joyful": [
+    "manner"
+   ],
+   "judge": [
+    "role_word"
+   ],
+   "jump": [
+    "gesture"
+   ],
+   "key_for": [
+    "property"
+   ],
+   "kidnapping": [
+    "interpretation"
+   ],
+   "kindness": [
+    "interpretation"
+   ],
+   "kneel": [
+    "manner"
+   ],
+   "knot": [
+    "manner"
+   ],
+   "knows_how": [
+    "predicate"
+   ],
+   "lash": [
+    "manner"
+   ],
+   "laugh": [
+    "formula"
+   ],
+   "launches": [
+    "property"
+   ],
+   "laziness": [
+    "interpretation"
+   ],
+   "leads": [
+    "predicate"
+   ],
+   "left": [
+    "direction"
+   ],
+   "legs": [
+    "manner"
+   ],
+   "less": [
+    "quantity"
+   ],
+   "lie": [
+    "interpretation"
+   ],
+   "lie_down": [
+    "manner"
+   ],
+   "light": [
+    "manner"
+   ],
+   "light_emission": [
+    "property"
+   ],
+   "light_source": [
+    "property"
+   ],
+   "link": [
+    "predicate"
+   ],
+   "lips": [
+    "manner"
+   ],
+   "listen": [
+    "gesture"
+   ],
+   "lit": [
+    "property"
+   ],
+   "little": [
+    "manner"
+   ],
+   "lively": [
+    "manner"
+   ],
+   "lives_at": [
+    "predicate"
+   ],
+   "located": [
+    "predicate"
+   ],
+   "lock": [
+    "manner"
+   ],
+   "lockable": [
+    "property"
+   ],
+   "locked": [
+    "property"
+   ],
+   "long": [
+    "manner"
+   ],
+   "long_ago": [
+    "time"
+   ],
+   "look": [
+    "gesture",
+    "manner"
+   ],
+   "loud": [
+    "manner"
+   ],
+   "lover": [
+    "link"
+   ],
+   "low": [
+    "degree",
+    "manner"
+   ],
+   "loyalty": [
+    "interpretation"
+   ],
+   "made": [
+    "predicate"
+   ],
+   "magic_power": [
+    "property"
+   ],
+   "maintain": [
+    "goal_mode"
+   ],
+   "manslaughter": [
+    "interpretation"
+   ],
+   "many": [
+    "quantity"
+   ],
+   "mass": [
+    "property"
+   ],
+   "master": [
+    "link"
+   ],
+   "master_of_workshop": [
+    "role_word"
+   ],
+   "may": [
+    "predicate"
+   ],
+   "maybe": [
+    "evidential"
+   ],
+   "me": [
+    "deictic"
+   ],
+   "measures": [
+    "property"
+   ],
+   "member": [
+    "predicate"
+   ],
+   "mend": [
+    "manner"
+   ],
+   "mid": [
+    "degree"
+   ],
+   "mockery": [
+    "interpretation"
+   ],
+   "modesty": [
+    "variable"
+   ],
+   "mood_valence": [
+    "variable"
+   ],
+   "more": [
+    "quantity"
+   ],
+   "mount": [
+    "gesture"
+   ],
+   "mountable": [
+    "property"
+   ],
+   "mouth": [
+    "manner"
+   ],
+   "murder": [
+    "interpretation"
+   ],
+   "named": [
+    "predicate"
+   ],
+   "near": [
+    "manner",
+    "spatial"
+   ],
+   "neck": [
+    "manner"
+   ],
+   "negligence": [
+    "interpretation"
+   ],
+   "neighbor": [
+    "link"
+   ],
+   "niece_nephew": [
+    "link"
+   ],
+   "no": [
+    "formula"
+   ],
+   "no_one": [
+    "quantifier"
+   ],
+   "nod": [
+    "manner"
+   ],
+   "noise_on_impact": [
+    "property"
+   ],
+   "none": [
+    "quantity"
+   ],
+   "norm": [
+    "predicate"
+   ],
+   "normal": [
+    "manner"
+   ],
+   "not": [
+    "logic"
+   ],
+   "nothing_special": [
+    "interpretation"
+   ],
+   "now": [
+    "time"
+   ],
+   "nutrition": [
+    "property"
+   ],
+   "o_baker": [
+    "occupation"
+   ],
+   "o_brewer": [
+    "occupation"
+   ],
+   "o_builder": [
+    "occupation"
+   ],
+   "o_carpenter": [
+    "occupation"
+   ],
+   "o_farmer": [
+    "occupation"
+   ],
+   "o_fisher": [
+    "occupation"
+   ],
+   "o_healer": [
+    "occupation"
+   ],
+   "o_hunter": [
+    "occupation"
+   ],
+   "o_innkeeper": [
+    "occupation"
+   ],
+   "o_mason": [
+    "occupation"
+   ],
+   "o_merchant": [
+    "occupation"
+   ],
+   "o_miller": [
+    "occupation"
+   ],
+   "o_miner": [
+    "occupation"
+   ],
+   "o_potter": [
+    "occupation"
+   ],
+   "o_scribe": [
+    "occupation"
+   ],
+   "o_shepherd": [
+    "occupation"
+   ],
+   "o_smith": [
+    "occupation"
+   ],
+   "o_tanner": [
+    "occupation"
+   ],
+   "o_weaver": [
+    "occupation"
+   ],
+   "o_woodcutter": [
+    "occupation"
+   ],
+   "obligatory": [
+    "deontic"
+   ],
+   "odor": [
+    "property"
+   ],
+   "offer": [
+    "manner",
+    "mood"
+   ],
+   "on": [
+    "spatial"
+   ],
+   "on_back": [
+    "manner"
+   ],
+   "one": [
+    "quantity"
+   ],
+   "opacity": [
+    "property"
+   ],
+   "open": [
+    "manner",
+    "property"
+   ],
+   "open_hand": [
+    "manner"
+   ],
+   "openable": [
+    "property"
+   ],
+   "operate": [
+    "gesture"
+   ],
+   "or": [
+    "logic"
+   ],
+   "ouch": [
+    "formula"
+   ],
+   "owes": [
+    "predicate"
+   ],
+   "owns": [
+    "predicate"
+   ],
+   "pain": [
+    "variable"
+   ],
+   "parent": [
+    "link"
+   ],
+   "party_to": [
+    "predicate"
+   ],
+   "past": [
+    "time"
+   ],
+   "patience": [
+    "variable"
+   ],
+   "perform": [
+    "gesture"
+   ],
+   "permitted": [
+    "deontic"
+   ],
+   "pierces": [
+    "property"
+   ],
+   "plantable": [
+    "property"
+   ],
+   "playful": [
+    "manner"
+   ],
+   "plays_music": [
+    "property"
+   ],
+   "pleading": [
+    "manner"
+   ],
+   "please": [
+    "formula"
+   ],
+   "point": [
+    "manner",
+    "property"
+   ],
+   "poisoning": [
+    "interpretation"
+   ],
+   "potency": [
+    "property"
+   ],
+   "pour": [
+    "gesture"
+   ],
+   "pregnancy": [
+    "variable"
+   ],
+   "press": [
+    "manner"
+   ],
+   "priest": [
+    "role_word"
+   ],
+   "protection": [
+    "property"
+   ],
+   "protects": [
+    "property"
+   ],
+   "prudence": [
+    "variable"
+   ],
+   "pull": [
+    "gesture"
+   ],
+   "push": [
+    "gesture"
+   ],
+   "put": [
+    "gesture"
+   ],
+   "put_on": [
+    "manner"
+   ],
+   "qualifies": [
+    "predicate"
+   ],
+   "quality": [
+    "predicate",
+    "property"
+   ],
+   "r_affection": [
+    "variable"
+   ],
+   "r_attraction": [
+    "variable"
+   ],
+   "r_familiarity": [
+    "variable"
+   ],
+   "r_fear": [
+    "variable"
+   ],
+   "r_id_certainty": [
+    "variable"
+   ],
+   "r_known_by": [
+    "variable"
+   ],
+   "r_link_believed": [
+    "variable"
+   ],
+   "r_name_believed": [
+    "variable"
+   ],
+   "r_obligation": [
+    "variable"
+   ],
+   "r_perceived_regard": [
+    "variable"
+   ],
+   "r_present": [
+    "variable"
+   ],
+   "r_reputation_seen": [
+    "variable"
+   ],
+   "r_resentment": [
+    "variable"
+   ],
+   "r_respect": [
+    "variable"
+   ],
+   "r_rivalry": [
+    "variable"
+   ],
+   "r_trust": [
+    "variable"
+   ],
+   "raise_hand": [
+    "manner"
+   ],
+   "reach": [
+    "property"
+   ],
+   "read": [
+    "gesture",
+    "source"
+   ],
+   "rebellion": [
+    "interpretation"
+   ],
+   "recipe": [
+    "predicate"
+   ],
+   "reflectivity": [
+    "property"
+   ],
+   "reflects_image": [
+    "property"
+   ],
+   "request": [
+    "mood"
+   ],
+   "rescue": [
+    "interpretation"
+   ],
+   "resilience": [
+    "variable"
+   ],
+   "resonance": [
+    "property"
+   ],
+   "rest": [
+    "gesture"
+   ],
+   "revenge": [
+    "interpretation"
+   ],
+   "right": [
+    "direction"
+   ],
+   "rolls": [
+    "property"
+   ],
+   "rolls_load": [
+    "property"
+   ],
+   "romantic": [
+    "manner"
+   ],
+   "route": [
+    "predicate"
+   ],
+   "rub": [
+    "manner"
+   ],
+   "run": [
+    "manner"
+   ],
+   "sacrilege": [
+    "interpretation"
+   ],
+   "sad": [
+    "manner"
+   ],
+   "saw": [
+    "manner"
+   ],
+   "says": [
+    "event_role"
+   ],
+   "scoop": [
+    "gesture"
+   ],
+   "sealable": [
+    "property"
+   ],
+   "search": [
+    "gesture"
+   ],
+   "seed_of": [
+    "property"
+   ],
+   "seen": [
+    "source"
+   ],
+   "seen_myself": [
+    "evidential"
+   ],
+   "self_control": [
+    "variable"
+   ],
+   "self_defense": [
+    "interpretation"
+   ],
+   "self_regard": [
+    "variable"
+   ],
+   "sentimentality": [
+    "variable"
+   ],
+   "set_posture": [
+    "gesture"
+   ],
+   "sew": [
+    "manner"
+   ],
+   "shake_head": [
+    "manner"
+   ],
+   "shameful": [
+    "deontic"
+   ],
+   "shape": [
+    "gesture",
+    "manner"
+   ],
+   "shapes_matter": [
+    "property"
+   ],
+   "sharpens": [
+    "property"
+   ],
+   "shelters": [
+    "property"
+   ],
+   "shoulder": [
+    "manner"
+   ],
+   "shout": [
+    "manner"
+   ],
+   "show": [
+    "manner"
+   ],
+   "shrug": [
+    "manner"
+   ],
+   "sibling": [
+    "link"
+   ],
+   "sickness_felt": [
+    "variable"
+   ],
+   "sight": [
+    "manner"
+   ],
+   "sign": [
+    "gesture"
+   ],
+   "silver_coin_look": [
+    "lookalike"
+   ],
+   "sincerity": [
+    "variable"
+   ],
+   "sit": [
+    "manner"
+   ],
+   "size": [
+    "property"
+   ],
+   "slander": [
+    "interpretation"
+   ],
+   "sleep": [
+    "gesture"
+   ],
+   "sleepiness": [
+    "variable"
+   ],
+   "slow": [
+    "manner"
+   ],
+   "small_vial": [
+    "lookalike"
+   ],
+   "smell": [
+    "manner"
+   ],
+   "sociability": [
+    "variable"
+   ],
+   "solemn": [
+    "manner"
+   ],
+   "some": [
+    "manner"
+   ],
+   "someone": [
+    "quantifier"
+   ],
+   "soon": [
+    "time"
+   ],
+   "sorcery": [
+    "interpretation"
+   ],
+   "sorry": [
+    "formula"
+   ],
+   "speak": [
+    "gesture"
+   ],
+   "spit": [
+    "manner"
+   ],
+   "spouse": [
+    "link"
+   ],
+   "squeeze": [
+    "manner"
+   ],
+   "stand": [
+    "manner"
+   ],
+   "stare": [
+    "manner"
+   ],
+   "state": [
+    "predicate"
+   ],
+   "stir": [
+    "manner"
+   ],
+   "stop": [
+    "gesture"
+   ],
+   "stranger": [
+    "link"
+   ],
+   "strength": [
+    "variable"
+   ],
+   "stress": [
+    "variable"
+   ],
+   "strike": [
+    "gesture"
+   ],
+   "supports_body": [
+    "property"
+   ],
+   "sure": [
+    "evidential"
+   ],
+   "surface_writable": [
+    "property"
+   ],
+   "swim": [
+    "gesture"
+   ],
+   "swing": [
+    "manner"
+   ],
+   "t_archery": [
+    "technique"
+   ],
+   "t_brewing": [
+    "technique"
+   ],
+   "t_climbing": [
+    "technique"
+   ],
+   "t_cooking": [
+    "technique"
+   ],
+   "t_digging": [
+    "technique"
+   ],
+   "t_farming": [
+    "technique"
+   ],
+   "t_fighting": [
+    "technique"
+   ],
+   "t_fishing": [
+    "technique"
+   ],
+   "t_foraging": [
+    "technique"
+   ],
+   "t_glass": [
+    "technique"
+   ],
+   "t_healing": [
+    "technique"
+   ],
+   "t_hunting": [
+    "technique"
+   ],
+   "t_husbandry": [
+    "technique"
+   ],
+   "t_leather": [
+    "technique"
+   ],
+   "t_literacy": [
+    "technique"
+   ],
+   "t_magic": [
+    "technique"
+   ],
+   "t_music": [
+    "technique"
+   ],
+   "t_pottery": [
+    "technique"
+   ],
+   "t_reckoning": [
+    "technique"
+   ],
+   "t_riding": [
+    "technique"
+   ],
+   "t_smithing": [
+    "technique"
+   ],
+   "t_stealth": [
+    "technique"
+   ],
+   "t_stonework": [
+    "technique"
+   ],
+   "t_swimming": [
+    "technique"
+   ],
+   "t_textile": [
+    "technique"
+   ],
+   "t_woodwork": [
+    "technique"
+   ],
+   "take": [
+    "gesture"
+   ],
+   "take_off": [
+    "manner"
+   ],
+   "taking_back": [
+    "interpretation"
+   ],
+   "talk": [
+    "manner"
+   ],
+   "taste": [
+    "manner"
+   ],
+   "tastes": [
+    "variable"
+   ],
+   "tax_collector": [
+    "role_word"
+   ],
+   "temperature": [
+    "property"
+   ],
+   "thanks": [
+    "formula"
+   ],
+   "that": [
+    "logic"
+   ],
+   "theft": [
+    "interpretation"
+   ],
+   "think": [
+    "evidential"
+   ],
+   "thirst": [
+    "variable"
+   ],
+   "this": [
+    "deictic"
+   ],
+   "threat_felt": [
+    "interpretation"
+   ],
+   "throw": [
+    "gesture"
+   ],
+   "throwable": [
+    "property"
+   ],
+   "thrust": [
+    "manner"
+   ],
+   "tie": [
+    "gesture"
+   ],
+   "to": [
+    "event_role"
+   ],
+   "today": [
+    "time"
+   ],
+   "told": [
+    "source"
+   ],
+   "tomorrow": [
+    "time"
+   ],
+   "torso": [
+    "manner"
+   ],
+   "touch": [
+    "gesture",
+    "manner"
+   ],
+   "toughness": [
+    "property"
+   ],
+   "toward": [
+    "manner"
+   ],
+   "toxicity": [
+    "property"
+   ],
+   "traps": [
+    "property"
+   ],
+   "treasurer": [
+    "role_word"
+   ],
+   "trespass": [
+    "interpretation"
+   ],
+   "trigger": [
+    "property"
+   ],
+   "unconventionality": [
+    "variable"
+   ],
+   "under": [
+    "spatial"
+   ],
+   "unlock": [
+    "manner"
+   ],
+   "unlocks": [
+    "property"
+   ],
+   "up": [
+    "direction"
+   ],
+   "us": [
+    "deictic"
+   ],
+   "usurpation": [
+    "interpretation"
+   ],
+   "v_achievement": [
+    "variable"
+   ],
+   "v_authority": [
+    "variable"
+   ],
+   "v_honor": [
+    "variable"
+   ],
+   "v_liberty": [
+    "variable"
+   ],
+   "v_loyalty": [
+    "variable"
+   ],
+   "v_pleasure": [
+    "variable"
+   ],
+   "v_power": [
+    "variable"
+   ],
+   "v_sanctity": [
+    "variable"
+   ],
+   "vandalism": [
+    "interpretation"
+   ],
+   "very_high": [
+    "degree"
+   ],
+   "very_low": [
+    "degree"
+   ],
+   "w_bad": [
+    "quality"
+   ],
+   "w_beautiful": [
+    "quality"
+   ],
+   "w_brave": [
+    "quality"
+   ],
+   "w_clever": [
+    "quality"
+   ],
+   "w_coward": [
+    "quality"
+   ],
+   "w_dangerous": [
+    "quality"
+   ],
+   "w_false": [
+    "quality"
+   ],
+   "w_good": [
+    "quality"
+   ],
+   "w_old": [
+    "quality"
+   ],
+   "w_poor": [
+    "quality"
+   ],
+   "w_rich": [
+    "quality"
+   ],
+   "w_strong": [
+    "quality"
+   ],
+   "w_stupid": [
+    "quality"
+   ],
+   "w_true": [
+    "quality"
+   ],
+   "w_ugly": [
+    "quality"
+   ],
+   "w_weak": [
+    "quality"
+   ],
+   "w_young": [
+    "quality"
+   ],
+   "waist": [
+    "manner"
+   ],
+   "wait": [
+    "gesture"
+   ],
+   "walk": [
+    "manner"
+   ],
+   "wants": [
+    "predicate"
+   ],
+   "warm": [
+    "manner"
+   ],
+   "watch": [
+    "manner"
+   ],
+   "watch_out": [
+    "formula"
+   ],
+   "wave": [
+    "manner"
+   ],
+   "wear": [
+    "gesture"
+   ],
+   "wearable": [
+    "property"
+   ],
+   "wearable_slot": [
+    "property"
+   ],
+   "weigh": [
+    "manner"
+   ],
+   "weighs": [
+    "property"
+   ],
+   "welcome": [
+    "formula"
+   ],
+   "wetness": [
+    "property"
+   ],
+   "what": [
+    "wh"
+   ],
+   "when": [
+    "wh"
+   ],
+   "where": [
+    "wh"
+   ],
+   "which": [
+    "wh"
+   ],
+   "whisper": [
+    "manner"
+   ],
+   "white_mushroom": [
+    "lookalike"
+   ],
+   "who": [
+    "wh"
+   ],
+   "why": [
+    "wh"
+   ],
+   "wipes": [
+    "property"
+   ],
+   "with": [
+    "event_role"
+   ],
+   "work": [
+    "gesture"
+   ],
+   "works_as": [
+    "predicate"
+   ],
+   "worn_by": [
+    "manner"
+   ],
+   "worth": [
+    "predicate"
+   ],
+   "wounds": [
+    "variable"
+   ],
+   "writable": [
+    "property"
+   ],
+   "write": [
+    "gesture"
+   ],
+   "yes": [
+    "formula"
+   ],
+   "you": [
+    "deictic"
+   ]
+  },
+  "directions": [
+   "ahead",
+   "ahead_right",
+   "right",
+   "behind_right",
+   "behind",
+   "behind_left",
+   "left",
+   "ahead_left",
+   "up",
+   "down"
+  ],
+  "predicates": {
+   "able": [
+    "agent",
+    "gesture"
+   ],
+   "at": [
+    "entity",
+    "place"
+   ],
+   "attitude": [
+    "agent",
+    "variable",
+    "entity",
+    "quantity"
+   ],
+   "believes": [
+    "agent",
+    "proposition"
+   ],
+   "caused": [
+    "entity",
+    "event"
+   ],
+   "count": [
+    "entity",
+    "quantity"
+   ],
+   "custom": [
+    "group",
+    "proposition"
+   ],
+   "dead": [
+    "entity"
+   ],
+   "did": [
+    "agent",
+    "gesture",
+    "entity"
+   ],
+   "exists": [
+    "concept",
+    "place"
+   ],
+   "has": [
+    "entity",
+    "item"
+   ],
+   "holds": [
+    "agent",
+    "role"
+   ],
+   "intends": [
+    "agent",
+    "proposition"
+   ],
+   "is_a": [
+    "entity",
+    "kind"
+   ],
+   "knows_how": [
+    "agent",
+    "technique"
+   ],
+   "leads": [
+    "agent",
+    "group"
+   ],
+   "link": [
+    "agent",
+    "concept",
+    "agent"
+   ],
+   "lives_at": [
+    "agent",
+    "place"
+   ],
+   "located": [
+    "entity",
+    "concept",
+    "entity"
+   ],
+   "made": [
+    "agent",
+    "item"
+   ],
+   "may": [
+    "entity",
+    "proposition"
+   ],
+   "member": [
+    "agent",
+    "group"
+   ],
+   "named": [
+    "entity",
+    "name"
+   ],
+   "norm": [
+    "concept",
+    "proposition"
+   ],
+   "owes": [
+    "agent",
+    "entity",
+    "proposition"
+   ],
+   "owns": [
+    "entity",
+    "entity"
+   ],
+   "party_to": [
+    "agent",
+    "agreement"
+   ],
+   "qualifies": [
+    "event",
+    "interpretation"
+   ],
+   "quality": [
+    "entity",
+    "concept",
+    "quantity"
+   ],
+   "recipe": [
+    "concept",
+    "proposition"
+   ],
+   "route": [
+    "place",
+    "place"
+   ],
+   "state": [
+    "entity",
+    "variable",
+    "quantity"
+   ],
+   "wants": [
+    "agent",
+    "proposition"
+   ],
+   "works_as": [
+    "agent",
+    "concept"
+   ],
+   "worth": [
+    "entity",
+    "quantity"
+   ]
+  },
+  "event_roles": [
+   "how",
+   "into",
+   "says",
+   "to",
+   "with"
+  ],
+  "gestures": {
+   "blow": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "fire",
+      "item"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    }
+   ],
+   "channel": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "structure",
+      "terrain",
+      "voxel"
+     ]
+    },
+    {
+     "name": "intent",
+     "type": "enum",
+     "values": [
+      "assemble",
+      "disassemble",
+      "mend",
+      "shape"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    },
+    {
+     "name": "into",
+     "type": "ref",
+     "accepts": [
+      "belief",
+      "form"
+     ]
+    }
+   ],
+   "climb": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "plant",
+      "structure",
+      "terrain",
+      "voxel"
+     ]
+    },
+    {
+     "name": "pace",
+     "type": "enum",
+     "values": [
+      "slow",
+      "walk",
+      "brisk"
+     ]
+    }
+   ],
+   "drink": [
+    {
+     "name": "item",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "water"
+     ]
+    },
+    {
+     "name": "amount",
+     "type": "enum",
+     "values": [
+      "little",
+      "some",
+      "all"
+     ]
+    },
+    {
+     "name": "to",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal"
+     ]
+    }
+   ],
+   "eat": [
+    {
+     "name": "item",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "plant"
+     ]
+    },
+    {
+     "name": "amount",
+     "type": "enum",
+     "values": [
+      "little",
+      "some",
+      "all"
+     ]
+    },
+    {
+     "name": "to",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal"
+     ]
+    }
+   ],
+   "examine": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item",
+      "plant",
+      "structure",
+      "terrain",
+      "trace",
+      "voxel",
+      "water"
+     ]
+    },
+    {
+     "name": "sense",
+     "type": "enum",
+     "values": [
+      "look",
+      "touch",
+      "weigh",
+      "smell",
+      "taste"
+     ]
+    },
+    {
+     "name": "contact_zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "face",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "torso",
+      "legs",
+      "body"
+     ]
+    }
+   ],
+   "give": [
+    {
+     "name": "item",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "to",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "name": "mode",
+     "type": "enum",
+     "values": [
+      "offer",
+      "press"
+     ]
+    }
+   ],
+   "go": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "direction",
+      "item",
+      "place",
+      "structure",
+      "trace",
+      "water"
+     ]
+    },
+    {
+     "name": "relation",
+     "type": "enum",
+     "values": [
+      "toward",
+      "along",
+      "away"
+     ]
+    },
+    {
+     "name": "pace",
+     "type": "enum",
+     "values": [
+      "slow",
+      "walk",
+      "brisk",
+      "run"
+     ]
+    },
+    {
+     "name": "stealth",
+     "type": "enum",
+     "values": [
+      "open",
+      "discreet"
+     ]
+    },
+    {
+     "name": "stop_at",
+     "type": "enum",
+     "values": [
+      "touch",
+      "near",
+      "talk",
+      "sight"
+     ]
+    }
+   ],
+   "grab": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "name": "hold_zone",
+     "type": "enum",
+     "values": [
+      "arm",
+      "collar",
+      "hair",
+      "neck",
+      "waist"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    },
+    {
+     "name": "until",
+     "type": "condition"
+    }
+   ],
+   "guard": [
+    {
+     "name": "against",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "name": "stance",
+     "type": "enum",
+     "values": [
+      "block",
+      "dodge",
+      "cover"
+     ]
+    }
+   ],
+   "jump": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "direction",
+      "place",
+      "voxel",
+      "water"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    }
+   ],
+   "listen": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "direction",
+      "place"
+     ]
+    },
+    {
+     "name": "stealth",
+     "type": "enum",
+     "values": [
+      "open",
+      "discreet"
+     ]
+    }
+   ],
+   "look": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "direction",
+      "fire",
+      "item",
+      "place",
+      "structure",
+      "terrain",
+      "trace",
+      "water"
+     ]
+    },
+    {
+     "name": "mode",
+     "type": "enum",
+     "values": [
+      "glance",
+      "watch",
+      "stare"
+     ]
+    },
+    {
+     "name": "stealth",
+     "type": "enum",
+     "values": [
+      "open",
+      "discreet"
+     ]
+    }
+   ],
+   "mount": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "animal",
+      "item"
+     ]
+    },
+    {
+     "name": "mode",
+     "type": "enum",
+     "values": [
+      "get_on",
+      "get_off"
+     ]
+    }
+   ],
+   "operate": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "name": "mode",
+     "type": "enum",
+     "values": [
+      "open",
+      "close",
+      "lock",
+      "unlock",
+      "activate"
+     ]
+    },
+    {
+     "name": "with",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "stealth",
+     "type": "enum",
+     "values": [
+      "open",
+      "discreet"
+     ]
+    }
+   ],
+   "perform": [
+    {
+     "name": "with",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "mood",
+     "type": "enum",
+     "values": [
+      "joyful",
+      "sad",
+      "solemn",
+      "lively",
+      "eerie"
+     ]
+    },
+    {
+     "name": "duration",
+     "type": "enum",
+     "values": [
+      "brief",
+      "a_while",
+      "long"
+     ]
+    }
+   ],
+   "pour": [
+    {
+     "name": "from",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "into",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "fire",
+      "item",
+      "place",
+      "terrain",
+      "water"
+     ]
+    },
+    {
+     "name": "amount",
+     "type": "enum",
+     "values": [
+      "little",
+      "some",
+      "all"
+     ]
+    },
+    {
+     "name": "stealth",
+     "type": "enum",
+     "values": [
+      "open",
+      "discreet"
+     ]
+    }
+   ],
+   "pull": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "voxel"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    },
+    {
+     "name": "toward",
+     "type": "ref",
+     "accepts": [
+      "direction",
+      "place"
+     ]
+    }
+   ],
+   "push": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    },
+    {
+     "name": "direction",
+     "type": "enum",
+     "values": [
+      "away",
+      "down",
+      "aside",
+      "into"
+     ]
+    }
+   ],
+   "put": [
+    {
+     "name": "item",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item"
+     ]
+    },
+    {
+     "name": "where",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "place",
+      "structure",
+      "terrain",
+      "voxel",
+      "water"
+     ]
+    },
+    {
+     "name": "stealth",
+     "type": "enum",
+     "values": [
+      "open",
+      "discreet"
+     ]
+    },
+    {
+     "name": "contact_zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "face",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "torso",
+      "legs",
+      "body"
+     ]
+    }
+   ],
+   "read": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "structure"
+     ]
+    }
+   ],
+   "rest": [
+    {
+     "name": "duration",
+     "type": "enum",
+     "values": [
+      "brief",
+      "a_while",
+      "long"
+     ]
+    }
+   ],
+   "scoop": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "terrain",
+      "voxel",
+      "water"
+     ]
+    },
+    {
+     "name": "with",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "amount",
+     "type": "enum",
+     "values": [
+      "little",
+      "some",
+      "all"
+     ]
+    },
+    {
+     "name": "into",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "place",
+      "terrain"
+     ]
+    }
+   ],
+   "search": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "item",
+      "place",
+      "structure",
+      "terrain",
+      "trace",
+      "water"
+     ]
+    },
+    {
+     "name": "thoroughness",
+     "type": "enum",
+     "values": [
+      "brief",
+      "a_while",
+      "long"
+     ]
+    }
+   ],
+   "set_posture": [
+    {
+     "name": "posture",
+     "type": "enum",
+     "values": [
+      "stand",
+      "sit",
+      "kneel",
+      "crouch",
+      "lie_down"
+     ]
+    }
+   ],
+   "shape": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "terrain"
+     ]
+    },
+    {
+     "name": "into",
+     "type": "ref",
+     "accepts": [
+      "belief",
+      "form"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    }
+   ],
+   "sign": [
+    {
+     "name": "kind",
+     "type": "enum",
+     "values": [
+      "point",
+      "nod",
+      "shake_head",
+      "wave",
+      "beckon",
+      "shrug",
+      "bow",
+      "applaud",
+      "raise_hand",
+      "show",
+      "spit",
+      "fist"
+     ]
+    },
+    {
+     "name": "at",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "direction",
+      "group",
+      "item",
+      "place"
+     ]
+    }
+   ],
+   "sleep": [
+    {
+     "name": "where",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "place",
+      "structure",
+      "terrain"
+     ]
+    },
+    {
+     "name": "until",
+     "type": "condition"
+    }
+   ],
+   "speak": [
+    {
+     "name": "to",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "group"
+     ]
+    },
+    {
+     "name": "volume",
+     "type": "enum",
+     "values": [
+      "whisper",
+      "low",
+      "normal",
+      "loud",
+      "shout"
+     ]
+    },
+    {
+     "name": "tone",
+     "type": "enum",
+     "values": [
+      "warm",
+      "calm",
+      "cold",
+      "angry",
+      "pleading"
+     ]
+    },
+    {
+     "name": "content",
+     "type": "expression"
+    }
+   ],
+   "stop": [],
+   "strike": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item",
+      "plant",
+      "structure",
+      "terrain",
+      "voxel"
+     ]
+    },
+    {
+     "name": "zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "torso",
+      "arms",
+      "legs",
+      "any"
+     ]
+    },
+    {
+     "name": "with",
+     "type": "enum",
+     "values": [
+      "held",
+      "open_hand",
+      "fist",
+      "foot",
+      "head",
+      "mouth"
+     ]
+    },
+    {
+     "name": "motion",
+     "type": "enum",
+     "values": [
+      "swing",
+      "thrust"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    },
+    {
+     "name": "until",
+     "type": "condition"
+    }
+   ],
+   "swim": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "direction",
+      "place",
+      "water"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    }
+   ],
+   "take": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item"
+     ]
+    },
+    {
+     "name": "from",
+     "type": "enum",
+     "values": [
+      "ground",
+      "container",
+      "hand_of",
+      "worn_by"
+     ]
+    },
+    {
+     "name": "hold",
+     "type": "enum",
+     "values": [
+      "in_hand",
+      "in_arms",
+      "on_back",
+      "by_arm"
+     ]
+    },
+    {
+     "name": "stealth",
+     "type": "enum",
+     "values": [
+      "open",
+      "discreet"
+     ]
+    },
+    {
+     "name": "contact_zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "face",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "torso",
+      "legs",
+      "body"
+     ]
+    }
+   ],
+   "throw": [
+    {
+     "name": "item",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "at",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "direction",
+      "fire",
+      "item",
+      "place",
+      "structure",
+      "voxel",
+      "water"
+     ]
+    },
+    {
+     "name": "zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "torso",
+      "arms",
+      "legs",
+      "any"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    },
+    {
+     "name": "with",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    }
+   ],
+   "tie": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "name": "to",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "name": "mode",
+     "type": "enum",
+     "values": [
+      "knot",
+      "lash",
+      "sew",
+      "bind"
+     ]
+    },
+    {
+     "name": "with",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "tightness",
+     "type": "enum",
+     "values": [
+      "light",
+      "firm",
+      "hard"
+     ]
+    },
+    {
+     "name": "contact_zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "face",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "torso",
+      "legs",
+      "body"
+     ]
+    }
+   ],
+   "touch": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal"
+     ]
+    },
+    {
+     "name": "with",
+     "type": "enum",
+     "values": [
+      "hand",
+      "arms",
+      "lips",
+      "forehead",
+      "body"
+     ]
+    },
+    {
+     "name": "contact_zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "face",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "torso",
+      "legs",
+      "body"
+     ]
+    },
+    {
+     "name": "manner",
+     "type": "enum",
+     "values": [
+      "gentle",
+      "firm",
+      "playful",
+      "romantic",
+      "intimate"
+     ]
+    },
+    {
+     "name": "duration",
+     "type": "enum",
+     "values": [
+      "brief",
+      "a_while",
+      "long"
+     ]
+    }
+   ],
+   "wait": [
+    {
+     "name": "until",
+     "type": "condition"
+    }
+   ],
+   "wear": [
+    {
+     "name": "item",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "mode",
+     "type": "enum",
+     "values": [
+      "put_on",
+      "take_off"
+     ]
+    },
+    {
+     "name": "on",
+     "type": "ref",
+     "accepts": [
+      "agent"
+     ]
+    },
+    {
+     "name": "contact_zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "face",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "torso",
+      "legs",
+      "body"
+     ]
+    }
+   ],
+   "work": [
+    {
+     "name": "target",
+     "type": "ref",
+     "accepts": [
+      "agent",
+      "animal",
+      "item",
+      "structure",
+      "terrain",
+      "voxel"
+     ]
+    },
+    {
+     "name": "with",
+     "type": "ref",
+     "accepts": [
+      "item"
+     ]
+    },
+    {
+     "name": "motion",
+     "type": "enum",
+     "values": [
+      "press",
+      "rub",
+      "stir",
+      "squeeze",
+      "saw"
+     ]
+    },
+    {
+     "name": "intensity",
+     "type": "enum",
+     "values": [
+      "faint",
+      "light",
+      "firm",
+      "hard",
+      "full"
+     ]
+    },
+    {
+     "name": "duration",
+     "type": "enum",
+     "values": [
+      "brief",
+      "a_while",
+      "long"
+     ]
+    },
+    {
+     "name": "contact_zone",
+     "type": "enum",
+     "values": [
+      "head",
+      "face",
+      "shoulder",
+      "arms",
+      "hands",
+      "back",
+      "torso",
+      "legs",
+      "body"
+     ]
+    }
+   ],
+   "write": [
+    {
+     "name": "on",
+     "type": "ref",
+     "accepts": [
+      "item",
+      "structure"
+     ]
+    },
+    {
+     "name": "content",
+     "type": "expression"
+    }
+   ]
+  },
+  "species": [
+   "apple_tree",
+   "arcane_bloom",
+   "barley",
+   "beans",
+   "bear",
+   "bee",
+   "beech",
+   "berry_bush",
+   "birch",
+   "boar",
+   "bramble",
+   "cabbage",
+   "cactus",
+   "camel",
+   "carrot",
+   "cat",
+   "chamomile",
+   "cherry_tree",
+   "chicken",
+   "cow",
+   "crow",
+   "date_palm",
+   "death_cap",
+   "deer",
+   "dog",
+   "donkey",
+   "eagle",
+   "edible_mushroom",
+   "eel",
+   "flax",
+   "fox",
+   "foxglove",
+   "frog",
+   "goat",
+   "goose",
+   "grapevine",
+   "hare",
+   "heather",
+   "hemp",
+   "horse",
+   "ibex",
+   "ivy",
+   "mandrake",
+   "marmot",
+   "meadow_grass",
+   "moss",
+   "nettle",
+   "nightshade",
+   "oak",
+   "oats",
+   "olive_tree",
+   "onion",
+   "owl",
+   "ox",
+   "pear_tree",
+   "pig",
+   "pine",
+   "poppy",
+   "rat",
+   "reed_plant",
+   "river_fish",
+   "rye",
+   "sage",
+   "scorpion",
+   "sea_fish",
+   "seal",
+   "seaweed",
+   "sheep",
+   "shellfish_bed",
+   "snake",
+   "turnip",
+   "vulture",
+   "walnut_tree",
+   "wheat",
+   "willow",
+   "willow_bark_herb",
+   "wolf",
+   "yarrow",
+   "yew"
+  ],
+  "forms": [
+   "abrasive_face",
+   "absorbent_pad",
+   "armor_plate",
+   "bag",
+   "basket_weave",
+   "blade",
+   "block",
+   "blunt_head",
+   "box",
+   "coating",
+   "cord",
+   "curved_blade",
+   "elastic_limb",
+   "fastener",
+   "fiber_bundle",
+   "food_body",
+   "frame",
+   "garment",
+   "granules",
+   "grip",
+   "hinge",
+   "hook",
+   "hull",
+   "key_bit",
+   "leg",
+   "lid",
+   "liquid",
+   "lock_mechanism",
+   "lump",
+   "magic_core",
+   "mail",
+   "membrane",
+   "mesh",
+   "needle",
+   "ornament",
+   "padding",
+   "paddle",
+   "pick_head",
+   "platform",
+   "point",
+   "polished_face",
+   "powder",
+   "preparation",
+   "resonator",
+   "ring_band",
+   "rod",
+   "sail",
+   "scale_marks",
+   "seed",
+   "shaft",
+   "sheet_flexible",
+   "sheet_rigid",
+   "spade_head",
+   "spout",
+   "strap",
+   "teeth",
+   "tension_string",
+   "tines",
+   "trigger_mechanism",
+   "vessel",
+   "wedge",
+   "wheel",
+   "wick"
+  ],
+  "kinds": [
+   "abrasive_face",
+   "absorbent_pad",
+   "adze",
+   "air",
+   "ale",
+   "ale_barrel",
+   "ale_mug",
+   "anchor",
+   "animal_bell",
+   "animal_trough",
+   "anvil",
+   "apple_tree",
+   "apples",
+   "apron",
+   "arcane_bloom",
+   "arcane_crystal",
+   "armor_plate",
+   "arrows",
+   "ash",
+   "auger",
+   "awl",
+   "axe",
+   "back_basket",
+   "backpack",
+   "bag",
+   "bagpipe",
+   "balance_scale",
+   "ball",
+   "bandage",
+   "bark",
+   "bark_strip",
+   "barley",
+   "barley_sack",
+   "barrel",
+   "basalt",
+   "basket",
+   "basket_weave",
+   "battle_axe",
+   "bead_necklace",
+   "beam",
+   "beans",
+   "bear",
+   "bed",
+   "bee",
+   "beech",
+   "beehive_skep",
+   "bellows",
+   "belt",
+   "belt_pouch",
+   "bench",
+   "berries",
+   "berry_bush",
+   "billhook",
+   "birch",
+   "black_bread",
+   "blade",
+   "blanket",
+   "block",
+   "blowpipe",
+   "blunt_head",
+   "boar",
+   "boat",
+   "bolts",
+   "bone",
+   "bone_item",
+   "book",
+   "boots",
+   "bow",
+   "box",
+   "bracelet",
+   "braies",
+   "bramble",
+   "branch",
+   "brazier",
+   "bread",
+   "bread_loaf",
+   "bread_peel",
+   "brick",
+   "bridle",
+   "bronze",
+   "bronze_ingot",
+   "brooch",
+   "broom",
+   "bucket",
+   "buckler",
+   "butter",
+   "butter_churn",
+   "butter_pat",
+   "cabbage",
+   "cactus",
+   "cage",
+   "camel",
+   "candle_tallow",
+   "candle_wax",
+   "candlestick",
+   "carding_comb",
+   "carrot",
+   "cart",
+   "casting_mold",
+   "cat",
+   "cauldron",
+   "ceramic",
+   "ceramic_bowl",
+   "chain",
+   "chainmail",
+   "chair",
+   "chalk",
+   "chalk_stick",
+   "chamber_pot",
+   "chamomile",
+   "charcoal",
+   "charcoal_sack",
+   "charm",
+   "cheese",
+   "cheese_wheel",
+   "cherry_tree",
+   "chest",
+   "chicken",
+   "chief_circlet",
+   "cider_jug",
+   "clay",
+   "clay_lump",
+   "clay_pot",
+   "cloak",
+   "clogs",
+   "cloth",
+   "cloth_bolt_linen",
+   "cloth_bolt_wool",
+   "club",
+   "coating",
+   "cobblestone",
+   "coffin",
+   "coif",
+   "coin_purse_full",
+   "comb",
+   "cooking_pot",
+   "copper",
+   "copper_coin",
+   "copper_ingot",
+   "copper_ring",
+   "cord",
+   "court_robe",
+   "cow",
+   "cradle",
+   "crate",
+   "crossbow",
+   "crow",
+   "crowbar",
+   "crucible",
+   "crutch",
+   "crystal_shard",
+   "cup_wood",
+   "cupboard",
+   "curtain",
+   "curved_blade",
+   "cut_gem",
+   "cut_stone",
+   "cutting_board",
+   "dagger",
+   "date_palm",
+   "death_cap",
+   "debased_coin",
+   "decoy_whistle",
+   "deer",
+   "dice",
+   "dirt",
+   "distaff",
+   "dog",
+   "donkey",
+   "door",
+   "door_lock",
+   "dress",
+   "dried_meat",
+   "drinking_horn",
+   "drum",
+   "dye",
+   "dye_pot",
+   "dye_vat",
+   "eagle",
+   "earrings",
+   "edible_mushroom",
+   "eel",
+   "egg",
+   "egg_item",
+   "elastic_limb",
+   "fastener",
+   "feather",
+   "feathers",
+   "felling_axe",
+   "fence_panel",
+   "festival_banner",
+   "festival_mask",
+   "festive_gown",
+   "fiber_bundle",
+   "file",
+   "firewood_bundle",
+   "fish_grilled",
+   "fish_trap",
+   "fishing_boat",
+   "fishing_net",
+   "fishing_rod",
+   "flail",
+   "flatbread",
+   "flax",
+   "flesh",
+   "fleshing_knife",
+   "flint",
+   "flint_nodule",
+   "flour",
+   "flour_sack",
+   "flower_crown",
+   "flute",
+   "food_body",
+   "forest_floor",
+   "fox",
+   "foxglove",
+   "frame",
+   "frog",
+   "frying_pan",
+   "fur",
+   "fur_blanket",
+   "fur_boots",
+   "fur_coat",
+   "fur_pelt",
+   "gambeson",
+   "game_board",
+   "garment",
+   "gem",
+   "glass",
+   "glass_bottle",
+   "glass_goblet",
+   "glass_pane",
+   "gloves",
+   "glue_pot",
+   "goat",
+   "gold",
+   "gold_coin",
+   "gold_ingot",
+   "goose",
+   "grain",
+   "granite",
+   "granules",
+   "grapes",
+   "grapevine",
+   "grave_marker",
+   "gravel",
+   "grip",
+   "ham",
+   "hammer",
+   "hand_plane",
+   "handcart",
+   "hare",
+   "harness",
+   "harpoon",
+   "harrow",
+   "hatchet",
+   "headwrap",
+   "healer_bag",
+   "heather",
+   "helmet",
+   "hemp",
+   "herb",
+   "herbal_remedy",
+   "herbs_bundle",
+   "hide",
+   "hinge",
+   "hod",
+   "hoe",
+   "holy_symbol",
+   "honey",
+   "honey_cake",
+   "honey_pot",
+   "hood",
+   "hooded_cloak",
+   "hook",
+   "horn",
+   "horn_item",
+   "horse",
+   "horseshoe",
+   "hose",
+   "hourglass",
+   "hull",
+   "hunting_horn",
+   "hunting_knife",
+   "hurdy_gurdy",
+   "ibex",
+   "icon",
+   "improvised_spear",
+   "incense",
+   "ink",
+   "ink_pot",
+   "iron",
+   "iron_ingot",
+   "iron_ore",
+   "ivy",
+   "jaw_trap",
+   "jug",
+   "key",
+   "key_bit",
+   "kindling",
+   "kneading_trough",
+   "knife",
+   "ladder",
+   "ladle",
+   "lancet",
+   "lantern",
+   "lead",
+   "lead_ingot",
+   "leash",
+   "leather",
+   "leather_apron",
+   "leather_armor",
+   "leather_cap",
+   "leather_leggings",
+   "leather_piece",
+   "leaves",
+   "leg",
+   "letter",
+   "lid",
+   "lime_mortar",
+   "lime_sack",
+   "limestone",
+   "linen",
+   "linen_dress",
+   "liquid",
+   "lock_mechanism",
+   "locked_chest",
+   "lockpick",
+   "log",
+   "loom",
+   "lump",
+   "lute",
+   "mace",
+   "magic_core",
+   "mail",
+   "mallet",
+   "mandrake",
+   "marbles",
+   "marmot",
+   "mattock",
+   "mead_jug",
+   "meadow_grass",
+   "measuring_cup",
+   "measuring_rod",
+   "membrane",
+   "memento",
+   "mesh",
+   "milk",
+   "milk_jug",
+   "milking_pail",
+   "miner_basket",
+   "mirror",
+   "mittens",
+   "mortar_batch",
+   "mortar_pestle",
+   "mortar_tub",
+   "moss",
+   "mourning_robe",
+   "mushrooms",
+   "nails",
+   "necklace",
+   "needle",
+   "needle_thread",
+   "nettle",
+   "night_shirt",
+   "nightshade",
+   "notice_board",
+   "nuts",
+   "oak",
+   "oak_planks",
+   "oak_raw",
+   "oar",
+   "oats",
+   "oats_sack",
+   "offering_bowl",
+   "oil",
+   "oil_jar",
+   "oil_lamp",
+   "oilskin_coat",
+   "olive_tree",
+   "onion",
+   "onions",
+   "ore_chunk",
+   "ornament",
+   "owl",
+   "ox",
+   "pack_frame",
+   "padding",
+   "paddle",
+   "padlock",
+   "paper",
+   "parchment",
+   "pear_tree",
+   "pears",
+   "pendant",
+   "pewter_plate",
+   "pick_head",
+   "pickaxe",
+   "pie",
+   "pig",
+   "pike",
+   "pillow",
+   "pine",
+   "pitch",
+   "pitch_pot",
+   "pitchfork",
+   "plank",
+   "plaster",
+   "platform",
+   "plough",
+   "plumb_line",
+   "point",
+   "poison_vial",
+   "poker",
+   "polished_face",
+   "poppy",
+   "porridge",
+   "post",
+   "potter_wheel",
+   "powder",
+   "prayer_beads",
+   "preparation",
+   "priest_vestment",
+   "pulley",
+   "purse",
+   "quarterstaff",
+   "quern",
+   "quill",
+   "quiver",
+   "raft",
+   "rag",
+   "rag_doll",
+   "rake",
+   "rat",
+   "raw_fish",
+   "raw_gem",
+   "raw_hide",
+   "raw_meat",
+   "razor",
+   "red_brick",
+   "reed",
+   "reed_bundle",
+   "reed_plant",
+   "relic",
+   "resonator",
+   "ring",
+   "ring_band",
+   "river_fish",
+   "roast_meat",
+   "rock_trim",
+   "rod",
+   "roof_tile",
+   "roots",
+   "rope",
+   "rope_fiber",
+   "rubble",
+   "rubble_masonry",
+   "rug",
+   "rush_mat",
+   "rye",
+   "rye_sack",
+   "sack",
+   "saddle",
+   "saddlebag",
+   "sage",
+   "sail",
+   "salt",
+   "salt_bag",
+   "salt_block",
+   "salt_rake",
+   "salted_fish",
+   "salve",
+   "sand",
+   "sand_sack",
+   "sandals",
+   "sandstone",
+   "sausage",
+   "saw",
+   "scale_marks",
+   "scarecrow",
+   "scarf",
+   "scissors",
+   "scorpion",
+   "scythe",
+   "sea_fish",
+   "seal",
+   "seal_stamp",
+   "sealing_wax",
+   "seaweed",
+   "seed",
+   "seed_bag",
+   "seed_drill_bag",
+   "shaft",
+   "sheep",
+   "sheep_shears",
+   "sheet_flexible",
+   "sheet_rigid",
+   "shelf",
+   "shellfish",
+   "shellfish_bed",
+   "shepherd_crook",
+   "shepherd_mantle",
+   "shirt",
+   "shoes",
+   "short_sword",
+   "shovel",
+   "shroud",
+   "shutter",
+   "sickle",
+   "sieve",
+   "silk",
+   "silk_bolt",
+   "silk_gown",
+   "silver",
+   "silver_coin",
+   "silver_ingot",
+   "skirt",
+   "slate",
+   "slate_tile",
+   "sled",
+   "sledgehammer",
+   "sleeping_draught",
+   "sling",
+   "small_box",
+   "smith_gauntlets",
+   "smith_hammer",
+   "smoked_fish",
+   "snake",
+   "snare",
+   "snow",
+   "soap",
+   "soap_bar",
+   "softwood",
+   "soup",
+   "spade",
+   "spade_head",
+   "spear",
+   "spindle",
+   "spinning_wheel",
+   "spirit_flask",
+   "spit",
+   "splint",
+   "splitting_wedge",
+   "spoon",
+   "spout",
+   "stew",
+   "stone_block",
+   "stone_chisel",
+   "stone_loose",
+   "stool",
+   "storage_jar",
+   "strange_relic",
+   "strap",
+   "straw",
+   "straw_bale",
+   "straw_hat",
+   "straw_mattress",
+   "sword",
+   "table",
+   "table_knife",
+   "tallow",
+   "tallow_block",
+   "tally_stick",
+   "tanning_vat",
+   "tapestry",
+   "teeth",
+   "temple_bell",
+   "tension_string",
+   "thatch",
+   "thatch_bundle",
+   "thimble",
+   "throwing_stones",
+   "tin",
+   "tin_ingot",
+   "tinderbox",
+   "tines",
+   "tongs",
+   "torch",
+   "trencher",
+   "trestle_table",
+   "trigger_mechanism",
+   "trousers",
+   "trowel",
+   "tunic",
+   "turf",
+   "turnip",
+   "turnips",
+   "two_man_saw",
+   "undershirt",
+   "vegetable",
+   "veil",
+   "vessel",
+   "vest",
+   "vine",
+   "vulture",
+   "wagon",
+   "walnut_tree",
+   "wand_cracked",
+   "wand_strong",
+   "wand_weak",
+   "washtub",
+   "water",
+   "water_jug",
+   "watering_pot",
+   "waterskin",
+   "wax",
+   "wax_cake",
+   "wax_tablet",
+   "wedding_ring",
+   "wedge",
+   "weights_set",
+   "wheat",
+   "wheat_sack",
+   "wheel",
+   "wheelbarrow",
+   "whetstone",
+   "wick",
+   "wicker",
+   "wicker_bundle",
+   "willow",
+   "willow_bark_herb",
+   "window_frame",
+   "wine_bottle",
+   "winnowing_basket",
+   "wolf",
+   "wood_chisel",
+   "wood_trim",
+   "wood_trim_worn",
+   "wooden_bowl",
+   "wooden_shield",
+   "wooden_shovel",
+   "wooden_toy",
+   "wool",
+   "wool_cap",
+   "wool_fleece",
+   "wool_tunic",
+   "work_smock",
+   "wreath",
+   "yarn",
+   "yarrow",
+   "yew",
+   "yew_wood",
+   "yoke"
+  ]
+ },
+ "reading_rules": [
+  "Records: sort by type id (registry order), keep the given order within a type (the order is the salience the engine chose; never sort). SELF and PLACE are mandatory. Each key must be canonical and match its type's key; keys are unique; every key must be in known_keys (default: the keys of the records).",
+  "Write order: for each row in order, for each column of its type in the order of types[T].columns (the registry's append order, NOT alphabetical), write the field if it is present and not null. This order fixes the numbering of the name aliases.",
+  "Unknown versus empty: an absent or null field leaves value 0 and flag 0. A pointer '' writes 0 with ptr_known 1. A list [] sets the flag of every column of the list (bags: all 6 cat_known; pointer lists: all 4 ptr_known). A list-of-vectors [] writes 0 with known 1 on every component. A word field set to '' writes <pad> (id 0) with cat_known 1; '' is refused for enums and inside lists.",
+  "Numbers: normalise in double precision with the column's `normalisation`, clamp to a bound if within epsilon of it (refuse beyond), round once to IEEE binary16 (nearest even), and write +0.0 whenever the half is zero (never -0.0). known=1.",
+  "Vectors: a dict writes the named components (a missing one stays unknown); a list of values in the interface's component order writes all of them; a list of dicts pools per component before writing: SUM for the components in constants.pooled_by_sum (mass), MAX for the others; each item is validated on its own first. Every component has its own column (components[i].col): a vector that grew has its new components further on.",
+  "Bags (lists of words or enum values): at most bag_cap items written in order from the bag's first column; pointer lists: at most ptr_list_cap items. Duplicates are kept.",
+  "Words: a catalogue word of the interface (never a reserved <...> symbol or a pointer kind) -> its vocabulary id; a name n:<canonical int> -> <name k>, k = order of first appearance in the write order (0..63), then <name_other> for the 65th and later distinct names (the alias list is not extended). Enum fields accept only their `values`.",
+  "Pointers: the slot (1-based row) of the record with that key. A key in known_keys but not in the batch is a ghost: 129 + k, k = rank of first appearance among ghosts when the arrays are scanned by row, then ptr columns in ascending order, then proposition positions in ascending order (ghosts are numbered AFTER writing, not while writing); the 33rd distinct ghost and later get 161. A key outside known_keys is refused. A pointer field accepts only the record types of its ref_types (for a ghost, the types its key can designate: @T is THING or INV). A proposition never cites its own record.",
+  "Propositions: printable ASCII plus space, tab, newline and CR only, at most 1000 characters; validated by the `grammar` tables (a bare proposition, or for REQUEST.prop a full utterance with a mood); written in prefix order, one position per symbol: sym id, arity (0 leaf, 1 + number of arguments for a list head), depth, slot (pointers), num. A count n (silver_coin:3 or a bare 3) is log1p(n + 1) in binary16 (0 means no count); counts and numbers are canonical (ASCII digits, no leading zero, at most 1e7). A bare citation b:7 / m:7 / g:7 is a one-position proposition.",
+  "Canonical text of a proposition (for serialization): re-print the tree, one space between symbols, no space inside parentheses.",
+  "Digest: see `digest`; n is the number of rows written."
+ ]
 }

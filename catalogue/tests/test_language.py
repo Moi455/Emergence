@@ -34,6 +34,17 @@ class TestBareExpression(unittest.TestCase):
         self.assertFalse(self.bare("(owns me)").ok)                         # arity
         self.assertFalse(self.bare("(and " * 18 + "(owns me @T1)" + ")" * 18).ok)   # too many symbols
 
+    def test_a_bare_citation_is_a_proposition_like_in_an_assert(self):
+        self.assertTrue(language.Expression("(assert b:7)", self.vocab).ok)
+        for text in ("b:7", "m:2", "g:1", " b:7 "):
+            e = self.bare(text)
+            self.assertTrue(e.ok, (text, e.problems))
+            self.assertEqual(e.root, text.strip())
+            self.assertEqual(e.intimate_symbols(), [])
+        for text in ("@E1", "n:7", "b:7 b:8", "b:07x", "(b:7)", "b:7\n(owns me @T1)"):
+            self.assertFalse(self.bare(text).ok, text)
+        self.assertFalse(language.Expression("b:7", self.vocab).ok)      # as an utterance it is not one
+
     def test_digits_are_ascii(self):
         self.assertFalse(self.bare("(owns me @T٣)").ok)               # an Arabic-Indic digit
         self.assertFalse(self.bare("(has me silver_coin:²)").ok)       # a superscript two is isdigit() too

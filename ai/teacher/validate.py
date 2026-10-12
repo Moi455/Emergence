@@ -426,7 +426,7 @@ class WriteChecker:
             if value not in ("true", "false"):
                 raise Refusal(Codes.BAD_WRITE, f"{wv.id}: expected true or false")
             parsed = value == "true"
-        elif wv.scale == "time":
+        elif wv.scale in ("time", "time_until"):         # time_until: hours from now; a deadline written is not in the past
             if not NUMBER.match(value) or not 0 <= float(value) <= MAX_HOURS:
                 raise Refusal(Codes.BAD_WRITE, f"{wv.id}: {value!r} is not a number of hours in 0..{MAX_HOURS:g}")
             parsed = float(value)

@@ -16,7 +16,7 @@ from .errors import TokenError
 
 ROOT = Path(__file__).resolve().parents[2]
 INTERFACE_PATH = ROOT / "catalogue" / "generated" / "model_interface.json"
-SUPPORTED_SCHEMAS = ("model-interface-1",)
+SUPPORTED_SCHEMAS = ("model-interface-2",)
 
 
 def fnv1a64(data: bytes) -> int:
@@ -114,6 +114,8 @@ class InputVocabulary:
             raise TokenError(f"the registered symbols do not cover the interface: {sorted(missing)[:5]}")
         self.ids: dict[str, int] = {s: i for i, s in enumerate(self.symbols)}
         self.fingerprint = fnv1a64("\n".join(self.symbols).encode("utf-8"))
+        if self.ids.get(self.PAD) != 0:
+            raise TokenError("<pad> must be symbol 0 (a word field set to '' is known: none)")
         if len(self.symbols) > 32767:
             raise TokenError("the input vocabulary must fit int16")
 

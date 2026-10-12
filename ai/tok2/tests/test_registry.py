@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -102,6 +103,176 @@ class TestRegistry(unittest.TestCase):
         self.assertEqual(up.types["AAA"].id, len(self.reg.types) + 1)           # last, although first alphabetically
 
 
+VECTOR_FIELDS = (("THING", "props"), ("INV", "props"), ("SELF", "held"), ("ENTITY", "look.held"))
+
+
+def add_property(d, name="zzprop", scale="qty", unit="kg"):
+    """A new perceptible property of objects: appended to every field that carries the object vector."""
+    d["input"]["object_vector"].append(name)
+    for t, f in VECTOR_FIELDS:
+        spec = d["input"]["token_types"][t]["fields"][f]
+        spec["components"].append(name)
+        spec["component_scales"].append(scale)
+        spec["component_units"].append(unit)
+
+
+class TestVectorRegistry(unittest.TestCase):
+    def setUp(self):
+        self.reg = Registry.load()
+
+    def test_every_vector_records_its_meaning(self):
+        e = self.reg.types["THING"].fields["props"]
+        self.assertEqual([c.name for c in e.components], ModelInterface().object_vector)
+        self.assertEqual(e.components[0].unit, "kg")
+        self.assertEqual(self.reg.types["ENTITY"].fields["dir"].components[0].scale, "unit")
+        self.assertEqual(self.reg.types["GOAL"].fields["deadline"].scale, "time_until")
+        for t in self.reg.types.values():
+            for f in t.fields.values():
+                self.assertNotEqual(f.scale, "")
+
+    def test_swapped_components_are_a_conflict(self):
+        def edit(d):
+            for t, f in VECTOR_FIELDS:
+                spec = d["input"]["token_types"][t]["fields"][f]
+                for k in ("components", "component_scales", "component_units"):
+                    spec[k][0], spec[k][1] = spec[k][1], spec[k][0]
+        new = ModelInterface.from_dict(changed(edit))
+        add, conflicts = self.reg.diff(new)
+        self.assertTrue(any("reordered or swapped" in c for c in conflicts), conflicts)
+        with self.assertRaises(TokenError):
+            Tokenizer(new, self.reg)
+        with self.assertRaises(TokenError):
+            self.reg.updated(new)
+
+    def test_a_changed_scale_or_unit_is_a_conflict(self):
+        def scale(d):
+            d["input"]["token_types"]["SELF"]["fields"]["held"]["component_scales"][1] = "unipolar10"
+        def unit(d):
+            d["input"]["token_types"]["SELF"]["fields"]["held"]["component_units"][0] = "g"
+        def field_scale(d):
+            d["input"]["token_types"]["GOAL"]["fields"]["deadline"]["scale"] = "time"
+        for edit in (scale, unit, field_scale):
+            _, conflicts = self.reg.diff(ModelInterface.from_dict(changed(edit)))
+            self.assertTrue(conflicts, edit.__name__)
+
+    def test_a_property_added_to_the_object_vector_is_an_update_not_a_conflict(self):
+        new = ModelInterface.from_dict(changed(add_property))
+        add, conflicts = self.reg.diff(new)
+        self.assertEqual(conflicts, [])
+        self.assertTrue(any("new components" in a for a in add))
+        up = self.reg.updated(new)
+        for t, f in VECTOR_FIELDS:                                  # the old columns did not move
+            old, now = self.reg.types[t].fields[f], up.types[t].fields[f]
+            self.assertEqual([(c.name, c.col) for c in now.components[:-1]], [(c.name, c.col) for c in old.components])
+            self.assertEqual(now.components[-1].name, "zzprop")
+            self.assertEqual(now.components[-1].col, self.reg.types[t].end("num"))      # the next free column
+            self.assertEqual(now.width, old.width + 1)
+        self.assertEqual(up.diff(new), ([], []))
+        self.assertEqual(up.widths()["num"], max(t.end("num") for t in up.types.values()))
+        # the layout reads it: same values in the old columns, the new component further on
+        lay_old, lay_new = Tokenizer().layout, Layout(new, InputVocabulary(new, up.symbols), up)
+        held_old, held_new = lay_old.types["SELF"].columns["held"], lay_new.types["SELF"].columns["held"]
+        self.assertEqual(held_new.codec.cols[:-1], held_old.codec.cols)
+        self.assertEqual(held_new.codec.cols[-1], self.reg.types["SELF"].end("num"))
+        from tok2.tokenizer import Tokenizer as T
+        tok_new = T(new, up)
+        ctx0 = base(Record("THING", "@T1", {"props": {"mass": 3.0, "zzprop": 7.0}}))
+        e_new = tok_new.encode(ctx0)
+        r, c = e_new.keys.index("@T1"), lay_new.types["THING"].columns["props"].codec
+        self.assertAlmostEqual(float(e_new.num[r, c.cols[0]]), np.log1p(3.0), places=2)
+        self.assertAlmostEqual(float(e_new.num[r, c.cols[-1]]), np.log1p(7.0), places=2)
+        self.assertEqual(e_new.known[r, c.cols[-1]], 1)
+        # and a record that does not mention it is encoded exactly as before in the old columns
+        ctx1 = base(Record("THING", "@T1", {"props": {"mass": 3.0}}))
+        old, new_ = Tokenizer().encode(ctx1), tok_new.encode(ctx1)
+        w = old.num.shape[1]
+        self.assertTrue((old.num == new_.num[:, :w]).all() and (old.known == new_.known[:, :w]).all())
+
+    def test_a_removed_component_stays_reserved_and_a_rename_never_reuses_its_column(self):
+        def remove(d):
+            for t, f in VECTOR_FIELDS:
+                spec = d["input"]["token_types"][t]["fields"][f]
+                for k in ("components", "component_scales", "component_units"):
+                    spec[k].remove(spec[k][1]) if k == "components" else spec[k].pop(1)
+        new = ModelInterface.from_dict(changed(remove))
+        up = self.reg.updated(new)
+        e = up.types["SELF"].fields["held"]
+        gone = e.components[1]
+        self.assertTrue(gone.retired)
+        self.assertEqual(gone.col, self.reg.types["SELF"].fields["held"].components[1].col)
+        lay = Layout(new, InputVocabulary(new, up.symbols), up)
+        self.assertNotIn(gone.col, lay.types["SELF"].columns["held"].codec.cols)
+        # renamed = retired + appended: the new name takes a fresh column
+        def rename(d):
+            for t, f in VECTOR_FIELDS:
+                d["input"]["token_types"][t]["fields"][f]["components"][1] = "extent"
+        up2 = self.reg.updated(ModelInterface.from_dict(changed(rename)))
+        e2 = up2.types["SELF"].fields["held"]
+        self.assertTrue(e2.components[1].retired and e2.components[1].name == "size")
+        self.assertEqual(e2.components[-1].name, "extent")
+        self.assertNotEqual(e2.components[-1].col, e2.components[1].col)
+
+    def test_the_old_registry_format_is_completed_not_rejected(self):
+        d = self.reg.to_dict()
+        d["schema"] = "tok2-registry-1"
+        del d["widths"]
+        for t in d["types"].values():
+            for f in t["fields"].values():
+                for k in ("scale", "unit", "list_of", "components"):
+                    f.pop(k, None)
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "r.json"
+            p.write_text(json.dumps(d))
+            old = Registry.load(p)
+            add, conflicts = old.diff(ModelInterface())
+            self.assertEqual(conflicts, [])
+            self.assertEqual(old.updated(ModelInterface()).to_dict(), self.reg.to_dict())
+
+
+class TestRegistryFileIntegrity(unittest.TestCase):
+    def broken(self, edit):
+        d = Registry.load().to_dict()
+        edit(d)
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "r.json"
+            p.write_text(json.dumps(d))
+            with self.assertRaises(TokenError):
+                Registry.load(p)
+
+    def test_duplicate_type_ids(self):
+        self.broken(lambda d: d["types"]["WAKE"].update(id=d["types"]["BELIEF"]["id"]))
+
+    def test_overlapping_columns(self):
+        def edit(d):
+            f = d["types"]["BELIEF"]["fields"]
+            f["certainty"]["col"] = f["age"]["col"]
+        self.broken(edit)
+
+    def test_a_vector_component_on_another_field(self):
+        def edit(d):
+            d["types"]["SELF"]["fields"]["held"]["components"][0]["col"] = d["types"]["SELF"]["fields"]["age"]["col"]
+        self.broken(edit)
+
+    def test_duplicate_symbols(self):
+        self.broken(lambda d: d["symbols"].append(d["symbols"][10]))
+
+    def test_declared_widths_must_match_the_columns(self):
+        self.broken(lambda d: d["widths"].update(num=d["widths"]["num"] - 1))
+        self.broken(lambda d: d["types"]["BELIEF"]["fields"]["age"].update(col=500))
+
+    def test_unknown_block_and_duplicate_components(self):
+        self.broken(lambda d: d["types"]["BELIEF"]["fields"]["age"].update(block="zzz"))
+        self.broken(lambda d: d["types"]["SELF"]["fields"]["held"]["components"][1].update(
+            name=d["types"]["SELF"]["fields"]["held"]["components"][0]["name"]))
+
+    def test_malformed_and_wrong_schema(self):
+        self.broken(lambda d: d.update(schema="nope"))
+        self.broken(lambda d: d["types"]["BELIEF"].pop("id"))
+
+    def test_the_committed_registry_passes(self):
+        Registry.load().validate()
+
+
 class TestInterface(unittest.TestCase):
     def test_only_what_tok2_reads_is_fingerprinted(self):
         ref = ModelInterface().fingerprint
@@ -154,7 +325,7 @@ class TestSerialization(unittest.TestCase):
 
     def test_known_keys_survive_and_default_stays_default(self):
         c = ctx()
-        self.assertEqual(DecisionContext.loads(c.dumps(self.tok), self.tok).known_keys, sorted(c.known_keys))
+        self.assertEqual(DecisionContext.loads(c.dumps(self.tok), self.tok).known_keys, frozenset(c.known_keys))
         d = base()
         self.assertIsNone(DecisionContext.loads(d.dumps(self.tok), self.tok).known_keys)
 

@@ -1,5 +1,11 @@
 {
- "schema": "tok2-registry-1",
+ "schema": "tok2-registry-2",
+ "widths": {
+  "num": 65,
+  "cat": 38,
+  "ptr": 5,
+  "prop": 1
+ },
  "types": {
   "BELIEF": {
    "id": 1,
@@ -8,73 +14,109 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "unit": "",
+     "list_of": ""
     },
     "certainty": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "contradicted": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "hops": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
     },
     "importance": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "informant": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "polarity": {
      "block": "num",
      "col": 5,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "prop": {
      "block": "prop",
      "col": 0,
      "width": 1,
-     "codec": "PropositionCodec"
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "unit": "",
+     "list_of": ""
     },
     "secret": {
      "block": "num",
      "col": 6,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "shared": {
      "block": "ptr",
      "col": 1,
      "width": 4,
-     "codec": "PointerListCodec"
+     "codec": "PointerListCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "mref"
     },
     "source": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "weight": {
      "block": "num",
      "col": 7,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -85,37 +127,55 @@
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "deadline": {
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time_until",
+     "unit": "",
+     "list_of": ""
     },
     "mine": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "prop": {
      "block": "prop",
      "col": 0,
      "width": 1,
-     "codec": "PropositionCodec"
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "unit": "",
+     "list_of": ""
     },
     "status": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "witnesses": {
      "block": "ptr",
      "col": 1,
      "width": 4,
-     "codec": "PointerListCodec"
+     "codec": "PointerListCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "mref"
     }
    }
   },
@@ -126,193 +186,595 @@
      "block": "num",
      "col": 0,
      "width": 2,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": "",
+     "components": [
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": ""
+      }
+     ]
     },
     "dist": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "m",
+     "list_of": ""
     },
     "id_certainty": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "known_by": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "link": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "look.age": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "ans",
+     "list_of": ""
     },
     "look.attire": {
      "block": "cat",
      "col": 2,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     },
     "look.build": {
      "block": "cat",
      "col": 8,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     },
     "look.condition": {
      "block": "cat",
      "col": 14,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "look.expression": {
      "block": "cat",
      "col": 15,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "look.gaze": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "look.health": {
      "block": "cat",
      "col": 16,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     },
     "look.held": {
      "block": "num",
      "col": 5,
      "width": 43,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "qty",
+     "components": [
+      {
+       "name": "mass",
+       "col": 5,
+       "scale": "qty",
+       "unit": "kg"
+      },
+      {
+       "name": "size",
+       "col": 6,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "edge",
+       "col": 7,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "point",
+       "col": 8,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "reach",
+       "col": 9,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "capacity",
+       "col": 10,
+       "scale": "qty",
+       "unit": "l"
+      },
+      {
+       "name": "temperature",
+       "col": 11,
+       "scale": "qty",
+       "unit": "°C"
+      },
+      {
+       "name": "wetness",
+       "col": 12,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "burning",
+       "col": 13,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "open",
+       "col": 14,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "lit",
+       "col": 15,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "dirtiness",
+       "col": 16,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "graspable",
+       "col": 17,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "carryable",
+       "col": 18,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "throwable",
+       "col": 19,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "cuts",
+       "col": 20,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "pierces",
+       "col": 21,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "impacts",
+       "col": 22,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "digs",
+       "col": 23,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "contains",
+       "col": 24,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "fuel",
+       "col": 25,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "ignites",
+       "col": 26,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wearable",
+       "col": 27,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "supports_body",
+       "col": 28,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "climbable",
+       "col": 29,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "openable",
+       "col": 30,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "conceals",
+       "col": 31,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "blocks_passage",
+       "col": 32,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "floats_carries",
+       "col": 33,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "shelters",
+       "col": 34,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "writable",
+       "col": 35,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "heats",
+       "col": 36,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "light_source",
+       "col": 37,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "binds",
+       "col": 38,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "mountable",
+       "col": 39,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "protects",
+       "col": 40,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "launches",
+       "col": 41,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "plays_music",
+       "col": 42,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "reflects_image",
+       "col": 43,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wipes",
+       "col": 44,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "sharpens",
+       "col": 45,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "joins",
+       "col": 46,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "rolls_load",
+       "col": 47,
+       "scale": "bool",
+       "unit": ""
+      }
+     ]
     },
     "look.marks": {
      "block": "cat",
      "col": 22,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     },
     "look.motion": {
      "block": "cat",
      "col": 28,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "look.posture": {
      "block": "cat",
      "col": 29,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "look.sex": {
      "block": "cat",
      "col": 30,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "look.signs": {
      "block": "cat",
      "col": 31,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     },
     "look.wounds": {
      "block": "num",
      "col": 48,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "name": {
      "block": "cat",
      "col": 37,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "present": {
      "block": "num",
      "col": 49,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "rel.affection": {
      "block": "num",
      "col": 50,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.attraction": {
      "block": "num",
      "col": 51,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.familiarity": {
      "block": "num",
      "col": 52,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.fear": {
      "block": "num",
      "col": 53,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.obligation": {
      "block": "num",
      "col": 54,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.perceived_regard": {
      "block": "num",
      "col": 55,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.resentment": {
      "block": "num",
      "col": 56,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.respect": {
      "block": "num",
      "col": 57,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.rivalry": {
      "block": "num",
      "col": 58,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.trust": {
      "block": "num",
      "col": 59,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rep": {
      "block": "num",
      "col": 60,
      "width": 5,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "qty",
+     "components": [
+      {
+       "name": "honesty",
+       "col": 60,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "danger",
+       "col": 61,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "competence",
+       "col": 62,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "wealth",
+       "col": 63,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "piety",
+       "col": 64,
+       "scale": "unit",
+       "unit": ""
+      }
+     ]
     }
    }
   },
@@ -323,49 +785,73 @@
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "age": {
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "unit": "",
+     "list_of": ""
     },
     "from_to": {
      "block": "ptr",
      "col": 1,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "gesture": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "manner": {
      "block": "cat",
      "col": 1,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     },
     "sense": {
      "block": "cat",
      "col": 7,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "target": {
      "block": "ptr",
      "col": 2,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "with": {
      "block": "ptr",
      "col": 3,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -376,55 +862,82 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "unit": "",
+     "list_of": ""
     },
     "deadline": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time_until",
+     "unit": "",
+     "list_of": ""
     },
     "mode": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "origin": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "origin_ref": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "priority": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "progress": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "ratio",
+     "unit": "",
+     "list_of": ""
     },
     "prop": {
      "block": "prop",
      "col": 0,
      "width": 1,
-     "codec": "PropositionCodec"
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "unit": "",
+     "list_of": ""
     },
     "status": {
      "block": "cat",
      "col": 2,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -435,37 +948,55 @@
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "rel.affection": {
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.fear": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.resentment": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.respect": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "rel.trust": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -476,73 +1007,109 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "unit": "",
+     "list_of": ""
     },
     "certainty": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "contradicted": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "hops": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
     },
     "importance": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "informant": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "polarity": {
      "block": "num",
      "col": 5,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "prop": {
      "block": "prop",
      "col": 0,
      "width": 1,
-     "codec": "PropositionCodec"
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "unit": "",
+     "list_of": ""
     },
     "secret": {
      "block": "num",
      "col": 6,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "shared": {
      "block": "ptr",
      "col": 1,
      "width": 4,
-     "codec": "PointerListCodec"
+     "codec": "PointerListCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "mref"
     },
     "source": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "weight": {
      "block": "num",
      "col": 7,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -553,73 +1120,383 @@
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "depth": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "dir": {
      "block": "num",
      "col": 0,
      "width": 2,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": "",
+     "components": [
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": ""
+      }
+     ]
     },
     "display": {
      "block": "cat",
      "col": 2,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "dist": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "m",
+     "list_of": ""
     },
     "file": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "file_certainty": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "kind": {
      "block": "cat",
      "col": 3,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "motion": {
      "block": "cat",
      "col": 4,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "owner": {
      "block": "ptr",
      "col": 1,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "props": {
      "block": "num",
      "col": 4,
      "width": 43,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "qty",
+     "components": [
+      {
+       "name": "mass",
+       "col": 4,
+       "scale": "qty",
+       "unit": "kg"
+      },
+      {
+       "name": "size",
+       "col": 5,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "edge",
+       "col": 6,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "point",
+       "col": 7,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "reach",
+       "col": 8,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "capacity",
+       "col": 9,
+       "scale": "qty",
+       "unit": "l"
+      },
+      {
+       "name": "temperature",
+       "col": 10,
+       "scale": "qty",
+       "unit": "°C"
+      },
+      {
+       "name": "wetness",
+       "col": 11,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "burning",
+       "col": 12,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "open",
+       "col": 13,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "lit",
+       "col": 14,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "dirtiness",
+       "col": 15,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "graspable",
+       "col": 16,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "carryable",
+       "col": 17,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "throwable",
+       "col": 18,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "cuts",
+       "col": 19,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "pierces",
+       "col": 20,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "impacts",
+       "col": 21,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "digs",
+       "col": 22,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "contains",
+       "col": 23,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "fuel",
+       "col": 24,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "ignites",
+       "col": 25,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wearable",
+       "col": 26,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "supports_body",
+       "col": 27,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "climbable",
+       "col": 28,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "openable",
+       "col": 29,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "conceals",
+       "col": 30,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "blocks_passage",
+       "col": 31,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "floats_carries",
+       "col": 32,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "shelters",
+       "col": 33,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "writable",
+       "col": 34,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "heats",
+       "col": 35,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "light_source",
+       "col": 36,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "binds",
+       "col": 37,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "mountable",
+       "col": 38,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "protects",
+       "col": 39,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "launches",
+       "col": 40,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "plays_music",
+       "col": 41,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "reflects_image",
+       "col": 42,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wipes",
+       "col": 43,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "sharpens",
+       "col": 44,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "joins",
+       "col": 45,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "rolls_load",
+       "col": 46,
+       "scale": "bool",
+       "unit": ""
+      }
+     ]
     },
     "state": {
      "block": "cat",
      "col": 5,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     }
    }
   },
@@ -630,31 +1507,60 @@
      "block": "num",
      "col": 0,
      "width": 2,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": "",
+     "components": [
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": ""
+      }
+     ]
     },
     "dist": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "m",
+     "list_of": ""
     },
     "file": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "kind": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "owner": {
      "block": "ptr",
      "col": 1,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -665,67 +1571,100 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "unit": "",
+     "list_of": ""
     },
     "defining": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "emotion": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "importance": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "interp": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "place": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "prop": {
      "block": "prop",
      "col": 0,
      "width": 1,
-     "codec": "PropositionCodec"
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "unit": "",
+     "list_of": ""
     },
     "role": {
      "block": "cat",
      "col": 2,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "secret": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "valence": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "vividness": {
      "block": "num",
      "col": 5,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -736,49 +1675,73 @@
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "crowd": {
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
     },
     "indoors": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
     },
     "light": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "noise": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "signs": {
      "block": "cat",
      "col": 1,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     },
     "sun": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
     },
     "weather": {
      "block": "cat",
      "col": 7,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     }
    }
   },
@@ -789,37 +1752,55 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "goal": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "next": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "progress": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "ratio",
+     "unit": "",
+     "list_of": ""
     },
     "step": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "target": {
      "block": "ptr",
      "col": 1,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -830,19 +1811,28 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "time",
+     "unit": "",
+     "list_of": ""
     },
     "from": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "prop": {
      "block": "prop",
      "col": 0,
      "width": 1,
-     "codec": "PropositionCodec"
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -853,157 +1843,515 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "ans",
+     "list_of": ""
     },
     "age_stage": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "body.bleeding": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "body.breath": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "body.consciousness": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "body.endurance": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "body.intox": {
      "block": "num",
      "col": 5,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "body.load": {
      "block": "num",
      "col": 6,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "ratio",
+     "unit": "",
+     "list_of": ""
     },
     "body.manipulation": {
      "block": "num",
      "col": 7,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "ratio",
+     "unit": "",
+     "list_of": ""
     },
     "body.mobility": {
      "block": "num",
      "col": 8,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "ratio",
+     "unit": "",
+     "list_of": ""
     },
     "body.pain": {
      "block": "num",
      "col": 9,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "body.sickness": {
      "block": "num",
      "col": 10,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "body.strength": {
      "block": "num",
      "col": 11,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "held": {
      "block": "num",
      "col": 12,
      "width": 43,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "qty",
+     "components": [
+      {
+       "name": "mass",
+       "col": 12,
+       "scale": "qty",
+       "unit": "kg"
+      },
+      {
+       "name": "size",
+       "col": 13,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "edge",
+       "col": 14,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "point",
+       "col": 15,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "reach",
+       "col": 16,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "capacity",
+       "col": 17,
+       "scale": "qty",
+       "unit": "l"
+      },
+      {
+       "name": "temperature",
+       "col": 18,
+       "scale": "qty",
+       "unit": "°C"
+      },
+      {
+       "name": "wetness",
+       "col": 19,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "burning",
+       "col": 20,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "open",
+       "col": 21,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "lit",
+       "col": 22,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "dirtiness",
+       "col": 23,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "graspable",
+       "col": 24,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "carryable",
+       "col": 25,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "throwable",
+       "col": 26,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "cuts",
+       "col": 27,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "pierces",
+       "col": 28,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "impacts",
+       "col": 29,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "digs",
+       "col": 30,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "contains",
+       "col": 31,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "fuel",
+       "col": 32,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "ignites",
+       "col": 33,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wearable",
+       "col": 34,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "supports_body",
+       "col": 35,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "climbable",
+       "col": 36,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "openable",
+       "col": 37,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "conceals",
+       "col": 38,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "blocks_passage",
+       "col": 39,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "floats_carries",
+       "col": 40,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "shelters",
+       "col": 41,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "writable",
+       "col": 42,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "heats",
+       "col": 43,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "light_source",
+       "col": 44,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "binds",
+       "col": 45,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "mountable",
+       "col": 46,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "protects",
+       "col": 47,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "launches",
+       "col": 48,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "plays_music",
+       "col": 49,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "reflects_image",
+       "col": 50,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wipes",
+       "col": 51,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "sharpens",
+       "col": 52,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "joins",
+       "col": 53,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "rolls_load",
+       "col": 54,
+       "scale": "bool",
+       "unit": ""
+      }
+     ]
     },
     "need.exhaustion": {
      "block": "num",
      "col": 55,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "need.hunger": {
      "block": "num",
      "col": 56,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "need.reserves": {
      "block": "num",
      "col": 57,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "need.sleep": {
      "block": "num",
      "col": 58,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "need.thermal": {
      "block": "num",
      "col": 59,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "need.thirst": {
      "block": "num",
      "col": 60,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "place": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "posture": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "season": {
      "block": "cat",
      "col": 2,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "sex": {
      "block": "cat",
      "col": 3,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "time": {
      "block": "num",
      "col": 61,
      "width": 3,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": "",
+     "components": [
+      {
+       "name": "sin",
+       "col": 61,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "cos",
+       "col": 62,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "certainty",
+       "col": 63,
+       "scale": "unit",
+       "unit": ""
+      }
+     ]
     },
     "wound": {
      "block": "cat",
      "col": 4,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     }
    }
   },
@@ -1014,193 +2362,289 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "ability.intellect": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "ability.self_control": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "attracted_to": {
      "block": "cat",
      "col": 0,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "enum"
     },
     "temper.baseline_mood": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "temper.resilience": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.altruism": {
      "block": "num",
      "col": 5,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.anxiousness": {
      "block": "num",
      "col": 6,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.assurance": {
      "block": "num",
      "col": 7,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.creativity": {
      "block": "num",
      "col": 8,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.diligence": {
      "block": "num",
      "col": 9,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.fairness": {
      "block": "num",
      "col": 10,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.fearfulness": {
      "block": "num",
      "col": 11,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.forgiveness": {
      "block": "num",
      "col": 12,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.gentleness": {
      "block": "num",
      "col": 13,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.greed_avoidance": {
      "block": "num",
      "col": 14,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.inquisitiveness": {
      "block": "num",
      "col": 15,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.modesty": {
      "block": "num",
      "col": 16,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.patience": {
      "block": "num",
      "col": 17,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.prudence": {
      "block": "num",
      "col": 18,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.sentimentality": {
      "block": "num",
      "col": 19,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.sincerity": {
      "block": "num",
      "col": 20,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.sociability": {
      "block": "num",
      "col": 21,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "trait.unconventionality": {
      "block": "num",
      "col": 22,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.achievement": {
      "block": "num",
      "col": 23,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.authority": {
      "block": "num",
      "col": 24,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.honor": {
      "block": "num",
      "col": 25,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.liberty": {
      "block": "num",
      "col": 26,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.loyalty": {
      "block": "num",
      "col": 27,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.pleasure": {
      "block": "num",
      "col": 28,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.power": {
      "block": "num",
      "col": 29,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "value.sanctity": {
      "block": "num",
      "col": 30,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -1211,205 +2655,307 @@
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "drive.achievement": {
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.acquisition": {
      "block": "num",
      "col": 1,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.autonomy": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.company": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.esteem": {
      "block": "num",
      "col": 4,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.intimacy": {
      "block": "num",
      "col": 5,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.meaning": {
      "block": "num",
      "col": 6,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.novelty": {
      "block": "num",
      "col": 7,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.play": {
      "block": "num",
      "col": 8,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "drive.security": {
      "block": "num",
      "col": 9,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.anger": {
      "block": "num",
      "col": 10,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.anxiety": {
      "block": "num",
      "col": 11,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.boredom": {
      "block": "num",
      "col": 12,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.confusion": {
      "block": "num",
      "col": 13,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.contempt": {
      "block": "num",
      "col": 14,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.disgust": {
      "block": "num",
      "col": 15,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.envy": {
      "block": "num",
      "col": 16,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.fear": {
      "block": "num",
      "col": 17,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.gratitude": {
      "block": "num",
      "col": 18,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.grief": {
      "block": "num",
      "col": 19,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.guilt": {
      "block": "num",
      "col": 20,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.jealousy": {
      "block": "num",
      "col": 21,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.joy": {
      "block": "num",
      "col": 22,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.pride": {
      "block": "num",
      "col": 23,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.sadness": {
      "block": "num",
      "col": 24,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.shame": {
      "block": "num",
      "col": 25,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.surprise": {
      "block": "num",
      "col": 26,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "emo.tenderness": {
      "block": "num",
      "col": 27,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "masking": {
      "block": "num",
      "col": 28,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "mood.energy": {
      "block": "num",
      "col": 29,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "mood.valence": {
      "block": "num",
      "col": 30,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "self_regard": {
      "block": "num",
      "col": 31,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "stress": {
      "block": "num",
      "col": 32,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -1420,13 +2966,19 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "technique": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -1437,13 +2989,19 @@
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "bipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "concept": {
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -1454,73 +3012,383 @@
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "depth": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "dir": {
      "block": "num",
      "col": 0,
      "width": 2,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": "",
+     "components": [
+      {
+       "name": "sin",
+       "col": 0,
+       "scale": "unit",
+       "unit": ""
+      },
+      {
+       "name": "cos",
+       "col": 1,
+       "scale": "unit",
+       "unit": ""
+      }
+     ]
     },
     "display": {
      "block": "cat",
      "col": 2,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "dist": {
      "block": "num",
      "col": 2,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "m",
+     "list_of": ""
     },
     "file": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "file_certainty": {
      "block": "num",
      "col": 3,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     },
     "kind": {
      "block": "cat",
      "col": 3,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     },
     "motion": {
      "block": "cat",
      "col": 4,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "owner": {
      "block": "ptr",
      "col": 1,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "props": {
      "block": "num",
      "col": 4,
      "width": 43,
-     "codec": "VectorCodec"
+     "codec": "VectorCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "qty",
+     "components": [
+      {
+       "name": "mass",
+       "col": 4,
+       "scale": "qty",
+       "unit": "kg"
+      },
+      {
+       "name": "size",
+       "col": 5,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "edge",
+       "col": 6,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "point",
+       "col": 7,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "reach",
+       "col": 8,
+       "scale": "qty",
+       "unit": "m"
+      },
+      {
+       "name": "capacity",
+       "col": 9,
+       "scale": "qty",
+       "unit": "l"
+      },
+      {
+       "name": "temperature",
+       "col": 10,
+       "scale": "qty",
+       "unit": "°C"
+      },
+      {
+       "name": "wetness",
+       "col": 11,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "burning",
+       "col": 12,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "open",
+       "col": 13,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "lit",
+       "col": 14,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "dirtiness",
+       "col": 15,
+       "scale": "unipolar10",
+       "unit": ""
+      },
+      {
+       "name": "graspable",
+       "col": 16,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "carryable",
+       "col": 17,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "throwable",
+       "col": 18,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "cuts",
+       "col": 19,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "pierces",
+       "col": 20,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "impacts",
+       "col": 21,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "digs",
+       "col": 22,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "contains",
+       "col": 23,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "fuel",
+       "col": 24,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "ignites",
+       "col": 25,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wearable",
+       "col": 26,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "supports_body",
+       "col": 27,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "climbable",
+       "col": 28,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "openable",
+       "col": 29,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "conceals",
+       "col": 30,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "blocks_passage",
+       "col": 31,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "floats_carries",
+       "col": 32,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "shelters",
+       "col": 33,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "writable",
+       "col": 34,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "heats",
+       "col": 35,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "light_source",
+       "col": 36,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "binds",
+       "col": 37,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "mountable",
+       "col": 38,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "protects",
+       "col": 39,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "launches",
+       "col": 40,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "plays_music",
+       "col": 41,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "reflects_image",
+       "col": 42,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "wipes",
+       "col": 43,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "sharpens",
+       "col": 44,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "joins",
+       "col": 45,
+       "scale": "bool",
+       "unit": ""
+      },
+      {
+       "name": "rolls_load",
+       "col": 46,
+       "scale": "bool",
+       "unit": ""
+      }
+     ]
     },
     "state": {
      "block": "cat",
      "col": 5,
      "width": 6,
-     "codec": "BagCodec"
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     }
    }
   },
@@ -1531,25 +3399,37 @@
      "block": "cat",
      "col": 0,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "mode": {
      "block": "cat",
      "col": 1,
      "width": 1,
-     "codec": "SymbolCodec"
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     },
     "trigger": {
      "block": "ptr",
      "col": 0,
      "width": 1,
-     "codec": "PointerCodec"
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     },
     "urgency": {
      "block": "num",
      "col": 0,
      "width": 1,
-     "codec": "ScalarCodec"
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
     }
    }
   }

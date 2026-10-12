@@ -1,17 +1,29 @@
 """golden.py - the golden files the C++ port (and the model code) are checked against.
 
-    python3 -m tok2.golden            (from ai/)  what would change
-    python3 -m tok2.golden --update               rewrite golden/layout.json and golden/cases.jsonl
-    python3 -m tok2.golden --check                exit 1 when they are out of date
+    python3 -m tok2.golden                   (from ai/)  what would change
+    python3 -m tok2.golden --update          rewrite golden/layout.json and the HAND-MADE cases of golden/cases.jsonl
+    python3 -m tok2.golden --update-sampler  also regenerate the 12 cases drawn from the situations sampler
+    python3 -m tok2.golden --check           exit 1 when layout.json or the hand-made cases are out of date
 
-golden/layout.json  the contract: constants, arrays (dtype, shape), types (id, count, key), columns (block, column,
-                    width, codec kind, normalisation formula, scale, unit, enum values, components), block widths,
-                    the vocabulary id -> symbol, and the table speech word -> input id (to tie the embeddings of
-                    the output speech head to the input embeddings).
+golden/layout.json  the contract, enough to write a port without reading Python:
+                    - the layout document (Layout.document()): constants, arrays (dtype, shape), types (id, count, key),
+                      their columns IN WRITE ORDER (block, column, width, codec kind, normalisation formula, scale, unit,
+                      enum values, ref_types, vector components with their own columns), block widths, the vocabulary
+                      id -> symbol, the table speech word -> input id (to tie the output speech embeddings to the input);
+                    - `grammar`: the tables of catalogue/tools/language.py that type a proposition (word categories,
+                      predicate arities and argument types, ACCEPTS, CATEGORY_TYPES, gesture parameters, event roles,
+                      limits on symbols, nesting and pointers);
+                    - `reading_rules`: the rules the tables do not say (bags, pointer lists, write order, pooling of
+                      held objects, ghost numbering, names...);
+                    - `fingerprints`. The LAYOUT fingerprint is the FNV-1a 64 (hex, 16 digits) of the canonical JSON
+                      (sorted keys, separators , and :, UTF-8, no ASCII escapes) of this file WITHOUT the keys
+                      `fingerprints`, `grammar` and `reading_rules`.
 golden/cases.jsonl  about 30 canonical decisions, one per line: {name, context, expect}. A context is the canonical
                     JSON of a DecisionContext (header included: it names the interface and the layout it was
                     written for); expect is {digest (crc32, 8 hex), n, ghosts} or {error: "TokenError"}. Twelve come
-                    from the situations sampler at a fixed seed, the others are made by hand for the edges.
+                    from the situations sampler at a fixed seed and are FROZEN: --update and --check leave them
+                    alone, only --update-sampler rewrites them (after a change of layout, their header and digests
+                    must be renewed on purpose). The others are made by hand for the edges.
 A port reads the context, encodes it, and must find the digest (the arrays are bit-identical) or the refusal.
 """
 from __future__ import annotations
@@ -20,65 +32,89 @@ import json
 import sys
 from pathlib import Path
 
-from .codecs import (BAG_CAP, GHOST_BASE, GHOST_OVERFLOW, GHOST_SLOTS, NONE_SLOT, PTR_LIST_CAP, QTY_MAX,
-                     SIGNED_UNITS, SUM_COMPONENTS)
 from .errors import TokenError
-from .interface import InputVocabulary
-from .tokenizer import CONTEXT_SCHEMA, DecisionContext, Encoded, Record, Tokenizer
+from .interface import canonical_json, fnv1a64
+from .layout import EXTRA_KEYS
+from .tokenizer import DecisionContext, Record, Tokenizer
 
 GOLDEN_DIR = Path(__file__).with_name("golden")
 LAYOUT_PATH = GOLDEN_DIR / "layout.json"
 CASES_PATH = GOLDEN_DIR / "cases.jsonl"
 SAMPLER_SEED, SAMPLER_CASES = 0, 12
+SAMPLER_PREFIX = "sampler_"
 
 
 def dumps(obj, indent=None) -> str:
     return json.dumps(obj, ensure_ascii=False, sort_keys=False, indent=indent)
 
 
+READING_RULES = [
+    "Records: sort by type id (registry order), keep the given order within a type (the order is the salience the engine chose; never sort). SELF and PLACE are mandatory. Each key must be canonical and match its type's key; keys are unique; every key must be in known_keys (default: the keys of the records).",
+    "Write order: for each row in order, for each column of its type in the order of types[T].columns (the registry's append order, NOT alphabetical), write the field if it is present and not null. This order fixes the numbering of the name aliases.",
+    "Unknown versus empty: an absent or null field leaves value 0 and flag 0. A pointer '' writes 0 with ptr_known 1. A list [] sets the flag of every column of the list (bags: all 6 cat_known; pointer lists: all 4 ptr_known). A list-of-vectors [] writes 0 with known 1 on every component. A word field set to '' writes <pad> (id 0) with cat_known 1; '' is refused for enums and inside lists.",
+    "Numbers: normalise in double precision with the column's `normalisation`, clamp to a bound if within epsilon of it (refuse beyond), round once to IEEE binary16 (nearest even), and write +0.0 whenever the half is zero (never -0.0). known=1.",
+    "Vectors: a dict writes the named components (a missing one stays unknown); a list of values in the interface's component order writes all of them; a list of dicts pools per component before writing: SUM for the components in constants.pooled_by_sum (mass), MAX for the others; each item is validated on its own first. Every component has its own column (components[i].col): a vector that grew has its new components further on.",
+    "Bags (lists of words or enum values): at most bag_cap items written in order from the bag's first column; pointer lists: at most ptr_list_cap items. Duplicates are kept.",
+    "Words: a catalogue word of the interface (never a reserved <...> symbol or a pointer kind) -> its vocabulary id; a name n:<canonical int> -> <name k>, k = order of first appearance in the write order (0..63), then <name_other> for the 65th and later distinct names (the alias list is not extended). Enum fields accept only their `values`.",
+    "Pointers: the slot (1-based row) of the record with that key. A key in known_keys but not in the batch is a ghost: 129 + k, k = rank of first appearance among ghosts when the arrays are scanned by row, then ptr columns in ascending order, then proposition positions in ascending order (ghosts are numbered AFTER writing, not while writing); the 33rd distinct ghost and later get 161. A key outside known_keys is refused. A pointer field accepts only the record types of its ref_types (for a ghost, the types its key can designate: @T is THING or INV). A proposition never cites its own record.",
+    "Propositions: printable ASCII plus space, tab, newline and CR only, at most 1000 characters; validated by the `grammar` tables (a bare proposition, or for REQUEST.prop a full utterance with a mood); written in prefix order, one position per symbol: sym id, arity (0 leaf, 1 + number of arguments for a list head), depth, slot (pointers), num. A count n (silver_coin:3 or a bare 3) is log1p(n + 1) in binary16 (0 means no count); counts and numbers are canonical (ASCII digits, no leading zero, at most 1e7). A bare citation b:7 / m:7 / g:7 is a one-position proposition.",
+    "Canonical text of a proposition (for serialization): re-print the tree, one space between symbols, no space inside parentheses.",
+    "Digest: see `digest`; n is the number of rows written.",
+]
+
+
 # ---- layout.json ---------------------------------------------------------------------------------------
+class GrammarExport:
+    """The tables of catalogue/tools/language.py that a port needs to type a proposition."""
+
+    def __init__(self, vocab):
+        self.v = vocab
+
+    def build(self) -> dict:
+        import language
+        v, cat = self.v, self.v.cat
+        preds = {c.id: list(c.args) for c in sorted(cat["concept"].values(), key=lambda c: c.id) if c.category == "predicate"}
+        gestures = {}
+        for a in sorted(cat["action"].values(), key=lambda a: a.id):
+            gestures[a.id] = [{"name": p.name, "type": p.type, **({"accepts": sorted(p.accepts)} if p.type == "ref" else {}),
+                               **({"values": list(p.values)} if p.type == "enum" else {})} for p in a.params]
+        return {
+            "source": "catalogue/tools/language.py (Expression, Vocabulary.types, ref_targets): port those functions with these tables",
+            "limits": {"max_symbols": language.MAX_SYMBOLS, "max_depth": language.MAX_DEPTH,
+                       "max_pointers": language.MAX_POINTERS, "max_roles": language.MAX_ROLES},
+            "pointer_regex": language.POINTER.pattern + " (ASCII digits; tok-2 additionally requires canonical numbers)",
+            "nesting_heads": sorted(language.NESTING_HEADS),
+            "description_categories": sorted(language.DESCRIPTION_CATEGORIES),
+            "ref_words": {w: sorted(t) for w, t in sorted(language.REF_WORDS.items())},
+            "category_types": {c: sorted(t) for c, t in sorted(language.CATEGORY_TYPES.items())},
+            "accepts": {c: sorted(t) for c, t in sorted(language.ACCEPTS.items())},
+            "word_categories": {w: sorted(cs) for w, cs in sorted(v.cats.items())},
+            "directions": list(v.directions),
+            "predicates": preds,
+            "event_roles": sorted(w for w, cs in v.cats.items() if "event_role" in cs),
+            "gestures": gestures,
+            "species": sorted(cat["species"]), "forms": sorted(cat["form"]),
+            "kinds": sorted(v.kinds),
+        }
+
+
 class GoldenLayout:
     def __init__(self, tok: Tokenizer):
         self.tok = tok
 
     def build(self) -> dict:
-        tok, lay = self.tok, self.tok.layout
-        enc = Encoded(lay)
-        types = {}
-        for name, t in lay.types.items():
-            cols = {}
-            for fname, c in sorted(t.columns.items(), key=lambda kv: (kv[1].codec.block, kv[1].col, kv[0])):
-                spec = c.codec.spec
-                col = {"block": c.codec.block, "col": c.col, "width": c.codec.width, "codec": c.codec.kind,
-                       "scale": spec.get("scale", ""), "normalisation": c.codec.normalisation()}
-                if spec.get("unit"):
-                    col["unit"] = spec["unit"]
-                if spec.get("scale") == "enum" or spec.get("list_of") == "enum":
-                    col["values"] = list(spec["values"])
-                if spec.get("components"):
-                    col["components"] = list(spec["components"])
-                cols[fname] = col
-            types[name] = {"id": t.type_id, "count": t.count, "key": t.key, "columns": cols}
-        speech = {w: tok.vocab.ids[w] for w in sorted(set(tok.interface.grammar_words) | set(tok.interface.kinds),
-                                                      key=lambda w: tok.vocab.ids[w])}
-        return {
-            "schema": "tok2-golden-layout-1",
-            "fingerprints": tok.header() | {"vocabulary": f"{tok.vocab.fingerprint:016x}"},
-            "constants": {"max_tokens": lay.max_tokens, "prop_len": lay.prop_len, "none_slot": NONE_SLOT,
-                          "ghost_base": GHOST_BASE, "ghost_slots": GHOST_SLOTS, "ghost_overflow": GHOST_OVERFLOW,
-                          "bag_cap": BAG_CAP, "ptr_list_cap": PTR_LIST_CAP, "name_slots": InputVocabulary.NAME_SLOTS,
-                          "qty_max": QTY_MAX, "signed_units": sorted(SIGNED_UNITS), "pooled_by_sum": sorted(SUM_COMPONENTS),
-                          "count_encoding": "log1p(n + 1) for a count n in a proposition; 0 = no count"},
-            "digest": "zlib.crc32 chained over pack('<I', n) then each array of `arrays` in order, "
-                      "C order, little endian, with its dtype; 8 lowercase hex digits",
-            "arrays": [{"name": a, "dtype": str(getattr(enc, a).dtype), "shape": list(getattr(enc, a).shape)}
-                       for a in Encoded.ARRAYS],
-            "widths": dict(lay.width),
-            "types": types,
-            "vocabulary": list(tok.vocab.symbols),
-            "retired_symbols": sorted(set(tok.vocab.symbols) - tok.vocab.words - set(InputVocabulary.reserved())),
-            "speech_to_input": speech,
-        }
+        tok = self.tok
+        doc = dict(tok.layout.document())
+        doc["fingerprints"] = tok.header() | {"vocabulary": f"{tok.vocab.fingerprint:016x}"}
+        doc["grammar"] = GrammarExport(tok.props.grammar.vocab).build()
+        doc["reading_rules"] = list(READING_RULES)
+        return doc
+
+    @staticmethod
+    def fingerprint_of(doc: dict) -> str:
+        """What a port recomputes: the layout fingerprint of a layout.json document."""
+        core = {k: v for k, v in doc.items() if k not in EXTRA_KEYS}
+        return f"{fnv1a64(canonical_json(core)):016x}"
 
     def text(self) -> str:
         return dumps(self.build(), indent=1) + "\n"
@@ -196,6 +232,36 @@ class HandCases:
         return self.base(*[Record("ENTITY", f"@E{i + 1}", {"present": True, "dist": float(i + 1), "rel.trust": i - 5})
                            for i in range(n)])
 
+    def ok_zero_after_rounding(self):
+        return DecisionContext([Record("SELF", "me", {"need.thermal": -1e-9, "body.pain": 1e-12}),
+                                Record("PLACE", "@PLACE", {}),
+                                Record("GOAL", "g:1", {"prop": "(has me silver_coin)", "deadline": -1e-9})])
+
+    def ok_epsilon_at_the_bounds(self):
+        return DecisionContext([Record("SELF", "me", {"need.thirst": 10.0000000001, "need.thermal": -10.0000000001,
+                                                      "body.load": 1 + 1e-10, "age": -1e-10}),
+                                Record("PLACE", "@PLACE", {"crowd": 0})])
+
+    def ok_empty_word_and_citation(self):
+        return self.base(Record("GOAL", "g:1", {"prop": "(has me silver_coin)"}),
+                         Record("PLAN", "p:1", {"goal": "g:1", "step": "walk", "next": ""}),
+                         Record("BELIEF", "b:1", {"prop": "g:1"}), Record("BELIEF", "b:2", {"prop": "(that b:1)"}),
+                         Record("BELIEF", "b:3", {"prop": " m:7 "}), known=["me", "@PLACE", "g:1", "p:1", "b:1", "b:2", "b:3", "m:7"])
+
+    def ok_canonical_proposition(self):
+        return self.base(Record("THING", "@T1", {}), Record("BELIEF", "b:1", {"prop": "( owns\n  me\t@T1 )"}))
+
+    def ok_write_order_names(self):
+        return self.base(Record("MEMORY", "m:1", {"prop": "(past (did n:5 give silver_coin (to me)))", "interp": "n:9"}),
+                         Record("ENTITY", "@E1", {"name": "n:5"}))
+
+    def ok_ref_kinds(self):
+        return self.base(Record("ENTITY", "@E1", {}), Record("THING", "@T1", {"owner": "@E1"}),
+                         Record("THING", "@T2", {"owner": "me"}), Record("REQUEST", "q:1", {"from": "@E1"}),
+                         Record("WAKE", "wake", {"trigger": "q:1", "cause": "request"}),
+                         Record("SELF_STATE", "me.state", {"attention": "@T9"}), known=[
+                             "me", "@PLACE", "me.state", "@E1", "@T1", "@T2", "@T9", "q:1", "wake"])
+
     # ---- refused ----
     def bad_pointer_not_in_mind(self):
         return self.base(Record("BELIEF", "b:1", {"prop": "(owns me @T5)"}))
@@ -220,6 +286,24 @@ class HandCases:
 
     def bad_ungrammatical_proposition(self):
         return self.base(Record("BELIEF", "b:1", {"prop": "(owns me)"}))
+
+    def bad_pointer_of_the_wrong_kind(self):
+        return self.base(Record("ENTITY", "@E1", {}), Record("WAKE", "wake", {"trigger": "@E1"}))
+
+    def bad_ghost_of_the_wrong_kind(self):
+        return self.base(Record("BELIEF", "b:1", {"informant": "@T9"}), known=["me", "@PLACE", "b:1", "@T9"])
+
+    def bad_proposition_cites_itself(self):
+        return self.base(Record("BELIEF", "b:1", {"prop": "(that b:1)"}))
+
+    def bad_non_ascii_space(self):
+        return self.base(Record("THING", "@T1", {}), Record("BELIEF", "b:1", {"prop": "(owns\u00a0me @T1)"}))
+
+    def bad_key_with_newline(self):
+        return self.base(Record("ENTITY", "@E1\n", {}))
+
+    def bad_beyond_epsilon(self):
+        return DecisionContext([Record("SELF", "me", {"need.thirst": 10.00000001}), Record("PLACE", "@PLACE", {})])
 
     def bad_bool_for_number(self):
         return self.base(Record("ENTITY", "@E1", {"dist": True}))
@@ -247,13 +331,22 @@ class GoldenCases:
         return [self.line(n, c, v) for n, c, v in HandCases(self.tok).all()]
 
     def sampler_lines(self) -> list[str]:
-        from situations.sampler import SituationSampler            # only needed to (re)write the cases
+        """Drawn from the situations sampler NOW (only --update-sampler does this)."""
+        from situations.sampler import SituationSampler            # only needed to (re)write these cases
         s = SituationSampler(SAMPLER_SEED)
-        return [self.line(f"sampler_{SAMPLER_SEED}_{i}", sit.context, True) for i in range(SAMPLER_CASES)
+        return [self.line(f"{SAMPLER_PREFIX}{SAMPLER_SEED}_{i}", sit.context, True) for i in range(SAMPLER_CASES)
                 for sit in [s.sample(i)]]
 
-    def text(self) -> str:
-        return "\n".join(self.sampler_lines() + self.hand_lines()) + "\n"
+    @staticmethod
+    def frozen_sampler_lines() -> list[str]:
+        if not CASES_PATH.exists():
+            return []
+        return [l for l in CASES_PATH.read_text(encoding="utf-8").splitlines()
+                if json.loads(l)["name"].startswith(SAMPLER_PREFIX)]
+
+    def text(self, regenerate_sampler: bool = False) -> str:
+        frozen = self.sampler_lines() if regenerate_sampler or not self.frozen_sampler_lines() else self.frozen_sampler_lines()
+        return "\n".join(frozen + self.hand_lines()) + "\n"
 
 
 def main(argv=None) -> int:
@@ -261,14 +354,15 @@ def main(argv=None) -> int:
     tok = Tokenizer()
     GOLDEN_DIR.mkdir(exist_ok=True)
     layout = GoldenLayout(tok).text()
-    cases = GoldenCases(tok).text()
+    cases = GoldenCases(tok).text(regenerate_sampler="--update-sampler" in args)
     stale = [p.name for p, t in ((LAYOUT_PATH, layout), (CASES_PATH, cases))
              if not p.exists() or p.read_text(encoding="utf-8") != t]
-    if "--update" in args:
+    if "--update" in args or "--update-sampler" in args:
         LAYOUT_PATH.write_text(layout, encoding="utf-8")
         CASES_PATH.write_text(cases, encoding="utf-8")
         print(f"écrit {LAYOUT_PATH.name} ({len(layout) // 1024} Ko) et {CASES_PATH.name} "
-              f"({cases.count(chr(10))} cas, {len(cases) // 1024} Ko)")
+              f"({cases.count(chr(10))} cas, {len(cases) // 1024} Ko)"
+              + ("" if "--update-sampler" in args else " ; les cas du sampler sont gelés"))
         return 0
     print("à jour" if not stale else "périmé : " + ", ".join(stale))
     return 1 if stale and "--check" in args else 0

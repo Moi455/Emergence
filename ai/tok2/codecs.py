@@ -10,8 +10,10 @@ and one flag array per block (num -> known, cat -> cat_known, ptr -> ptr_known):
   pointer ""             known: nobody          list []   known: empty (every column of the list flagged)
   list-of-vectors []     known: every component 0
 
-Numbers are normalised in double precision, then rounded ONCE to IEEE binary16 (round to nearest even), -0.0 -> 0.0.
-A value outside its charter scale is an engine bug: refused (TokenError), never clipped.
+Numbers are normalised in double precision, then rounded ONCE to IEEE binary16 (round to nearest even); a result
+that is zero AFTER rounding is +0.0 (so -1e-9 and -0.0 both give 0). A value outside its charter scale is an engine
+bug: refused (TokenError), never clipped; the one tolerance is EPSILON at the bounds (float noise such as 10.0000000001
+or -1e-12 for a quantity): within EPSILON of a bound the value is clamped to it, beyond it is refused.
 """
 from __future__ import annotations
 
@@ -28,7 +30,7 @@ PTR_LIST_CAP = 4     # pointers per pointer list (to whom a belief was told, wit
 QTY_MAX = 10_000_000                     # |quantity|, hours, counts
 NONE_SLOT, GHOST_BASE, GHOST_SLOTS = 0, 129, 32
 GHOST_OVERFLOW = GHOST_BASE + GHOST_SLOTS     # 161: a known record out of the batch, when 32 ghosts are already used
-OUT_OF_CONTEXT = GHOST_BASE                   # compatibility name: the first ghost slot
+EPSILON = 1e-9                                # tolerance at the bounds of a scale, in the unit of the scale
 SIGNED_UNITS = {"°C"}                         # the only units whose quantity may be negative
 SUM_COMPONENTS = {"mass"}                     # pooled by sum when several objects are held; every other one by max
 
@@ -38,8 +40,9 @@ def signed_log(x: float) -> float:
 
 
 def to_half(x: float) -> np.float16:
-    """One rounding, from the double: never through float32."""
-    return np.float16(x)
+    """One rounding, from the double: never through float32. Zero after rounding is +0.0."""
+    h = np.float16(x)
+    return np.float16(0.0) if h == 0 else h
 
 
 class ScaleNorm:
@@ -84,35 +87,35 @@ class ScaleNorm:
         if scale == "bool":
             raise TokenError(f"{where}: bool expected, got {x!r}")
         if scale == "bipolar10":
-            ScaleNorm._range(x, -10, 10, where)
-            r = x / 10
+            r = ScaleNorm._bounded(x, -10, 10, where) / 10
         elif scale == "unipolar10":
-            ScaleNorm._range(x, 0, 10, where)
-            r = x / 10
+            r = ScaleNorm._bounded(x, 0, 10, where) / 10
         elif scale == "ratio":
-            ScaleNorm._range(x, 0, 1, where)
-            r = float(x)
+            r = float(ScaleNorm._bounded(x, 0, 1, where))
         elif scale == "unit":                     # a named component, given normalised by the engine
-            ScaleNorm._range(x, -1, 1, where)
-            r = float(x)
+            r = float(ScaleNorm._bounded(x, -1, 1, where))
         elif scale == "qty":
             signed = unit in SIGNED_UNITS
-            ScaleNorm._range(x, -QTY_MAX if signed else 0, QTY_MAX, where)
+            x = ScaleNorm._bounded(x, -QTY_MAX if signed else 0, QTY_MAX, where)
             r = signed_log(x) if signed else math.log1p(x)
         elif scale == "time":                     # age in game hours
-            ScaleNorm._range(x, 0, QTY_MAX, where)
-            r = math.log1p(x)
+            r = math.log1p(ScaleNorm._bounded(x, 0, QTY_MAX, where))
         elif scale == "time_until":               # hours until a point in the future, negative when overdue
-            ScaleNorm._range(x, -QTY_MAX, QTY_MAX, where)
-            r = signed_log(x)
+            r = signed_log(ScaleNorm._bounded(x, -QTY_MAX, QTY_MAX, where))
         else:
             raise TokenError(f"{where}: no numeric encoding for scale {scale}")
         return r + 0.0                            # -0.0 + 0.0 == 0.0
 
     @staticmethod
-    def _range(x, lo, hi, where):
-        if not lo <= x <= hi:
-            raise TokenError(f"{where}: {x} outside [{lo}, {hi}]")
+    def _bounded(x, lo, hi, where):
+        """x if it lies in [lo, hi]; the bound if it is within EPSILON of it; otherwise a TokenError."""
+        if lo <= x <= hi:
+            return x
+        if lo - EPSILON <= x < lo:
+            return lo
+        if hi < x <= hi + EPSILON:
+            return hi
+        raise TokenError(f"{where}: {x} outside [{lo}, {hi}]")
 
 
 class FieldCodec(ABC):
@@ -164,6 +167,16 @@ class VectorCodec(FieldCodec):
         self.scales: list[str] = spec["component_scales"]
         self.units: list[str] = spec.get("component_units") or [""] * len(self.components)
         self.index = {c: i for i, c in enumerate(self.components)}
+        self.cols: list[int] | None = None        # absolute column of each component (set by the layout)
+
+    def bind(self, cols: list[int]) -> None:
+        """Columns assigned by the registry: a vector that grew has its new components further on."""
+        if len(cols) != len(self.components):
+            raise TokenError(f"{self.where}: {len(cols)} columns for {len(self.components)} components")
+        self.cols = list(cols)
+
+    def column_of(self, i: int, col: int) -> int:
+        return self.cols[i] if self.cols is not None else col + i
 
     @property
     def width(self):
@@ -206,13 +219,15 @@ class VectorCodec(FieldCodec):
     def write(self, value, row, col, state):
         items = self._items(value)
         if items is None:
-            row.num[col:col + self.width] = 0
-            row.known[col:col + self.width] = 1
+            for i in range(self.width):
+                row.num[self.column_of(i, col)] = 0
+                row.known[self.column_of(i, col)] = 1
             return
         for c, x in items.items():
             i = self.index[c]
-            row.num[col + i] = to_half(ScaleNorm.apply(self.scales[i], x, f"{self.where}.{c}", self.units[i]))
-            row.known[col + i] = 1
+            j = self.column_of(i, col)
+            row.num[j] = to_half(ScaleNorm.apply(self.scales[i], x, f"{self.where}.{c}", self.units[i]))
+            row.known[j] = 1
 
 
 class SymbolCodec(FieldCodec):
@@ -221,7 +236,10 @@ class SymbolCodec(FieldCodec):
     width = 1
 
     def write(self, value, row, col, state):
-        row.cat[col] = state.symbol_id(value, self.spec, self.where)
+        if isinstance(value, str) and value == "" and self.spec["scale"] == "word":     # a word field set to "" is known: none (the <pad> id)
+            row.cat[col] = 0
+        else:
+            row.cat[col] = state.symbol_id(value, self.spec, self.where)
         row.cat_known[col] = 1
 
 
@@ -242,11 +260,12 @@ class BagCodec(FieldCodec):
 
 
 class PointerCodec(FieldCodec):
+    """mref: a pointer to a record of this decision's mind, of one of the types the field accepts (ref_types)."""
     block = "ptr"
     width = 1
 
     def write(self, value, row, col, state):
-        state.pointer(value, self.where, row, "ptr", col)
+        state.pointer(value, self.where, row, "ptr", col, self.spec.get("ref_types"))
         row.ptr_known[col] = 1
 
 
@@ -258,9 +277,9 @@ class PointerListCodec(FieldCodec):
         if not isinstance(value, (list, tuple)) or len(value) > PTR_LIST_CAP:
             raise TokenError(f"{self.where}: a list of at most {PTR_LIST_CAP} pointers expected")
         for i, k in enumerate(value):
-            if k == "":
+            if isinstance(k, str) and k == "":
                 raise TokenError(f"{self.where}: an empty pointer inside a list (leave it out)")
-            state.pointer(k, self.where, row, "ptr", col + i)
+            state.pointer(k, self.where, row, "ptr", col + i, self.spec.get("ref_types"))
         row.ptr_known[col:col + self.width] = 1
 
 

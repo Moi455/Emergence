@@ -243,7 +243,7 @@ class TestGhosts(unittest.TestCase):
             TOK.encode(DecisionContext(base().records, known_keys=["me"]))
 
     def test_known_keys_default_to_the_keys_of_the_records(self):
-        e = TOK.encode(base(Record("BELIEF", "b:1", {"informant": "me"})))
+        e = TOK.encode(base(Record("ENTITY", "@E1", {}), Record("BELIEF", "b:1", {"informant": "@E1"})))
         self.assertEqual(e.ghosts, [])
 
     def test_the_decoder_shows_ghosts_as_kind_and_number(self):
@@ -335,7 +335,8 @@ class TestSignedDeadlines(unittest.TestCase):
 
 class TestNewTokens(unittest.TestCase):
     def test_wake_token(self):
-        c = base(Record("REQUEST", "q:1", {"from": "me", "prop": "(request (did me give silver_coin (to me)))"}),
+        c = base(Record("ENTITY", "@E1", {}),
+                 Record("REQUEST", "q:1", {"from": "@E1", "prop": "(request (did me give silver_coin (to me)))"}),
                  Record("WAKE", "wake", {"mode": "act", "cause": "request", "trigger": "q:1", "urgency": 6.5}))
         e = TOK.encode(c)
         r = e.keys.index("wake")

@@ -20,7 +20,7 @@ import budget  # noqa: E402
 import language  # noqa: E402
 
 OUT = ROOT / "generated" / "model_interface.json"
-SCHEMA_VERSION = "model-interface-1"
+SCHEMA_VERSION = "model-interface-2"     # 2: time_until, WAKE, ref_types, component_units, vector registry (tok-2)
 
 
 class ModelInterface:
@@ -33,7 +33,7 @@ class ModelInterface:
         "INV": "same fields as THING (kind, props = object vector, state, amount, owner, file)",
         "TASTE": "concept (pointer to a word) + attitude (bipolar10)",
         "COMMIT": "counterparty (mref), mine_or_theirs, prop (expression), deadline_felt, status_believed, witnesses_believed",
-        "PLAN": "steps (gesture + params), goal (mref), progress, commitment",
+        "PLAN": "step (the current gesture), next (the gesture after it; '' = end of plan), goal (g:), target (mref), progress, commitment",
         "REQUEST": "from (mref), prop (expression), age",
         "WAKE": "why this decision happens now: mode, cause, trigger (the record that woke him), urgency",
         "SKILL": "technique (word), self_estimate",
@@ -66,6 +66,31 @@ class ModelInterface:
                  "cause": {"scale": "enum", "values": ["perception", "speech", "request", "body", "plan", "timer", "routine"], "unit": "", "list_of": "", "components": [], "component_scales": []},
                  "trigger": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                  "urgency": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
+    }
+    # Which record types an mref field may point to (a pointer of another kind is refused by tok-2, ghosts included:
+    # the kind of a ghost is the one of its key). Keyed "TYPE.field" on the base type (HEARD and INV inherit).
+    REF_TYPES = {
+        "BELIEF.informant": ["ENTITY"],
+        "BELIEF.shared": ["ENTITY", "GROUP"],
+        "COMMIT.counterparty": ["ENTITY"],
+        "COMMIT.witnesses": ["ENTITY"],
+        "ENTITY.look.gaze": ["ENTITY", "THING", "INV", "SELF"],
+        "EVENT.actor": ["ENTITY", "SELF"],
+        "EVENT.target": ["ENTITY", "GROUP", "SELF", "THING", "INV", "LOCUS", "PLACE"],
+        "EVENT.with": ["THING", "INV"],
+        "EVENT.from_to": ["ENTITY", "GROUP", "SELF", "THING", "INV", "LOCUS", "PLACE"],
+        "GOAL.origin_ref": ["BELIEF", "HEARD", "MEMORY", "REQUEST", "COMMIT", "ENTITY", "GROUP"],
+        "LOCUS.file": ["LOCUS"],
+        "LOCUS.owner": ["ENTITY", "GROUP", "SELF"],
+        "MEMORY.place": ["LOCUS", "PLACE"],
+        "PLAN.goal": ["GOAL"],
+        "PLAN.target": ["ENTITY", "THING", "INV", "LOCUS", "PLACE", "GROUP", "SELF"],
+        "REQUEST.from": ["ENTITY"],
+        "SELF.place": ["PLACE", "LOCUS"],
+        "SELF_STATE.attention": ["ENTITY", "THING", "INV", "SELF"],
+        "THING.file": ["THING", "INV"],
+        "THING.owner": ["ENTITY", "GROUP", "SELF"],
+        "WAKE.trigger": ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN"],
     }
     ACCEPT_TOKENS = {"agent": "ENTITY", "animal": "THING", "item": "THING|INV", "structure": "THING", "terrain": "THING",
                      "voxel": "THING", "water": "THING", "fire": "THING", "trace": "THING", "plant": "THING",
@@ -111,6 +136,7 @@ class ModelInterface:
             types[typ]["alias_of"] = base
         for typ, flds in self.EXPLICIT.items():                     # record tokens fed by list variables
             types[typ]["fields"] = {k: dict(v) for k, v in flds.items()}
+        self._attach_ref_types(types)
         return {"max_tokens": budget.MAX_TOKENS, "token_types": types,
                 "object_vector": self.cat.object_vector(),
                 "encoding": ("numbers are normalised in double precision and stored as float16: bipolar10 and unipolar10 as x / 10, ratio and unit as x, "
@@ -123,6 +149,35 @@ class ModelInterface:
                                      "columns, then proposition positions; two pointers to the same ghost give the same slot, two different "
                                      "ghosts give different slots); 161 = a ghost beyond the 32nd. A pointer to something the NPC's mind "
                                      "does not hold is refused (never encoded)")}
+
+    def _attach_ref_types(self, types: dict) -> None:
+        """Every mref field (or list of mref) declares the record types it accepts; a new one without a line in
+        REF_TYPES is an error here, not a silent hole in tok-2."""
+        missing = []
+        for typ, t in types.items():
+            for fname, spec in t["fields"].items():
+                if spec.get("scale") != "mref" and not (spec.get("scale") == "list" and spec.get("list_of") == "mref"):
+                    continue
+                ref = self.REF_TYPES.get(f"{typ}.{fname}") or self.REF_TYPES.get(f"{t.get('alias_of', typ)}.{fname}")
+                if ref is None:
+                    missing.append(f"{typ}.{fname}")
+                else:
+                    unknown = [r for r in ref if r not in types]
+                    if unknown:
+                        raise ValueError(f"REF_TYPES {typ}.{fname}: unknown record types {unknown}")
+                    spec["ref_types"] = list(ref)
+        if missing:
+            raise ValueError(f"mref fields without ref_types (add them to ModelInterface.REF_TYPES): {missing}")
+
+    def _is_deadline(self, v) -> bool:
+        """A variable fed to a deadline field of a token: an interval to a point in the future (time_until)."""
+        if v.scale != "time":
+            return False
+        for part in v.token.split(";"):
+            m = re.match(r"\s*([A-Z][A-Z_]*)(?:\.([a-z_][a-z0-9_.]*))?", part)
+            if m and m.group(2) and m.group(2).rpartition(".")[2] in self.TIME_UNTIL_FIELDS:
+                return True
+        return False
 
     def output_spec(self) -> dict:
         # a manner head is SHARED when every gesture using that param name has the same values; otherwise every
@@ -167,7 +222,7 @@ class ModelInterface:
             values = v.values or sorted(c.id for c in self.cat["concept"].values() if v.values_from and c.category == v.values_from)
             if v.id == "m_interpretation":
                 values = sorted(self.cat["interpretation"])
-            writable[v.id] = {"holder": v.holder, "target": target, "scale": v.scale, "values": values, "writer": v.writer,
+            writable[v.id] = {"holder": v.holder, "target": target, "scale": "time_until" if self._is_deadline(v) else v.scale, "values": values, "writer": v.writer,
                               "step": v.step, "rate_per_day": v.rate, "slow_per_life_year": v.slow_rate,
                               "intimate": bool(v.intimate), "structured": v.scale in ("proposition", "list", "enum", "mref", "word", "time", "bool", "id")}
         return {
