@@ -48,19 +48,59 @@ class TestRehead(unittest.TestCase):
         self.assertEqual(new["context"]["known_keys"], old["context"]["known_keys"])
         self.assertEqual(new, old)                                    # and the digest is the true one again
 
-    def test_a_stale_header_is_renewed_by_text_but_a_wrong_digest_with_a_good_header_is_not_hidden(self):
+    def test_a_stale_header_is_renewed_but_a_wrong_digest_under_a_good_header_is_an_error(self):
         lines = self.frozen()
         stale = json.loads(lines[0])
         stale["context"]["header"]["layout"] = "0" * 16
         liar = json.loads(lines[1])
         liar["expect"]["digest"] = "00000000"                         # a tokenizer regression would look like this
+        for field, value in (("digest", "00000000"), ("n", 999), ("ghosts", ["@E1"])):
+            bad = json.loads(lines[1])
+            bad["expect"][field] = value
+            with mock.patch.object(golden.GoldenCases, "frozen_sampler_lines", staticmethod(lambda b=bad: [json.dumps(b)])):
+                with self.assertRaises(TokenError, msg=field) as cm:
+                    golden.GoldenCases(TOK).frozen()
+                self.assertIn("blessed", str(cm.exception))
         patched = [json.dumps(stale), json.dumps(liar)] + lines[2:]
         with mock.patch.object(golden.GoldenCases, "frozen_sampler_lines", staticmethod(lambda: patched)):
-            out = golden.GoldenCases(TOK).frozen()
-            forced = golden.GoldenCases(TOK).frozen(rehead=True)
-        self.assertEqual(out[0], lines[0])                            # renewed
-        self.assertEqual(json.loads(out[1])["expect"]["digest"], "00000000")      # left alone: the test will fail
-        self.assertEqual(forced[1], lines[1])                         # --rehead renews on purpose
+            with self.assertRaises(TokenError):
+                golden.GoldenCases(TOK).frozen()                      # the liar is caught, the stale header is not the issue
+            forced = golden.GoldenCases(TOK).frozen(rehead=True)     # --rehead blesses on purpose
+        self.assertEqual(forced[1], lines[1])
+        self.assertEqual(forced[0], lines[0])
+        stale_only = [json.dumps(stale)] + lines[1:]
+        with mock.patch.object(golden.GoldenCases, "frozen_sampler_lines", staticmethod(lambda: stale_only)):
+            self.assertEqual(golden.GoldenCases(TOK).frozen(), lines)  # only the header was old: renewed without fuss
+
+    def test_check_fails_on_a_wrong_digest_under_a_correct_header(self):
+        lines = self.frozen()
+        liar = json.loads(lines[1])
+        liar["expect"]["digest"] = "00000000"
+        hand = [l for l in golden.CASES_PATH.read_text(encoding="utf-8").splitlines() if not l.startswith('{"name": "sampler')]
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "cases.jsonl"
+            p.write_text("\n".join([lines[0], json.dumps(liar)] + lines[2:] + hand) + "\n", encoding="utf-8")
+            with mock.patch.object(golden, "CASES_PATH", p):
+                self.assertEqual(golden.main(["--check"]), 1)
+                self.assertEqual(golden.main(["--update"]), 1)       # nor does --update bless it silently
+                self.assertEqual(golden.main(["--rehead"]), 0)       # only the explicit --rehead does
+                self.assertEqual(golden.main(["--check"]), 0)
+
+    def test_a_digest_that_changes_with_unchanged_columns_is_warned_about(self):
+        old = golden.CASES_PATH.read_text(encoding="utf-8")
+        new_lines = []
+        for l in old.splitlines():
+            c = json.loads(l)
+            if c["name"] == "ok_counts":
+                c["expect"]["digest"] = "12345678"
+            new_lines.append(json.dumps(c))
+        new = "\n".join(new_lines) + "\n"
+        lay = copy.deepcopy(LAYOUT)
+        self.assertEqual(golden.suspicious_changes(old, new, LAYOUT, lay), [f"ok_counts: {json.loads([l for l in old.splitlines() if 'ok_counts' in l][0])['expect']['digest']} -> 12345678"])
+        lay["types"]["BELIEF"]["columns"][0]["col"] += 100            # the columns of BELIEF did change: explained
+        self.assertEqual(golden.suspicious_changes(old, new, LAYOUT, lay), [])
+        self.assertEqual(golden.suspicious_changes("", new, LAYOUT, LAYOUT), [])
+        self.assertEqual(golden.suspicious_changes(old, new, None, LAYOUT), [])
 
     def test_a_frozen_case_that_no_longer_encodes_is_reported(self):
         case = json.loads(self.frozen()[0])
@@ -223,6 +263,69 @@ class TestInsertionInTheMiddle(unittest.TestCase):
                 for k in ("components", "component_scales", "component_units"):
                     spec[k][0], spec[k][1] = spec[k][1], spec[k][0]
         self.assertTrue(up.diff(ModelInterface.from_dict(changed(swap)))[1])
+
+
+class TestComingBack(unittest.TestCase):
+    def test_a_retired_component_that_returns_takes_its_old_column_without_a_conflict(self):
+        reg = Registry.load()
+
+        def drop(d):
+            for t, f in VECTOR_FIELDS:
+                spec = d["input"]["token_types"][t]["fields"][f]
+                i = spec["components"].index("size")
+                for k in ("components", "component_scales", "component_units"):
+                    del spec[k][i]
+        gone = ModelInterface.from_dict(changed(drop))
+        mid = reg.updated(gone)
+        col = reg.types["SELF"].fields["held"].components[1].col
+        self.assertTrue(mid.types["SELF"].fields["held"].components[1].retired)
+        self.assertIsNone(mid.types["SELF"].fields["held"].components[1].rank)
+        self.assertEqual(mid.diff(gone), ([], []))
+        # add something else meanwhile (it is ranked), then bring `size` back where it was declared
+        def other(d):
+            drop(d)
+            for t, f in VECTOR_FIELDS:
+                spec = d["input"]["token_types"][t]["fields"][f]
+                for k, v in (("components", "zzlate"), ("component_scales", "qty"), ("component_units", "kg")):
+                    spec[k].append(v)
+        mid2 = mid.updated(ModelInterface.from_dict(changed(other)))
+        back = ModelInterface()
+        add, conflicts = mid2.diff(back)
+        self.assertEqual(conflicts, [])
+        self.assertTrue(any("components back" in a for a in add))
+        up = mid2.updated(back)
+        self.assertEqual(up.types["SELF"].fields["held"].components[1].col, col)
+        self.assertFalse(up.types["SELF"].fields["held"].components[1].retired)
+
+    def test_the_reorder_message_agrees_with_the_readme(self):
+        def edit(d):
+            for t, f in VECTOR_FIELDS:
+                spec = d["input"]["token_types"][t]["fields"][f]
+                for k in ("components", "component_scales", "component_units"):
+                    spec[k][0], spec[k][1] = spec[k][1], spec[k][0]
+        _, conflicts = Registry.load().diff(ModelInterface.from_dict(changed(edit)))
+        text = " ".join(conflicts)
+        self.assertIn("reordered or swapped", text)
+        self.assertNotIn("only grows at the end", text)
+        self.assertIn("anywhere", text)
+
+
+class TestNoPositionalVectors(Base):
+    def test_a_named_vector_is_a_dict(self):
+        n = len(TOK.interface.object_vector)
+        for rec in (Record("ENTITY", "@E1", {"dir": [0.0, 1.0]}), Record("ENTITY", "@E1", {"rep": [0.1] * 5}),
+                    Record("THING", "@T1", {"props": [1.0] * n}), Record("THING", "@T1", {"dir": (0.0, 1.0)}),
+                    Record("SELF", "me", {"time": [0.0, 1.0, 0.5]}), Record("SELF", "me", {"held": [1.0] * n}),
+                    Record("ENTITY", "@E1", {"look.held": [0.0] * n})):
+            recs = [r for r in base().records if r.type != rec.type] + [rec]
+            with self.assertRaises(TokenError, msg=short(rec, 60)) as cm:
+                TOK.encode(DecisionContext(recs))
+            self.assertIn("positional", str(cm.exception))
+        TOK.encode(base(Record("ENTITY", "@E1", {"dir": {"sin": 0.0, "cos": 1.0}})))
+
+    def test_a_list_of_dicts_stays_for_held_objects(self):
+        TOK.encode(DecisionContext([Record("SELF", "me", {"held": [{"mass": 1.0}, {"mass": 2.0}]}), Record("PLACE", "@PLACE", {})]))
+        self.refuses(Record("THING", "@T1", {"props": [{"mass": 1.0}]}))
 
 
 class TestRegistryRepairAdvice(unittest.TestCase):

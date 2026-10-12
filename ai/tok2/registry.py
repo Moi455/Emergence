@@ -256,13 +256,15 @@ class Registry:
                 unpinned.append(name)
         # the declared order of the components already registered must not change; a component added in the middle
         # of the interface's list is fine (it is appended to the registry, and the declared order is re-recorded)
-        by_rank = sorted((c for c in e.components if c.name in set(want)),
+        # (retired components are left out: one that comes back takes its old column and is ranked afresh)
+        by_rank = sorted((c for c in e.components if c.name in set(want) and not c.retired),
                          key=lambda c: (c.rank if c.rank is not None else len(e.components) + 1, e.components.index(c)))
         known_in_order = [c.name for c in by_rank]
-        wanted_known = [n for n in want if n in reg]
+        wanted_known = [n for n in want if n in reg and not reg[n].retired]
         if known_in_order != wanted_known:
-            conflicts.append("the components are reordered or swapped (a vector only grows at the end): put them back in "
-                             "their registered order, or rename the moved COMPONENT (a new column)")
+            conflicts.append("the registered components are reordered or swapped (their declared order must not change; "
+                             "a NEW component may be declared anywhere, it is appended in the registry): put them back "
+                             "in their registered order, or rename the moved COMPONENT (a new column)")
         retire = [c.name for c in e.components if c.name not in set(want) and not c.retired]
         lost_sum = [c.name for c in e.components if c.pool == "sum" and not c.retired and c.name not in set(want)]
         if lost_sum:
@@ -388,6 +390,7 @@ class Registry:
                             c.pool = default_pool(c.name)
                         if c.name not in want:
                             c.retired = True
+                            c.rank = None                 # a retired component takes no part in the ordering
                         else:
                             c.rank = order[c.name]
                     e.width = len(e.components)

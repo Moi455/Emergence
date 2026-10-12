@@ -161,7 +161,8 @@ class ScalarCodec(FieldCodec):
 
 class VectorCodec(FieldCodec):
     """A list of qty with named components (sin/cos, reputation axes) or the object vector. Value: a dict
-    component -> value (a missing component stays unknown), a list in component order, or, for a MULTI vector
+    component -> value (a missing component stays unknown); a positional list is REFUSED (a component inserted in the
+    catalogue would silently change what a list means), or, for a MULTI vector
     (what is held, spec["multi"]: SELF.held, ENTITY.look.held) a list of dicts, pooled per component: SUM or MAX as
     the registry pinned it (mass: sum). Only a multi vector accepts [] (nothing held: every component known, 0);
     for the others [] is refused (unknown is None or absent)."""
@@ -225,9 +226,9 @@ class VectorCodec(FieldCodec):
                         else:
                             pooled[c] = pooled[c] + x if self.pools[i] == "sum" else max(pooled[c], x)
                 return pooled
-            if len(value) == self.width:
-                return self._one(dict(zip(self.components, value)))
-        raise TokenError(f"{self.where}: a dict of components, a list of {self.width} values or a list of dicts")
+        raise TokenError(f"{self.where}: a dict component -> value is expected"
+                         + (" (or a list of such dicts for held objects)" if self.multi else "")
+                         + "; a positional list is refused: a component added to the catalogue would change its meaning")
 
     def write(self, value, row, col, state):
         items = self._items(value)

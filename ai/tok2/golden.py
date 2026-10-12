@@ -6,7 +6,10 @@
     python3 -m tok2.golden --rehead          re-read the BODY of the frozen sampler cases, rewrite their header and
                                              digest, check that they still encode (nothing is redrawn)
     python3 -m tok2.golden --update-sampler  redraw the 12 cases from the situations sampler (a new draw)
-    python3 -m tok2.golden --check           exit 1 when layout.json or the cases are out of date
+    python3 -m tok2.golden --check           exit 1 when layout.json or the cases are out of date, or when a frozen
+                                             case with a current header no longer gives the digest the file holds
+                                             (--update and --rehead print a WARNING when a digest changes although the
+                                             columns of the types of the case did not)
     (any other option is an error)
 
 golden/layout.json  the contract, enough to write a port without reading Python:
@@ -401,17 +404,49 @@ class GoldenCases:
         except TokenError as e:
             raise TokenError(f"frozen case {case['name']} no longer encodes: {e}") from None
 
+    def verify_line(self, line: str) -> None:
+        """Re-encode a frozen case whose header is current: digest, n and ghosts must be what the file says."""
+        case = json.loads(line)
+        got = json.loads(self.rehead_line(line))["expect"]
+        if got != case["expect"]:
+            raise TokenError(f"frozen case {case['name']}: the header is current but the encoding changed "
+                             f"(file {case['expect']}, now {got}). A regression of the tokenizer, or an intended change "
+                             "that must be blessed with `python3 -m tok2.golden --rehead`")
+
     def frozen(self, rehead: bool = False) -> list[str]:
-        """The frozen sampler cases: verbatim, unless their header is stale (the layout changed) or `rehead`."""
+        """The frozen sampler cases: verbatim, unless their header is stale (the layout changed) or `rehead`.
+        A case with a current header is re-encoded and must give the digest the file holds (it is never trusted)."""
         out = []
         for line in self.frozen_sampler_lines():
             stale = json.loads(line)["context"]["header"] != self.tok.header()
-            out.append(self.rehead_line(line) if rehead or stale else line)
+            if rehead or stale:
+                out.append(self.rehead_line(line))
+            else:
+                self.verify_line(line)
+                out.append(line)
         return out
 
     def text(self, regenerate_sampler: bool = False, rehead: bool = False) -> str:
         frozen = self.sampler_lines() if regenerate_sampler or not self.frozen_sampler_lines() else self.frozen(rehead)
         return "\n".join(frozen + self.hand_lines()) + "\n"
+
+
+def suspicious_changes(old_cases: str, new_cases: str, old_layout: dict | None, new_layout: dict) -> list[str]:
+    """Cases whose digest changed although every token type they use has exactly the same columns, ids, counts and
+    keys as before: the layout did not explain it, so a regression may be about to be blessed."""
+    if not old_cases or old_layout is None:
+        return []
+    old = {json.loads(l)["name"]: json.loads(l) for l in old_cases.splitlines()}
+    out = []
+    for line in new_cases.splitlines():
+        new = json.loads(line)
+        was = old.get(new["name"])
+        if was is None or was["expect"] == new["expect"]:
+            continue
+        types = {r["type"] for r in new["context"]["records"]}
+        if all(old_layout["types"].get(t) == new_layout["types"].get(t) for t in types):
+            out.append(f"{new['name']}: {was['expect'].get('digest', was['expect'])} -> {new['expect'].get('digest', new['expect'])}")
+    return out
 
 
 FLAGS = {"--update", "--update-sampler", "--rehead", "--check"}
@@ -425,10 +460,22 @@ def main(argv=None) -> int:
         return 2
     tok = Tokenizer()
     GOLDEN_DIR.mkdir(exist_ok=True)
-    layout = GoldenLayout(tok).text()
-    cases = GoldenCases(tok).text(regenerate_sampler="--update-sampler" in args, rehead="--rehead" in args)
+    gl = GoldenLayout(tok)
+    layout = gl.text()
+    try:
+        cases = GoldenCases(tok).text(regenerate_sampler="--update-sampler" in args, rehead="--rehead" in args)
+    except TokenError as e:
+        print(f"ÉCHEC : {e}", file=sys.stderr)
+        return 1
     stale = [p.name for p, t in ((LAYOUT_PATH, layout), (CASES_PATH, cases))
              if not p.exists() or p.read_text(encoding="utf-8") != t]
+    writing = any(a in args for a in ("--update", "--update-sampler", "--rehead"))
+    if writing:
+        old_cases = CASES_PATH.read_text(encoding="utf-8") if CASES_PATH.exists() else ""
+        old_layout = json.loads(LAYOUT_PATH.read_text(encoding="utf-8")) if LAYOUT_PATH.exists() else None
+        for w in suspicious_changes(old_cases, cases, old_layout, gl.build()):
+            print(f"ATTENTION : l'empreinte change alors que les colonnes des types du cas sont inchangées "
+                  f"(régression possible, vérifier avant de valider) : {w}", file=sys.stderr)
     if "--update" in args or "--update-sampler" in args:
         LAYOUT_PATH.write_text(layout, encoding="utf-8")
         CASES_PATH.write_text(cases, encoding="utf-8")
