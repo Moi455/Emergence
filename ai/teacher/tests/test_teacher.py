@@ -668,3 +668,32 @@ class PilotTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class IntimateFieldsHiddenNearMinors(unittest.TestCase):
+    """D10 by construction: with a possible minor present, the teacher never reads the NPC's orientation or drive
+    for intimacy (even unrelated to that person)."""
+
+    def test_hidden_when_a_possible_minor_is_present(self):
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+        from situations.sampler import SituationSampler
+        from teacher.render import SituationRenderer
+        sampler, renderer = SituationSampler(seed=4), SituationRenderer()
+        seen_minor = seen_adult_only = 0
+        for i in range(400):
+            sit = sampler.sample(i)
+            text = renderer.render(sit)
+            minor_here = any(r.type == "ENTITY" and r.fields.get("present")
+                             and not (isinstance(r.fields.get("look.age"), (int, float)) and r.fields["look.age"] >= 18)
+                             for r in sit.context.records)
+            if minor_here:
+                seen_minor += 1
+                self.assertNotIn("Attracted to", text)
+                self.assertNotIn("need_intimacy", text)
+                self.assertNotIn("drive.intimacy", text)
+            elif "Attracted to" in text:
+                seen_adult_only += 1
+        self.assertGreater(seen_minor, 20)
+        self.assertGreater(seen_adult_only, 5)
+

@@ -164,6 +164,16 @@ class RenderContext:
     def of(self, typ: str) -> list:
         return self.by_type.get(typ, [])
 
+    @property
+    def possible_minor_present(self) -> bool:
+        """A person here who may be a minor (seen younger than 18, or age not seen): then the NPC's orientation and
+        drive for intimacy are never shown to the teacher, even if unrelated (D10, by construction)."""
+        for r in self.of("ENTITY"):
+            age = r.fields.get("look.age")
+            if r.fields.get("present") and (not isinstance(age, (int, float)) or age < 18):
+                return True
+        return False
+
     def one(self, typ: str):
         rs = self.of(typ)
         return rs[0] if rs else None
@@ -295,7 +305,7 @@ class SelfSection(Section):
             sel = Salience.pick(va, 5.0)
             if sel:
                 out.append("What you value (0-10, only strong): " + Salience.words(sel) + ".")
-            if f.get("attracted_to"):
+            if f.get("attracted_to") and not c.possible_minor_present:
                 out.append("Attracted to: " + ", ".join(f["attracted_to"]) + ".")
             out += self._rest(c, mind, f, {n for n in f if n.startswith(("trait.", "temper.", "ability.", "value."))}
                               | {"attracted_to"})
@@ -304,7 +314,8 @@ class SelfSection(Section):
             emo = [(c.label(state, n), v) for n, v in f.items() if n.startswith("emo.")]
             sel = Salience.pick(emo, 2.0)
             out.append("Emotions now (0-10, only felt ones): " + (Salience.words(sel) if sel else "calm") + ".")
-            dr = [(c.label(state, n), v) for n, v in f.items() if n.startswith("drive.")]
+            dr = [(c.label(state, n), v) for n, v in f.items() if n.startswith("drive.")
+                  and not (n == "drive.intimacy" and c.possible_minor_present)]
             sel = Salience.pick(dr, 4.0)
             if sel:
                 out.append("Drives (0-10, pressing ones): " + Salience.words(sel) + ".")
