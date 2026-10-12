@@ -118,7 +118,9 @@ class TestRefTypes(Base):
         self.assertEqual(ft["COMMIT"]["fields"]["counterparty"]["ref_types"], ["ENTITY"])
         self.assertEqual(ft["SELF"]["fields"]["place"]["ref_types"], ["PLACE", "LOCUS"])
         self.assertEqual(ft["HEARD"]["fields"]["informant"]["ref_types"], ["ENTITY"])        # an alias inherits
-        self.assertEqual(set(ft["SELF_STATE"]["fields"]["attention"]["ref_types"]), {"ENTITY", "THING", "INV", "SELF"})
+        self.assertEqual(set(ft["SELF_STATE"]["fields"]["attention"]["ref_types"]),
+                         {"ENTITY", "THING", "INV", "SELF", "EVENT", "HEARD"})
+        self.assertEqual(set(ft["ENTITY"]["fields"]["look.gaze"]["ref_types"]), {"ENTITY", "THING", "INV", "SELF", "LOCUS", "PLACE"})
 
     def test_a_pointer_of_the_wrong_kind_is_refused(self):
         ent = Record("ENTITY", "@E1", {})

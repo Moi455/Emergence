@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import re
 
-NUM = r"(?:0|[1-9][0-9]{0,11})"
+NUM_BODY = r"0|[1-9][0-9]{0,11}"                 # a canonical integer: the exported form
+NUM = f"(?:{NUM_BODY})"
 FIXED_KEYS = ("me", "me.mind", "me.state", "wake", "@PLACE")
 # Always used with fullmatch (never match or search): `$` would let a trailing newline through.
 KEY = re.compile(rf"(?:me|me\.mind|me\.state|wake|@PLACE|@[ETGLV]{NUM}|[bmghqcpkt]:{NUM})", re.ASCII)

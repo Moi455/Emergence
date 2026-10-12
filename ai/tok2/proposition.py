@@ -22,7 +22,7 @@ import sys
 import numpy as np
 
 from .codecs import to_half
-from .errors import TokenError
+from .errors import TokenError, clip, short
 from .interface import ROOT, InputVocabulary, ModelInterface
 from .keys import is_count, is_key, is_name
 
@@ -116,7 +116,7 @@ class PropositionEncoder:
         except RecursionError:
             raise TokenError(f"{where}: nested too deeply") from None
         if not e.ok:
-            raise TokenError(f"{where}: {'; '.join(e.problems[:3])}")
+            raise TokenError(f"{where}: {clip('; '.join(e.problems[:3]))}")
         return e.root
 
     def _walk(self, node, depth, seq, state, where):
@@ -131,10 +131,10 @@ class PropositionEncoder:
         if POINTER.match(sym):
             if sym.startswith("n:"):
                 if not is_name(sym):
-                    raise TokenError(f"{where}: '{sym}' is not a canonical name (no leading zero, at most 12 digits)")
+                    raise TokenError(f"{where}: {short(sym, 40)} is not a canonical name (no leading zero, at most 12 digits)")
                 return state.name_id(sym), 0, depth, None, 0.0
             if not is_key(sym):
-                raise TokenError(f"{where}: '{sym}' is not a canonical pointer (no leading zero, at most 12 digits)")
+                raise TokenError(f"{where}: {short(sym, 40)} is not a canonical pointer (no leading zero, at most 12 digits)")
             return self.vocab.id(self.vocab.pointer_kind(sym)), 0, depth, sym, 0.0
         if sym.isascii() and sym.isdigit():
             return self.vocab.id(InputVocabulary.NUM), 0, depth, None, self._count(sym, where)
@@ -146,12 +146,12 @@ class PropositionEncoder:
     @staticmethod
     def _count(text: str, where: str) -> float:
         if not is_count(text):
-            raise TokenError(f"{where}: '{text}' is not a canonical count (ASCII digits, no leading zero, <= 1e7)")
+            raise TokenError(f"{where}: {short(text, 40)} is not a canonical count (ASCII digits, no leading zero, <= 1e7)")
         return count_value(int(text))
 
     def _word(self, sym: str, where: str) -> int:
         if not self.vocab.is_word(sym):
-            raise TokenError(f"{where}: unknown symbol '{sym}'")
+            raise TokenError(f"{where}: unknown symbol {short(sym, 40)}")
         return self.vocab.id(sym)
 
 

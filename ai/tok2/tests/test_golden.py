@@ -60,7 +60,12 @@ class TestGoldenLayout(unittest.TestCase):
         self.assertEqual(held["components"][0]["unit"], "kg")
         self.assertIn("log1p", held["components"][0]["normalisation"])
         gaze = next(c for c in g["types"]["ENTITY"]["columns"] if c["name"] == "look.gaze")
-        self.assertEqual(gaze["ref_types"], ["ENTITY", "THING", "INV", "SELF"])
+        self.assertEqual(gaze["ref_types"], ["ENTITY", "THING", "INV", "SELF", "LOCUS", "PLACE"])
+        self.assertTrue(held["multi"])
+        self.assertEqual(held["components"][0]["pool"], "sum")
+        self.assertEqual(held["components"][1]["pool"], "max")
+        props = next(c for c in g["types"]["THING"]["columns"] if c["name"] == "props")
+        self.assertFalse(props["multi"])
 
     def test_the_grammar_section_carries_the_tables_of_language_py(self):
         g = json.loads(LAYOUT_PATH.read_text(encoding="utf-8"))["grammar"]

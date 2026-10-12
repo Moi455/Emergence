@@ -48,6 +48,8 @@ def counted_slots(cat):
     out = slots(cat)
     for typ, fields in model_interface.ModelInterface.EXPLICIT.items():
         out[typ] = out[typ] | set(fields)
+    for typ in out:                                  # a token with no `.field` is the type's pseudo-field, not a field
+        out[typ] = {f for f in out[typ] if f != typ}
     return out
 
 

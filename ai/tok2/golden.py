@@ -1,9 +1,13 @@
 """golden.py - the golden files the C++ port (and the model code) are checked against.
 
     python3 -m tok2.golden                   (from ai/)  what would change
-    python3 -m tok2.golden --update          rewrite golden/layout.json and the HAND-MADE cases of golden/cases.jsonl
-    python3 -m tok2.golden --update-sampler  also regenerate the 12 cases drawn from the situations sampler
-    python3 -m tok2.golden --check           exit 1 when layout.json or the hand-made cases are out of date
+    python3 -m tok2.golden --update          rewrite golden/layout.json and the hand-made cases of golden/cases.jsonl;
+                                             re-heads the frozen sampler cases by itself when the layout changed
+    python3 -m tok2.golden --rehead          re-read the BODY of the frozen sampler cases, rewrite their header and
+                                             digest, check that they still encode (nothing is redrawn)
+    python3 -m tok2.golden --update-sampler  redraw the 12 cases from the situations sampler (a new draw)
+    python3 -m tok2.golden --check           exit 1 when layout.json or the cases are out of date
+    (any other option is an error)
 
 golden/layout.json  the contract, enough to write a port without reading Python:
                     - the layout document (Layout.document()): constants, arrays (dtype, shape), types (id, count, key),
@@ -21,10 +25,16 @@ golden/layout.json  the contract, enough to write a port without reading Python:
 golden/cases.jsonl  about 30 canonical decisions, one per line: {name, context, expect}. A context is the canonical
                     JSON of a DecisionContext (header included: it names the interface and the layout it was
                     written for); expect is {digest (crc32, 8 hex), n, ghosts} or {error: "TokenError"}. Twelve come
-                    from the situations sampler at a fixed seed and are FROZEN: --update and --check leave them
-                    alone, only --update-sampler rewrites them (after a change of layout, their header and digests
-                    must be renewed on purpose). The others are made by hand for the edges.
+                    from the situations sampler at a fixed seed and are FROZEN: their records are never redrawn by
+                    --update or --check. When the layout changes their header and digest are renewed from the
+                    SAME records (--rehead, called by --update; the encoding must still succeed). Only
+                    --update-sampler draws new ones. The others are made by hand for the edges.
 A port reads the context, encodes it, and must find the digest (the arrays are bit-identical) or the refusal.
+
+Scope of the promise (also `scope` in layout.json): everything above is portable WITHOUT reading the Python, EXCEPT
+the validation of propositions against the grammar of the catalogue, which is a port of catalogue/tools/language.py
+fed with the tables of `grammar`. A port without that validation still produces the same arrays on valid contexts,
+but does not refuse the propositions the grammar refuses (see the bad_prop_* cases).
 """
 from __future__ import annotations
 
@@ -48,6 +58,12 @@ def dumps(obj, indent=None) -> str:
     return json.dumps(obj, ensure_ascii=False, sort_keys=False, indent=indent)
 
 
+SCOPE = ("Portable without reading the Python: the columns, normalisations, vocabulary, key and name rules, "
+         "ghost numbering, pooling, unknown flags, the digest and every refusal EXCEPT those of the grammar. NOT "
+         "self-contained: the validation of propositions (types of arguments, arities, nesting depth, pointer budget, "
+         "symbol count) is catalogue/tools/language.py (Expression), to be ported with the tables of `grammar`; "
+         "the golden cases named bad_prop_* check that port.")
+
 READING_RULES = [
     "Records: sort by type id (registry order), keep the given order within a type (the order is the salience the engine chose; never sort). SELF and PLACE are mandatory. Each key must be canonical and match its type's key; keys are unique; every key must be in known_keys (default: the keys of the records).",
     "Write order: for each row in order, for each column of its type in the order of types[T].columns (the registry's append order, NOT alphabetical), write the field if it is present and not null. This order fixes the numbering of the name aliases.",
@@ -57,7 +73,7 @@ READING_RULES = [
     "Bags (lists of words or enum values): at most bag_cap items written in order from the bag's first column; pointer lists: at most ptr_list_cap items. Duplicates are kept.",
     "Words: a catalogue word of the interface (never a reserved <...> symbol or a pointer kind) -> its vocabulary id; a name n:<canonical int> -> <name k>, k = order of first appearance in the write order (0..63), then <name_other> for the 65th and later distinct names (the alias list is not extended). Enum fields accept only their `values`.",
     "Pointers: the slot (1-based row) of the record with that key. A key in known_keys but not in the batch is a ghost: 129 + k, k = rank of first appearance among ghosts when the arrays are scanned by row, then ptr columns in ascending order, then proposition positions in ascending order (ghosts are numbered AFTER writing, not while writing); the 33rd distinct ghost and later get 161. A key outside known_keys is refused. A pointer field accepts only the record types of its ref_types (for a ghost, the types its key can designate: @T is THING or INV). A proposition never cites its own record.",
-    "Propositions: printable ASCII plus space, tab, newline and CR only, at most 1000 characters; validated by the `grammar` tables (a bare proposition, or for REQUEST.prop a full utterance with a mood); written in prefix order, one position per symbol: sym id, arity (0 leaf, 1 + number of arguments for a list head), depth, slot (pointers), num. A count n (silver_coin:3 or a bare 3) is log1p(n + 1) in binary16 (0 means no count); counts and numbers are canonical (ASCII digits, no leading zero, at most 1e7). A bare citation b:7 / m:7 / g:7 is a one-position proposition.",
+    "Propositions: printable ASCII plus space, tab, newline and carriage return (CR) only, at most 1000 characters; validated by the `grammar` tables (a bare proposition, or for REQUEST.prop a full utterance with a mood); written in prefix order, one position per symbol: sym id, arity (0 leaf, 1 + number of arguments for a list head), depth, slot (pointers), num. A count n (silver_coin:3 or a bare 3) is log1p(n + 1) in binary16 (0 means no count); counts and numbers are canonical (ASCII digits, no leading zero, at most 1e7). A bare citation b:7 / m:7 / g:7 is a one-position proposition.",
     "Canonical text of a proposition (for serialization): re-print the tree, one space between symbols, no space inside parentheses.",
     "Digest: see `digest`; n is the number of rows written.",
 ]
@@ -108,6 +124,7 @@ class GoldenLayout:
         doc["fingerprints"] = tok.header() | {"vocabulary": f"{tok.vocab.fingerprint:016x}"}
         doc["grammar"] = GrammarExport(tok.props.grammar.vocab).build()
         doc["reading_rules"] = list(READING_RULES)
+        doc["scope"] = SCOPE
         return doc
 
     @staticmethod
@@ -262,6 +279,17 @@ class HandCases:
                          Record("SELF_STATE", "me.state", {"attention": "@T9"}), known=[
                              "me", "@PLACE", "me.state", "@E1", "@T1", "@T2", "@T9", "q:1", "wake"])
 
+    def ok_epsilon_unit_components(self):
+        return DecisionContext([
+            Record("SELF", "me", {}), Record("PLACE", "@PLACE", {}),
+            Record("ENTITY", "@E1", {"present": True, "dir": {"sin": 1 + 1e-10, "cos": -1 - 1e-10},
+                                     "rep": {"honesty": 1 + 1e-10, "danger": -1 - 1e-10}})])
+
+    def ok_time_until_bounds(self):
+        return self.base(Record("GOAL", "g:1", {"prop": "(has me silver_coin)", "deadline": 10_000_000}),
+                         Record("GOAL", "g:2", {"prop": "(has me silver_coin)", "deadline": -10_000_000}),
+                         Record("COMMIT", "c:1", {"prop": "(did me give silver_coin (to me))", "deadline": 1e7}))
+
     # ---- refused ----
     def bad_pointer_not_in_mind(self):
         return self.base(Record("BELIEF", "b:1", {"prop": "(owns me @T5)"}))
@@ -305,6 +333,25 @@ class HandCases:
     def bad_beyond_epsilon(self):
         return DecisionContext([Record("SELF", "me", {"need.thirst": 10.00000001}), Record("PLACE", "@PLACE", {})])
 
+    def bad_time_until_beyond(self):
+        # no tolerance window at 1e7: the spacing of doubles there (1.9e-9) is wider than epsilon (1e-9)
+        return self.base(Record("GOAL", "g:1", {"prop": "(has me silver_coin)", "deadline": 1e7 + 1e-8}))
+
+    def bad_prop_wrong_argument_type(self):
+        return self.base(Record("BELIEF", "b:1", {"prop": "(link me friend silver_coin)"}))
+
+    def bad_prop_depth_3(self):
+        return self.base(Record("BELIEF", "b:1", {"prop": "(believes me (believes you (believes me (owns me @T1))))"}),
+                         Record("THING", "@T1", {}))
+
+    def bad_prop_four_pointers(self):
+        # also ill-typed: the pointer budget (3 per predicate) is one of the problems the grammar reports
+        return self.base(Record("ENTITY", "@E1", {}), Record("ENTITY", "@E2", {}), Record("ENTITY", "@E3", {}),
+                         Record("ENTITY", "@E4", {}), Record("BELIEF", "b:1", {"prop": "(attitude @E1 @E2 @E3 @E4)"}))
+
+    def bad_prop_too_many_symbols(self):
+        return self.base(Record("BELIEF", "b:1", {"prop": "(and " * 18 + "(at me @PLACE)" + ")" * 18}))
+
     def bad_bool_for_number(self):
         return self.base(Record("ENTITY", "@E1", {"dist": True}))
 
@@ -344,17 +391,42 @@ class GoldenCases:
         return [l for l in CASES_PATH.read_text(encoding="utf-8").splitlines()
                 if json.loads(l)["name"].startswith(SAMPLER_PREFIX)]
 
-    def text(self, regenerate_sampler: bool = False) -> str:
-        frozen = self.sampler_lines() if regenerate_sampler or not self.frozen_sampler_lines() else self.frozen_sampler_lines()
+    def rehead_line(self, line: str) -> str:
+        """The same records, a fresh header and digest. The encoding must still succeed."""
+        case = json.loads(line)
+        body = case["context"]
+        try:
+            ctx = DecisionContext([Record.from_dict(r) for r in body["records"]], body["known_keys"])
+            return self.line(case["name"], ctx, True)
+        except TokenError as e:
+            raise TokenError(f"frozen case {case['name']} no longer encodes: {e}") from None
+
+    def frozen(self, rehead: bool = False) -> list[str]:
+        """The frozen sampler cases: verbatim, unless their header is stale (the layout changed) or `rehead`."""
+        out = []
+        for line in self.frozen_sampler_lines():
+            stale = json.loads(line)["context"]["header"] != self.tok.header()
+            out.append(self.rehead_line(line) if rehead or stale else line)
+        return out
+
+    def text(self, regenerate_sampler: bool = False, rehead: bool = False) -> str:
+        frozen = self.sampler_lines() if regenerate_sampler or not self.frozen_sampler_lines() else self.frozen(rehead)
         return "\n".join(frozen + self.hand_lines()) + "\n"
+
+
+FLAGS = {"--update", "--update-sampler", "--rehead", "--check"}
 
 
 def main(argv=None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
+    unknown = [a for a in args if a not in FLAGS]
+    if unknown:
+        print(f"option inconnue : {', '.join(unknown)} (options : {', '.join(sorted(FLAGS))})", file=sys.stderr)
+        return 2
     tok = Tokenizer()
     GOLDEN_DIR.mkdir(exist_ok=True)
     layout = GoldenLayout(tok).text()
-    cases = GoldenCases(tok).text(regenerate_sampler="--update-sampler" in args)
+    cases = GoldenCases(tok).text(regenerate_sampler="--update-sampler" in args, rehead="--rehead" in args)
     stale = [p.name for p, t in ((LAYOUT_PATH, layout), (CASES_PATH, cases))
              if not p.exists() or p.read_text(encoding="utf-8") != t]
     if "--update" in args or "--update-sampler" in args:
@@ -362,7 +434,11 @@ def main(argv=None) -> int:
         CASES_PATH.write_text(cases, encoding="utf-8")
         print(f"écrit {LAYOUT_PATH.name} ({len(layout) // 1024} Ko) et {CASES_PATH.name} "
               f"({cases.count(chr(10))} cas, {len(cases) // 1024} Ko)"
-              + ("" if "--update-sampler" in args else " ; les cas du sampler sont gelés"))
+              + (" ; cas du sampler redessinés" if "--update-sampler" in args else " ; cas du sampler gelés (en-tête renouvelé si besoin)"))
+        return 0
+    if "--rehead" in args:
+        CASES_PATH.write_text(cases, encoding="utf-8")
+        print(f"en-tête et empreintes des cas gelés renouvelés dans {CASES_PATH.name} (rien n'est redessiné)")
         return 0
     print("à jour" if not stale else "périmé : " + ", ".join(stale))
     return 1 if stale and "--check" in args else 0

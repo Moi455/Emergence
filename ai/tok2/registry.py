@@ -11,6 +11,9 @@ Every field records its meaning (scale, unit, list_of) and a vector its componen
     CONFLICT no update can solve: give the field a new name;
   - a vector grows only by appending: a new component takes the next free column of the type's block (so the
     columns of a vector are not always contiguous), the old ones never move;
+  - how held objects are pooled (sum for the masses, max for the rest) is PINNED per component: the registry decides,
+    a later change of codecs.SUM_COMPONENTS only seeds NEW components, and a pinned sum-pooled component that disappears (a rename of `mass`) is a conflict unless another
+    component takes over the sum (add its name to codecs.SUM_COMPONENTS before the update);
   - a component the interface no longer has stays reserved (retired); a RENAMED component is a retired one plus
     a new one (the old column is never reused, so a model trained on it is never misread).
 The widths of the blocks are the maximum used by any type (retired columns included). The registry is checked when
@@ -23,8 +26,8 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .codecs import VectorCodec, make_codec
-from .errors import TokenError
+from .codecs import VectorCodec, default_pool, make_codec
+from .errors import TokenError, clip, listing, short
 from .interface import InputVocabulary, ModelInterface
 
 REGISTRY_PATH = Path(__file__).with_name("registry.json")
@@ -40,9 +43,15 @@ class ComponentEntry:
     scale: str
     unit: str = ""
     retired: bool = False
+    pool: str | None = None                   # "sum" or "max": how held objects are pooled; None = not recorded yet
+    rank: int | None = None                   # position in the interface's declared order at the last update
 
     def to_dict(self) -> dict:
         d = {"name": self.name, "col": self.col, "scale": self.scale, "unit": self.unit}
+        if self.pool is not None:
+            d["pool"] = self.pool
+        if self.rank is not None:
+            d["rank"] = self.rank
         if self.retired:
             d["retired"] = True
         return d
@@ -137,32 +146,42 @@ class Registry:
             raise TokenError(f"{p} is missing: create it with `python3 -m tok2.registry --update` (from ai/)")
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
+            if data.get("schema") not in (SCHEMA, LEGACY_SCHEMA):
+                raise TokenError(f"{p}: schema {short(data.get('schema'))}, expected {SCHEMA!r}: run "
+                                 f"`python3 -m tok2.registry --update` after checking the old ids are kept")
             types = {}
             for n, t in data["types"].items():
                 fields = {}
                 for f, e in t["fields"].items():
                     comps = None if "components" not in e else [
-                        ComponentEntry(c["name"], c["col"], c["scale"], c.get("unit", ""), c.get("retired", False))
+                        ComponentEntry(c["name"], c["col"], c["scale"], c.get("unit", ""), c.get("retired", False), c.get("pool"),
+                                       c.get("rank"))
                         for c in e["components"]]
                     fields[f] = FieldEntry(e["block"], e["col"], e["width"], e["codec"], e.get("scale", ""),
                                            e.get("unit", ""), e.get("list_of", ""), comps, e.get("retired", False))
                 types[n] = TypeEntry(t["id"], fields, t.get("retired", False))
             reg = cls(types, list(data["symbols"]))
             declared = data.get("widths")
-        except (KeyError, TypeError, ValueError, AttributeError) as e:
-            raise TokenError(f"{p}: malformed ({type(e).__name__}: {e})") from None
-        if data.get("schema") not in (SCHEMA, LEGACY_SCHEMA):
-            raise TokenError(f"{p}: schema {data.get('schema')!r}, expected {SCHEMA!r}: run "
-                             f"`python3 -m tok2.registry --update` after checking the old ids are kept")
-        reg.validate(declared)
+            if declared is None and data["schema"] == SCHEMA:
+                raise TokenError(f"{p}: `widths` is mandatory in {SCHEMA}")
+            reg.validate(declared)
+        except TokenError:
+            raise
+        except (KeyError, TypeError, ValueError, AttributeError, RecursionError) as e:
+            raise TokenError(f"{p}: malformed ({type(e).__name__}: {short(e, 120)})") from None
         return reg
 
     def validate(self, declared_widths: dict | None = None) -> None:
         """Integrity of the file itself (a hand edit, a bad merge): unique ids, no overlapping columns, unique
         symbols, every column inside the declared width of its block."""
+        def integer(x) -> bool:
+            return isinstance(x, int) and not isinstance(x, bool)
+
         ids = [t.id for t in self.types.values()]
-        if len(set(ids)) != len(ids) or any(not isinstance(i, int) or i < 1 or i > 255 for i in ids):
+        if any(not integer(i) or i < 1 or i > 255 for i in ids) or len(set(ids)) != len(ids):
             raise TokenError("registry: type ids must be unique integers in 1..255")
+        if not all(isinstance(s, str) for s in self.symbols):
+            raise TokenError("registry: symbols must be strings")
         if len(set(self.symbols)) != len(self.symbols):
             dup = sorted({s for s in self.symbols if self.symbols.count(s) > 1})
             raise TokenError(f"registry: duplicate symbols {dup[:5]}")
@@ -170,13 +189,29 @@ class Registry:
             for fname, f in t.fields.items():
                 if f.block not in BLOCKS:
                     raise TokenError(f"registry: {tname}.{fname}: unknown block {f.block!r}")
-                if f.components is not None and len({c.name for c in f.components}) != len(f.components):
-                    raise TokenError(f"registry: {tname}.{fname}: duplicate component names")
+                if not integer(f.col) or not integer(f.width) or f.col < 0 or f.width < 1:
+                    raise TokenError(f"registry: {tname}.{fname}: col and width must be integers (col >= 0, width >= 1)")
+                if not all(isinstance(x, str) for x in (f.codec, f.scale, f.unit, f.list_of)):
+                    raise TokenError(f"registry: {tname}.{fname}: codec, scale, unit and list_of must be strings")
+                if f.components is not None:
+                    if len({c.name for c in f.components}) != len(f.components):
+                        raise TokenError(f"registry: {tname}.{fname}: duplicate component names")
+                    if any(not integer(c.col) or c.col < 0 or not isinstance(c.name, str) for c in f.components):
+                        raise TokenError(f"registry: {tname}.{fname}: component columns must be integers >= 0")
+                    if f.width != len(f.components):
+                        raise TokenError(f"registry: {tname}.{fname}: width {f.width} != {len(f.components)} components")
+                    if any(c.pool not in (None, "sum", "max") for c in f.components):
+                        raise TokenError(f"registry: {tname}.{fname}: pool must be sum or max")
+        if declared_widths is not None and (not isinstance(declared_widths, dict) or not all(
+                integer(v) for v in declared_widths.values())):
+            raise TokenError("registry: widths must be a dict of integers")
         widths = self.widths()
         if declared_widths is not None and declared_widths != widths:
             raise TokenError(f"registry: declared widths {declared_widths} differ from the columns' {widths}")
         for tname, t in self.types.items():
             for block in BLOCKS:
+                if block == "prop":
+                    continue                    # one proposition per row, always at column 0 (retired ones are not read)
                 seen: dict[int, str] = {}
                 for fname, f in t.fields.items():
                     if f.block != block:
@@ -185,7 +220,12 @@ class Registry:
                         if c < 0 or c >= widths[block]:
                             raise TokenError(f"registry: {tname}.{fname} column {c} is outside the {block} width {widths[block]}")
                         if c in seen:
-                            raise TokenError(f"registry: {tname} {block} column {c} is used by both {seen[c]} and {fname}")
+                            raise TokenError(
+                                f"registry: {tname} {block} column {c} is used by both {seen[c]} and {fname}. This is "
+                                "what a merge of two branches that each added a field to the same type produces. Repair: "
+                                f"renumber the MOST RECENT of the two columns by hand in registry.json (to the first free "
+                                f"{block} column of {tname}, then fix `widths`), and ONLY if no model has been trained "
+                                "on it; otherwise rename the newer field in the catalogue so it gets a fresh column")
                         seen[c] = fname
 
     def to_dict(self) -> dict:
@@ -198,24 +238,40 @@ class Registry:
     # ---- what differs from an interface ------------------------------------------------------------
     @staticmethod
     def _vector_changes(e: FieldEntry, need: FieldNeed):
-        """(new components, components to retire, retired ones back, conflicts) of a registered vector."""
+        """(new components, components to retire, retired ones back, pooling not recorded, conflicts)."""
         reg = {c.name: c for c in e.components}
         want = [c[0] for c in need.components]
-        conflicts, new, back = [], [], []
+        conflicts, new, back, unpinned = [], [], [], []
         for name, scale, unit in need.components:
             c = reg.get(name)
             if c is None:
                 new.append((name, scale, unit))
-            elif (c.scale, c.unit) != (scale, unit):
-                conflicts.append(f"component {name}: registered as ({c.scale}, {c.unit!r}), now ({scale}, {unit!r})")
+                continue
+            if (c.scale, c.unit) != (scale, unit):
+                conflicts.append(f"component {clip(name, 30)}: registered as ({c.scale}, {c.unit!r}), now ({scale}, {unit!r}); "
+                                 "rename the COMPONENT (it gets a new column, the old one stays reserved)")
             elif c.retired:
                 back.append(name)
-        known_in_order = [c.name for c in e.components if c.name in set(want)]
+            if c.pool is None or c.rank is None:
+                unpinned.append(name)
+        # the declared order of the components already registered must not change; a component added in the middle
+        # of the interface's list is fine (it is appended to the registry, and the declared order is re-recorded)
+        by_rank = sorted((c for c in e.components if c.name in set(want)),
+                         key=lambda c: (c.rank if c.rank is not None else len(e.components) + 1, e.components.index(c)))
+        known_in_order = [c.name for c in by_rank]
         wanted_known = [n for n in want if n in reg]
         if known_in_order != wanted_known:
-            conflicts.append("the components are reordered or swapped (a vector only grows at the end)")
+            conflicts.append("the components are reordered or swapped (a vector only grows at the end): put them back in "
+                             "their registered order, or rename the moved COMPONENT (a new column)")
         retire = [c.name for c in e.components if c.name not in set(want) and not c.retired]
-        return new, retire, back, conflicts
+        lost_sum = [c.name for c in e.components if c.pool == "sum" and not c.retired and c.name not in set(want)]
+        if lost_sum:
+            still = any((reg[n].pool if n in reg and reg[n].pool else default_pool(n)) == "sum" for n in want)
+            if not still:
+                conflicts.append(f"the sum-pooled component {', '.join(map(str, lost_sum))} disappears and no component takes "
+                                 "over the sum: a rename of a mass would silently change how held objects are pooled; "
+                                 "add the new name to codecs.SUM_COMPONENTS before updating the registry")
+        return new, retire, back, unpinned, conflicts
 
     def diff(self, interface: ModelInterface) -> tuple[list[str], list[str]]:
         """(additions an update can make, conflicts it cannot)."""
@@ -240,33 +296,43 @@ class Registry:
                     bad.append(f"meaning changed: ({e.scale}, {e.unit!r}, {e.list_of!r}) -> ({n.scale}, {n.unit!r}, {n.list_of!r})")
                 if n.components is None and e.width != n.width:
                     bad.append(f"width {e.width} -> {n.width}")
+                comp_conflicts = []
                 if n.components is not None:
                     if e.components is None:
                         if not legacy or e.width != len(n.components):
                             bad.append("registered without components or with another width")
                     else:
-                        new, retire, back, conf = self._vector_changes(e, n)
-                        bad += conf
-                        if not conf:
+                        new, retire, back, unpinned, comp_conflicts = self._vector_changes(e, n)
+                        if not comp_conflicts:
                             if new:
-                                add.append(f"{where}: {len(new)} new components ({', '.join(c[0] for c in new[:4])}"
-                                           f"{'...' if len(new) > 4 else ''})")
+                                add.append(f"{where}: {len(new)} new components ({listing([c[0] for c in new[:4]], 80)})")
                             if retire:
-                                add.append(f"{where}: components retired ({', '.join(retire[:4])})")
+                                add.append(f"{where}: components retired ({listing(retire[:4], 80)})")
                             if back:
-                                add.append(f"{where}: components back ({', '.join(back[:4])})")
+                                add.append(f"{where}: components back ({listing(back[:4], 80)})")
+                            if unpinned:
+                                add.append(f"{where}: pooling and order of {len(unpinned)} components not recorded yet")
+                if comp_conflicts:
+                    conflicts.append(f"{where}: " + "; ".join(comp_conflicts))
                 if bad:
                     conflicts.append(f"{where}: " + "; ".join(bad) + " (rename the field: a column never changes meaning)")
-                elif e.retired:
-                    add.append(f"field {where} is back")
-                elif e.scale == "" and n.scale:
-                    add.append(f"{where}: meaning not recorded yet")
+                elif not comp_conflicts:
+                    if e.retired:
+                        add.append(f"field {where} is back")
+                    elif e.scale == "" and n.scale:
+                        add.append(f"{where}: meaning not recorded yet")
+            for fname, e in t.fields.items():
+                if fname not in fields and not e.retired:
+                    add.append(f"field {tname}.{fname} retired (the interface no longer has it)")
             if t.retired:
                 add.append(f"type {tname} is back")
+        for tname, t in self.types.items():
+            if tname not in need.types and not t.retired:
+                add.append(f"type {tname} retired (the interface no longer has it)")
         known = set(self.symbols)
         new_symbols = [s for s in need.symbols if s not in known]
         if new_symbols:
-            add.append(f"{len(new_symbols)} new symbols: {', '.join(new_symbols[:6])}{'...' if len(new_symbols) > 6 else ''}")
+            add.append(f"{len(new_symbols)} new symbols: {listing(new_symbols[:6], 100)}")
         return add, conflicts
 
     def require(self, interface: ModelInterface) -> None:
@@ -297,26 +363,33 @@ class Registry:
             for fname, n in fields.items():
                 e = t.fields.get(fname)
                 if e is None:
-                    start = t.end(n.block)
+                    start = 0 if n.block == "prop" else t.end(n.block)        # a proposition is always at column 0
                     e = t.fields[fname] = FieldEntry(n.block, start, n.width, n.codec, n.scale, n.unit, n.list_of)
                     if n.components is not None:
-                        e.components = [ComponentEntry(c, start + i, s, u) for i, (c, s, u) in enumerate(n.components)]
+                        e.components = [ComponentEntry(c, start + i, s, u, False, default_pool(c), i)
+                                        for i, (c, s, u) in enumerate(n.components)]
                     continue
                 e.retired = False
                 e.scale, e.unit, e.list_of = e.scale or n.scale, e.unit or n.unit, e.list_of or n.list_of
                 if n.components is not None:
                     if e.components is None:          # registered before components were recorded: same order, same width
-                        e.components = [ComponentEntry(c, e.col + i, s, u) for i, (c, s, u) in enumerate(n.components)]
+                        e.components = [ComponentEntry(c, e.col + i, s, u, False, default_pool(c), i)
+                                        for i, (c, s, u) in enumerate(n.components)]
                     want = {c[0] for c in n.components}
                     reg = {c.name: c for c in e.components}
                     for name, scale, unit in n.components:
                         if name not in reg:
-                            e.components.append(ComponentEntry(name, t.end(n.block), scale, unit))
+                            e.components.append(ComponentEntry(name, t.end(n.block), scale, unit, False, default_pool(name), len(e.components)))
                         else:
                             reg[name].retired = False
+                    order = {name: k for k, (name, _, _) in enumerate(n.components)}
                     for c in e.components:
+                        if c.pool is None:
+                            c.pool = default_pool(c.name)
                         if c.name not in want:
                             c.retired = True
+                        else:
+                            c.rank = order[c.name]
                     e.width = len(e.components)
                     e.col = e.components[0].col
         for tname, t in types.items():
@@ -339,8 +412,15 @@ class Registry:
         return {b: max((t.end(b) for t in self.types.values()), default=0) for b in BLOCKS}
 
 
+FLAGS = {"--update", "--check"}
+
+
 def main(argv=None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
+    unknown = [a for a in args if a not in FLAGS]
+    if unknown:
+        print(f"option inconnue : {', '.join(unknown)} (options : {', '.join(sorted(FLAGS))})", file=sys.stderr)
+        return 2
     iface = ModelInterface()
     reg = Registry.load() if REGISTRY_PATH.exists() else Registry()
     add, conflicts = reg.diff(iface)

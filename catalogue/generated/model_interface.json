@@ -428,7 +428,9 @@
        "ENTITY",
        "THING",
        "INV",
-       "SELF"
+       "SELF",
+       "LOCUS",
+       "PLACE"
       ],
       "scale": "mref",
       "unit": "",
@@ -582,6 +584,7 @@
       ],
       "from": "ep_held",
       "list_of": "qty",
+      "multi": true,
       "scale": "list",
       "unit": "",
       "values": []
@@ -2275,6 +2278,7 @@
       ],
       "from": "own_held_seen",
       "list_of": "qty",
+      "multi": true,
       "scale": "list",
       "unit": "",
       "values": []
@@ -2783,7 +2787,9 @@
        "ENTITY",
        "THING",
        "INV",
-       "SELF"
+       "SELF",
+       "EVENT",
+       "HEARD"
       ],
       "scale": "mref",
       "unit": "",

@@ -56,6 +56,19 @@ class TestModelInterface(unittest.TestCase):
         for word in ("step", "next", "goal", "target", "progress", "commitment"):
             self.assertIn(word, text)
 
+    def test_two_vectors_are_multi_and_the_counter_ignores_pseudo_fields(self):
+        f = self.spec["input"]["token_types"]
+        self.assertTrue(f["SELF"]["fields"]["held"]["multi"] and f["ENTITY"]["fields"]["look.held"]["multi"])
+        self.assertNotIn("multi", f["THING"]["fields"]["props"])
+        counted = budget.counted_slots(self.cat)
+        for typ, fields in counted.items():
+            self.assertNotIn(typ, fields, f"{typ}: the type's own name is not a field")
+
+    def test_gaze_and_attention_reach_events_and_places(self):
+        f = self.spec["input"]["token_types"]
+        self.assertTrue({"LOCUS", "PLACE"} <= set(f["ENTITY"]["fields"]["look.gaze"]["ref_types"]))
+        self.assertTrue({"EVENT", "HEARD"} <= set(f["SELF_STATE"]["fields"]["attention"]["ref_types"]))
+
     def test_the_budget_counts_the_hand_written_types_too(self):
         counted = budget.counted_slots(self.cat)
         for typ, fields in model_interface.ModelInterface.EXPLICIT.items():

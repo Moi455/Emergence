@@ -23,7 +23,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .errors import TokenError
+from .errors import TokenError, listing, short
 
 BAG_CAP = 6          # words per word list (the engine keeps the most salient: the 2 worst wounds = 6 words)
 PTR_LIST_CAP = 4     # pointers per pointer list (to whom a belief was told, witnesses of a commitment)
@@ -33,6 +33,11 @@ GHOST_OVERFLOW = GHOST_BASE + GHOST_SLOTS     # 161: a known record out of the b
 EPSILON = 1e-9                                # tolerance at the bounds of a scale, in the unit of the scale
 SIGNED_UNITS = {"°C"}                         # the only units whose quantity may be negative
 SUM_COMPONENTS = {"mass"}                     # pooled by sum when several objects are held; every other one by max
+                                              # (a seed: the pooling of a component is PINNED in the registry)
+
+
+def default_pool(component: str) -> str:
+    return "sum" if component in SUM_COMPONENTS else "max"
 
 
 def signed_log(x: float) -> float:
@@ -69,9 +74,9 @@ class ScaleNorm:
             return x
         if isinstance(x, float):
             if not math.isfinite(x):
-                raise TokenError(f"{where}: finite number expected, got {x!r}")
+                raise TokenError(f"{where}: finite number expected, got {short(x)}")
             return x
-        raise TokenError(f"{where}: a number expected, got {type(x).__name__} {x!r:.40}")
+        raise TokenError(f"{where}: a number expected, got {type(x).__name__} {short(x, 40)}")
 
     @staticmethod
     def formula(scale: str, unit: str = "") -> str:
@@ -85,7 +90,7 @@ class ScaleNorm:
                 raise TokenError(f"{where}: a bool for a {scale} field")
             return 1.0 if x else 0.0
         if scale == "bool":
-            raise TokenError(f"{where}: bool expected, got {x!r}")
+            raise TokenError(f"{where}: bool expected, got {short(x)}")
         if scale == "bipolar10":
             r = ScaleNorm._bounded(x, -10, 10, where) / 10
         elif scale == "unipolar10":
@@ -115,7 +120,7 @@ class ScaleNorm:
             return lo
         if hi < x <= hi + EPSILON:
             return hi
-        raise TokenError(f"{where}: {x} outside [{lo}, {hi}]")
+        raise TokenError(f"{where}: {short(x)} outside [{lo}, {hi}]")
 
 
 class FieldCodec(ABC):
@@ -156,9 +161,10 @@ class ScalarCodec(FieldCodec):
 
 class VectorCodec(FieldCodec):
     """A list of qty with named components (sin/cos, reputation axes) or the object vector. Value: a dict
-    component -> value (a missing component stays unknown), a list in component order, or for a list of vectors
-    (what is held in both hands) a list of dicts, pooled per component: SUM for `mass`, MAX for the others. An
-    empty list is a known empty hand: every component known, 0."""
+    component -> value (a missing component stays unknown), a list in component order, or, for a MULTI vector
+    (what is held, spec["multi"]: SELF.held, ENTITY.look.held) a list of dicts, pooled per component: SUM or MAX as
+    the registry pinned it (mass: sum). Only a multi vector accepts [] (nothing held: every component known, 0);
+    for the others [] is refused (unknown is None or absent)."""
     block = "num"
 
     def __init__(self, name, spec, where):
@@ -167,13 +173,17 @@ class VectorCodec(FieldCodec):
         self.scales: list[str] = spec["component_scales"]
         self.units: list[str] = spec.get("component_units") or [""] * len(self.components)
         self.index = {c: i for i, c in enumerate(self.components)}
+        self.multi: bool = bool(spec.get("multi"))
         self.cols: list[int] | None = None        # absolute column of each component (set by the layout)
+        self.pools: list[str] = [default_pool(c) for c in self.components]
 
-    def bind(self, cols: list[int]) -> None:
-        """Columns assigned by the registry: a vector that grew has its new components further on."""
-        if len(cols) != len(self.components):
+    def bind(self, cols: list[int], pools: list[str] | None = None) -> None:
+        """Columns and pooling assigned by the registry: a vector that grew has its new components further on."""
+        if len(cols) != len(self.components) or (pools is not None and len(pools) != len(self.components)):
             raise TokenError(f"{self.where}: {len(cols)} columns for {len(self.components)} components")
         self.cols = list(cols)
+        if pools is not None:
+            self.pools = list(pools)
 
     def column_of(self, i: int, col: int) -> int:
         return self.cols[i] if self.cols is not None else col + i
@@ -189,7 +199,7 @@ class VectorCodec(FieldCodec):
     def _one(self, value) -> dict:
         unknown = set(value) - set(self.index)
         if unknown:
-            raise TokenError(f"{self.where}: unknown components {sorted(map(str, unknown))}")
+            raise TokenError(f"{self.where}: unknown components {listing(sorted(short(u, 30) for u in unknown))}")
         return {c: ScaleNorm.coerce(x, f"{self.where}.{c}") for c, x in value.items()}
 
     def _items(self, value) -> dict | None:
@@ -197,10 +207,13 @@ class VectorCodec(FieldCodec):
             return self._one(value)
         if isinstance(value, (list, tuple)):
             if not value:
-                if self.spec["scale"] != "list":
-                    raise TokenError(f"{self.where}: an empty list is only meaningful for a list of vectors")
+                if not self.multi:
+                    raise TokenError(f"{self.where}: [] is only meaningful for a list of vectors (held objects); "
+                                     "unknown is None or absent")
                 return None                                   # known empty
             if all(isinstance(v, dict) for v in value):
+                if not self.multi:
+                    raise TokenError(f"{self.where}: a list of vectors is only for held objects")
                 pooled: dict = {}
                 for v in value:
                     one = self._one(v)
@@ -210,7 +223,7 @@ class VectorCodec(FieldCodec):
                         if c not in pooled:
                             pooled[c] = x
                         else:
-                            pooled[c] = pooled[c] + x if c in SUM_COMPONENTS else max(pooled[c], x)
+                            pooled[c] = pooled[c] + x if self.pools[i] == "sum" else max(pooled[c], x)
                 return pooled
             if len(value) == self.width:
                 return self._one(dict(zip(self.components, value)))

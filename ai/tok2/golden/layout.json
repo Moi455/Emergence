@@ -25,6 +25,342 @@
   "count_encoding": "log1p(n + 1) for a count n in a proposition; 0 = no count",
   "proposition_chars": "printable ASCII and space/tab/newline/CR only"
  },
+ "keys": {
+  "num": "0|[1-9][0-9]{0,11}",
+  "fixed_keys": [
+   "me",
+   "me.mind",
+   "me.state",
+   "wake",
+   "@PLACE"
+  ],
+  "rule": "a record key is EITHER one of fixed_keys (compared for equality, never as a prefix) OR the prefix of its type (types[T].key) followed by `num` (a regular expression: 0 or a number with no leading zero, at most 12 digits); the WHOLE string must match (fullmatch: no trailing newline). A name is `n:` + num (at most 12 digits, the same cap as keys)",
+  "prefixes_in_propositions": [
+   "@E",
+   "@T",
+   "@G",
+   "@L",
+   "@V",
+   "@PLACE",
+   "b:",
+   "m:",
+   "g:"
+  ],
+  "name": "n:<num>",
+  "name_digits_max": 12,
+  "count": "<num>",
+  "count_max": 10000000
+ },
+ "reserved_symbols": [
+  {
+   "symbol": "<pad>",
+   "id": 0
+  },
+  {
+   "symbol": "<unk>",
+   "id": 1
+  },
+  {
+   "symbol": "<num>",
+   "id": 2
+  },
+  {
+   "symbol": "@E",
+   "id": 3
+  },
+  {
+   "symbol": "@T",
+   "id": 4
+  },
+  {
+   "symbol": "@G",
+   "id": 5
+  },
+  {
+   "symbol": "@L",
+   "id": 6
+  },
+  {
+   "symbol": "@V",
+   "id": 7
+  },
+  {
+   "symbol": "@PLACE",
+   "id": 8
+  },
+  {
+   "symbol": "b:",
+   "id": 9
+  },
+  {
+   "symbol": "m:",
+   "id": 10
+  },
+  {
+   "symbol": "g:",
+   "id": 11
+  },
+  {
+   "symbol": "<name0>",
+   "id": 12
+  },
+  {
+   "symbol": "<name1>",
+   "id": 13
+  },
+  {
+   "symbol": "<name2>",
+   "id": 14
+  },
+  {
+   "symbol": "<name3>",
+   "id": 15
+  },
+  {
+   "symbol": "<name4>",
+   "id": 16
+  },
+  {
+   "symbol": "<name5>",
+   "id": 17
+  },
+  {
+   "symbol": "<name6>",
+   "id": 18
+  },
+  {
+   "symbol": "<name7>",
+   "id": 19
+  },
+  {
+   "symbol": "<name8>",
+   "id": 20
+  },
+  {
+   "symbol": "<name9>",
+   "id": 21
+  },
+  {
+   "symbol": "<name10>",
+   "id": 22
+  },
+  {
+   "symbol": "<name11>",
+   "id": 23
+  },
+  {
+   "symbol": "<name12>",
+   "id": 24
+  },
+  {
+   "symbol": "<name13>",
+   "id": 25
+  },
+  {
+   "symbol": "<name14>",
+   "id": 26
+  },
+  {
+   "symbol": "<name15>",
+   "id": 27
+  },
+  {
+   "symbol": "<name16>",
+   "id": 28
+  },
+  {
+   "symbol": "<name17>",
+   "id": 29
+  },
+  {
+   "symbol": "<name18>",
+   "id": 30
+  },
+  {
+   "symbol": "<name19>",
+   "id": 31
+  },
+  {
+   "symbol": "<name20>",
+   "id": 32
+  },
+  {
+   "symbol": "<name21>",
+   "id": 33
+  },
+  {
+   "symbol": "<name22>",
+   "id": 34
+  },
+  {
+   "symbol": "<name23>",
+   "id": 35
+  },
+  {
+   "symbol": "<name24>",
+   "id": 36
+  },
+  {
+   "symbol": "<name25>",
+   "id": 37
+  },
+  {
+   "symbol": "<name26>",
+   "id": 38
+  },
+  {
+   "symbol": "<name27>",
+   "id": 39
+  },
+  {
+   "symbol": "<name28>",
+   "id": 40
+  },
+  {
+   "symbol": "<name29>",
+   "id": 41
+  },
+  {
+   "symbol": "<name30>",
+   "id": 42
+  },
+  {
+   "symbol": "<name31>",
+   "id": 43
+  },
+  {
+   "symbol": "<name32>",
+   "id": 44
+  },
+  {
+   "symbol": "<name33>",
+   "id": 45
+  },
+  {
+   "symbol": "<name34>",
+   "id": 46
+  },
+  {
+   "symbol": "<name35>",
+   "id": 47
+  },
+  {
+   "symbol": "<name36>",
+   "id": 48
+  },
+  {
+   "symbol": "<name37>",
+   "id": 49
+  },
+  {
+   "symbol": "<name38>",
+   "id": 50
+  },
+  {
+   "symbol": "<name39>",
+   "id": 51
+  },
+  {
+   "symbol": "<name40>",
+   "id": 52
+  },
+  {
+   "symbol": "<name41>",
+   "id": 53
+  },
+  {
+   "symbol": "<name42>",
+   "id": 54
+  },
+  {
+   "symbol": "<name43>",
+   "id": 55
+  },
+  {
+   "symbol": "<name44>",
+   "id": 56
+  },
+  {
+   "symbol": "<name45>",
+   "id": 57
+  },
+  {
+   "symbol": "<name46>",
+   "id": 58
+  },
+  {
+   "symbol": "<name47>",
+   "id": 59
+  },
+  {
+   "symbol": "<name48>",
+   "id": 60
+  },
+  {
+   "symbol": "<name49>",
+   "id": 61
+  },
+  {
+   "symbol": "<name50>",
+   "id": 62
+  },
+  {
+   "symbol": "<name51>",
+   "id": 63
+  },
+  {
+   "symbol": "<name52>",
+   "id": 64
+  },
+  {
+   "symbol": "<name53>",
+   "id": 65
+  },
+  {
+   "symbol": "<name54>",
+   "id": 66
+  },
+  {
+   "symbol": "<name55>",
+   "id": 67
+  },
+  {
+   "symbol": "<name56>",
+   "id": 68
+  },
+  {
+   "symbol": "<name57>",
+   "id": 69
+  },
+  {
+   "symbol": "<name58>",
+   "id": 70
+  },
+  {
+   "symbol": "<name59>",
+   "id": 71
+  },
+  {
+   "symbol": "<name60>",
+   "id": 72
+  },
+  {
+   "symbol": "<name61>",
+   "id": 73
+  },
+  {
+   "symbol": "<name62>",
+   "id": 74
+  },
+  {
+   "symbol": "<name63>",
+   "id": 75
+  },
+  {
+   "symbol": "<name_other>",
+   "id": 76
+  }
+ ],
  "digest": "zlib.crc32 chained over pack('<I', n) then each array of `arrays` in order, C order, little endian, with its dtype; 8 lowercase hex digits",
  "arrays": [
   {
@@ -352,6 +688,7 @@
        "col": 0,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -359,9 +696,11 @@
        "col": 1,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       }
-     ]
+     ],
+     "multi": false
     },
     {
      "name": "dist",
@@ -511,7 +850,9 @@
       "ENTITY",
       "THING",
       "INV",
-      "SELF"
+      "SELF",
+      "LOCUS",
+      "PLACE"
      ]
     },
     {
@@ -581,6 +922,7 @@
        "col": 5,
        "scale": "qty",
        "unit": "kg",
+       "pool": "sum",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -588,6 +930,7 @@
        "col": 6,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -595,6 +938,7 @@
        "col": 7,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -602,6 +946,7 @@
        "col": 8,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -609,6 +954,7 @@
        "col": 9,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -616,6 +962,7 @@
        "col": 10,
        "scale": "qty",
        "unit": "l",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -623,6 +970,7 @@
        "col": 11,
        "scale": "qty",
        "unit": "°C",
+       "pool": "max",
        "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
       },
       {
@@ -630,6 +978,7 @@
        "col": 12,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -637,6 +986,7 @@
        "col": 13,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -644,6 +994,7 @@
        "col": 14,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -651,6 +1002,7 @@
        "col": 15,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -658,6 +1010,7 @@
        "col": 16,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -665,6 +1018,7 @@
        "col": 17,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -672,6 +1026,7 @@
        "col": 18,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -679,6 +1034,7 @@
        "col": 19,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -686,6 +1042,7 @@
        "col": 20,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -693,6 +1050,7 @@
        "col": 21,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -700,6 +1058,7 @@
        "col": 22,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -707,6 +1066,7 @@
        "col": 23,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -714,6 +1074,7 @@
        "col": 24,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -721,6 +1082,7 @@
        "col": 25,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -728,6 +1090,7 @@
        "col": 26,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -735,6 +1098,7 @@
        "col": 27,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -742,6 +1106,7 @@
        "col": 28,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -749,6 +1114,7 @@
        "col": 29,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -756,6 +1122,7 @@
        "col": 30,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -763,6 +1130,7 @@
        "col": 31,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -770,6 +1138,7 @@
        "col": 32,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -777,6 +1146,7 @@
        "col": 33,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -784,6 +1154,7 @@
        "col": 34,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -791,6 +1162,7 @@
        "col": 35,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -798,6 +1170,7 @@
        "col": 36,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -805,6 +1178,7 @@
        "col": 37,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -812,6 +1186,7 @@
        "col": 38,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -819,6 +1194,7 @@
        "col": 39,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -826,6 +1202,7 @@
        "col": 40,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -833,6 +1210,7 @@
        "col": 41,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -840,6 +1218,7 @@
        "col": 42,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -847,6 +1226,7 @@
        "col": 43,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -854,6 +1234,7 @@
        "col": 44,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -861,6 +1242,7 @@
        "col": 45,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -868,6 +1250,7 @@
        "col": 46,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -875,9 +1258,11 @@
        "col": 47,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       }
-     ]
+     ],
+     "multi": true
     },
     {
      "name": "look.marks",
@@ -1080,6 +1465,7 @@
        "col": 60,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -1087,6 +1473,7 @@
        "col": 61,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -1094,6 +1481,7 @@
        "col": 62,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -1101,6 +1489,7 @@
        "col": 63,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -1108,9 +1497,11 @@
        "col": 64,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       }
-     ]
+     ],
+     "multi": false
     }
    ]
   },
@@ -1587,6 +1978,7 @@
        "col": 0,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -1594,9 +1986,11 @@
        "col": 1,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       }
-     ]
+     ],
+     "multi": false
     },
     {
      "name": "display",
@@ -1747,6 +2141,7 @@
        "col": 4,
        "scale": "qty",
        "unit": "kg",
+       "pool": "sum",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -1754,6 +2149,7 @@
        "col": 5,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -1761,6 +2157,7 @@
        "col": 6,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -1768,6 +2165,7 @@
        "col": 7,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -1775,6 +2173,7 @@
        "col": 8,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -1782,6 +2181,7 @@
        "col": 9,
        "scale": "qty",
        "unit": "l",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -1789,6 +2189,7 @@
        "col": 10,
        "scale": "qty",
        "unit": "°C",
+       "pool": "max",
        "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
       },
       {
@@ -1796,6 +2197,7 @@
        "col": 11,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -1803,6 +2205,7 @@
        "col": 12,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1810,6 +2213,7 @@
        "col": 13,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1817,6 +2221,7 @@
        "col": 14,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1824,6 +2229,7 @@
        "col": 15,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -1831,6 +2237,7 @@
        "col": 16,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1838,6 +2245,7 @@
        "col": 17,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1845,6 +2253,7 @@
        "col": 18,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1852,6 +2261,7 @@
        "col": 19,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1859,6 +2269,7 @@
        "col": 20,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1866,6 +2277,7 @@
        "col": 21,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1873,6 +2285,7 @@
        "col": 22,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1880,6 +2293,7 @@
        "col": 23,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1887,6 +2301,7 @@
        "col": 24,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1894,6 +2309,7 @@
        "col": 25,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1901,6 +2317,7 @@
        "col": 26,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1908,6 +2325,7 @@
        "col": 27,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1915,6 +2333,7 @@
        "col": 28,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1922,6 +2341,7 @@
        "col": 29,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1929,6 +2349,7 @@
        "col": 30,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1936,6 +2357,7 @@
        "col": 31,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1943,6 +2365,7 @@
        "col": 32,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1950,6 +2373,7 @@
        "col": 33,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1957,6 +2381,7 @@
        "col": 34,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1964,6 +2389,7 @@
        "col": 35,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1971,6 +2397,7 @@
        "col": 36,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1978,6 +2405,7 @@
        "col": 37,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1985,6 +2413,7 @@
        "col": 38,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1992,6 +2421,7 @@
        "col": 39,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -1999,6 +2429,7 @@
        "col": 40,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2006,6 +2437,7 @@
        "col": 41,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2013,6 +2445,7 @@
        "col": 42,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2020,6 +2453,7 @@
        "col": 43,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2027,6 +2461,7 @@
        "col": 44,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2034,6 +2469,7 @@
        "col": 45,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2041,9 +2477,11 @@
        "col": 46,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       }
-     ]
+     ],
+     "multi": false
     },
     {
      "name": "state",
@@ -2075,6 +2513,7 @@
        "col": 0,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -2082,9 +2521,11 @@
        "col": 1,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       }
-     ]
+     ],
+     "multi": false
     },
     {
      "name": "dist",
@@ -2654,6 +3095,7 @@
        "col": 12,
        "scale": "qty",
        "unit": "kg",
+       "pool": "sum",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -2661,6 +3103,7 @@
        "col": 13,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -2668,6 +3111,7 @@
        "col": 14,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -2675,6 +3119,7 @@
        "col": 15,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -2682,6 +3127,7 @@
        "col": 16,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -2689,6 +3135,7 @@
        "col": 17,
        "scale": "qty",
        "unit": "l",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -2696,6 +3143,7 @@
        "col": 18,
        "scale": "qty",
        "unit": "°C",
+       "pool": "max",
        "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
       },
       {
@@ -2703,6 +3151,7 @@
        "col": 19,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -2710,6 +3159,7 @@
        "col": 20,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2717,6 +3167,7 @@
        "col": 21,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2724,6 +3175,7 @@
        "col": 22,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2731,6 +3183,7 @@
        "col": 23,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -2738,6 +3191,7 @@
        "col": 24,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2745,6 +3199,7 @@
        "col": 25,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2752,6 +3207,7 @@
        "col": 26,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2759,6 +3215,7 @@
        "col": 27,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2766,6 +3223,7 @@
        "col": 28,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2773,6 +3231,7 @@
        "col": 29,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2780,6 +3239,7 @@
        "col": 30,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2787,6 +3247,7 @@
        "col": 31,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2794,6 +3255,7 @@
        "col": 32,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2801,6 +3263,7 @@
        "col": 33,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2808,6 +3271,7 @@
        "col": 34,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2815,6 +3279,7 @@
        "col": 35,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2822,6 +3287,7 @@
        "col": 36,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2829,6 +3295,7 @@
        "col": 37,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2836,6 +3303,7 @@
        "col": 38,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2843,6 +3311,7 @@
        "col": 39,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2850,6 +3319,7 @@
        "col": 40,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2857,6 +3327,7 @@
        "col": 41,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2864,6 +3335,7 @@
        "col": 42,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2871,6 +3343,7 @@
        "col": 43,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2878,6 +3351,7 @@
        "col": 44,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2885,6 +3359,7 @@
        "col": 45,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2892,6 +3367,7 @@
        "col": 46,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2899,6 +3375,7 @@
        "col": 47,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2906,6 +3383,7 @@
        "col": 48,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2913,6 +3391,7 @@
        "col": 49,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2920,6 +3399,7 @@
        "col": 50,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2927,6 +3407,7 @@
        "col": 51,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2934,6 +3415,7 @@
        "col": 52,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2941,6 +3423,7 @@
        "col": 53,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -2948,9 +3431,11 @@
        "col": 54,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       }
-     ]
+     ],
+     "multi": true
     },
     {
      "name": "need.exhaustion",
@@ -3084,6 +3569,7 @@
        "col": 61,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -3091,6 +3577,7 @@
        "col": 62,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -3098,9 +3585,11 @@
        "col": 63,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       }
-     ]
+     ],
+     "multi": false
     },
     {
      "name": "wound",
@@ -3429,7 +3918,9 @@
       "ENTITY",
       "THING",
       "INV",
-      "SELF"
+      "SELF",
+      "EVENT",
+      "HEARD"
      ]
     },
     {
@@ -3859,6 +4350,7 @@
        "col": 0,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       },
       {
@@ -3866,9 +4358,11 @@
        "col": 1,
        "scale": "unit",
        "unit": "",
+       "pool": "max",
        "normalisation": "x, x in [-1, 1]"
       }
-     ]
+     ],
+     "multi": false
     },
     {
      "name": "display",
@@ -4019,6 +4513,7 @@
        "col": 4,
        "scale": "qty",
        "unit": "kg",
+       "pool": "sum",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -4026,6 +4521,7 @@
        "col": 5,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -4033,6 +4529,7 @@
        "col": 6,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -4040,6 +4537,7 @@
        "col": 7,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -4047,6 +4545,7 @@
        "col": 8,
        "scale": "qty",
        "unit": "m",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -4054,6 +4553,7 @@
        "col": 9,
        "scale": "qty",
        "unit": "l",
+       "pool": "max",
        "normalisation": "log1p(x), x in [0, 1e7]"
       },
       {
@@ -4061,6 +4561,7 @@
        "col": 10,
        "scale": "qty",
        "unit": "°C",
+       "pool": "max",
        "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 (unit degC only)"
       },
       {
@@ -4068,6 +4569,7 @@
        "col": 11,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -4075,6 +4577,7 @@
        "col": 12,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4082,6 +4585,7 @@
        "col": 13,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4089,6 +4593,7 @@
        "col": 14,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4096,6 +4601,7 @@
        "col": 15,
        "scale": "unipolar10",
        "unit": "",
+       "pool": "max",
        "normalisation": "x / 10, x in [0, 10]"
       },
       {
@@ -4103,6 +4609,7 @@
        "col": 16,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4110,6 +4617,7 @@
        "col": 17,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4117,6 +4625,7 @@
        "col": 18,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4124,6 +4633,7 @@
        "col": 19,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4131,6 +4641,7 @@
        "col": 20,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4138,6 +4649,7 @@
        "col": 21,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4145,6 +4657,7 @@
        "col": 22,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4152,6 +4665,7 @@
        "col": 23,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4159,6 +4673,7 @@
        "col": 24,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4166,6 +4681,7 @@
        "col": 25,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4173,6 +4689,7 @@
        "col": 26,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4180,6 +4697,7 @@
        "col": 27,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4187,6 +4705,7 @@
        "col": 28,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4194,6 +4713,7 @@
        "col": 29,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4201,6 +4721,7 @@
        "col": 30,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4208,6 +4729,7 @@
        "col": 31,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4215,6 +4737,7 @@
        "col": 32,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4222,6 +4745,7 @@
        "col": 33,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4229,6 +4753,7 @@
        "col": 34,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4236,6 +4761,7 @@
        "col": 35,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4243,6 +4769,7 @@
        "col": 36,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4250,6 +4777,7 @@
        "col": 37,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4257,6 +4785,7 @@
        "col": 38,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4264,6 +4793,7 @@
        "col": 39,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4271,6 +4801,7 @@
        "col": 40,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4278,6 +4809,7 @@
        "col": 41,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4285,6 +4817,7 @@
        "col": 42,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4292,6 +4825,7 @@
        "col": 43,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4299,6 +4833,7 @@
        "col": 44,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4306,6 +4841,7 @@
        "col": 45,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       },
       {
@@ -4313,9 +4849,11 @@
        "col": 46,
        "scale": "bool",
        "unit": "",
+       "pool": "max",
        "normalisation": "1 if x else 0 (a real bool)"
       }
-     ]
+     ],
+     "multi": false
     },
     {
      "name": "state",
@@ -7145,8 +7683,8 @@
  },
  "fingerprints": {
   "schema": "tok2-context-1",
-  "interface": "fdde0c8c8d775575",
-  "layout": "4231fe9380cdfe59",
+  "interface": "bde2f783022b9792",
+  "layout": "ab8a4a1bfc9b94e6",
   "vocabulary": "55e0b2ce110fa1c7"
  },
  "grammar": {
@@ -11593,8 +12131,9 @@
   "Bags (lists of words or enum values): at most bag_cap items written in order from the bag's first column; pointer lists: at most ptr_list_cap items. Duplicates are kept.",
   "Words: a catalogue word of the interface (never a reserved <...> symbol or a pointer kind) -> its vocabulary id; a name n:<canonical int> -> <name k>, k = order of first appearance in the write order (0..63), then <name_other> for the 65th and later distinct names (the alias list is not extended). Enum fields accept only their `values`.",
   "Pointers: the slot (1-based row) of the record with that key. A key in known_keys but not in the batch is a ghost: 129 + k, k = rank of first appearance among ghosts when the arrays are scanned by row, then ptr columns in ascending order, then proposition positions in ascending order (ghosts are numbered AFTER writing, not while writing); the 33rd distinct ghost and later get 161. A key outside known_keys is refused. A pointer field accepts only the record types of its ref_types (for a ghost, the types its key can designate: @T is THING or INV). A proposition never cites its own record.",
-  "Propositions: printable ASCII plus space, tab, newline and CR only, at most 1000 characters; validated by the `grammar` tables (a bare proposition, or for REQUEST.prop a full utterance with a mood); written in prefix order, one position per symbol: sym id, arity (0 leaf, 1 + number of arguments for a list head), depth, slot (pointers), num. A count n (silver_coin:3 or a bare 3) is log1p(n + 1) in binary16 (0 means no count); counts and numbers are canonical (ASCII digits, no leading zero, at most 1e7). A bare citation b:7 / m:7 / g:7 is a one-position proposition.",
+  "Propositions: printable ASCII plus space, tab, newline and carriage return (CR) only, at most 1000 characters; validated by the `grammar` tables (a bare proposition, or for REQUEST.prop a full utterance with a mood); written in prefix order, one position per symbol: sym id, arity (0 leaf, 1 + number of arguments for a list head), depth, slot (pointers), num. A count n (silver_coin:3 or a bare 3) is log1p(n + 1) in binary16 (0 means no count); counts and numbers are canonical (ASCII digits, no leading zero, at most 1e7). A bare citation b:7 / m:7 / g:7 is a one-position proposition.",
   "Canonical text of a proposition (for serialization): re-print the tree, one space between symbols, no space inside parentheses.",
   "Digest: see `digest`; n is the number of rows written."
- ]
+ ],
+ "scope": "Portable without reading the Python: the columns, normalisations, vocabulary, key and name rules, ghost numbering, pooling, unknown flags, the digest and every refusal EXCEPT those of the grammar. NOT self-contained: the validation of propositions (types of arguments, arities, nesting depth, pointer budget, symbol count) is catalogue/tools/language.py (Expression), to be ported with the tables of `grammar`; the golden cases named bad_prop_* check that port."
 }

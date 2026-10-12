@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Iterable
 import numpy as np
 
 from .codecs import GHOST_BASE, GHOST_OVERFLOW, GHOST_SLOTS
-from .errors import TokenError
+from .errors import TokenError, listing, short
 from .interface import InputVocabulary, ModelInterface, canonical_json
 from .keys import is_key, is_name
 from .layout import Layout
@@ -73,7 +73,7 @@ class Record:
     def to_dict(self) -> dict:
         """Plain JSON. A proposition (the field `prop`) is written in its canonical form: re-serialised from its
         tree, one space between symbols, so two spellings of the same proposition give the same text."""
-        where = f"{self.type} {self.key}"
+        where = f"{short(self.type, 30)} {short(self.key, 40)}"
         if not isinstance(self.fields, dict):
             raise TokenError(f"{where}: fields must be a dict")
         try:
@@ -98,14 +98,16 @@ class DecisionContext:
     records: list[Record]
     known_keys: Iterable[str] | None = None        # materialised into a frozenset at construction
 
-    def __post_init__(self):
-        if self.known_keys is not None:
-            if isinstance(self.known_keys, (str, bytes)):
+    def __setattr__(self, name, value):
+        """known_keys is a frozenset (or None) whenever it is assigned: at construction AND afterwards."""
+        if name == "known_keys" and value is not None:
+            if isinstance(value, (str, bytes)):
                 raise TokenError("known_keys is a collection of keys, not a string")
             try:
-                self.known_keys = frozenset(self.known_keys)
+                value = value if isinstance(value, frozenset) else frozenset(value)
             except TypeError:
                 raise TokenError("known_keys must be a collection of strings") from None
+        object.__setattr__(self, name, value)
 
     def mind_keys(self) -> frozenset[str]:
         if self.known_keys is None:
@@ -114,10 +116,10 @@ class DecisionContext:
                 raise TokenError("a DecisionContext holds a list of Records with string keys")
             keys = frozenset(r.key for r in self.records)
         else:
-            keys = self.known_keys if isinstance(self.known_keys, frozenset) else frozenset(self.known_keys)
+            keys = self.known_keys
         bad = [k for k in keys if not is_key(k)]
         if bad:
-            raise TokenError(f"known_keys: {bad[:3]} are not record keys")
+            raise TokenError(f"known_keys: {listing(bad[:3])} are not record keys")
         return keys
 
     # ---- serialization: canonical JSON with a header that ties the file to the tokenizer that reads it ----
@@ -239,7 +241,7 @@ class EncodeState:
         if isinstance(key, str) and key == "" and block == "ptr":
             return
         if not is_key(key):
-            raise TokenError(f"{where}: {key!r:.40} is not a record key")
+            raise TokenError(f"{where}: {short(key, 40)} is not a record key")
         if block == "prop" and key == row.key:
             raise TokenError(f"{where}: the proposition of {key} cites {key} itself")
         if ref_types is not None:
@@ -253,7 +255,7 @@ class EncodeState:
                 allowed = any(k in ref_types for k in kinds)
                 rtype = "/".join(kinds)
             if not allowed:
-                raise TokenError(f"{where}: '{key}' is a {rtype} record; this field points to {'/'.join(ref_types)}")
+                raise TokenError(f"{where}: {short(key, 40)} is a {rtype} record; this field points to {'/'.join(ref_types)}")
         slot = self.slots.get(key)
         if slot is not None:
             target[col] = slot
@@ -261,7 +263,7 @@ class EncodeState:
             target[col] = GHOST_BASE                              # numbered in finalize(), in a canonical order
             self.pending.append((row.r, 0 if block == "ptr" else 1, col, key))
         else:
-            raise TokenError(f"{where}: '{key}' is not in the NPC's mind (known_keys)")
+            raise TokenError(f"{where}: {short(key, 40)} is not in the NPC's mind (known_keys)")
 
     def finalize(self) -> None:
         """Number the ghosts by first appearance: rows, then columns (ptr before proposition positions). The
@@ -286,14 +288,14 @@ class EncodeState:
 
     def symbol_id(self, value, spec: dict, where: str) -> int:
         if not isinstance(value, str):
-            raise TokenError(f"{where}: a symbol expected, got {type(value).__name__} {value!r:.40}")
+            raise TokenError(f"{where}: a symbol expected, got {type(value).__name__} {short(value, 40)}")
         if spec["scale"] == "enum" or spec.get("list_of") == "enum":
             if spec["values"] and value not in spec["values"]:
-                raise TokenError(f"{where}: '{value}' is not one of {spec['values']}")
+                raise TokenError(f"{where}: {short(value, 40)} is not one of {listing(spec['values'])}")
         elif is_name(value):
             return self.name_id(value)
         if not self.vocab.is_word(value):
-            raise TokenError(f"{where}: unknown word '{value}'")
+            raise TokenError(f"{where}: unknown word {short(value, 40)}")
         return self.vocab.ids[value]
 
     def encode_proposition(self, value, row: Row, where: str, utterance: bool = False) -> None:
@@ -315,7 +317,7 @@ class AbsentEntityRule(RecordRule):
         if rec.type == "ENTITY" and isinstance(present, (bool, np.bool_)) and not present:
             bad = sorted(f for f, v in rec.fields.items() if v is not None and (f in ("dist", "dir") or f.startswith("look.")))
             if bad:
-                raise TokenError(f"ENTITY {rec.key}: present=False but carries {bad} (an absent person is not seen)")
+                raise TokenError(f"ENTITY {short(rec.key, 40)}: present=False but carries {listing(bad)} (an absent person is not seen)")
 
 
 class Tokenizer:
@@ -343,16 +345,16 @@ class Tokenizer:
         seen: set[str] = set()
         for rec in ctx.records:
             if not isinstance(rec, Record) or not isinstance(rec.type, str) or not isinstance(rec.fields, dict):
-                raise TokenError(f"not a record: {rec!r:.60}")
+                raise TokenError(f"not a record: {short(rec, 60)}")
             t = self.layout.types.get(rec.type)
             if t is None:
-                raise TokenError(f"unknown token type '{rec.type}'")
+                raise TokenError(f"unknown token type {short(rec.type, 40)}")
             if not t.key_ok(rec.key):
-                raise TokenError(f"{rec.type}: key {rec.key!r} does not match '{t.key}'")
+                raise TokenError(f"{rec.type}: key {short(rec.key, 40)} does not match '{t.key}'")
             if rec.key in seen:
-                raise TokenError(f"key '{rec.key}' used twice in one decision")
+                raise TokenError(f"key {short(rec.key, 40)} used twice in one decision")
             if rec.key not in known:
-                raise TokenError(f"{rec.type}: key '{rec.key}' is not in known_keys")
+                raise TokenError(f"{rec.type}: key {short(rec.key, 40)} is not in known_keys")
             seen.add(rec.key)
             by_type.setdefault(rec.type, []).append(rec)
         out = []
@@ -377,7 +379,7 @@ class Tokenizer:
             enc.type_id[r] = t.type_id
             unknown = set(rec.fields) - set(t.columns)
             if unknown:
-                raise TokenError(f"{rec.type} {rec.key}: unknown fields {sorted(map(str, unknown))}")
+                raise TokenError(f"{rec.type} {short(rec.key, 40)}: unknown fields {listing(sorted(short(u, 30) for u in unknown))}")
             for rule in self.rules:
                 rule.check(rec)
             row = enc.row(r)

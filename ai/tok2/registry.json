@@ -195,13 +195,17 @@
        "name": "sin",
        "col": 0,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 0
       },
       {
        "name": "cos",
        "col": 1,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 1
       }
      ]
     },
@@ -317,259 +321,345 @@
        "name": "mass",
        "col": 5,
        "scale": "qty",
-       "unit": "kg"
+       "unit": "kg",
+       "pool": "sum",
+       "rank": 0
       },
       {
        "name": "size",
        "col": 6,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 1
       },
       {
        "name": "edge",
        "col": 7,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 2
       },
       {
        "name": "point",
        "col": 8,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 3
       },
       {
        "name": "reach",
        "col": 9,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 4
       },
       {
        "name": "capacity",
        "col": 10,
        "scale": "qty",
-       "unit": "l"
+       "unit": "l",
+       "pool": "max",
+       "rank": 5
       },
       {
        "name": "temperature",
        "col": 11,
        "scale": "qty",
-       "unit": "°C"
+       "unit": "°C",
+       "pool": "max",
+       "rank": 6
       },
       {
        "name": "wetness",
        "col": 12,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 7
       },
       {
        "name": "burning",
        "col": 13,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 8
       },
       {
        "name": "open",
        "col": 14,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 9
       },
       {
        "name": "lit",
        "col": 15,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 10
       },
       {
        "name": "dirtiness",
        "col": 16,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 11
       },
       {
        "name": "graspable",
        "col": 17,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 12
       },
       {
        "name": "carryable",
        "col": 18,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 13
       },
       {
        "name": "throwable",
        "col": 19,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 14
       },
       {
        "name": "cuts",
        "col": 20,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 15
       },
       {
        "name": "pierces",
        "col": 21,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 16
       },
       {
        "name": "impacts",
        "col": 22,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 17
       },
       {
        "name": "digs",
        "col": 23,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 18
       },
       {
        "name": "contains",
        "col": 24,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 19
       },
       {
        "name": "fuel",
        "col": 25,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 20
       },
       {
        "name": "ignites",
        "col": 26,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 21
       },
       {
        "name": "wearable",
        "col": 27,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 22
       },
       {
        "name": "supports_body",
        "col": 28,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 23
       },
       {
        "name": "climbable",
        "col": 29,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 24
       },
       {
        "name": "openable",
        "col": 30,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 25
       },
       {
        "name": "conceals",
        "col": 31,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 26
       },
       {
        "name": "blocks_passage",
        "col": 32,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 27
       },
       {
        "name": "floats_carries",
        "col": 33,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 28
       },
       {
        "name": "shelters",
        "col": 34,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 29
       },
       {
        "name": "writable",
        "col": 35,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 30
       },
       {
        "name": "heats",
        "col": 36,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 31
       },
       {
        "name": "light_source",
        "col": 37,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 32
       },
       {
        "name": "binds",
        "col": 38,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 33
       },
       {
        "name": "mountable",
        "col": 39,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 34
       },
       {
        "name": "protects",
        "col": 40,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 35
       },
       {
        "name": "launches",
        "col": 41,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 36
       },
       {
        "name": "plays_music",
        "col": 42,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 37
       },
       {
        "name": "reflects_image",
        "col": 43,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 38
       },
       {
        "name": "wipes",
        "col": 44,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 39
       },
       {
        "name": "sharpens",
        "col": 45,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 40
       },
       {
        "name": "joins",
        "col": 46,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 41
       },
       {
        "name": "rolls_load",
        "col": 47,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 42
       }
      ]
     },
@@ -748,31 +838,41 @@
        "name": "honesty",
        "col": 60,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 0
       },
       {
        "name": "danger",
        "col": 61,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 1
       },
       {
        "name": "competence",
        "col": 62,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 2
       },
       {
        "name": "wealth",
        "col": 63,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 3
       },
       {
        "name": "piety",
        "col": 64,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 4
       }
      ]
     }
@@ -1147,13 +1247,17 @@
        "name": "sin",
        "col": 0,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 0
       },
       {
        "name": "cos",
        "col": 1,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 1
       }
      ]
     },
@@ -1233,259 +1337,345 @@
        "name": "mass",
        "col": 4,
        "scale": "qty",
-       "unit": "kg"
+       "unit": "kg",
+       "pool": "sum",
+       "rank": 0
       },
       {
        "name": "size",
        "col": 5,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 1
       },
       {
        "name": "edge",
        "col": 6,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 2
       },
       {
        "name": "point",
        "col": 7,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 3
       },
       {
        "name": "reach",
        "col": 8,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 4
       },
       {
        "name": "capacity",
        "col": 9,
        "scale": "qty",
-       "unit": "l"
+       "unit": "l",
+       "pool": "max",
+       "rank": 5
       },
       {
        "name": "temperature",
        "col": 10,
        "scale": "qty",
-       "unit": "°C"
+       "unit": "°C",
+       "pool": "max",
+       "rank": 6
       },
       {
        "name": "wetness",
        "col": 11,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 7
       },
       {
        "name": "burning",
        "col": 12,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 8
       },
       {
        "name": "open",
        "col": 13,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 9
       },
       {
        "name": "lit",
        "col": 14,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 10
       },
       {
        "name": "dirtiness",
        "col": 15,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 11
       },
       {
        "name": "graspable",
        "col": 16,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 12
       },
       {
        "name": "carryable",
        "col": 17,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 13
       },
       {
        "name": "throwable",
        "col": 18,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 14
       },
       {
        "name": "cuts",
        "col": 19,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 15
       },
       {
        "name": "pierces",
        "col": 20,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 16
       },
       {
        "name": "impacts",
        "col": 21,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 17
       },
       {
        "name": "digs",
        "col": 22,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 18
       },
       {
        "name": "contains",
        "col": 23,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 19
       },
       {
        "name": "fuel",
        "col": 24,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 20
       },
       {
        "name": "ignites",
        "col": 25,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 21
       },
       {
        "name": "wearable",
        "col": 26,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 22
       },
       {
        "name": "supports_body",
        "col": 27,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 23
       },
       {
        "name": "climbable",
        "col": 28,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 24
       },
       {
        "name": "openable",
        "col": 29,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 25
       },
       {
        "name": "conceals",
        "col": 30,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 26
       },
       {
        "name": "blocks_passage",
        "col": 31,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 27
       },
       {
        "name": "floats_carries",
        "col": 32,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 28
       },
       {
        "name": "shelters",
        "col": 33,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 29
       },
       {
        "name": "writable",
        "col": 34,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 30
       },
       {
        "name": "heats",
        "col": 35,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 31
       },
       {
        "name": "light_source",
        "col": 36,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 32
       },
       {
        "name": "binds",
        "col": 37,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 33
       },
       {
        "name": "mountable",
        "col": 38,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 34
       },
       {
        "name": "protects",
        "col": 39,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 35
       },
       {
        "name": "launches",
        "col": 40,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 36
       },
       {
        "name": "plays_music",
        "col": 41,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 37
       },
       {
        "name": "reflects_image",
        "col": 42,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 38
       },
       {
        "name": "wipes",
        "col": 43,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 39
       },
       {
        "name": "sharpens",
        "col": 44,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 40
       },
       {
        "name": "joins",
        "col": 45,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 41
       },
       {
        "name": "rolls_load",
        "col": 46,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 42
       }
      ]
     },
@@ -1516,13 +1706,17 @@
        "name": "sin",
        "col": 0,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 0
       },
       {
        "name": "cos",
        "col": 1,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 1
       }
      ]
     },
@@ -1969,259 +2163,345 @@
        "name": "mass",
        "col": 12,
        "scale": "qty",
-       "unit": "kg"
+       "unit": "kg",
+       "pool": "sum",
+       "rank": 0
       },
       {
        "name": "size",
        "col": 13,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 1
       },
       {
        "name": "edge",
        "col": 14,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 2
       },
       {
        "name": "point",
        "col": 15,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 3
       },
       {
        "name": "reach",
        "col": 16,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 4
       },
       {
        "name": "capacity",
        "col": 17,
        "scale": "qty",
-       "unit": "l"
+       "unit": "l",
+       "pool": "max",
+       "rank": 5
       },
       {
        "name": "temperature",
        "col": 18,
        "scale": "qty",
-       "unit": "°C"
+       "unit": "°C",
+       "pool": "max",
+       "rank": 6
       },
       {
        "name": "wetness",
        "col": 19,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 7
       },
       {
        "name": "burning",
        "col": 20,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 8
       },
       {
        "name": "open",
        "col": 21,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 9
       },
       {
        "name": "lit",
        "col": 22,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 10
       },
       {
        "name": "dirtiness",
        "col": 23,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 11
       },
       {
        "name": "graspable",
        "col": 24,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 12
       },
       {
        "name": "carryable",
        "col": 25,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 13
       },
       {
        "name": "throwable",
        "col": 26,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 14
       },
       {
        "name": "cuts",
        "col": 27,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 15
       },
       {
        "name": "pierces",
        "col": 28,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 16
       },
       {
        "name": "impacts",
        "col": 29,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 17
       },
       {
        "name": "digs",
        "col": 30,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 18
       },
       {
        "name": "contains",
        "col": 31,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 19
       },
       {
        "name": "fuel",
        "col": 32,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 20
       },
       {
        "name": "ignites",
        "col": 33,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 21
       },
       {
        "name": "wearable",
        "col": 34,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 22
       },
       {
        "name": "supports_body",
        "col": 35,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 23
       },
       {
        "name": "climbable",
        "col": 36,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 24
       },
       {
        "name": "openable",
        "col": 37,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 25
       },
       {
        "name": "conceals",
        "col": 38,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 26
       },
       {
        "name": "blocks_passage",
        "col": 39,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 27
       },
       {
        "name": "floats_carries",
        "col": 40,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 28
       },
       {
        "name": "shelters",
        "col": 41,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 29
       },
       {
        "name": "writable",
        "col": 42,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 30
       },
       {
        "name": "heats",
        "col": 43,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 31
       },
       {
        "name": "light_source",
        "col": 44,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 32
       },
       {
        "name": "binds",
        "col": 45,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 33
       },
       {
        "name": "mountable",
        "col": 46,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 34
       },
       {
        "name": "protects",
        "col": 47,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 35
       },
       {
        "name": "launches",
        "col": 48,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 36
       },
       {
        "name": "plays_music",
        "col": 49,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 37
       },
       {
        "name": "reflects_image",
        "col": 50,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 38
       },
       {
        "name": "wipes",
        "col": 51,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 39
       },
       {
        "name": "sharpens",
        "col": 52,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 40
       },
       {
        "name": "joins",
        "col": 53,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 41
       },
       {
        "name": "rolls_load",
        "col": 54,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 42
       }
      ]
     },
@@ -2328,19 +2608,25 @@
        "name": "sin",
        "col": 61,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 0
       },
       {
        "name": "cos",
        "col": 62,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 1
       },
       {
        "name": "certainty",
        "col": 63,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 2
       }
      ]
     },
@@ -3039,13 +3325,17 @@
        "name": "sin",
        "col": 0,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 0
       },
       {
        "name": "cos",
        "col": 1,
        "scale": "unit",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 1
       }
      ]
     },
@@ -3125,259 +3415,345 @@
        "name": "mass",
        "col": 4,
        "scale": "qty",
-       "unit": "kg"
+       "unit": "kg",
+       "pool": "sum",
+       "rank": 0
       },
       {
        "name": "size",
        "col": 5,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 1
       },
       {
        "name": "edge",
        "col": 6,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 2
       },
       {
        "name": "point",
        "col": 7,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 3
       },
       {
        "name": "reach",
        "col": 8,
        "scale": "qty",
-       "unit": "m"
+       "unit": "m",
+       "pool": "max",
+       "rank": 4
       },
       {
        "name": "capacity",
        "col": 9,
        "scale": "qty",
-       "unit": "l"
+       "unit": "l",
+       "pool": "max",
+       "rank": 5
       },
       {
        "name": "temperature",
        "col": 10,
        "scale": "qty",
-       "unit": "°C"
+       "unit": "°C",
+       "pool": "max",
+       "rank": 6
       },
       {
        "name": "wetness",
        "col": 11,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 7
       },
       {
        "name": "burning",
        "col": 12,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 8
       },
       {
        "name": "open",
        "col": 13,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 9
       },
       {
        "name": "lit",
        "col": 14,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 10
       },
       {
        "name": "dirtiness",
        "col": 15,
        "scale": "unipolar10",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 11
       },
       {
        "name": "graspable",
        "col": 16,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 12
       },
       {
        "name": "carryable",
        "col": 17,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 13
       },
       {
        "name": "throwable",
        "col": 18,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 14
       },
       {
        "name": "cuts",
        "col": 19,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 15
       },
       {
        "name": "pierces",
        "col": 20,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 16
       },
       {
        "name": "impacts",
        "col": 21,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 17
       },
       {
        "name": "digs",
        "col": 22,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 18
       },
       {
        "name": "contains",
        "col": 23,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 19
       },
       {
        "name": "fuel",
        "col": 24,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 20
       },
       {
        "name": "ignites",
        "col": 25,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 21
       },
       {
        "name": "wearable",
        "col": 26,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 22
       },
       {
        "name": "supports_body",
        "col": 27,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 23
       },
       {
        "name": "climbable",
        "col": 28,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 24
       },
       {
        "name": "openable",
        "col": 29,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 25
       },
       {
        "name": "conceals",
        "col": 30,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 26
       },
       {
        "name": "blocks_passage",
        "col": 31,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 27
       },
       {
        "name": "floats_carries",
        "col": 32,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 28
       },
       {
        "name": "shelters",
        "col": 33,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 29
       },
       {
        "name": "writable",
        "col": 34,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 30
       },
       {
        "name": "heats",
        "col": 35,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 31
       },
       {
        "name": "light_source",
        "col": 36,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 32
       },
       {
        "name": "binds",
        "col": 37,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 33
       },
       {
        "name": "mountable",
        "col": 38,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 34
       },
       {
        "name": "protects",
        "col": 39,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 35
       },
       {
        "name": "launches",
        "col": 40,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 36
       },
       {
        "name": "plays_music",
        "col": 41,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 37
       },
       {
        "name": "reflects_image",
        "col": 42,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 38
       },
       {
        "name": "wipes",
        "col": 43,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 39
       },
       {
        "name": "sharpens",
        "col": 44,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 40
       },
       {
        "name": "joins",
        "col": 45,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 41
       },
       {
        "name": "rolls_load",
        "col": 46,
        "scale": "bool",
-       "unit": ""
+       "unit": "",
+       "pool": "max",
+       "rank": 42
       }
      ]
     },

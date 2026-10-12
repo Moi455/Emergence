@@ -74,7 +74,7 @@ class ModelInterface:
         "BELIEF.shared": ["ENTITY", "GROUP"],
         "COMMIT.counterparty": ["ENTITY"],
         "COMMIT.witnesses": ["ENTITY"],
-        "ENTITY.look.gaze": ["ENTITY", "THING", "INV", "SELF"],
+        "ENTITY.look.gaze": ["ENTITY", "THING", "INV", "SELF", "LOCUS", "PLACE"],      # "un lieu" too
         "EVENT.actor": ["ENTITY", "SELF"],
         "EVENT.target": ["ENTITY", "GROUP", "SELF", "THING", "INV", "LOCUS", "PLACE"],
         "EVENT.with": ["THING", "INV"],
@@ -87,11 +87,14 @@ class ModelInterface:
         "PLAN.target": ["ENTITY", "THING", "INV", "LOCUS", "PLACE", "GROUP", "SELF"],
         "REQUEST.from": ["ENTITY"],
         "SELF.place": ["PLACE", "LOCUS"],
-        "SELF_STATE.attention": ["ENTITY", "THING", "INV", "SELF"],
+        "SELF_STATE.attention": ["ENTITY", "THING", "INV", "SELF", "EVENT", "HEARD"],   # a noise, a spoken word
         "THING.file": ["THING", "INV"],
         "THING.owner": ["ENTITY", "GROUP", "SELF"],
         "WAKE.trigger": ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN"],
     }
+    # Vectors that hold SEVERAL objects (what is carried, what is seen in hands): a list of vectors, pooled by tok-2
+    # (sum of masses, max of the rest); [] is "nothing held", known. The other vectors (props, rep) are one vector.
+    MULTI_VECTOR_FIELDS = {"SELF.held", "ENTITY.look.held"}
     ACCEPT_TOKENS = {"agent": "ENTITY", "animal": "THING", "item": "THING|INV", "structure": "THING", "terrain": "THING",
                      "voxel": "THING", "water": "THING", "fire": "THING", "trace": "THING", "plant": "THING",
                      "place": "PLACE (here) or LOCUS (a known place, @L)", "belief": "BELIEF", "form": "kinds table (forms)",
@@ -137,6 +140,12 @@ class ModelInterface:
         for typ, flds in self.EXPLICIT.items():                     # record tokens fed by list variables
             types[typ]["fields"] = {k: dict(v) for k, v in flds.items()}
         self._attach_ref_types(types)
+        for key in self.MULTI_VECTOR_FIELDS:
+            typ, _, fname = key.partition(".")
+            spec = types[typ]["fields"][fname]
+            if not spec.get("components"):
+                raise ValueError(f"MULTI_VECTOR_FIELDS {key} is not a vector")
+            spec["multi"] = True
         return {"max_tokens": budget.MAX_TOKENS, "token_types": types,
                 "object_vector": self.cat.object_vector(),
                 "encoding": ("numbers are normalised in double precision and stored as float16: bipolar10 and unipolar10 as x / 10, ratio and unit as x, "
