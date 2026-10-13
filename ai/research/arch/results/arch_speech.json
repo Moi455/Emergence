@@ -1,0 +1,79 @@
+{
+ "rows": [
+  {
+   "d": 256,
+   "layers": 2,
+   "params_M": 2.851616,
+   "B": 8,
+   "steps": 20,
+   "vocab": 1312,
+   "graph_ms": 4.543327808380127,
+   "graph_p95_ms": 4.7999677658081055,
+   "utterances_per_s": 1760.8238580637023,
+   "grammatical": true
+  },
+  {
+   "d": 256,
+   "layers": 2,
+   "params_M": 2.851616,
+   "B": 16,
+   "steps": 20,
+   "vocab": 1312,
+   "graph_ms": 5.632272005081177,
+   "graph_p95_ms": 5.67091178894043,
+   "utterances_per_s": 2840.77189197637,
+   "grammatical": true
+  },
+  {
+   "d": 256,
+   "layers": 2,
+   "params_M": 2.851616,
+   "B": 32,
+   "steps": 20,
+   "vocab": 1312,
+   "graph_ms": 7.248479843139648,
+   "graph_p95_ms": 7.363999843597412,
+   "utterances_per_s": 4414.718767589114,
+   "grammatical": true
+  },
+  {
+   "d": 384,
+   "layers": 3,
+   "params_M": 8.265376,
+   "B": 8,
+   "steps": 20,
+   "vocab": 1312,
+   "graph_ms": 7.322832107543945,
+   "graph_p95_ms": 7.377344131469727,
+   "utterances_per_s": 1092.4734969354874,
+   "grammatical": true
+  },
+  {
+   "d": 384,
+   "layers": 3,
+   "params_M": 8.265376,
+   "B": 16,
+   "steps": 20,
+   "vocab": 1312,
+   "graph_ms": 9.359359741210938,
+   "graph_p95_ms": 9.391424179077148,
+   "utterances_per_s": 1709.5186468310576,
+   "grammatical": true
+  },
+  {
+   "d": 384,
+   "layers": 3,
+   "params_M": 8.265376,
+   "B": 32,
+   "steps": 20,
+   "vocab": 1312,
+   "graph_ms": 12.328447818756104,
+   "graph_p95_ms": 12.374367713928223,
+   "utterances_per_s": 2595.622779967177,
+   "grammatical": true
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-12 04:10"
+}

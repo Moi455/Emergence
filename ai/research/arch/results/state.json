@@ -1,0 +1,84 @@
+{
+ "determinism": {
+  "eager": {
+   "gesture": true,
+   "gesture_logits": true,
+   "pointers": true,
+   "manner": true,
+   "direction": true,
+   "cond": true,
+   "cond_ptr": true,
+   "cond_qty": true,
+   "write_ptr": true,
+   "write_var": true,
+   "write_val": true,
+   "value": true,
+   "encoded": true,
+   "mem": true,
+   "fw": true
+  },
+  "graph": {
+   "gesture": true,
+   "gesture_logits": true,
+   "pointers": true,
+   "manner": true,
+   "direction": true,
+   "cond": true,
+   "cond_ptr": true,
+   "cond_qty": true,
+   "write_ptr": true,
+   "write_var": true,
+   "write_val": true,
+   "value": true,
+   "encoded": true,
+   "mem": true,
+   "fw": true
+  },
+  "eager_vs_graph": {
+   "gesture": true,
+   "gesture_logits": true,
+   "pointers": true,
+   "manner": true,
+   "direction": true,
+   "cond": true,
+   "cond_ptr": true,
+   "cond_qty": true,
+   "write_ptr": true,
+   "write_var": true,
+   "write_val": true,
+   "value": true,
+   "encoded": true,
+   "mem": true,
+   "fw": true
+  }
+ },
+ "memory": [
+  {
+   "config": "small:mem8+fw64",
+   "params_M": 6.808518,
+   "weights_MiB": 12.986217498779297,
+   "state_tables_MiB": 5.87109375,
+   "torch_peak_MiB": 142.4794921875,
+   "process_MiB": 318
+  },
+  {
+   "config": "base:mem8+fw64",
+   "params_M": 17.988166,
+   "weights_MiB": 34.3097038269043,
+   "state_tables_MiB": 6.849609375,
+   "torch_peak_MiB": 197.966796875,
+   "process_MiB": 402
+  },
+  {
+   "config": "large:mem8+fw64",
+   "params_M": 37.497542,
+   "weights_MiB": 71.5208854675293,
+   "state_tables_MiB": 7.828125,
+   "torch_peak_MiB": 275.05615234375,
+   "process_MiB": 526
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-13 00:13"
+}

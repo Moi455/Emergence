@@ -1,0 +1,79 @@
+{
+ "rows": [
+  {
+   "model": "gpt2-small-like (85 M non-emb.)",
+   "params_M": 113.462016,
+   "T": 128,
+   "B": 8,
+   "graph_ms": 15.258608341217041,
+   "decisions_per_s": 524.2942096095451,
+   "gpu_share_at_200_per_s": 0.38146520853042604
+  },
+  {
+   "model": "gpt2-small-like (85 M non-emb.)",
+   "params_M": 113.462016,
+   "T": 128,
+   "B": 32,
+   "graph_ms": 56.87668800354004,
+   "decisions_per_s": 562.6206645156325,
+   "gpu_share_at_200_per_s": 0.35547930002212524
+  },
+  {
+   "model": "gpt2-small-like (85 M non-emb.)",
+   "params_M": 113.462016,
+   "T": 512,
+   "B": 8,
+   "graph_ms": 59.74625587463379,
+   "decisions_per_s": 133.899603964916,
+   "gpu_share_at_200_per_s": 1.4936563968658447
+  },
+  {
+   "model": "gpt2-small-like (85 M non-emb.)",
+   "params_M": 113.462016,
+   "T": 512,
+   "B": 32,
+   "graph_ms": 229.60873413085938,
+   "decisions_per_s": 139.36752067002143,
+   "gpu_share_at_200_per_s": 1.4350545883178711
+  },
+  {
+   "model": "SmolLM2-135M-like (106 M non-emb.)",
+   "params_M": 106.350912,
+   "T": 128,
+   "B": 8,
+   "graph_ms": 17.739279747009277,
+   "decisions_per_s": 450.9765962368763,
+   "gpu_share_at_200_per_s": 0.44348199367523194
+  },
+  {
+   "model": "SmolLM2-135M-like (106 M non-emb.)",
+   "params_M": 106.350912,
+   "T": 128,
+   "B": 32,
+   "graph_ms": 66.08095932006836,
+   "decisions_per_s": 484.2544710194879,
+   "gpu_share_at_200_per_s": 0.41300599575042723
+  },
+  {
+   "model": "SmolLM2-135M-like (106 M non-emb.)",
+   "params_M": 106.350912,
+   "T": 512,
+   "B": 8,
+   "graph_ms": 70.53747177124023,
+   "decisions_per_s": 113.41489564503765,
+   "gpu_share_at_200_per_s": 1.7634367942810059
+  },
+  {
+   "model": "SmolLM2-135M-like (106 M non-emb.)",
+   "params_M": 106.350912,
+   "T": 512,
+   "B": 32,
+   "graph_ms": 274.58184814453125,
+   "decisions_per_s": 116.54084279874249,
+   "gpu_share_at_200_per_s": 1.7161365509033204
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-12 04:10"
+}
