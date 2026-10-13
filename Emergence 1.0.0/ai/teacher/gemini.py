@@ -177,6 +177,7 @@ class ApiResult:
     error: str = ""
     quota_scope: str = ""          # "day" | "minute" | "" (for a 429)
     retry_after: float = 0.0
+    quota_violations: list = field(default_factory=list)   # QuotaFailure violations of a 429 (quotaMetric, quotaId, quotaValue...)
 
 
 class GeminiClient:
@@ -262,11 +263,21 @@ class GeminiClient:
     def _failure(self, status: int, payload: dict, latency: float) -> ApiResult:
         err = payload.get("error", {})
         err = err if isinstance(err, dict) else {"message": str(err)}
-        scope, retry = "", 0.0
+        scope, retry, violations = "", 0.0, []
         if status == 429:
             scope, retry = self.classify_quota(err)
+            violations = self.quota_violations(err)
         return ApiResult(False, status, error=self.redactor.clean(f"{err.get('status', '')} {self._message(payload)}".strip()),
-                         latency=latency, quota_scope=scope, retry_after=retry)
+                         latency=latency, quota_scope=scope, retry_after=retry, quota_violations=violations)
+
+    @staticmethod
+    def quota_violations(err: dict) -> list:
+        """The `violations` of the QuotaFailure detail of a 429: [{quotaMetric, quotaId, quotaValue, ...}]."""
+        out = []
+        for d in err.get("details", []):
+            if isinstance(d, dict) and "QuotaFailure" in str(d.get("@type", "")):
+                out += [v for v in d.get("violations", []) if isinstance(v, dict)]
+        return out
 
     @staticmethod
     def classify_quota(err: dict) -> tuple[str, float]:

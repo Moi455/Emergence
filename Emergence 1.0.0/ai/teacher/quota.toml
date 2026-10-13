@@ -1,0 +1,60 @@
+# Limites GRATUITES connues, par modele (Monsieur, 11 oct. : Flash Lite 15 req/min et 500/jour ; Flash 5 req/min et 20/jour).
+# L'ORDRE est la preference (a delai egal, le premier est choisi). Un champ ABSENT = limite inconnue : le generateur
+# l'apprend des reponses 429 (quotaValue) et la garde dans quota.json, dans le dossier de la serie.
+# rpm = requetes/minute, rpd = requetes/jour, tpm = jetons d'ENTREE/minute, tpd = jetons d'entree/jour.
+# Le jour de quota se remet a zero a minuit, heure du Pacifique.
+# thinking_budget : 0 coupe la reflexion interne (modeles 2.5) ; absent = laisse le defaut du modele.
+
+margin = 1.05          # l'intervalle entre deux requetes d'un modele est 60/rpm x margin (jamais de rafale)
+
+[[model]]
+name = "gemini-3.5-flash-lite"
+rpm = 15
+rpd = 500
+
+[[model]]
+name = "gemini-3.1-flash-lite"
+rpm = 15
+rpd = 500
+
+[[model]]
+name = "gemini-2.5-flash-lite"
+rpm = 15
+rpd = 500
+thinking_budget = 0
+
+[[model]]
+name = "gemini-3.1-flash-lite-preview"
+rpm = 15
+rpd = 500
+
+[[model]]
+name = "gemini-3.8-flash"
+rpm = 5
+rpd = 20
+
+[[model]]
+name = "gemini-3.7-flash"
+rpm = 5
+rpd = 20
+
+[[model]]
+name = "gemini-3.6-flash"
+rpm = 5
+rpd = 20
+
+[[model]]
+name = "gemini-3.5-flash"
+rpm = 5
+rpd = 20
+
+[[model]]
+name = "gemini-2.5-flash"
+rpm = 5
+rpd = 20
+thinking_budget = 0
+
+[[model]]
+name = "gemini-3-flash-preview"
+rpm = 5
+rpd = 20

@@ -10,7 +10,7 @@ Le moteur social et l'IA des PNJ d'Emergence : 500 villageois pilotés par un se
 | `engine/social/` | Moteur social C++20 : gouverneur (bornes, règle des mineurs), état des PNJ, horloges | partiel : le reste est dans `CHANTIERS.md` |
 | `ai/tok2/` | Ce que lit le modèle : l'esprit d'un PNJ en 128 jetons, identifiants figés | fait, relu |
 | `ai/situations/` | Situations plausibles pour amorcer l'entraînement, contrôlées par le gouverneur | fait, relu |
-| `ai/teacher/` | Le professeur (Gemini) : rendu des situations, schéma JSON, validation des réponses | fait ; générateur continu en cours |
+| `ai/teacher/` | Le professeur (Gemini) : rendu des situations, schéma JSON, validation des réponses | fait ; générateur continu du quota gratuit écrit (`ai/teacher/README.md`) |
 | `ai/student2/` | L'élève : le Transformer, ses têtes de sortie, l'entraînement en float16 | fait, pas encore entraîné |
 | `ai/research/` | Mesures sur la Quadro : coût, sondes de raisonnement (coalition, fausse croyance) | fait |
 | `docs/` | Décisions, architecture, conception de l'IA, catalogue expliqué | à jour au 13 oct. 2026 |

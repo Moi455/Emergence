@@ -146,3 +146,9 @@ class DatasetFile:
                         yield LabelRecord.from_line(line)
                     except DatasetError as e:
                         raise DatasetError(f"{self.path}:{n}: {e}") from None
+
+
+if __name__ == "__main__":                       # python3 -m teacher.dataset migrate FILE | stats FILE
+    import sys as _sys
+    from teacher.migrate import cli
+    _sys.exit(cli(_sys.argv[1:]))

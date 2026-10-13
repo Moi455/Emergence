@@ -1,0 +1,26 @@
+# Service utilisateur systemd du generateur continu (quota gratuit Gemini). Installation : voir ai/teacher/README.md.
+#   mkdir -p ~/.config/systemd/user && cp scripts/emergence-generator.service ~/.config/systemd/user/
+#   (adapter le chemin du depot dans ExecStart si besoin)   systemctl --user daemon-reload
+#   systemctl --user enable --now emergence-generator.service      journalctl --user -u emergence-generator -f
+#   loginctl enable-linger $USER          (pour qu'il tourne meme session fermee)
+[Unit]
+Description=Emergence : generateur continu de donnees d'entrainement (Gemini, quota gratuit)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/mkdir -p %h/.local/share/emergence/dataset/serie1
+ExecStart=/usr/bin/env bash "%h/Documents/Codex/emergence-1.0.0/Emergence 1.0.0/scripts/run_generator.sh" foreground serie1
+StandardOutput=append:%h/.local/share/emergence/dataset/serie1/generator.log
+StandardError=inherit
+Restart=on-failure
+RestartSec=30
+# 2 = pas de cle ; 3 = erreur fatale (cle refusee, requete cassee, invite sans reponse valide) : un humain doit regarder
+RestartPreventExitStatus=2 3
+KillSignal=SIGTERM
+TimeoutStopSec=180
+Nice=10
+
+[Install]
+WantedBy=default.target
