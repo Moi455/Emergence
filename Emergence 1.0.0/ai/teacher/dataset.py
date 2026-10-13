@@ -12,7 +12,8 @@
 The line STARTS with a short header that a reader can parse without decoding the whole line:
     {"format":..., "hdr": "<interface 8 hex>:<layout 8 hex>", "id": "<seed>:<index>", "teacher": ..., ["synthetic": true,] ...
 `hdr` lets a reader exclude (and count) the lines written for another interface or layout when it OPENS the file;
-`id` deduplicates a situation asked twice; `synthetic: true` marks random test data (the smoke generator), which a
+`id` ("<seed>:<index>", or "<series>:<seed>:<index>" for a line written by a long run of the generator, so that two series
+never mask each other) deduplicates a situation asked twice; `synthetic: true` marks random test data (the smoke generator), which a
 trainer refuses unless it is told it is only a test.
 
 The student reads it with `student2.data.LabelDataset`, which tokenises on the fly and refuses a file written for
@@ -47,14 +48,18 @@ class LabelRecord:
 
     @classmethod
     def build(cls, tokenizer, situation, outcome, teacher: str, now: datetime | None = None,
-              synthetic: bool = False) -> "LabelRecord":
-        """From a validated Outcome on a Situation (ai/situations)."""
+              synthetic: bool = False, series: str = "") -> "LabelRecord":
+        """From a validated Outcome on a Situation (ai/situations). `series`: the name of the long run that asked it; it
+        prefixes the id (`serie:seed:index`) so that two series never mask each other's lines."""
         if not outcome.ok:
             raise DatasetError(f"only valid answers are labels (got {outcome.code})")
         now = now or datetime.now(timezone.utc)
+        source = {"teacher": teacher, "date": now.isoformat(timespec="seconds"), "seed": situation.seed,
+                  "index": situation.index}
+        if series:
+            source["series"] = series
         return cls(context=situation.context.to_dict(tokenizer), decision=outcome.decision.to_dict(), verdict=outcome.code,
-                   source={"teacher": teacher, "date": now.isoformat(timespec="seconds"), "seed": situation.seed,
-                           "index": situation.index}, synthetic=synthetic)
+                   source=source, synthetic=synthetic)
 
     # ---- the short header
     @staticmethod
@@ -67,7 +72,8 @@ class LabelRecord:
 
     @property
     def id(self) -> str:
-        return f"{self.source.get('seed')}:{self.source.get('index')}"
+        base = f"{self.source.get('seed')}:{self.source.get('index')}"
+        return f"{self.source['series']}:{base}" if self.source.get("series") else base
 
     @property
     def teacher(self) -> str:

@@ -48,10 +48,12 @@ def wait_decision(label):
 class FakeTeacher:
     """Stands in for GeminiClient. `broken` = labels refused on the FIRST reply of each batch (unknown gesture)."""
 
-    def __init__(self, broken=(), hook=None, drop=(), extra=False, always_broken=(), garbage=False, clock=None, step=0.0):
+    def __init__(self, broken=(), hook=None, drop=(), extra=False, always_broken=(), garbage=False, clock=None, step=0.0,
+                 garbage_models=()):
         self.requests, self.redactor, self.key = [], Redactor(""), ""
         self.broken, self.hook, self.drop, self.extra = set(broken), hook, set(drop), extra
         self.always_broken, self.garbage, self.clock, self.step = set(always_broken), garbage, clock, step
+        self.garbage_models = set(garbage_models)
 
     def generate(self, model, system, user, schema, temperature=0.9, max_output_tokens=1024, thinking_budget=None):
         self.requests.append({"model": model, "system": system, "user": user, "schema": schema})
@@ -59,7 +61,7 @@ class FakeTeacher:
             self.hook(self)
         if self.clock is not None:
             self.clock.t += self.step
-        if self.garbage:
+        if self.garbage or model in self.garbage_models:
             return ApiResult(True, 200, "this is not json", "STOP", {"promptTokenCount": 500}, 0.2)
         repair = user.startswith("REPAIR")
         out = []
@@ -179,7 +181,7 @@ class RoundTests(GeneratorCase):
         self.assertEqual(gen.run(), 0)
         lines = self.lines()
         self.assertEqual(len(lines), 12)
-        self.assertEqual([l["id"] for l in lines], [f"0:{i}" for i in range(12)])
+        self.assertEqual([l["id"] for l in lines], [f"s:0:{i}" for i in range(12)])
         self.assertEqual(len({l["id"] for l in lines}), 12)
         tok = sampler_factory(0).tokenizer
         for l in lines:
@@ -264,7 +266,7 @@ class ResumeTests(GeneratorCase):
         self.assertEqual((gen2.cursor.seed, gen2.cursor.index), (0, 8))
         gen2.run()
         ids = [l["id"] for l in self.lines()]
-        self.assertEqual(ids, [f"0:{i}" for i in range(16)])
+        self.assertEqual(ids, [f"s:0:{i}" for i in range(16)])
         self.assertEqual(len(self.journal()), 4)
 
     def test_crash_in_the_middle_of_a_write_and_a_lost_state_file(self):
@@ -280,7 +282,7 @@ class ResumeTests(GeneratorCase):
         self.assertEqual((gen.cursor.seed, gen.cursor.index), (0, 8))                             # found again from the journal
         gen.run()
         ids = [l["id"] for l in self.lines()]                                                     # every line parses: nothing glued
-        self.assertEqual(ids, [f"0:{i}" for i in range(12)])
+        self.assertEqual(ids, [f"s:0:{i}" for i in range(12)])
         for line in (base / "journal.jsonl").read_text().splitlines():
             json.loads(line)
 
@@ -335,12 +337,25 @@ class ResumeTests(GeneratorCase):
         self.assertEqual(gen.run(), 0)
         self.assertEqual(len(t.requests), 4)                                                      # 4 x 3 h = 12 h = half a day
 
-    def test_broken_prompt_stops_the_run_instead_of_eating_the_quota(self):
+    def test_a_broken_prompt_stops_the_run_only_when_every_model_has_failed(self):
         t = FakeTeacher(garbage=True)
         gen = self.generator(t, k=2)
-        self.assertEqual(gen.run(), 3)
-        self.assertEqual(len(t.requests), 10)                                                     # 5 rounds of (batch + repair)
+        self.assertEqual(gen.run(), 3)                                                            # both models gave nothing usable
         self.assertEqual(self.lines(), [])
+        self.assertLessEqual(len(t.requests), 4)
+
+    def test_a_model_without_usable_decision_is_set_aside_for_an_hour_and_the_others_go_on(self):
+        t = FakeTeacher(garbage_models={"a"})
+        qc = config(spec("a", rpm=600, rpd=100000), spec("b", rpm=600, rpd=100000), spec("c", rpm=600, rpd=100000))
+        gen = self.generator(t, k=2, qc=qc, max_requests=12)
+        self.assertEqual(gen.run(), 0)                                                            # not fatal
+        a = gen.desk.books["a"]
+        self.assertEqual(a.exhausted_why, "unusable")
+        self.assertGreater(a.exhausted_until, self.clock.t - 3600)
+        models = [r["model"] for r in t.requests]
+        self.assertGreater(len(self.lines()), 0)
+        self.assertEqual(models[:2], ["a", "a"])                                                   # batch, then its repair
+        self.assertNotIn("a", models[2:])                                                         # left alone afterwards (an hour)
 
     def test_an_unexpected_exception_is_retried_a_few_times_then_stops(self):
         def boom(self_):
@@ -368,7 +383,7 @@ class ResumeTests(GeneratorCase):
         gen = Generator(series, FakeTeacher(), config(spec("a", rpm=600)), k=3, max_requests=1, tk=TK,
                         pacer=Pacer(self.clock.now, self.clock.wait), log=lambda s: None, sampler_factory=factory, phrases=12)
         gen.run()
-        self.assertEqual([l["id"] for l in self.lines()], ["0:0", "0:2"])
+        self.assertEqual([l["id"] for l in self.lines()], ["s:0:0", "s:0:2"])
         self.assertEqual(gen.state.sample_errors, 1)
         self.assertTrue(any(r.get("kind") == "sample_error" for r in self.journal()))
 

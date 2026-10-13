@@ -20,7 +20,15 @@ base="${EMERGENCE_DATASET_DIR:-$HOME/.local/share/emergence/dataset}"
 dir="$base/$name"
 pidfile="$dir/generator.pid"
 log="$dir/generator.log"
-alive() { [[ -f "$pidfile" ]] && kill -0 "$(cat "$pidfile")" 2>/dev/null; }
+# vivant ET c'est bien notre generateur (un PID reutilise par un autre programme ne compte pas) : la ligne de commande doit
+# contenir teacher.generator et "--name NOM"
+alive() {
+  [[ -f "$pidfile" ]] || return 1
+  local pid; pid="$(cat "$pidfile" 2>/dev/null)" || return 1
+  [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null || return 1
+  local cmd; cmd="$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null)" || return 1
+  [[ "$cmd" == *teacher.generator* && "$cmd" == *"--name $name "* ]]
+}
 py() { cd "$ROOT/ai" && exec python3 -u -m teacher.generator --name "$name" --out "$base" "$@"; }
 
 case "$cmd" in
@@ -30,6 +38,11 @@ case "$cmd" in
     cd "$ROOT/ai"
     nohup setsid python3 -u -m teacher.generator --name "$name" --out "$base" --call "$@" >>"$log" 2>&1 < /dev/null &
     echo $! > "$pidfile"
+    sleep 3
+    if ! alive; then
+      echo "ERREUR : le generateur s'est arrete aussitot (serie deja lancee ailleurs ? pas de cle ?). Fin du journal :" >&2
+      tail -n 5 "$log" >&2; rm -f "$pidfile"; exit 1
+    fi
     echo "lance : serie $name, pid $(cat "$pidfile"), journal $log"
     ;;
   foreground)
@@ -38,7 +51,7 @@ case "$cmd" in
     ;;
   stop)
     if ! alive; then echo "pas de processus pour la serie $name"; rm -f "$pidfile"; exit 0; fi
-    pid="$(cat "$pidfile")"; kill -TERM "$pid"
+    pid="$(cat "$pidfile")"; kill -TERM "$pid"   # alive a verifie que ce PID est bien notre generateur
     for _ in $(seq 1 180); do kill -0 "$pid" 2>/dev/null || break; sleep 1; done
     if kill -0 "$pid" 2>/dev/null; then echo "toujours en marche apres 180 s (requete en cours ?) : pid $pid"; exit 1; fi
     rm -f "$pidfile"; echo "arrete, etat sauvegarde"

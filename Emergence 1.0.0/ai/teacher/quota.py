@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import tomllib
 from collections import deque
 from dataclasses import dataclass
@@ -66,9 +67,12 @@ class Limits:
 
     NAMES = ("rpm", "rpd", "tpm", "tpd")
 
-    def over(self, other: "Limits") -> "Limits":
-        """self, with every field that `other` knows replaced."""
-        return Limits(*(getattr(other, n) if getattr(other, n) is not None else getattr(self, n) for n in self.NAMES))
+    def capped(self, learned: "Limits") -> "Limits":
+        """self (the file) lowered by what a 429 taught: min(file, learned) per field, never above the file; a field the
+        file does not know takes the learned one."""
+        def pick(a, b):
+            return b if a is None else a if b is None else min(a, b)
+        return Limits(*(pick(getattr(self, n), getattr(learned, n)) for n in self.NAMES))
 
     def to_dict(self) -> dict:
         return {n: getattr(self, n) for n in self.NAMES if getattr(self, n) is not None}
@@ -133,7 +137,6 @@ class QuotaError:
         m = message or ""
         msg_scope = "day" if re.search(r"per ?day|daily", m, re.I) else "minute" if re.search(r"per ?minute", m, re.I) else ""
         msg_kind = "tokens" if re.search(r"token", m, re.I) else "requests" if re.search(r"request", m, re.I) else ""
-        msg_limit = re.search(r"limit:\s*(\d+)", m)
         if not retry_after:
             r = re.search(r"retry in (\d+(?:\.\d+)?)\s*s", m, re.I)
             retry_after = float(r.group(1)) if r else 0.0
@@ -144,8 +147,6 @@ class QuotaError:
             scope, kind, limit, metric = "", "", None, ""
         scope = scope or msg_scope or scope_hint or "minute"
         kind = kind or msg_kind or "requests"
-        if limit is None and msg_limit:
-            limit = float(msg_limit.group(1))
         return cls(scope, kind, limit, retry_after, metric)
 
 
@@ -174,12 +175,14 @@ class QuotaBook:
         return self.spec.name
 
     def limits(self) -> Limits:
-        return self.spec.limits.over(self.learned)
+        return self.spec.limits.capped(self.learned)
 
     # ---- the day
     def roll(self, now: float) -> None:
+        """New Pacific day -> counters at zero. The day only moves FORWARD: a clock that jumps back never resets (nor
+        un-spends) the counters, and window entries stamped in the "future" are brought back to now."""
         today = PacificDay.key(now)
-        if today != self.day:
+        if today > self.day:
             if self.day:
                 self.history[self.day] = {"requests": self.day_requests, "tokens": self.day_tokens}
                 for old in sorted(self.history)[:-14]:
@@ -187,6 +190,10 @@ class QuotaBook:
             self.day, self.day_requests, self.day_tokens = today, 0, 0
         if self.exhausted_until and now >= self.exhausted_until:
             self.exhausted_until, self.exhausted_why = 0.0, ""
+        for e in self.window:
+            if e[0] > now:
+                e[0] = now
+        self.last_sent = min(self.last_sent, now)
         while self.window and self.window[0][0] < now - FORGET:
             self.window.popleft()
 
@@ -244,15 +251,6 @@ class QuotaBook:
         if input_tokens:
             self.client_errors = 0
 
-    def unsent(self, entry: list) -> None:
-        """The request never left (network down before sending): give the reservation back."""
-        self.day_tokens -= entry[1]
-        self.day_requests = max(0, self.day_requests - 1)
-        try:
-            self.window.remove(entry)
-        except ValueError:
-            pass
-
     # ---- errors
     def exhaust(self, now: float, why: str, until: float | None = None) -> None:
         self.exhausted_until = until if until is not None else PacificDay.next_reset(now)
@@ -261,37 +259,31 @@ class QuotaBook:
     def block(self, now: float, seconds: float) -> None:
         self.blocked_until = max(self.blocked_until, now + seconds)
 
-    def on_quota_error(self, now: float, err: QuotaError) -> str:
-        """A 429. Returns a short description of what was decided."""
-        self.roll(now)
+    def learn(self, field: str, value: float | None) -> None:
+        """A limit is learned ONLY from an explicit quotaValue, and only downwards (limits() takes min(file, learned))."""
+        if value is None or value < 0:
+            return
         learned = self.learned.to_dict()
-        if err.scope == "day":
-            if err.limit is not None:
-                learned["rpd" if err.kind == "requests" else "tpd"] = int(err.limit)
-            elif err.kind == "requests":
-                learned.setdefault("rpd", max(1, self.day_requests - 1))
-            else:
-                learned.setdefault("tpd", max(1, self.day_tokens))
-            self.learned = Limits.from_dict(learned)
-            self.exhaust(now, f"{err.kind}/day")
-            return f"{err.kind} per day spent (limit {err.limit if err.limit is not None else 'unknown'}), until the Pacific midnight"
-        self.minute_429 += 1
-        recent = [e for e in self.window if e[0] > now - WINDOW]
-        if err.limit is not None:
-            learned["rpm" if err.kind == "requests" else "tpm"] = err.limit if err.kind == "requests" else int(err.limit)
-        elif err.kind == "requests":
-            known = self.limits().rpm
-            guess = max(1, len(recent) - 1)
-            if known is None or guess < known:
-                learned["rpm"] = float(guess)
-        else:
-            learned["tpm"] = max(1, sum(e[1] for e in recent) - (recent[-1][1] if recent else 0))
+        new = value if field == "rpm" else int(value)
+        learned[field] = min(learned.get(field, new), new)
         self.learned = Limits.from_dict(learned)
+
+    def on_quota_error(self, now: float, err: QuotaError) -> str:
+        """A 429. Returns a short description of what was decided. Without an explicit limit nothing is learned: the
+        model is only blocked for the delay Google gave (a day: until the Pacific midnight)."""
+        self.roll(now)
+        said = err.limit if err.limit is not None else "not said"
+        if err.scope == "day":
+            self.learn("rpd" if err.kind == "requests" else "tpd", err.limit)
+            self.exhaust(now, f"{err.kind}/day")
+            return f"{err.kind} per day spent (limit {said}), until the Pacific midnight"
+        self.minute_429 += 1
+        self.learn("rpm" if err.kind == "requests" else "tpm", err.limit)
         wait = min(max(err.retry_after or WINDOW, MINUTE_BLOCK[0]), MINUTE_BLOCK[1]) + 1.0
         if self.minute_429 >= 3:
             wait = max(wait, LONG_BLOCK)
         self.block(now, wait)
-        return f"{err.kind} per minute (limit {err.limit if err.limit is not None else 'unknown'}), wait {wait:.0f} s"
+        return f"{err.kind} per minute (limit {said}), wait {wait:.0f} s"
 
     # ---- persistence
     def to_dict(self) -> dict:
@@ -302,15 +294,44 @@ class QuotaBook:
                 "tokens_per_char": round(self.tokens_per_char, 5), "history": self.history}
 
     def load(self, d: dict) -> None:
-        self.learned = Limits.from_dict(d.get("learned", {}))
-        self.window = deque([float(a), int(b)] for a, b in d.get("window", []))
-        self.last_sent = float(d.get("last_sent", 0.0))
-        self.day, self.day_requests, self.day_tokens = d.get("day", ""), int(d.get("day_requests", 0)), int(d.get("day_tokens", 0))
-        self.exhausted_until, self.exhausted_why = float(d.get("exhausted_until", 0.0)), d.get("exhausted_why", "")
-        self.blocked_until, self.minute_429 = float(d.get("blocked_until", 0.0)), int(d.get("minute_429", 0))
-        self.client_errors = int(d.get("client_errors", 0))
-        self.tokens_per_char = float(d.get("tokens_per_char", self.tokens_per_char))
-        self.history = dict(d.get("history", {}))
+        """Strictly typed: a badly typed field raises QuotaFileError and leaves the book untouched."""
+        if not isinstance(d, dict):
+            raise QuotaFileError("a book is an object")
+        try:
+            learned = Limits.from_dict(d.get("learned", {}))
+            window = deque([_num(a), int(_num(b))] for a, b in d.get("window", []))
+            last_sent = _num(d.get("last_sent", 0.0))
+            day = d.get("day", "")
+            if not isinstance(day, str):
+                raise QuotaFileError("day must be a string")
+            day_requests, day_tokens = int(_num(d.get("day_requests", 0))), int(_num(d.get("day_tokens", 0)))
+            exhausted_until, blocked_until = _num(d.get("exhausted_until", 0.0)), _num(d.get("blocked_until", 0.0))
+            why = d.get("exhausted_why", "")
+            if not isinstance(why, str):
+                raise QuotaFileError("exhausted_why must be a string")
+            minute_429, client_errors = int(_num(d.get("minute_429", 0))), int(_num(d.get("client_errors", 0)))
+            tpc = _num(d.get("tokens_per_char", self.tokens_per_char))
+            history = d.get("history", {})
+            if not isinstance(history, dict) or tpc <= 0:
+                raise QuotaFileError("history must be an object, tokens_per_char positive")
+            for lim in learned.to_dict().values():
+                _num(lim)
+        except (TypeError, ValueError, AttributeError) as e:
+            raise QuotaFileError(str(e)) from None
+        self.learned, self.window, self.last_sent, self.day = learned, window, last_sent, day
+        self.day_requests, self.day_tokens = day_requests, day_tokens
+        self.exhausted_until, self.exhausted_why, self.blocked_until = exhausted_until, why, blocked_until
+        self.minute_429, self.client_errors, self.tokens_per_char, self.history = minute_429, client_errors, tpc, dict(history)
+
+
+class QuotaFileError(ValueError):
+    """quota.json (or one book of it) is damaged or badly typed."""
+
+
+def _num(x) -> float:
+    if isinstance(x, bool) or not isinstance(x, (int, float)) or x != x or abs(x) == float("inf"):
+        raise QuotaFileError(f"{x!r} is not a finite number")
+    return float(x)
 
 
 # ---------------------------------------------------------------------------------------------------- all models
@@ -324,12 +345,15 @@ class Choice:
 class QuotaDesk:
     """The books of all the models, in preference order, and their file."""
 
-    def __init__(self, config: QuotaConfig, path: Path | str | None = None):
+    def __init__(self, config: QuotaConfig, path: Path | str | None = None, journal: Path | str | None = None,
+                 now: float | None = None):
         self.config = config
         self.books = {s.name: QuotaBook(s, config.margin) for s in config.models}
         self.path = Path(path) if path else None
-        if self.path and self.path.exists():
-            self.load()
+        self.journal = Path(journal) if journal else None
+        self.rebuilt: list[str] = []                 # the books rebuilt from the journal because the file was damaged
+        if self.path:
+            self.load(time.time() if now is None else now)
 
     @property
     def order(self) -> list[str]:
@@ -354,21 +378,78 @@ class QuotaDesk:
 
     # ---- file
     def save(self) -> None:
+        """temp file, fsync, rename, fsync of the folder: a power cut leaves the old file or the new one, never half."""
         if not self.path:
             return
         doc = {"schema": 1, "models": {n: b.to_dict() for n, b in self.books.items()}}
         tmp = self.path.with_name(self.path.name + ".tmp")
-        tmp.write_text(json.dumps(doc, indent=1), encoding="utf-8")
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(json.dumps(doc, indent=1))
+            f.flush()
+            os.fsync(f.fileno())
         os.replace(tmp, self.path)
-
-    def load(self) -> None:
         try:
-            doc = json.loads(self.path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            return                                   # a damaged file is only a cache of counters: start again from the config
-        for name, d in doc.get("models", {}).items():
-            if name in self.books and isinstance(d, dict):
-                self.books[name].load(d)
+            fd = os.open(self.path.parent, os.O_RDONLY)
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+        except OSError:
+            pass
+
+    def load(self, now: float) -> None:
+        """A damaged file, or a badly typed book, is not trusted: that book's counters of TODAY are rebuilt from
+        journal.jsonl (`pday`), so a corrupt quota.json cannot make the generator forget what it already spent."""
+        doc = None
+        if self.path.exists():
+            try:
+                doc = json.loads(self.path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                doc = None
+            if not isinstance(doc, dict) or not isinstance(doc.get("models", {}), dict):
+                doc = None
+            damaged = list(self.books) if doc is None else []
+        else:
+            damaged = list(self.books) if self.journal and self.journal.exists() else []   # file lost, journal there
+        if doc is not None:
+            for name, d in doc["models"].items():
+                if name in self.books:
+                    try:
+                        self.books[name].load(d)
+                    except QuotaFileError:
+                        damaged.append(name)
+        if damaged:
+            self.rebuild(damaged, now)
+
+    def rebuild(self, names: list[str], now: float) -> None:
+        today = PacificDay.key(now)
+        for n in names:
+            b = self.books[n]
+            b.day = today
+            b.day_requests = b.day_tokens = 0
+        want = set(names)
+        if self.journal and self.journal.exists():
+            marker = f'"pday":"{today}"'
+            with open(self.journal, encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    if marker not in line:
+                        continue
+                    try:
+                        r = json.loads(line)
+                        model, kind = r["model"], r["kind"]
+                    except (ValueError, KeyError, TypeError):
+                        continue
+                    if model not in want or kind not in ("batch", "repair", "error") or r.get("pday") != today:
+                        continue
+                    b = self.books[model]
+                    tokens = int(r.get("usage", {}).get("prompt", 0)) if kind != "error" else 0
+                    b.day_requests += 1
+                    b.day_tokens += tokens
+                    ts = float(r.get("ts", 0))
+                    if ts > now - WINDOW:
+                        b.window.append([min(ts, now), tokens])
+                    b.last_sent = max(b.last_sent, min(ts, now))
+        self.rebuilt = sorted(set(self.rebuilt) | want)
 
     # ---- display
     def table(self, now: float) -> list[dict]:

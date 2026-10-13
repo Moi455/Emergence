@@ -41,7 +41,7 @@ Il produit en continu, avec le quota GRATUIT de Monsieur, le `dataset.jsonl` de 
 
 | Fichier | Rôle |
 |---|---|
-| `quota.toml` | limites gratuites connues par modèle (RPM, RPD ; TPM et TPD s'il y en a), dans l'ordre de préférence ; un champ absent est appris des 429 |
+| `quota.toml` | limites par modèle (RPM, RPD connus ; TPM 250 000 et TPD 20 M / 2 M = **plafonds locaux prudents, des estimations**), dans l'ordre de préférence |
 | `quota.py` | `QuotaBook` (un modèle : fenêtre glissante d'une minute, compteurs du jour Pacifique, blocages, limites apprises, tout persisté), `QuotaDesk` (choisit le modèle qui peut répondre le premier), `QuotaError` (lit le corps du 429 : `quotaId` par minute ou par jour, requêtes ou jetons, `quotaValue`), `PacificDay` (minuit heure du Pacifique) |
 | `caller.py` | `ModelCaller` : attend le rythme exact (intervalle 60/RPM x 1,05, jamais de rafale ; fenêtre glissante ; jetons d'entrée mesurés pour TPM/TPD), envoie, classe les erreurs ; `Pacer` : attentes interruptibles (SIGTERM) |
 | `batch.py` | K situations par requête, schéma `{"decisions":[{"id":"S1", ...}]}`, validation de chaque décision par le validateur et le gouverneur du pilote, **une passe de réparation** (une requête pour toutes les décisions refusées du lot, avec leur réponse et l'erreur ; jamais pour un refus D10) |
@@ -53,7 +53,9 @@ Il produit en continu, avec le quota GRATUIT de Monsieur, le `dataset.jsonl` de 
 
 K situations (6 par défaut, `--k`) de `ai/situations` (graine et indice qui avancent, **jamais deux fois la même**) -> une requête en JSON structuré -> chaque décision validée -> les refusées repartent UNE fois -> les valides sont ajoutées à `dataset.jsonl` (format de `dataset.py` : en-tête `hdr`, `id`, `teacher` = le modèle qui a répondu ; `source.repaired` si réparée ; `source.ages` = les vrais âges de la scène, **pour la migration seulement**, jamais lus par le modèle). Le journal brut (`journal.jsonl`) garde par requête : modèle, jetons mesurés, latence, réponse brute, verdict par décision.
 
-Limites et modèles : le générateur choisit, à chaque requête, le modèle qui peut répondre **le premier** (à égalité, l'ordre de `quota.toml`). 429 « par minute » : le modèle est bloqué le temps que Google indique (3 de suite : 10 min), un autre prend la suite. 429 « par jour » (requêtes **ou** jetons) : le modèle est écarté jusqu'à minuit heure du Pacifique, la limite est apprise (`quotaValue`) et gardée dans `quota.json`. Tous les modèles épuisés : il dort jusqu'à la première remise à zéro (par tranches de 30 s, à l'écoute d'un arrêt ou d'un changement de code) puis reprend. 5xx/réseau : pauses 5, 10, 20... 300 s sans compter dans le quota. 404 : modèle écarté un jour. 400/403 : 2 de suite écartent le modèle ; sur 3 modèles de suite, arrêt avec le code 3 (clé refusée ou requête cassée : il ne faut pas brûler le quota). Cinq lots de suite sans une seule décision valide : arrêt avec le code 3.
+Limites et modèles : le générateur choisit, à chaque requête, le modèle qui peut répondre **le premier** (à égalité, l'ordre de `quota.toml`). 429 « par minute » : le modèle est bloqué le temps que Google indique (3 de suite : 10 min), un autre prend la suite. 429 « par jour » (requêtes **ou** jetons) : le modèle est écarté jusqu'à minuit heure du Pacifique. Une limite n'est apprise que d'un `quotaValue` explicite, et seulement vers le bas : la limite effective est `min(fichier, appris)`, jamais au-dessus du fichier ; sans `quotaValue`, on bloque seulement le temps indiqué. Tous les modèles épuisés : il dort jusqu'à la première remise à zéro (par tranches de 30 s, à l'écoute d'un arrêt ou d'un changement de code) puis reprend. 5xx/réseau : pauses 5, 10, 20... 300 s ; la requête reste **comptée** (un délai dépassé a pu arriver chez Google). 404 : modèle écarté un jour. 400/403 : 2 de suite écartent le modèle ; sur 3 modèles de suite, arrêt avec le code 3 (clé refusée ou requête cassée : il ne faut pas brûler le quota). Un lot sans aucune décision valide (même réparé) met le modèle de côté une heure et les autres continuent ; arrêt avec le code 3 seulement si TOUS les modèles ont échoué ainsi (ou sont hors service) : l'invite est alors cassée. Le compteur du jour ne fait qu'avancer (une horloge qui recule ne le remet pas à zéro). Une requête est comptée et `quota.json` écrit (fsync, fichier temporaire puis renommage) **avant** l'envoi ; si `quota.json` est abîmé ou mal typé, les compteurs du jour du modèle sont reconstruits depuis `journal.jsonl` (`pday`). Une décision que le codec ne sait pas écrire est comptée refusée (événement `encode_error`), sans arrêt ni retour en arrière.
+
+Un seul générateur par série : verrou `flock` exclusif sur `<série>/.lock` (fermé à l'`exec`, repris par la nouvelle image) ; un second lancement sort avec le code 2. Les identifiants des lignes portent le nom de la série (`serie:graine:indice`) pour que deux séries ne se masquent pas (les anciennes lignes `graine:indice` restent lues). Un redémarrage n'a jamais lieu avec une réponse en main (entre le lot et sa réparation) : il attend que la ronde soit écrite. Un disque plein ne laisse pas de demi-écriture (le fichier est tronqué à sa taille d'origine).
 
 Reprise exacte : écriture dans l'ordre `dataset` -> `journal` -> `state.json`, chaque fichier synchronisé ; une dernière ligne coupée (arrêt brutal) est retirée au démarrage ; le curseur reprend au plus grand de l'état, du journal et de la dernière ligne du dataset. SIGTERM : finit la requête en cours, sauvegarde, sort avec 0.
 
@@ -77,7 +79,7 @@ Sorties dans `~/.local/share/emergence/dataset/<série>/` (hors du dépôt, le p
 Au choix (une seule instance par série) :
 
 ```
-scripts/run_generator.sh start serie1            # nohup, sans fin ; ajouter --days 7 pour s'arrêter après 7 jours
+scripts/run_generator.sh start serie1            # nohup, sans fin (le PID est vérifié sur sa ligne de commande) ; ajouter --days 7 pour s'arrêter après 7 jours
 scripts/run_generator.sh status serie1           # processus + bilan
 scripts/run_generator.sh logs serie1
 scripts/run_generator.sh stop serie1             # arrêt propre
@@ -89,7 +91,7 @@ journalctl --user -u emergence-generator -f
 ```
 Le service redémarre après un plantage (`Restart=on-failure`, 30 s) mais pas après les codes 2 (pas de clé) et 3 (erreur fatale à regarder). Le chemin du dépôt est dans `ExecStart` (à adapter si le dossier change).
 
-Migration : arrêter le générateur avant de migrer le fichier. Une ligne dont le `hdr` n'est plus l'actuel est ré-encodée avec le tokeniseur courant et sa décision est revalidée (validateur + gouverneur) ; sinon elle est écartée et comptée par raison. Sans `source.ages` (lignes du pilote), les vrais âges sont inconnus et le gouverneur est plus strict qu'à l'origine : jamais plus laxiste.
+Migration : `--in-place` est refusé tant que le verrou de la série est tenu ou que `generator.pid` désigne un générateur vivant, et `--limit` est interdit avec `--in-place` (utiliser `--out`). Une ligne dont le `hdr` n'est plus l'actuel est ré-encodée avec le tokeniseur courant et sa décision est revalidée (validateur + gouverneur) ; sinon elle est écartée et comptée par raison. Sans `source.ages` (lignes du pilote), les vrais âges sont inconnus et le gouverneur est plus strict qu'à l'origine : jamais plus laxiste.
 
 ### Mesures du 13 oct. (gemini-3.5-flash-lite, quota gratuit)
 

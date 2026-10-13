@@ -226,15 +226,17 @@ class GroupedRound:
     """caller(system, user, schema) -> (model, ApiResult) or None (stopped)."""
 
     def __init__(self, instructions: BatchInstructions, schema: BatchSchema, prompt: BatchPrompt, validator: AnswerValidator,
-                 caller: Callable, can_call: Callable[[], bool] = lambda: True, repair: bool = True):
+                 caller: Callable, can_call: Callable[[], bool] = lambda: True, repair: bool = True,
+                 on_reply: Callable[[], None] = lambda: None):
         self.instructions, self.schema, self.prompt, self.validator = instructions, schema, prompt, validator
-        self.caller, self.can_call, self.repair = caller, can_call, repair
+        self.caller, self.can_call, self.repair, self.on_reply = caller, can_call, repair, on_reply
 
     def run(self, situations: list) -> RoundResult | None:
         slots = [Slot(label, sit) for label, sit in zip(self.prompt.labels(len(situations)), situations)]
         rec = self._request("batch", slots, self.prompt.render(slots))
         if rec is None:
             return None
+        self.on_reply()                                        # the first reply is held: the caller must not restart before it is written
         out = RoundResult(slots, [rec])
         self._judge(slots, rec, first=True)
         todo = [s for s in slots if s.repairable]

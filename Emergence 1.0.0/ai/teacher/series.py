@@ -14,6 +14,7 @@
 """
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import re
@@ -46,6 +47,57 @@ class SeriesDirectory:
     state = property(lambda self: self.file("state.json"))
     quota = property(lambda self: self.file("quota.json"))
     log = property(lambda self: self.file("generator.log"))
+
+
+class SeriesLock:
+    """One generator per series: an exclusive flock on <series>/.lock. The descriptor is close-on-exec, so an os.execv
+    (restart on a code change) releases it and the new image takes it again; the kernel frees it if the process dies."""
+
+    def __init__(self, series: SeriesDirectory):
+        self.path = series.file(".lock")
+        self.fd: int | None = None
+
+    def acquire(self, wait: float = 0.0, sleep=None) -> bool:
+        """True if taken. `wait` > 0 retries for that many seconds (right after a restart by execv)."""
+        import time
+        sleep = sleep or time.sleep
+        fd = os.open(self.path, os.O_RDWR | os.O_CREAT | os.O_CLOEXEC, 0o644)
+        waited = 0.0
+        while True:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError:
+                if waited >= wait:
+                    os.close(fd)
+                    return False
+                sleep(0.2)
+                waited += 0.2
+        os.ftruncate(fd, 0)
+        os.write(fd, f"{os.getpid()}\n".encode())
+        self.fd = fd
+        return True
+
+    def release(self) -> None:
+        if self.fd is not None:
+            os.close(self.fd)
+            self.fd = None
+
+    @classmethod
+    def held(cls, directory: Path) -> bool:
+        """Is another process holding the lock of that series folder? (without keeping it)"""
+        p = Path(directory) / ".lock"
+        if not p.exists():
+            return False
+        fd = os.open(p, os.O_RDWR | os.O_CLOEXEC)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(fd, fcntl.LOCK_UN)
+            return False
+        except OSError:
+            return True
+        finally:
+            os.close(fd)
 
 
 class AppendFile:
@@ -82,10 +134,19 @@ class AppendFile:
         if not lines:
             return
         data = "".join(l.rstrip("\n") + "\n" for l in lines).encode("utf-8")
-        with open(self.path, "ab") as f:
-            f.write(data)
-            f.flush()
-            os.fsync(f.fileno())
+        before = self.path.stat().st_size if self.path.exists() else 0
+        try:
+            with open(self.path, "ab") as f:
+                f.write(data)
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError:                                  # disk full...: no half-written block stays in the file
+            try:
+                with open(self.path, "rb+") as f:
+                    f.truncate(before)
+            except OSError:
+                pass
+            raise
 
     def last_line(self) -> str:
         if not self.path.exists() or self.path.stat().st_size == 0:
@@ -96,6 +157,17 @@ class AppendFile:
             f.seek(size - back)
             lines = f.read(back).decode("utf-8", "replace").splitlines()
         return lines[-1] if lines else ""
+
+    def last_matching(self, keep) -> str:
+        """The last line of the tail (1 MB) for which keep(line) is true, else ''."""
+        if not self.path.exists() or self.path.stat().st_size == 0:
+            return ""
+        with open(self.path, "rb") as f:
+            size = f.seek(0, os.SEEK_END)
+            back = min(size, 1 << 20)
+            f.seek(size - back)
+            lines = f.read(back).decode("utf-8", "replace").splitlines()
+        return next((l for l in reversed(lines) if keep(l)), "")
 
     def count_lines(self) -> int:
         if not self.path.exists():

@@ -6,7 +6,7 @@
         429 per minute  the model is blocked for the delay Google gives; another model goes on meanwhile
         429 per day     the model is out until the Pacific midnight; the next one goes on
         all models out  sleep until the earliest reset, then go on
-        5xx / network   exponential pause (the request is not counted against the quota)
+        5xx / network   exponential pause (the request stays counted: a timeout may have reached Google)
         404             the model is gone: out for a day
         400 / 401 / 403 the request is wrong for that model: 2 in a row -> out for a day; 3 models in a row -> FatalError
                         (a wrong key or a broken schema must not eat the quota nor loop for ever)
@@ -106,7 +106,7 @@ class ModelCaller:
     def wait_for(self, choice, now: float) -> None:
         seconds = choice.at - now
         if choice.all_exhausted or seconds > 120:
-            self.log(f"waiting {seconds / 60:.0f} min for {choice.model} ({'every model is out for today' if choice.all_exhausted else 'cooldown'}; "
+            self.log(f"waiting {seconds / 60:.0f} min for {choice.model} ({'every model is out for now' if choice.all_exhausted else 'cooldown'}; "
                      f"{PacificDay.key(choice.at)} Pacific)")
         self.pacer.wait_until(choice.at)
         self.stats.waited_s += max(0.0, choice.at - now)
@@ -117,6 +117,7 @@ class ModelCaller:
         now = self.pacer.clock()
         entry = book.begin(now, book.estimate_input(chars))
         self.stats.requests += 1
+        self.desk.save()                                 # counted and on disk BEFORE it leaves: a crash cannot hide a spent request
         r = self.client.generate(model, system, user, schema, self.temperature, self.max_output_tokens, spec.thinking_budget)
         now = self.pacer.clock()
         try:
@@ -138,7 +139,7 @@ class ModelCaller:
             elif r.status in (400, 401, 403):
                 self.stats.errors_other += 1
                 self._client_error(model, book, now, r)
-            else:                                        # 5xx, network (0): not the quota's fault
+            else:                                        # 5xx, network (0): stays COUNTED (a timeout may have reached Google); only the pause differs
                 self.stats.errors_other += 1
                 self._transient += 1
                 pause = min(300.0, 5.0 * 2 ** (self._transient - 1))

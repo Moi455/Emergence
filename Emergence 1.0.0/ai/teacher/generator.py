@@ -40,13 +40,16 @@ from .phrasebook import DEFAULT_COUNT, PhraseBook
 from .quota import DEFAULT_CONFIG, PacificDay, QuotaConfig, QuotaDesk
 from .render import SituationRenderer
 from .schema import DecisionSchema
-from .series import DEFAULT_BASE, AppendFile, SeriesDirectory, SeriesState, SituationCursor
+from .series import DEFAULT_BASE, AppendFile, SeriesDirectory, SeriesLock, SeriesState, SituationCursor
 from .toolkit import ROOT, Toolkit
-from .validate import AnswerValidator
+from .validate import AnswerValidator, Outcome
 
 AI_DIR = ROOT / "ai"
 EXIT_FATAL = 3
-MAX_UNUSABLE_ROUNDS = 5         # rounds in a row without a single valid decision: stop (a broken prompt must not eat the quota)
+EXIT_LOCKED = 2
+REEXEC = "EMERGENCE_REEXEC"
+UNUSABLE_ASIDE = 3600.0         # a model whose batch gave no valid decision at all (even repaired) is left alone for an hour
+PERMANENT = ("not found", "HTTP 400", "HTTP 401", "HTTP 403")      # exhausted_why of a model that is out for good
 MAX_SAMPLE_ERRORS = 50
 MAX_CRASHES = 5                 # rounds in a row that raised an unexpected exception: stop
 
@@ -142,17 +145,21 @@ class Generator:
         self.state = SeriesState.load_or_new(series.state, series.name, seed, k, now)
         self.cursor = SituationCursor(self.state)
         self._floor_cursor()
-        self.desk = QuotaDesk(quota_config, series.quota)
+        self.desk = QuotaDesk(quota_config, series.quota, series.journal, now)
+        if self.desk.rebuilt:
+            self.log(f"quota.json was damaged: today's counters of {', '.join(self.desk.rebuilt)} rebuilt from journal.jsonl")
         self.caller = ModelCaller(client, self.desk, self.pacer, self.log, self._event, temperature, 8192, max_requests)
         self.schema_single = DecisionSchema(self.tk, "full")
         self.phrasebook = PhraseBook(self.tk, phrases)
         self.instructions = BatchInstructions(self.tk, self.phrasebook)
         self.renderer = SituationRenderer(self.tk)
         self.round = GroupedRound(self.instructions, BatchSchema(self.schema_single), BatchPrompt(self.renderer),
-                                  AnswerValidator(self.tk), self.caller, self.caller.can_call, repair)
+                                  AnswerValidator(self.tk), self.caller, self.caller.can_call, repair,
+                                  on_reply=self._hold)
         self._sampler_factory = sampler_factory or self._default_sampler
         self._samplers: dict = {}
-        self._unusable_streak = 0
+        self._unusable_models: set = set()
+        self.holding = False            # a reply is held, not yet written: no restart now (it would be asked again)
         if watcher is not None and self.pacer.idle is None:
             self.pacer.idle = self.check_restart
 
@@ -162,16 +169,16 @@ class Generator:
         between two of the three files must not make the same situation be asked twice)."""
         floors = []
         try:
-            last = json.loads(self.journal.last_line() or "{}")
+            last = json.loads(self.journal.last_matching(lambda l: '"cursor"' in l) or "{}")
             if isinstance(last.get("cursor"), list) and len(last["cursor"]) == 2:
                 floors.append((int(last["cursor"][0]), int(last["cursor"][1])))
         except (ValueError, TypeError):
             pass
         try:
-            ident = json.loads(self.dataset.last_line() or "{}").get("id", "")
-            seed, _, index = str(ident).partition(":")
-            if seed.lstrip("-").isdigit() and index.isdigit():
-                floors.append((int(seed), int(index) + 1))
+            parts = str(json.loads(self.dataset.last_line() or "{}").get("id", "")).split(":")     # [serie:]seed:index
+            ours = len(parts) == 2 or (len(parts) == 3 and parts[0] == self.series.name)
+            if ours and parts[-2].lstrip("-").isdigit() and parts[-1].isdigit():
+                floors.append((int(parts[-2]), int(parts[-1]) + 1))
         except ValueError:
             pass
         here = (self.cursor.seed, self.cursor.index)
@@ -239,6 +246,7 @@ class Generator:
                     raise
                 except Exception as e:      # noqa: BLE001  (a bug must not loop on the quota: a few tries, then stop for a human)
                     crashes += 1
+                    self.holding = False
                     self.cursor.rewind()
                     self.log(f"ERROR in a round ({crashes}/{MAX_CRASHES}): {type(e).__name__}: {e}")
                     self._event({"kind": "crash", "error": f"{type(e).__name__}: {e}"[:300]})
@@ -262,12 +270,18 @@ class Generator:
             self.cursor.commit()
             return True
         t0 = time.monotonic()
-        res = self.round.run(sits)
-        if res is None:                                   # stopped or capped before an answer: nothing is consumed
-            self.cursor.rewind()
-            return False
-        self.commit(res, time.monotonic() - t0)
+        try:
+            res = self.round.run(sits)
+            if res is None:                               # stopped or capped before an answer: nothing is consumed
+                self.cursor.rewind()
+                return False
+            self.commit(res, time.monotonic() - t0)
+        finally:
+            self.holding = False
         return True
+
+    def _hold(self) -> None:
+        self.holding = True
 
     # ---- write a finished round
     def commit(self, res: RoundResult, seconds: float) -> None:
@@ -276,13 +290,21 @@ class Generator:
             if not s.ok:
                 continue
             sit = s.situation
-            rec = LabelRecord.build(self.sampler(sit.seed).tokenizer, sit, s.final, s.model)
-            rec.source["ages"] = {k: round(float(p.age), 2) for k, p in (getattr(sit, "people", None) or {}).items()}
-            if s.repaired:
-                rec.source["repaired"] = True
-            lines.append(rec.to_line())
+            try:                                          # a decision the codec cannot write is one refused, not a stop
+                rec = LabelRecord.build(self.sampler(sit.seed).tokenizer, sit, s.final, s.model, series=self.series.name)
+                rec.source["ages"] = {k: round(float(p.age), 2) for k, p in (getattr(sit, "people", None) or {}).items()}
+                if s.repaired:
+                    rec.source["repaired"] = True
+                line = rec.to_line()
+            except Exception as e:      # noqa: BLE001
+                s.final = Outcome(None, "encode_error", f"{type(e).__name__}: {e}"[:160])
+                self._event({"kind": "encode_error", "id": s.label, "seed": sit.seed, "index": sit.index,
+                             "error": f"{type(e).__name__}: {e}"[:300]})
+                continue
+            lines.append(line)
             valid += 1
         self.dataset.append(lines)
+        self.cursor.commit()                              # the labels are on disk: these situations are never asked again
         for rq in res.requests:
             self.journal.append([json.dumps(self._journal_record(rq, res), ensure_ascii=False, separators=(",", ":"))])
         st = self.state
@@ -290,7 +312,6 @@ class Generator:
         st.batches += 1
         st.valid += valid
         st.refused += len(res.slots) - valid
-        self.cursor.commit()
         st.save(self.series.state)
         self.desk.save()
         usage = [rq.result.usage for rq in res.requests]
@@ -299,9 +320,25 @@ class Generator:
         self.log(f"[{st.batches}] {'+'.join(rq.model for rq in res.requests)} {len(res.slots)} asked, {valid} valid"
                  f"{f' ({rep} after repair)' if rep else ''}, tokens in {tin} out {tout}, {seconds:.1f} s; "
                  f"refused: {_codes(res) or 'none'}; total {st.valid} labels, next index {self.cursor.seed}:{self.cursor.index}")
-        self._unusable_streak = self._unusable_streak + 1 if res.unusable else 0
-        if self._unusable_streak >= MAX_UNUSABLE_ROUNDS:
-            raise FatalError(f"{self._unusable_streak} rounds in a row without a valid decision: stopped to protect the quota")
+        if res.unusable:
+            self.after_unusable(res)
+        else:
+            self._unusable_models.clear()
+
+    def after_unusable(self, res: RoundResult) -> None:
+        """No valid decision at all, even after the repair: the models that answered are set aside for an hour (the
+        others go on). Fatal only when EVERY model has failed that way (or is out for good): the prompt is then broken."""
+        now = self.pacer.clock()
+        for rq in res.requests:
+            self.desk.books[rq.model].exhaust(now, "unusable", until=now + UNUSABLE_ASIDE)
+            self._unusable_models.add(rq.model)
+            self.log(f"{rq.model}: no usable decision, set aside for {UNUSABLE_ASIDE / 3600:g} h")
+        self.desk.save()
+        left = [n for n in self.desk.order
+                if n not in self._unusable_models and self.desk.books[n].exhausted_why not in PERMANENT]
+        if not left:
+            raise FatalError(f"every model failed to give a usable decision ({', '.join(sorted(self._unusable_models))}): "
+                             "stopped to protect the quota")
 
     def _journal_record(self, rq, res: RoundResult) -> dict:
         now = self.pacer.clock()
@@ -337,7 +374,7 @@ class Generator:
 
     # ---- restart on change
     def check_restart(self) -> None:
-        if self.watcher is None or not self.watcher.changed():
+        if self.watcher is None or self.holding or not self.watcher.changed():
             return
         self.log("the code or the catalogue changed: checking that the new version works")
         if not self.selfcheck():
@@ -363,6 +400,7 @@ class Generator:
 
     def _execv(self, argv: list[str]) -> None:
         os.chdir(AI_DIR)
+        os.environ[REEXEC] = "1"             # the new image waits a few seconds for the lock instead of giving up
         os.execv(sys.executable, [sys.executable, "-m", "teacher.generator", *argv])
 
 
@@ -476,6 +514,10 @@ def main(argv=None) -> int:
     except ApiKeyError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
+    lock = SeriesLock(series)
+    if not lock.acquire(wait=10.0 if os.environ.pop(REEXEC, "") else 0.0):
+        print(f"error: series {series.name} is already running (lock {lock.path} is held)", file=sys.stderr)
+        return EXIT_LOCKED
     client = GeminiClient(key)
     log = Log(Redactor(key))
     watcher = None if a.no_restart else RestartWatcher(CodeFingerprint())

@@ -140,6 +140,21 @@ class Migration:
         return report
 
 
+def generator_running(folder: Path) -> str:
+    """Why the folder's file must not be rewritten now ('' if it may): a generator holds its lock, or generator.pid is alive."""
+    from .series import SeriesLock
+    if SeriesLock.held(folder):
+        return f"a generator holds the lock of {folder}"
+    pidfile = folder / "generator.pid"
+    try:
+        pid = int(pidfile.read_text().strip())
+        os.kill(pid, 0)
+        cmd = Path(f"/proc/{pid}/cmdline").read_bytes().replace(b"\0", b" ").decode("utf-8", "replace")
+    except (OSError, ValueError):
+        return ""
+    return f"generator.pid says process {pid} is alive ({cmd.strip()[:80]})" if "teacher.generator" in cmd else ""
+
+
 def stats(path: Path) -> str:
     counts, other = Counter(), 0
     with open(path, encoding="utf-8") as f:
@@ -172,6 +187,15 @@ def cli(argv: list[str]) -> int:
     if a.in_place and a.out:
         print("error: --in-place and --out are exclusive", file=sys.stderr)
         return 2
+    if a.in_place and a.limit is not None:
+        print("error: --limit would cut the file: it cannot be used with --in-place (use --out)", file=sys.stderr)
+        return 2
+    if a.in_place:
+        why = generator_running(a.file.resolve().parent)
+        if why:
+            print(f"error: --in-place refused, {why}. Stop the generator first (scripts/run_generator.sh stop NAME), "
+                  "or write to another file with --out.", file=sys.stderr)
+            return 2
     mig = Migration()
     dst = a.out or a.file.with_name(a.file.name + ".migrated.jsonl") if not a.in_place else a.file.with_name(a.file.name + ".migrating")
     rep = mig.file(a.file, dst, a.limit)

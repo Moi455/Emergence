@@ -167,7 +167,7 @@ class QuotaErrorTests(unittest.TestCase):
     def test_message_when_there_are_no_details(self):
         e = QuotaError.parse([], "Quota exceeded for metric: generate_content_free_tier_requests, limit: 20 per day. "
                                  "Please retry in 41.5s.")
-        self.assertEqual((e.scope, e.kind, e.limit, e.retry_after), ("day", "requests", 20.0, 41.5))
+        self.assertEqual((e.scope, e.kind, e.limit, e.retry_after), ("day", "requests", None, 41.5))   # a limit only from quotaValue
         self.assertEqual(QuotaError.parse([], "").scope, "minute")               # nothing said: the mild reading
 
     def test_minute_429_blocks_and_learns(self):
@@ -209,9 +209,12 @@ class QuotaDeskTests(unittest.TestCase):
     def test_config_file_lists_the_models_in_preference_order(self):
         qc = QuotaConfig.load(DEFAULT_CONFIG)
         self.assertEqual(qc.models[0].name, "gemini-3.5-flash-lite")
-        self.assertEqual(qc.models[0].limits, Limits(15, 500))
+        self.assertEqual(qc.models[0].limits, Limits(15, 500, 250000, 20_000_000))
         self.assertEqual([s.name for s in qc.models if s.limits.rpd == 20][:2], ["gemini-3.8-flash", "gemini-3.7-flash"])
         self.assertEqual(qc.only(["a-flash-lite", "gemini-2.5-flash"]).models[0].limits, Limits(15, 500))
+        for m in qc.models:                                                  # every model has a local token cap (estimates, in the file)
+            self.assertEqual(m.limits.tpm, 250000, m.name)
+            self.assertEqual(m.limits.tpd, 20_000_000 if "lite" in m.name else 2_000_000, m.name)
 
     def test_choice_is_the_model_that_can_answer_first(self):
         desk = QuotaDesk(config(spec("a", rpm=15), spec("b", rpm=15)))

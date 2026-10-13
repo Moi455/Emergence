@@ -2,6 +2,9 @@
 # L'ORDRE est la preference (a delai egal, le premier est choisi). Un champ ABSENT = limite inconnue : le generateur
 # l'apprend des reponses 429 (quotaValue) et la garde dans quota.json, dans le dossier de la serie.
 # rpm = requetes/minute, rpd = requetes/jour, tpm = jetons d'ENTREE/minute, tpd = jetons d'entree/jour.
+# tpm et tpd : PLAFONDS LOCAUX PRUDENTS, des ESTIMATIONS (Google ne publie pas ces chiffres pour le palier gratuit ; 250 000 jetons/min
+# est la valeur observee par un 429 le 13 oct. sur gemini-3.1-flash-lite). Lite : tpd 20 000 000 ; Flash : tpd 2 000 000 (estimations
+# de prudence, pas des mesures). Un 429 qui donne un `quotaValue` plus bas les ABAISSE (min(fichier, appris)), jamais plus haut.
 # Le jour de quota se remet a zero a minuit, heure du Pacifique.
 # thinking_budget : 0 coupe la reflexion interne (modeles 2.5) ; absent = laisse le defaut du modele.
 
@@ -11,50 +14,70 @@ margin = 1.05          # l'intervalle entre deux requetes d'un modele est 60/rpm
 name = "gemini-3.5-flash-lite"
 rpm = 15
 rpd = 500
+tpm = 250000
+tpd = 20000000
 
 [[model]]
 name = "gemini-3.1-flash-lite"
 rpm = 15
 rpd = 500
+tpm = 250000
+tpd = 20000000
 
 [[model]]
 name = "gemini-2.5-flash-lite"
 rpm = 15
 rpd = 500
+tpm = 250000
+tpd = 20000000
 thinking_budget = 0
 
 [[model]]
 name = "gemini-3.1-flash-lite-preview"
 rpm = 15
 rpd = 500
+tpm = 250000
+tpd = 20000000
 
 [[model]]
 name = "gemini-3.8-flash"
 rpm = 5
 rpd = 20
+tpm = 250000
+tpd = 2000000
 
 [[model]]
 name = "gemini-3.7-flash"
 rpm = 5
 rpd = 20
+tpm = 250000
+tpd = 2000000
 
 [[model]]
 name = "gemini-3.6-flash"
 rpm = 5
 rpd = 20
+tpm = 250000
+tpd = 2000000
 
 [[model]]
 name = "gemini-3.5-flash"
 rpm = 5
 rpd = 20
+tpm = 250000
+tpd = 2000000
 
 [[model]]
 name = "gemini-2.5-flash"
 rpm = 5
 rpd = 20
+tpm = 250000
+tpd = 2000000
 thinking_budget = 0
 
 [[model]]
 name = "gemini-3-flash-preview"
 rpm = 5
 rpd = 20
+tpm = 250000
+tpd = 2000000
