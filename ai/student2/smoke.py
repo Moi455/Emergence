@@ -35,8 +35,8 @@ PROP_RECORDS = ("BELIEF", "MEMORY", "GOAL", "HEARD", "REQUEST")
 class AnswerDrawer:
     """Draws one random JSON answer for a situation (it may be refused: the caller retries)."""
 
-    def __init__(self, tk: Toolkit, rng: random.Random):
-        self.tk, self.rng = tk, rng
+    def __init__(self, tk: Toolkit, rng: random.Random, layout=None):
+        self.tk, self.rng, self.layout = tk, rng, layout
         self.spec = tk.spec
         self.forms = sorted(tk.cat["form"])
         iface = tk.interface
@@ -168,11 +168,19 @@ class AnswerDrawer:
         if w.scale in ("time", "time_until"):
             return r.choice(("1", "6", "24", "72"))
         if w.scale == "mref":
-            keys = [x.key for x in mind.records if x.type in ("ENTITY", "THING", "GOAL", "PLAN", "GROUP", "SELF")]
+            keys = [x.key for x in mind.records if x.type in self._ref_types(w)]
             return r.choice(keys) if keys else None
         if w.scale == "proposition":
             return self._proposition(mind)
         return None
+
+    def _ref_types(self, w) -> set:
+        """The record types a record-valued variable may point to (the ref_types of its fields in the tok-2 layout)."""
+        types = set()
+        for t, f in w.fields:
+            col = self.layout.types[t].columns.get(f) if self.layout is not None and t in self.layout.types else None
+            types |= set(col.codec.spec.get("ref_types", ())) if col is not None else set()
+        return types or {"ENTITY", "THING", "GOAL", "PLAN", "GROUP", "SELF"}
 
     @staticmethod
     def _old(w, mind: Mind, key: str):
@@ -194,7 +202,7 @@ class SmokeSet:
     def one(self, index: int):
         """-> (situation, Outcome) with the first accepted random answer, or (situation, None)."""
         sit = self.sampler.sample(index)
-        drawer = AnswerDrawer(self.tk, random.Random(f"smoke:{self.seed}:{index}"))
+        drawer = AnswerDrawer(self.tk, random.Random(f"smoke:{self.seed}:{index}"), self.sampler.tokenizer.layout)
         for _ in range(self.max_tries):
             self.stats["draws"] += 1
             o = self.validator.validate(drawer.draw(sit), sit)
@@ -211,7 +219,7 @@ class SmokeSet:
             if o is None:
                 self.stats["situations_without_answer"] += 1
                 continue
-            file.append(LabelRecord.build(self.sampler.tokenizer, sit, o, SMOKE_TEACHER, now))
+            file.append(LabelRecord.build(self.sampler.tokenizer, sit, o, SMOKE_TEACHER, now, synthetic=True))
             self.stats["written"] += 1
         return {"written": self.stats["written"], "draws": self.stats["draws"], "codes": dict(self.codes.most_common()),
                 "situations_without_answer": self.stats["situations_without_answer"]}

@@ -24,7 +24,7 @@ from tok2.interface import InputVocabulary
 from tok2.keys import is_count
 from tok2.proposition import canonical_proposition
 
-from .spec import MAX_ARITY, MAX_SLOTS, OutputSpace, SpaceError
+from .spec import MAX_ARITY, STACK, OutputSpace, SpaceError
 
 _COUNT_WORD = re.compile(r"^([^:]+):([0-9]+)\Z", re.ASCII)
 
@@ -75,6 +75,7 @@ class SequenceCodec:
     def __init__(self, space: OutputSpace):
         self.space, self.vocab = space, space.tokenizer.vocab
         self.parser = Parser()
+        self.rounding = 0.0                  # worst relative rounding of a count since the last reset (see LabelCodec)
 
     # ---- text -> steps
     def encode(self, text: str, enc) -> Steps:
@@ -83,6 +84,12 @@ class SequenceCodec:
         self._walk(root, enc, steps)
         if len(steps) > self.space.sequences.max_symbols:
             raise SequenceError(f"{len(steps)} symbols > {self.space.sequences.max_symbols}")
+        ok = self.space.sequences.arity_ok
+        for sym, a in zip(steps.sym, steps.arity):
+            if not ok[sym, a]:
+                raise SequenceError(f"{self.vocab.symbols[sym]!r} with arity {a} is not allowed by the grammar tables")
+        if max(steps.depths(), default=0) >= STACK:
+            raise SequenceError(f"a tree deeper than {STACK}")
         return steps
 
     def _parse(self, text: str):
@@ -132,6 +139,7 @@ class SequenceCodec:
     def _count(self, digits: str) -> int:
         if not is_count(digits):
             raise SequenceError(f"{digits!r} is not a canonical count")
+        self.rounding = max(self.rounding, self.space.counts.error(int(digits)))
         return self.space.counts.class_of(int(digits))
 
     @staticmethod

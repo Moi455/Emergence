@@ -1,0 +1,1161 @@
+{
+ "schema": "student2-output-registry-1",
+ "capacity": {
+  "gestures": 64,
+  "conditions": 32,
+  "write_vars": 128,
+  "forms": 128,
+  "enum_values": 128,
+  "directions": 16,
+  "manner_heads": 64
+ },
+ "manner_reserve": 4,
+ "gestures": [
+  {
+   "name": "blow",
+   "sig": "ref:target:0:fire/item|enum:intensity:intensity:0"
+  },
+  {
+   "name": "channel",
+   "sig": "ref:target:0:item/structure/terrain/voxel|enum:intent:intent:0|enum:intensity:intensity:0|ref:into:1:belief/form"
+  },
+  {
+   "name": "climb",
+   "sig": "ref:target:0:item/plant/structure/terrain/voxel|enum:pace:climb.pace:0"
+  },
+  {
+   "name": "drink",
+   "sig": "ref:item:0:item/water|enum:amount:amount:0|ref:to:1:agent/animal"
+  },
+  {
+   "name": "eat",
+   "sig": "ref:item:0:item/plant|enum:amount:amount:0|ref:to:1:agent/animal"
+  },
+  {
+   "name": "examine",
+   "sig": "ref:target:0:agent/animal/item/plant/structure/terrain/trace/voxel/water|enum:sense:sense:0|enum:contact_zone:contact_zone:0"
+  },
+  {
+   "name": "give",
+   "sig": "ref:item:0:item|ref:to:0:agent/animal|enum:mode:give.mode:0"
+  },
+  {
+   "name": "go",
+   "sig": "ref:target:0:agent/animal/direction/item/place/structure/trace/water|enum:relation:relation:0|enum:pace:go.pace:0|enum:stealth:stealth:0|enum:stop_at:stop_at:1"
+  },
+  {
+   "name": "grab",
+   "sig": "ref:target:0:agent/animal|enum:hold_zone:hold_zone:0|enum:intensity:intensity:0|condition:until"
+  },
+  {
+   "name": "guard",
+   "sig": "ref:against:0:agent/animal|enum:stance:stance:0"
+  },
+  {
+   "name": "jump",
+   "sig": "ref:target:0:direction/place/voxel/water|enum:intensity:intensity:0"
+  },
+  {
+   "name": "listen",
+   "sig": "ref:target:1:agent/direction/place|enum:stealth:stealth:0"
+  },
+  {
+   "name": "look",
+   "sig": "ref:target:0:agent/animal/direction/fire/item/place/structure/terrain/trace/water|enum:mode:look.mode:0|enum:stealth:stealth:0"
+  },
+  {
+   "name": "mount",
+   "sig": "ref:target:0:animal/item|enum:mode:mount.mode:0"
+  },
+  {
+   "name": "operate",
+   "sig": "ref:target:0:item/structure|enum:mode:operate.mode:0|ref:with:1:item|enum:stealth:stealth:0"
+  },
+  {
+   "name": "perform",
+   "sig": "ref:with:1:item|enum:mood:mood:0|enum:duration:duration:0"
+  },
+  {
+   "name": "pour",
+   "sig": "ref:from:0:item|ref:into:0:agent/fire/item/place/terrain/water|enum:amount:amount:0|enum:stealth:stealth:0"
+  },
+  {
+   "name": "pull",
+   "sig": "ref:target:0:agent/animal/item/structure/voxel|enum:intensity:intensity:0|ref:toward:1:direction/place"
+  },
+  {
+   "name": "push",
+   "sig": "ref:target:0:agent/animal/item/structure|enum:intensity:intensity:0|enum:direction:direction:0"
+  },
+  {
+   "name": "put",
+   "sig": "ref:item:0:agent/animal/item|ref:where:0:item/place/structure/terrain/voxel/water|enum:stealth:stealth:0|enum:contact_zone:contact_zone:0"
+  },
+  {
+   "name": "read",
+   "sig": "ref:target:0:item/structure"
+  },
+  {
+   "name": "rest",
+   "sig": "enum:duration:duration:0"
+  },
+  {
+   "name": "scoop",
+   "sig": "ref:target:0:item/terrain/voxel/water|ref:with:1:item|enum:amount:amount:0|ref:into:1:item/place/terrain"
+  },
+  {
+   "name": "search",
+   "sig": "ref:target:0:agent/item/place/structure/terrain/trace/water|enum:thoroughness:thoroughness:0"
+  },
+  {
+   "name": "set_posture",
+   "sig": "enum:posture:posture:0"
+  },
+  {
+   "name": "shape",
+   "sig": "ref:target:0:item/terrain|ref:into:0:belief/form|enum:intensity:intensity:0"
+  },
+  {
+   "name": "sign",
+   "sig": "enum:kind:kind:0|ref:at:1:agent/animal/direction/group/item/place"
+  },
+  {
+   "name": "sleep",
+   "sig": "ref:where:0:item/place/structure/terrain|condition:until"
+  },
+  {
+   "name": "speak",
+   "sig": "ref:to:1:agent/animal/group|enum:volume:volume:0|enum:tone:tone:0|expression:content"
+  },
+  {
+   "name": "stop",
+   "sig": ""
+  },
+  {
+   "name": "strike",
+   "sig": "ref:target:0:agent/animal/item/plant/structure/terrain/voxel|enum:zone:zone:0|enum:with:strike.with:0|enum:motion:strike.motion:0|enum:intensity:intensity:0|condition:until"
+  },
+  {
+   "name": "swim",
+   "sig": "ref:target:0:direction/place/water|enum:intensity:intensity:0"
+  },
+  {
+   "name": "take",
+   "sig": "ref:target:0:agent/animal/item|enum:from:from:0|enum:hold:hold:0|enum:stealth:stealth:0|enum:contact_zone:contact_zone:0"
+  },
+  {
+   "name": "throw",
+   "sig": "ref:item:0:item|ref:at:0:agent/animal/direction/fire/item/place/structure/voxel/water|enum:zone:zone:1|enum:intensity:intensity:0|ref:with:1:item"
+  },
+  {
+   "name": "tie",
+   "sig": "ref:target:0:agent/animal/item/structure|ref:to:1:agent/animal/item/structure|enum:mode:tie.mode:0|ref:with:0:item|enum:tightness:tightness:0|enum:contact_zone:contact_zone:0"
+  },
+  {
+   "name": "touch",
+   "sig": "ref:target:0:agent/animal|enum:with:touch.with:0|enum:contact_zone:contact_zone:0|enum:manner:manner:0|enum:duration:duration:0"
+  },
+  {
+   "name": "wait",
+   "sig": "condition:until"
+  },
+  {
+   "name": "wear",
+   "sig": "ref:item:0:item|enum:mode:wear.mode:0|ref:on:1:agent|enum:contact_zone:contact_zone:0"
+  },
+  {
+   "name": "work",
+   "sig": "ref:target:0:agent/animal/item/structure/terrain/voxel|ref:with:1:item|enum:motion:work.motion:0|enum:intensity:intensity:0|enum:duration:duration:0|enum:contact_zone:contact_zone:0"
+  },
+  {
+   "name": "write",
+   "sig": "ref:on:0:item/structure|expression:content"
+  }
+ ],
+ "conditions": [
+  {
+   "name": "c_addressed",
+   "sig": ""
+  },
+  {
+   "name": "c_attacked",
+   "sig": ""
+  },
+  {
+   "name": "c_blocked",
+   "sig": ""
+  },
+  {
+   "name": "c_done",
+   "sig": ""
+  },
+  {
+   "name": "c_elapsed",
+   "sig": "quantity"
+  },
+  {
+   "name": "c_exhausted",
+   "sig": "quantity"
+  },
+  {
+   "name": "c_hands_full",
+   "sig": ""
+  },
+  {
+   "name": "c_hears",
+   "sig": "concept"
+  },
+  {
+   "name": "c_hunger_above",
+   "sig": "quantity"
+  },
+  {
+   "name": "c_pain_above",
+   "sig": "quantity"
+  },
+  {
+   "name": "c_reached",
+   "sig": "place"
+  },
+  {
+   "name": "c_rested",
+   "sig": ""
+  },
+  {
+   "name": "c_sees",
+   "sig": "kind"
+  },
+  {
+   "name": "c_sees_ref",
+   "sig": "entity"
+  },
+  {
+   "name": "c_state_seen",
+   "sig": "entity,concept"
+  },
+  {
+   "name": "c_stopped",
+   "sig": ""
+  },
+  {
+   "name": "c_target_down",
+   "sig": "entity"
+  },
+  {
+   "name": "c_target_gone",
+   "sig": "entity"
+  },
+  {
+   "name": "c_target_still",
+   "sig": "entity"
+  },
+  {
+   "name": "c_target_yields",
+   "sig": "entity"
+  },
+  {
+   "name": "c_thirst_above",
+   "sig": "quantity"
+  },
+  {
+   "name": "c_time",
+   "sig": "time"
+  },
+  {
+   "name": "c_tool_broken",
+   "sig": ""
+  }
+ ],
+ "write_vars": [
+  {
+   "name": "altruism",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "anger",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "anxiety",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "anxiousness",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "assurance",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "attention",
+   "sig": "mref|jump|0.0|self|0|"
+  },
+  {
+   "name": "b_certainty",
+   "sig": "unipolar10|jump|0.0|belief|1|"
+  },
+  {
+   "name": "b_importance",
+   "sig": "unipolar10|step|1.0|belief|1|"
+  },
+  {
+   "name": "b_polarity",
+   "sig": "bool|jump|0.0|belief|1|"
+  },
+  {
+   "name": "b_proposition",
+   "sig": "proposition|jump|0.0|belief|1|"
+  },
+  {
+   "name": "b_secret",
+   "sig": "bool|jump|0.0|belief|1|"
+  },
+  {
+   "name": "b_source",
+   "sig": "enum|jump|0.0|belief|1|assumed/dreamt/heard/inferred/read/seen/told"
+  },
+  {
+   "name": "b_weight",
+   "sig": "bipolar10|step|0.3|belief|1|"
+  },
+  {
+   "name": "baseline_mood",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "boredom",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "confusion",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "contempt",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "creativity",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "diligence",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "disgust",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "envy",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "fairness",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "fear",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "fearfulness",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "forgiveness",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "g_deadline",
+   "sig": "time_until|jump|0.0|goal|1|"
+  },
+  {
+   "name": "g_desired",
+   "sig": "proposition|jump|0.0|goal|1|"
+  },
+  {
+   "name": "g_mode",
+   "sig": "enum|jump|0.0|goal|1|achieve/avoid/maintain"
+  },
+  {
+   "name": "g_origin",
+   "sig": "enum|jump|0.0|goal|1|self/asked/role/agreement/norm"
+  },
+  {
+   "name": "g_origin_ref",
+   "sig": "mref|jump|0.0|goal|1|"
+  },
+  {
+   "name": "g_priority",
+   "sig": "unipolar10|step|1.0|goal|1|"
+  },
+  {
+   "name": "g_status",
+   "sig": "enum|jump|0.0|goal|1|active/paused/achieved/failed/abandoned"
+  },
+  {
+   "name": "gentleness",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "gratitude",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "greed_avoidance",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "grief",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "guilt",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "i_commitment",
+   "sig": "unipolar10|jump|0.0|plan|0|"
+  },
+  {
+   "name": "i_serves",
+   "sig": "mref|jump|0.0|plan|0|"
+  },
+  {
+   "name": "inquisitiveness",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "jealousy",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "joy",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "m_content",
+   "sig": "proposition|jump|0.0|memory|1|"
+  },
+  {
+   "name": "m_defining",
+   "sig": "bool|jump|0.0|memory|1|"
+  },
+  {
+   "name": "m_emotion",
+   "sig": "enum|jump|0.0|memory|1|e_anger/e_anxiety/e_boredom/e_confusion/e_contempt/e_disgust/e_envy/e_fear/e_gratitude/e_grief/e_guilt/e_jealousy/e_joy/e_pride/e_sadness/e_shame/e_surprise/e_tenderness"
+  },
+  {
+   "name": "m_importance",
+   "sig": "unipolar10|step|1.0|memory|1|"
+  },
+  {
+   "name": "m_interpretation",
+   "sig": "word|jump|0.0|memory|1|accident/adultery/affront/animal_cruelty/arson/assault/betrayal/bribery/broken_promise/cowardice/disrespect_absence/drunkenness/encroachment/extortion/fraud/generosity/heroism/hospitality/hypocrisy/ingratitude/injustice/insult/kidnapping/kindness/laziness/lie/loyalty/manslaughter/mockery/murder/negligence/nothing_special/poisoning/rebellion/rescue/revenge/sacrilege/self_defense/slander/sorcery/taking_back/theft/threat_felt/trespass/usurpation/vandalism"
+  },
+  {
+   "name": "m_secret",
+   "sig": "bool|jump|0.0|memory|1|"
+  },
+  {
+   "name": "m_valence",
+   "sig": "bipolar10|step|1.0|memory|1|"
+  },
+  {
+   "name": "masking",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "modesty",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "need_achievement",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_acquisition",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_autonomy",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_company",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_esteem",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_intimacy",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_meaning",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_novelty",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_play",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "need_security",
+   "sig": "unipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "patience",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "pride",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "prudence",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "r_affection",
+   "sig": "bipolar10|step|0.5|entity|0|"
+  },
+  {
+   "name": "r_attraction",
+   "sig": "unipolar10|step|0.5|entity|0|"
+  },
+  {
+   "name": "r_fear",
+   "sig": "unipolar10|jump|0.0|entity|0|"
+  },
+  {
+   "name": "r_obligation",
+   "sig": "bipolar10|step|0.5|entity|0|"
+  },
+  {
+   "name": "r_resentment",
+   "sig": "unipolar10|step|0.5|entity|0|"
+  },
+  {
+   "name": "r_respect",
+   "sig": "bipolar10|step|0.5|entity|0|"
+  },
+  {
+   "name": "r_rivalry",
+   "sig": "unipolar10|step|0.5|entity|0|"
+  },
+  {
+   "name": "r_trust",
+   "sig": "bipolar10|step|0.5|entity|0|"
+  },
+  {
+   "name": "resilience",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "sadness",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "self_control",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "self_regard",
+   "sig": "bipolar10|step|0.5|self|0|"
+  },
+  {
+   "name": "sentimentality",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "shame",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "sincerity",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "sociability",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "surprise",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "tenderness",
+   "sig": "unipolar10|jump|0.0|self|0|"
+  },
+  {
+   "name": "unconventionality",
+   "sig": "bipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_achievement",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_authority",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_honor",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_liberty",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_loyalty",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_pleasure",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_power",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "v_sanctity",
+   "sig": "unipolar10|slow|0.1|self|0|"
+  }
+ ],
+ "forms": [
+  "abrasive_face",
+  "absorbent_pad",
+  "armor_plate",
+  "bag",
+  "basket_weave",
+  "blade",
+  "block",
+  "blunt_head",
+  "box",
+  "coating",
+  "cord",
+  "curved_blade",
+  "elastic_limb",
+  "fastener",
+  "fiber_bundle",
+  "food_body",
+  "frame",
+  "garment",
+  "granules",
+  "grip",
+  "hinge",
+  "hook",
+  "hull",
+  "key_bit",
+  "leg",
+  "lid",
+  "liquid",
+  "lock_mechanism",
+  "lump",
+  "magic_core",
+  "mail",
+  "membrane",
+  "mesh",
+  "needle",
+  "ornament",
+  "padding",
+  "paddle",
+  "pick_head",
+  "platform",
+  "point",
+  "polished_face",
+  "powder",
+  "preparation",
+  "resonator",
+  "ring_band",
+  "rod",
+  "sail",
+  "scale_marks",
+  "seed",
+  "shaft",
+  "sheet_flexible",
+  "sheet_rigid",
+  "spade_head",
+  "spout",
+  "strap",
+  "teeth",
+  "tension_string",
+  "tines",
+  "trigger_mechanism",
+  "vessel",
+  "wedge",
+  "wheel",
+  "wick"
+ ],
+ "enum_values": [
+  "false",
+  "true",
+  "assumed",
+  "dreamt",
+  "heard",
+  "inferred",
+  "read",
+  "seen",
+  "told",
+  "achieve",
+  "avoid",
+  "maintain",
+  "self",
+  "asked",
+  "role",
+  "agreement",
+  "norm",
+  "active",
+  "paused",
+  "achieved",
+  "failed",
+  "abandoned",
+  "e_anger",
+  "e_anxiety",
+  "e_boredom",
+  "e_confusion",
+  "e_contempt",
+  "e_disgust",
+  "e_envy",
+  "e_fear",
+  "e_gratitude",
+  "e_grief",
+  "e_guilt",
+  "e_jealousy",
+  "e_joy",
+  "e_pride",
+  "e_sadness",
+  "e_shame",
+  "e_surprise",
+  "e_tenderness",
+  "accident",
+  "adultery",
+  "affront",
+  "animal_cruelty",
+  "arson",
+  "assault",
+  "betrayal",
+  "bribery",
+  "broken_promise",
+  "cowardice",
+  "disrespect_absence",
+  "drunkenness",
+  "encroachment",
+  "extortion",
+  "fraud",
+  "generosity",
+  "heroism",
+  "hospitality",
+  "hypocrisy",
+  "ingratitude",
+  "injustice",
+  "insult",
+  "kidnapping",
+  "kindness",
+  "laziness",
+  "lie",
+  "loyalty",
+  "manslaughter",
+  "mockery",
+  "murder",
+  "negligence",
+  "nothing_special",
+  "poisoning",
+  "rebellion",
+  "rescue",
+  "revenge",
+  "sacrilege",
+  "self_defense",
+  "slander",
+  "sorcery",
+  "taking_back",
+  "theft",
+  "threat_felt",
+  "trespass",
+  "usurpation",
+  "vandalism"
+ ],
+ "directions": [
+  "ahead",
+  "ahead_right",
+  "right",
+  "behind_right",
+  "behind",
+  "behind_left",
+  "left",
+  "ahead_left",
+  "up",
+  "down"
+ ],
+ "manner": [
+  {
+   "name": "amount",
+   "values": [
+    "little",
+    "some",
+    "all"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "climb.pace",
+   "values": [
+    "slow",
+    "walk",
+    "brisk"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "contact_zone",
+   "values": [
+    "head",
+    "face",
+    "shoulder",
+    "arms",
+    "hands",
+    "back",
+    "torso",
+    "legs",
+    "body"
+   ],
+   "capacity": 13
+  },
+  {
+   "name": "direction",
+   "values": [
+    "away",
+    "down",
+    "aside",
+    "into"
+   ],
+   "capacity": 8
+  },
+  {
+   "name": "duration",
+   "values": [
+    "brief",
+    "a_while",
+    "long"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "from",
+   "values": [
+    "ground",
+    "container",
+    "hand_of",
+    "worn_by"
+   ],
+   "capacity": 8
+  },
+  {
+   "name": "give.mode",
+   "values": [
+    "offer",
+    "press"
+   ],
+   "capacity": 6
+  },
+  {
+   "name": "go.pace",
+   "values": [
+    "slow",
+    "walk",
+    "brisk",
+    "run"
+   ],
+   "capacity": 8
+  },
+  {
+   "name": "hold",
+   "values": [
+    "in_hand",
+    "in_arms",
+    "on_back",
+    "by_arm"
+   ],
+   "capacity": 8
+  },
+  {
+   "name": "hold_zone",
+   "values": [
+    "arm",
+    "collar",
+    "hair",
+    "neck",
+    "waist"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "intensity",
+   "values": [
+    "faint",
+    "light",
+    "firm",
+    "hard",
+    "full"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "intent",
+   "values": [
+    "assemble",
+    "disassemble",
+    "mend",
+    "shape"
+   ],
+   "capacity": 8
+  },
+  {
+   "name": "kind",
+   "values": [
+    "point",
+    "nod",
+    "shake_head",
+    "wave",
+    "beckon",
+    "shrug",
+    "bow",
+    "applaud",
+    "raise_hand",
+    "show",
+    "spit",
+    "fist"
+   ],
+   "capacity": 16
+  },
+  {
+   "name": "look.mode",
+   "values": [
+    "glance",
+    "watch",
+    "stare"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "manner",
+   "values": [
+    "gentle",
+    "firm",
+    "playful",
+    "romantic",
+    "intimate"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "mood",
+   "values": [
+    "joyful",
+    "sad",
+    "solemn",
+    "lively",
+    "eerie"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "mount.mode",
+   "values": [
+    "get_on",
+    "get_off"
+   ],
+   "capacity": 6
+  },
+  {
+   "name": "operate.mode",
+   "values": [
+    "open",
+    "close",
+    "lock",
+    "unlock",
+    "activate"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "posture",
+   "values": [
+    "stand",
+    "sit",
+    "kneel",
+    "crouch",
+    "lie_down"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "relation",
+   "values": [
+    "toward",
+    "along",
+    "away"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "sense",
+   "values": [
+    "look",
+    "touch",
+    "weigh",
+    "smell",
+    "taste"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "stance",
+   "values": [
+    "block",
+    "dodge",
+    "cover"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "stealth",
+   "values": [
+    "open",
+    "discreet"
+   ],
+   "capacity": 6
+  },
+  {
+   "name": "stop_at",
+   "values": [
+    "touch",
+    "near",
+    "talk",
+    "sight"
+   ],
+   "capacity": 8
+  },
+  {
+   "name": "strike.motion",
+   "values": [
+    "swing",
+    "thrust"
+   ],
+   "capacity": 6
+  },
+  {
+   "name": "strike.with",
+   "values": [
+    "held",
+    "open_hand",
+    "fist",
+    "foot",
+    "head",
+    "mouth"
+   ],
+   "capacity": 10
+  },
+  {
+   "name": "thoroughness",
+   "values": [
+    "brief",
+    "a_while",
+    "long"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "tie.mode",
+   "values": [
+    "knot",
+    "lash",
+    "sew",
+    "bind"
+   ],
+   "capacity": 8
+  },
+  {
+   "name": "tightness",
+   "values": [
+    "light",
+    "firm",
+    "hard"
+   ],
+   "capacity": 7
+  },
+  {
+   "name": "tone",
+   "values": [
+    "warm",
+    "calm",
+    "cold",
+    "angry",
+    "pleading"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "touch.with",
+   "values": [
+    "hand",
+    "arms",
+    "lips",
+    "forehead",
+    "body"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "volume",
+   "values": [
+    "whisper",
+    "low",
+    "normal",
+    "loud",
+    "shout"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "wear.mode",
+   "values": [
+    "put_on",
+    "take_off"
+   ],
+   "capacity": 6
+  },
+  {
+   "name": "work.motion",
+   "values": [
+    "press",
+    "rub",
+    "stir",
+    "squeeze",
+    "saw"
+   ],
+   "capacity": 9
+  },
+  {
+   "name": "zone",
+   "values": [
+    "head",
+    "torso",
+    "arms",
+    "legs",
+    "any"
+   ],
+   "capacity": 9
+  }
+ ]
+}

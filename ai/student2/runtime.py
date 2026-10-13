@@ -15,7 +15,7 @@ from tok2.interface import canonical_json, fnv1a64
 from .labels import LabelCodec
 from .spec import OutputSpace
 
-SCHEMA = "student2-1"
+SCHEMA = "student2-2"
 
 
 @dataclass(frozen=True)

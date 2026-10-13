@@ -22,7 +22,7 @@ from dataclasses import dataclass, field, fields
 import numpy as np
 
 from .sequences import SequenceCodec, SequenceError, Steps
-from .spec import MAX_REFS, MAX_WRITES, NO_LABEL, NUM_BINS, OutputSpace, SpaceError, TargetKind, ValueKind
+from .spec import MAX_REFS, MAX_SLOTS, MAX_WRITES, NO_LABEL, NUM_BINS, OutputSpace, SpaceError, TargetKind, ValueKind
 
 
 class LabelError(SpaceError):
@@ -61,7 +61,7 @@ class Targets:
     @classmethod
     def empty(cls, space: OutputSpace) -> "Targets":
         S, L = space.sequences.MAX_SEQUENCES, space.sequences.steps
-        return cls(gesture=_i64(), ref=_i64(MAX_REFS), manner=_i64(len(space.manner.heads)), cond=_i64(),
+        return cls(gesture=_i64(), ref=_i64(MAX_REFS), manner=_i64(space.manner.cap_heads), cond=_i64(),
                    cond_ref=_i64(2), cond_num=_i64(2), cond_word=_i64(2), n_writes=_i64(fill=0),
                    w_target=_i64(MAX_WRITES), w_var=_i64(MAX_WRITES), w_enum=_i64(MAX_WRITES), w_num=_i64(MAX_WRITES),
                    w_qty=_i64(MAX_WRITES), w_ptr=_i64(MAX_WRITES), seq_len=_i64(S, fill=-1), seq_sym=_i64(S, L),
@@ -99,10 +99,12 @@ class LabelCodec:
         self.space = space
         self.seq = SequenceCodec(space)
         self.vocab = space.tokenizer.vocab
+        self.rounding = 0.0              # worst relative rounding of a quantity or a count in the LAST encode
 
     # ================================================================================== decision -> targets
     def encode(self, d: dict, enc, records) -> Targets:
         sp, t = self.space, Targets.empty(self.space)
+        self.rounding = self.seq.rounding = 0.0
         book = RecordIndex(records)
         gid = d.get("gesture")
         if gid not in sp.gestures.index:
@@ -140,7 +142,41 @@ class LabelCodec:
         elif speech:
             raise LabelError(f"{gid} takes no speech")
         self._writes(d.get("writes") or [], enc, book, t)
+        self.rounding = max(self.rounding, self.seq.rounding)
+        self._conform(t, enc)
         return t
+
+    def _conform(self, t: Targets, enc) -> None:
+        """The masks of the heads (which records / extras a pointer accepts) and the labels must agree: an example the
+        masks would forbid is refused here, counted, instead of being learned with an impossible target."""
+        sp = self.space
+        g = int(t.gesture)
+        types = np.asarray(enc.type_id)
+
+        def record_ok(i: int, table) -> bool:
+            return 1 <= i <= len(types) and bool(table[types[i - 1]])
+
+        for k in range(MAX_REFS):
+            i = int(t.ref[k])
+            if int(t.ref[k]) == NO_LABEL:
+                continue
+            if sp.pointers.is_slot(i):
+                if not record_ok(i, sp.gestures.ref_type_ok[g, k]):
+                    raise LabelError(f"{sp.gestures.names[g]}: pointer {k} cannot designate a {enc.keys[i - 1]} (type not accepted)")
+            elif not sp.gestures.ref_extra_ok[g, k, self._extra_index(i)]:
+                raise LabelError(f"{sp.gestures.names[g]}: pointer {k} cannot be {sp.pointers.name_of(i) or 'nobody'}")
+        if int(t.cond) != NO_LABEL:
+            for j in range(2):
+                if int(t.cond_ref[j]) != NO_LABEL and not record_ok(int(t.cond_ref[j]), sp.conditions.arg_type_ok[int(t.cond), j]):
+                    raise LabelError(f"condition {sp.conditions.ids[int(t.cond)]}: argument {j} is a record of a type it does not accept")
+        for i in range(int(t.n_writes)):
+            v = int(t.w_var[i])
+            if int(t.w_ptr[i]) != NO_LABEL and not record_ok(int(t.w_ptr[i]), sp.writes.mref_type_ok[v]):
+                raise LabelError(f"{sp.writes.ids[v]}: its value is a record of a type it does not accept")
+
+    def _extra_index(self, i: int) -> int:
+        P = self.space.pointers
+        return 0 if i == P.NONE else i - MAX_SLOTS
 
     def _reference(self, v, enc, where: str) -> int:
         P = self.space.pointers
@@ -176,6 +212,7 @@ class LabelCodec:
                 if not (a.isascii() and a.isdigit()):
                     raise LabelError(f"condition {text!r}: {a!r} is not a whole number")
                 t.cond_num[j] = sp.quantity.bin_of(float(a))
+                self.rounding = max(self.rounding, sp.quantity.error(float(a)))
             else:
                 if not self.vocab.is_word(a):
                     raise LabelError(f"condition {text!r}: {a!r} is not a plain word")
@@ -214,10 +251,10 @@ class LabelCodec:
                 raise LabelError(f"unknown variable {var!r}")
             target = "me" if w["target"] == "self" else w["target"]
             tgt = sp.pointers.NEW if target == "new" else self._slot_of(target, enc, f"write {var}")
-            coded.append((sp.writes.index[var], tgt, target, w["value"]))
-        coded.sort(key=lambda c: (c[0], c[1]))                                   # a canonical order: a set, not a story
+            coded.append((tgt, sp.writes.index[var], target, w["value"]))
+        coded.sort(key=lambda c: (c[0], c[1]))                                   # a canonical order (target, variable): a set, not a story
         t.n_writes[...] = len(coded)
-        for i, (v, tgt, target, value) in enumerate(coded):
+        for i, (tgt, v, target, value) in enumerate(coded):
             var = sp.writes.vars[v]
             kind = sp.writes.kind[v]
             t.w_var[i], t.w_target[i] = v, tgt
@@ -238,6 +275,7 @@ class LabelCodec:
                 t.w_enum[i] = sp.writes.enum_values.index(name)
             elif kind == ValueKind.QTY:
                 t.w_qty[i] = sp.quantity.bin_of(float(value))
+                self.rounding = max(self.rounding, sp.quantity.error(float(value)))
             elif kind == ValueKind.PTR:
                 t.w_ptr[i] = self._slot_of(value, enc, f"{var.id} value")
             else:
@@ -261,6 +299,8 @@ class LabelCodec:
         book = RecordIndex(records)
         g = int(t.gesture)
         shape = sp.gestures.shapes[g]
+        if shape is None:
+            raise LabelError(f"gesture index {g} is not registered")
         params: dict[str, str] = {}
         for k, rp in enumerate(shape.refs):
             i = int(t.ref[k])
@@ -271,7 +311,7 @@ class LabelCodec:
         for e in shape.enums:
             j = int(t.manner[sp.manner.head_index[e.head]])
             values = sp.manner.values[e.head]
-            if j == len(values) and sp.manner.has_none[e.head]:
+            if j == sp.manner.none_index(e.head):
                 if not e.optional:
                     raise LabelError(f"{shape.id}.{e.name} is required")
                 continue
@@ -300,7 +340,7 @@ class LabelCodec:
     def _condition_text(self, t: Targets, enc) -> str:
         sp = self.space
         c = int(t.cond)
-        if not 0 <= c < sp.conditions.n:
+        if not 0 <= c < len(sp.conditions.ids) or not sp.conditions.live[c]:
             raise LabelError(f"condition {c}")
         head = sp.conditions.ids[c]
         out = [head]
@@ -329,6 +369,8 @@ class LabelCodec:
         sp = self.space
         v = int(t.w_var[i])
         var = sp.writes.vars[v]
+        if var is None:
+            raise LabelError(f"variable index {v} is not registered")
         tgt = int(t.w_target[i])
         target = "new" if tgt == sp.pointers.NEW else self._name_of(tgt, enc, f"write {var.id}")
         kind = sp.writes.kind[v]

@@ -9,6 +9,12 @@
      "verdict":  "ok" (only valid answers are written; the governor's code per write stays in `decision.writes`),
      "source":   {"teacher": model name, "date": UTC ISO, "seed": sampler seed, "index": situation index}}
 
+The line STARTS with a short header that a reader can parse without decoding the whole line:
+    {"format":..., "hdr": "<interface 8 hex>:<layout 8 hex>", "id": "<seed>:<index>", "teacher": ..., ["synthetic": true,] ...
+`hdr` lets a reader exclude (and count) the lines written for another interface or layout when it OPENS the file;
+`id` deduplicates a situation asked twice; `synthetic: true` marks random test data (the smoke generator), which a
+trainer refuses unless it is told it is only a test.
+
 The student reads it with `student2.data.LabelDataset`, which tokenises on the fly and refuses a file written for
 another interface or layout. No network, no secret, no teacher "why" text (it is not part of the state).
 """
@@ -28,26 +34,51 @@ class DatasetError(ValueError):
     """A line that is not a label record."""
 
 
+META_END = ',"verdict":'
+
+
 @dataclass
 class LabelRecord:
     context: dict
     decision: dict
     verdict: str = "ok"
     source: dict = field(default_factory=dict)
+    synthetic: bool = False
 
     @classmethod
-    def build(cls, tokenizer, situation, outcome, teacher: str, now: datetime | None = None) -> "LabelRecord":
+    def build(cls, tokenizer, situation, outcome, teacher: str, now: datetime | None = None,
+              synthetic: bool = False) -> "LabelRecord":
         """From a validated Outcome on a Situation (ai/situations)."""
         if not outcome.ok:
             raise DatasetError(f"only valid answers are labels (got {outcome.code})")
         now = now or datetime.now(timezone.utc)
         return cls(context=situation.context.to_dict(tokenizer), decision=outcome.decision.to_dict(), verdict=outcome.code,
                    source={"teacher": teacher, "date": now.isoformat(timespec="seconds"), "seed": situation.seed,
-                           "index": situation.index})
+                           "index": situation.index}, synthetic=synthetic)
+
+    # ---- the short header
+    @staticmethod
+    def short_header(header: dict) -> str:
+        return f"{str(header.get('interface', ''))[:8]}:{str(header.get('layout', ''))[:8]}"
+
+    @property
+    def hdr(self) -> str:
+        return self.short_header(self.context.get("header", {}))
+
+    @property
+    def id(self) -> str:
+        return f"{self.source.get('seed')}:{self.source.get('index')}"
+
+    @property
+    def teacher(self) -> str:
+        return str(self.source.get("teacher", ""))
 
     def to_line(self) -> str:
-        return json.dumps({"format": FORMAT, "context": self.context, "decision": self.decision, "verdict": self.verdict,
-                           "source": self.source}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        d = {"format": FORMAT, "hdr": self.hdr, "id": self.id, "teacher": self.teacher}
+        if self.synthetic:
+            d["synthetic"] = True
+        d.update(verdict=self.verdict, source=self.source, decision=self.decision, context=self.context)
+        return json.dumps(d, separators=(",", ":"), ensure_ascii=False)
 
     @classmethod
     def from_line(cls, line: str) -> "LabelRecord":
@@ -62,7 +93,38 @@ class LabelRecord:
             raise DatasetError(f"missing {sorted(missing)}")
         if not isinstance(d["decision"], dict) or "gesture" not in d["decision"]:
             raise DatasetError("a decision has at least a gesture")
-        return cls(d["context"], d["decision"], d["verdict"], d["source"])
+        return cls(d["context"], d["decision"], d["verdict"], d["source"], bool(d.get("synthetic", False)))
+
+
+@dataclass(frozen=True)
+class LineMeta:
+    """What a reader learns from the START of a line, without decoding the context."""
+    hdr: str
+    id: str
+    teacher: str
+    synthetic: bool
+
+    @property
+    def smoke(self) -> bool:
+        return self.synthetic or self.teacher.startswith("smoke")
+
+    @classmethod
+    def of(cls, line: str) -> "LineMeta":
+        cut = line.find(META_END)
+        if cut > 0:
+            try:
+                d = json.loads(line[:cut] + "}")
+                if d.get("format") == FORMAT and "hdr" in d and "id" in d:
+                    return cls(d["hdr"], d["id"], d.get("teacher", ""), bool(d.get("synthetic", False)))
+            except ValueError:
+                pass
+        try:
+            d = json.loads(line)                              # no compact header at the start: decode the line
+        except ValueError as e:
+            raise DatasetError(f"not JSON: {e}") from None
+        r = LabelRecord.from_line(line)
+        return cls(str(d.get("hdr") or r.hdr), str(d.get("id") or r.id), str(d.get("teacher") or r.teacher),
+                   bool(d.get("synthetic", r.synthetic)))
 
 
 class DatasetFile:

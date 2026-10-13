@@ -652,6 +652,12 @@ class PilotTests(unittest.TestCase):
         ctx = DecisionContext.loads(json.dumps(r.context), tok)              # and the context loads back
         self.assertEqual(tok.encode(ctx).digest(), run.sampler.sample(0).encoded.digest())
         self.assertNotIn("why", r.to_line())                                 # the teacher's prose is not state
+        from teacher.dataset import LineMeta
+        line = r.to_line()
+        self.assertTrue(line.startswith('{"format":"emergence-labels-1","hdr":"'))      # the short header comes first
+        meta = LineMeta.of(line)
+        self.assertEqual((meta.hdr, meta.id, meta.synthetic, meta.smoke), (r.hdr, "1:0", False, False))
+        self.assertEqual(len(meta.hdr), 17)
         self.assertEqual(LabelRecord.from_line(r.to_line()), r)
 
     def test_dry_run_writes_files_and_sizes(self):
