@@ -21,6 +21,7 @@ class Entry:
     present: Present | None = None
     fields: dict = field(default_factory=dict)       # his ENTITY fields, once built
     believed_age: float | None = None                # the age the NPC believes of a person who is not here
+    dead: bool = False                               # he knows this person is dead
 
 
 class Layout:
@@ -39,6 +40,16 @@ class Layout:
         self.groups = [f"@G{i + 1}" for i in range(n_groups)]
         self.pkeys = [e.key for e in self.entries]
         self.here = [e.key for e in self.entries if e.present is not None]
+
+    # ---- the living and the dead ---------------------------------------------------------------------------
+    @property
+    def alive(self) -> list[str]:
+        """Keys of the persons with a file who are alive: the ones who can inform, owe, own, be planned for."""
+        return [e.key for e in self.entries if not e.dead]
+
+    @property
+    def dead(self) -> list[str]:
+        return [e.key for e in self.entries if e.dead]
 
     def people(self, me: Person) -> dict[str, Person]:
         """key -> the true person, 'me' and the ghosts included."""

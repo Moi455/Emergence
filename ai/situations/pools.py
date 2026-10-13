@@ -80,6 +80,15 @@ class Pools:
         """Item categories that are arms (a blade, a blunt weapon, a polearm, a ranged weapon, ammunition)."""
         return frozenset(c for c in self.items_by_category if c in ("blade", "blunt", "polearm", "ranged", "ammo"))
 
+    def place_items(self, categories) -> list[str]:
+        """Every item of these categories, once each (an object is as likely as any other, not as likely as its
+        category's share); no boat on dry land."""
+        return [k for cat in categories for k in self.items_by_category.get(cat, ()) if k not in self.water_kinds]
+
+    @cached_property
+    def water_kinds(self) -> frozenset[str]:
+        return frozenset(k for k in self.cat["item_type"] if "boat" in k)
+
     @cached_property
     def category_of(self) -> dict[str, str]:
         return {it.id: it.category for it in self.cat["item_type"].values()}

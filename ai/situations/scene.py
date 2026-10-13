@@ -161,19 +161,38 @@ class PlaceArchetype:
     crowd: tuple[int, int]
     habitats: tuple[str, ...] = ()
     night: float = 1.0                          # relative frequency at night (day: 1)
+    strangers: float = 0.3                      # share of the people around who are strangers to the NPC
 
 
 PLACES = (
-    PlaceArchetype("well", False, ("container", "cleaning", "household"), (0, 5), ("village",), 0.05),
-    PlaceArchetype("tavern", True, ("drink", "dish", "tableware", "furniture", "game", "music", "light"), (2, 12), (), 0.9),
-    PlaceArchetype("field", False, ("farming", "seed", "produce", "grain", "carry"), (0, 5), ("fields", "meadow"), 0.03),
-    PlaceArchetype("forest", False, ("forestry", "hunting", "raw_wood"), (0, 2), ("forest",), 0.08),
-    PlaceArchetype("market", False, ("trade", "currency", "produce", "textile", "pottery", "bread", "meat"), (4, 20),
-                   ("village",), 0.02),
-    PlaceArchetype("home", True, ("household", "furniture", "kitchen", "tableware", "textile", "light", "toy"), (0, 5), (), 3.0),
-    PlaceArchetype("workshop", True, ("smithing", "carpentry", "masonry", "metal_stock", "raw_wood", "leather"), (0, 4), (), 0.1),
-    PlaceArchetype("road", False, ("carry", "vehicle"), (0, 3), ("meadow", "village"), 0.12),
+    PlaceArchetype("well", False, ("container", "cleaning", "household", "drink"), (0, 5), ("village",), 0.05, 0.25),
+    PlaceArchetype("tavern", True, ("drink", "dish", "tableware", "furniture", "game", "music", "light"), (2, 12), (), 0.35, 0.45),
+    PlaceArchetype("field", False, ("farming", "seed", "produce", "grain", "carry"), (0, 5), ("fields", "meadow"), 0.03, 0.25),
+    PlaceArchetype("forest", False, ("forestry", "hunting", "raw_wood"), (0, 2), ("forest",), 0.08, 0.4),
+    PlaceArchetype("market", False, ("trade", "currency", "produce", "textile", "pottery", "bread", "meat", "drink"), (4, 20),
+                   ("village",), 0.02, 0.7),
+    PlaceArchetype("home", True, ("household", "furniture", "kitchen", "tableware", "textile", "light", "toy", "bread",
+                                  "dish", "drink", "clothing"), (0, 5), (), 3.0, 0.05),
+    PlaceArchetype("workshop", True, ("smithing", "carpentry", "masonry", "metal_stock", "raw_wood", "leather"), (0, 4), (), 0.1, 0.15),
+    PlaceArchetype("road", False, ("carry", "vehicle"), (0, 3), ("meadow", "village"), 0.12, 0.6),
 )
+
+# what a person carries: by trade, by place, by age (a baby carries nothing of the adults)
+OCC_CARRY = {
+    "o_farmer": ("farming", "seed"), "o_fisher": ("fishing",), "o_smith": ("smithing", "metal_stock"),
+    "o_baker": ("bread", "kitchen"), "o_miller": ("grain",), "o_weaver": ("fiber", "textile"), "o_mason": ("masonry",),
+    "o_carpenter": ("carpentry",), "o_miner": ("mining",), "o_hunter": ("hunting", "ranged", "blade"),
+    "o_shepherd": ("husbandry",), "o_merchant": ("trade", "currency"), "o_healer": ("healing", "medicine"),
+    "o_brewer": ("drink", "kitchen"), "o_potter": ("pottery",), "o_builder": ("building", "masonry", "carpentry"),
+    "o_innkeeper": ("drink", "tableware", "kitchen"), "o_scribe": ("writing",), "o_woodcutter": ("forestry",),
+    "o_tanner": ("leather",)}
+PLACE_CARRY = {"well": ("container",), "tavern": ("drink", "currency", "game"), "field": ("farming", "carry", "seed"),
+               "forest": ("forestry", "hunting", "carry"), "market": ("currency", "trade", "carry", "produce"),
+               "home": ("household", "clothing"), "workshop": ("carpentry", "smithing"), "road": ("carry", "currency")}
+ALWAYS_CARRY = ("currency", "carry", "bread")
+BABY_CARRY, SMALL_CARRY, CHILD_CARRY = ("toy",), ("toy", "bread", "produce"), ("toy", "bread", "produce", "carry", "currency")
+NIGHT_START, NIGHT_END = 20.0, 6.0               # children are not alone at the tavern between these hours
+CHILD_AGE = 14.0
 
 
 @dataclass
@@ -221,40 +240,125 @@ class Scene:
 
 
 class SceneFactory:
+    # the other people of a family: age of a new relative from the ones already drawn (age = other + offset)
+    KIN = {"grandparent": (("parent", 16, 45), ("aunt_uncle", 16, 45)),
+           "parent": (("grandparent", -45, -16), ("aunt_uncle", -15, 15), ("sibling", 16, 45)),
+           "aunt_uncle": (("grandparent", -45, -16), ("parent", -15, 15), ("cousin", 16, 45)),
+           "sibling": (("parent", -45, -16), ("niece_nephew", 16, 45)),
+           "cousin": (("aunt_uncle", -45, -16),), "child": (("grandchild", 16, 45),), "grandchild": (("child", -45, -16),),
+           "niece_nephew": (("sibling", -45, -16),)}
+
     def __init__(self, rng: random.Random, pools: Pools, rules: LinkRules | None = None):
         self.rng, self.pools = rng, pools
         self.d = Draw(rng)
         self.people = PersonFactory(self.d, pools)
         self.rules = rules or LinkRules(pools)
         self.counts: dict[str, int] = {}
+        self.family: list[tuple[str, float]] = []           # (link, age) of the relatives already drawn
 
     # ---- the scene -----------------------------------------------------------------------------------
     def make(self, needs_company: bool = False) -> Scene:
-        """`needs_company`: somebody is there (a request, words or a gesture to be heard or seen need a person)."""
+        """`needs_company`: somebody fit is there, close enough to speak to him (a request, words or a gesture to be
+        heard or seen need a person)."""
         rng, d = self.rng, self.d
         long = d.chance(0.3)
         hour = round(rng.uniform(0, 24), 2)
-        night = hour < 5.5 or hour >= 21.5
-        place = d.weighted({p.name: (p.night if night else 1.0) for p in PLACES}, allowed=[p.name for p in PLACES])
-        place = next(p for p in PLACES if p.name == place)
         self_ = self.people.make()
+        place = self._place(self_, hour)
         scene = Scene(place, hour, d.pick(("spring", "summer", "autumn", "winter")), self_, long=long)
         n = rng.randint(8, 12) if long else rng.randint(*place.crowd)
-        if needs_company:
-            n = max(n, 1)
-        for _ in range(min(n, 9)):
-            other, link = self._related(self_)
+        for _ in range(min(max(n, 1) if needs_company else n, 9)):
+            other, link = self._related(self_, stranger=place.strangers)
             scene.present.append(Present(other, link, self._distance(), rng.uniform(-3.14, 3.14),
                                          link != "stranger" or d.chance(0.2)))
-        if needs_company and not any(x.known or x.dist < 15 for x in scene.present):
-            scene.present[0].dist, scene.present[0].known = d.uniform(1.0, 10.0), True
         for _ in range(rng.randint(3, 5) if long else rng.randint(0, 3)):
             scene.absent.append(self._related(self_, known=True))
-        for _ in range(rng.randint(1, 3)):
-            scene.ghosts.append(self._related(self_, known=True))
         self._things(scene, long)
+        self._carry(scene, long)
         self._cluster(scene)
+        if self_.age < 8:                                       # after the crowd has settled: these two stay where put
+            self._referent(scene)
+        if needs_company and not any((x.known or x.dist < 15) and x.dist <= 10 for x in scene.present):
+            self._put(scene, scene.present[0], d.uniform(1.0, 10.0), scene.present[0].bearing)
+            scene.present[0].known = True
         return scene
+
+    @staticmethod
+    def _put(scene: Scene, x: Present, dist: float, bearing: float) -> None:
+        """Move a person, and what he holds with him."""
+        x.dist, x.bearing = round(dist, 1), bearing
+        for t in scene.things:
+            if t.held_by == x.person.pid:
+                t.dist, t.bearing = x.dist, x.bearing
+
+    def _place(self, me: Person, hour: float) -> PlaceArchetype:
+        """Where he is: by the hour, and a child is not alone at the tavern at night."""
+        d = self.d
+        night = hour < 5.5 or hour >= 21.5
+        weights = {p.name: (p.night if night else 1.0) for p in PLACES}
+        if me.age < CHILD_AGE and (hour >= NIGHT_START or hour < NIGHT_END):
+            weights["tavern"] = 0.0
+        name = d.weighted(weights, allowed=[p.name for p in PLACES])
+        return next(p for p in PLACES if p.name == name)
+
+    def _referent(self, scene: Scene) -> None:
+        """A child under 8 is never without a grown-up: a relative (else a neighbour) is there, near, known."""
+        me = scene.self_
+        if any(x.person.age >= ADULT and x.known and x.dist < 15 for x in scene.present):
+            return
+        for link in ("parent", "parent", "aunt_uncle", "grandparent", "neighbor"):
+            span = self._family_range(link, me.age) if self.rules.allowed(link, self.counts) else None
+            if span is not None:
+                lo = max(span[0], ADULT)
+                if lo <= span[1]:
+                    self.counts[link] = self.counts.get(link, 0) + 1
+                    p = self.people.make(lo=lo, hi=span[1])
+                    self.family.append((link, p.age))
+                    scene.present.insert(0, Present(p, link, self.d.uniform(0.8, 8.0), self.rng.uniform(-3.14, 3.14), True))
+                    return
+        p = self.people.make(lo=ADULT, hi=70)
+        scene.present.insert(0, Present(p, "neighbor", self.d.uniform(1.0, 8.0), self.rng.uniform(-3.14, 3.14), True))
+
+    def _distance(self) -> float:
+        d = self.d
+        return d.uniform(0.5, 2.5) if d.chance(0.28) else d.log_uniform(2.5, 25.0, 1)
+
+    def _things(self, scene: Scene, long: bool) -> None:
+        rng, d, place, self_ = self.rng, self.d, scene.place, scene.self_
+        by_pid = {p.person.pid: p for p in scene.present}
+        owners = list(by_pid) + [self_.pid]
+        pool = self.pools.place_items(place.items)               # every item counts once, whatever its category
+        for _ in range(rng.randint(12, 16) if long else rng.randint(1, 10)):
+            owner = d.pick(owners + [None])
+            dist, bearing = (d.uniform(0.3, 3.0) if d.chance(0.35) else d.uniform(3.0, 20.0)), rng.uniform(-3.14, 3.14)
+            seen = owner is not None and owner != self_.pid and d.chance(0.55 if dist < 3 else 0.3)
+            held = None
+            if seen and owner in by_pid and d.chance(0.6):           # in his hands: where he is
+                held, dist, bearing = owner, by_pid[owner].dist, by_pid[owner].bearing
+            scene.things.append(Thing(d.pick(pool), dist, bearing, owner, seen_use=seen, held_by=held))
+        if place.habitats and (long or d.chance(0.4)):
+            animals = self.pools.animals_of(place.habitats)
+            if animals:
+                scene.things.append(Thing(d.pick(animals), d.uniform(2, 40), rng.uniform(-3.14, 3.14), animal=True))
+
+    def _carry(self, scene: Scene, long: bool) -> None:
+        """What he carries: tied to his age, his trade and where he is; each kind once; no arms under 12; nothing of
+        the adults on a baby."""
+        me, d = scene.self_, self.d
+        if me.age < 3:
+            cats, n = BABY_CARRY, d.between(0, 1)
+        elif me.age < 8:
+            cats, n = SMALL_CARRY, d.between(0, 2)
+        elif me.age < CHILD_AGE:
+            cats, n = CHILD_CARRY, d.between(0, 3)
+        else:
+            cats = ALWAYS_CARRY + OCC_CARRY.get(me.occupation, ()) + PLACE_CARRY.get(scene.place.name, ())
+            n = d.between(5, 8) if long else d.between(0, 4)
+            if d.chance(0.08):
+                cats += ("blade",)
+        arms = self.pools.weapon_categories
+        pool = [k for k in dict.fromkeys(self.pools.place_items(cats)) if me.age >= 12 or self.pools.category_of[k] not in arms]
+        scene.carried = d.sample(pool, n) if pool else []
 
     def _cluster(self, scene: Scene) -> None:
         """People stand together and things lie within reach of somebody: some persons are moved next to another
@@ -278,52 +382,36 @@ class SceneFactory:
     def _polar(spot: tuple[float, float]) -> tuple[float, float]:
         return round(max(0.3, math.hypot(*spot)), 1), math.atan2(spot[1], spot[0])
 
-    def _distance(self) -> float:
-        d = self.d
-        return d.uniform(0.5, 2.5) if d.chance(0.28) else d.log_uniform(2.5, 25.0, 1)
-
-    def _things(self, scene: Scene, long: bool) -> None:
-        rng, d, place, self_ = self.rng, self.d, scene.place, scene.self_
-        by_pid = {p.person.pid: p for p in scene.present}
-        owners = list(by_pid) + [self_.pid]
-        for _ in range(rng.randint(12, 16) if long else rng.randint(1, 10)):
-            kinds = self.pools.items_by_category.get(d.pick(place.items))
-            if not kinds:
-                continue
-            owner = d.pick(owners + [None])
-            dist, bearing = (d.uniform(0.3, 3.0) if d.chance(0.35) else d.uniform(3.0, 20.0)), rng.uniform(-3.14, 3.14)
-            seen = owner is not None and owner != self_.pid and d.chance(0.55 if dist < 3 else 0.3)
-            held = None
-            if seen and owner in by_pid and d.chance(0.6):           # in his hands: where he is
-                held, dist, bearing = owner, by_pid[owner].dist, by_pid[owner].bearing
-            scene.things.append(Thing(d.pick(kinds), dist, bearing, owner, seen_use=seen, held_by=held))
-        if place.habitats and (long or d.chance(0.4)):
-            animals = self.pools.animals_of(place.habitats)
-            if animals:
-                scene.things.append(Thing(d.pick(animals), d.uniform(2, 40), rng.uniform(-3.14, 3.14), animal=True))
-        weapons = self.pools.weapon_categories
-        for _ in range(rng.randint(5, 8) if long else rng.randint(0, 4)):
-            cat = d.pick(("carry", "currency", "bread", "household", "blade"))
-            if cat in weapons and self_.age < CHILD_WEAPON_AGE and d.chance(0.99):
-                continue                                                # a weapon on a small child is rare
-            kinds = self.pools.items_by_category.get(cat)
-            if kinds:
-                scene.carried.append(d.pick(kinds))
-
     # ---- people bound to the NPC by a link ----------------------------------------------------------------
-    def _related(self, me: Person, known: bool = False) -> tuple[Person, str]:
+    def _family_range(self, link: str, me_age: float) -> tuple[float, float] | None:
+        """The ages a new <link> can have: the rule for this link, and a consistent family (a grandparent is older
+        than the parent already drawn by 16 to 45 years, and so on)."""
+        span = self.rules.spec(link, me_age)
+        if span is None:
+            return None
+        lo, hi = span
+        for other, a, b in self.KIN.get(link, ()):
+            for l, age in self.family:
+                if l == other:
+                    lo, hi = max(lo, age + a), min(hi, age + b)
+        return (lo, hi) if lo <= hi else None
+
+    def _related(self, me: Person, known: bool = False, stranger: float = 0.45) -> tuple[Person, str]:
         """Another person and what he is to the NPC, consistent with both ages and with who is already around."""
         d = self.d
-        if not known and d.chance(0.45):
+        if not known and d.chance(stranger):
             return self.people.make(), "stranger"
         weights = {k: self.rules.WEIGHTS.get(k, 1.0) for k in self.rules.links}
         for _ in range(30):
             link = d.weighted(weights)
             if not self.rules.allowed(link, self.counts):
                 continue
-            span = self.rules.spec(link, me.age)
+            span = self._family_range(link, me.age)
             if span is None:
                 continue
             self.counts[link] = self.counts.get(link, 0) + 1
-            return self.people.make(lo=span[0], hi=span[1]), link
+            p = self.people.make(lo=span[0], hi=span[1])
+            if link in self.KIN:
+                self.family.append((link, p.age))
+            return p, link
         return self.people.make(), "stranger"

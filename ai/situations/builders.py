@@ -10,13 +10,14 @@ of a possible minor, nothing intimate in a proposition.
 from __future__ import annotations
 
 import math
+import re
 from abc import ABC, abstractmethod
 
 from tok2 import Record
 
 from .body import BodyModel, Climate, daylight
 from .context import BuildContext, stage_of
-from .gestures import INFANT, REACH, YOUNG, Target
+from .gestures import EARSHOT, INFANT, REACH, YOUNG, Target
 from .layout import Entry
 from .memories import MemoryColour
 from .plans import PlanTable
@@ -25,7 +26,7 @@ from .scene import ADULT, Person, separation
 
 # the latent attitude toward a person, by kind of link: (mean, spread) on -1..+1. Feelings follow it together.
 ATTITUDE = {"family": (0.55, 0.25), "partner": (0.7, 0.2), "friend": (0.5, 0.25), "enemy": (-0.7, 0.2),
-            "work": (0.1, 0.3), "neighbor": (0.05, 0.3), "stranger": (0.0, 0.3)}
+            "work": (0.1, 0.3), "neighbor": (0.05, 0.3), "stranger": (0.0, 0.1)}
 FAMILIARITY = {"family": (7, 10), "partner": (8, 10), "friend": (4, 10), "enemy": (3, 9), "work": (3, 9),
                "neighbor": (3, 9), "stranger": (0, 1)}
 LINK_KIND = {"parent": "family", "child": "family", "sibling": "family", "grandparent": "family",
@@ -45,7 +46,14 @@ EXPRESSION = {"neutral": 0.5, "smile": 0.13, "laugh": 0.04, "frown": 0.08, "ange
               "crying": 0.01, "disgust": 0.015, "surprise": 0.03, "pain": 0.02, "contempt": 0.015, "boredom": 0.04,
               "tenderness": 0.02}
 EXPRESSION_BABY = {"neutral": 0.4, "smile": 0.25, "laugh": 0.1, "crying": 0.2, "surprise": 0.05}
-AMOUNT = {"none": 0.03, "few": 0.2, "some": 0.35, "many": 0.2, "unknown": 0.22}
+AMOUNT = {"none": 0.03, "few": 0.2, "some": 0.35, "many": 0.2, "unknown": 0.22}      # a heap, a stack, a store
+SINGLE = {"few": 0.75, "some": 0.1, "unknown": 0.15}                                    # one or two of a tool, a table, a pot
+STACKS = ("currency", "bread", "produce", "meat", "grain", "seed", "ammo", "raw_wood", "raw_stone", "raw_mineral", "building",
+          "fiber", "metal_stock", "preserve", "animal_product", "raw_animal", "fire", "dish", "drink")
+TOOL_CATEGORIES = ("farming", "forestry", "carpentry", "smithing", "masonry", "mining", "husbandry", "fishing", "hunting",
+                   "kitchen", "leather", "trade", "pottery", "binding", "glass", "healing", "writing", "cleaning")
+BINDERS = ("binding", "fiber")
+FIT = ("active", "hurt")                           # a person who can act, speak or ask
 DISPLAY = {"calm": 0.35, "grazing": 0.3, "alert": 0.14, "fleeing": 0.05, "growling": 0.03, "baring_teeth": 0.015,
            "charging": 0.01, "stalking": 0.02, "playing": 0.07}
 ANIMAL_MOTION = {"still": 0.55, "approaching": 0.1, "leaving": 0.15, "falling": 0.0, "rolling": 0.0}
@@ -91,6 +99,8 @@ class SelfBuilder(RecordBuilder):
                                        sum(v.get("mass", 0.0) for v in vectors))
         self._cause(c, body)
         c.hurt = hurt or body["body.pain"] >= 2
+        c.session.needs = {"hunger": body["need.hunger"], "thirst": body["need.thirst"],
+                           "exhaustion": max(body["need.exhaustion"], body["need.sleep"] - 2), "pain": body["body.pain"]}
         night = sc.hour < 5.5 or sc.hour >= 21.5
         posture = dict(POSTURE_BABY if me.age < INFANT else POSTURE)
         if night and sc.place.indoors:
@@ -113,12 +123,17 @@ class SelfBuilder(RecordBuilder):
 
     @staticmethod
     def _cause(c: BuildContext, body: dict) -> None:
-        """If his body is why he wakes, one need is pressing; otherwise none is extreme."""
+        """If his body is why he wakes, a need is pressing (sometimes two at once); otherwise none is, though
+        now and then one is pressing and does not wake him (he is busy)."""
+        d = c.d
+        for k in NEEDS:                                       # squeezed under the cap, not clipped to it
+            if body[k] > 5.0:
+                body[k] = round(5.0 + (body[k] - 5.0) * (NEED_CAP - 0.6 - 5.0) / 5.0, 1)
         if c.cause == "body":
-            body[c.d.pick(NEEDS)] = c.d.uniform(NEED_CAP, 10.0)
-        else:
-            for k in NEEDS:
-                body[k] = min(body[k], NEED_CAP)
+            for k in d.sample(NEEDS, 2 if d.chance(0.25) else 1):
+                body[k] = d.uniform(NEED_CAP, 10.0)
+        elif d.chance(0.12):
+            body[d.pick(NEEDS)] = d.uniform(NEED_CAP, 9.0)
 
     @staticmethod
     def _mind(c: BuildContext) -> dict:
@@ -145,6 +160,8 @@ class PersonBuilder(RecordBuilder):
     wrong, a known one is sometimes not recognised, a stranger sometimes taken for somebody."""
 
     def build(self, c: BuildContext) -> None:
+        near = [e for e in c.layout.entries if e.present is not None and e.present.dist <= EARSHOT]
+        c.speaker = c.d.pick(near).key if near else None          # whoever speaks or asks: fit and within earshot
         for e in c.layout.entries:
             e.fields = self._entity(c, e)
             c.parties.add_person(e.key, e.person, e.fields, e.believed_age)
@@ -185,6 +202,8 @@ class PersonBuilder(RecordBuilder):
         link, named, certainty, fam_cap = self._identity(c, e, known_by)
         if x is None and intimate:                                   # absent partner: he believes an adult age
             e.believed_age = float(max(ADULT + 3, round(p.age + d.rng.uniform(-1, 1))))
+        elif x is None and known_by == "seen" and d.chance(0.25):    # some relatives too: an age he has been told
+            e.believed_age = float(max(0, round(p.age + d.rng.uniform(-3, 3))))
         f = {"link": link if link in c.pools.enum("ENTITY", "link") else "stranger", "present": x is not None,
              "known_by": known_by, "id_certainty": certainty}
         if named:
@@ -226,9 +245,11 @@ class PersonBuilder(RecordBuilder):
     def _looks(self, c: BuildContext, e: Entry, intimate: bool) -> dict:
         d, x, p = c.d, e.present, e.person
         baby = p.age < INFANT
-        condition = c.enum("ENTITY", "look.condition", {"active": 0.9, "hurt": 0.07, "down": 0.012, "motionless": 0.008,
-                                                        "obviously_dead": 0.004})
-        posture = c.enum("ENTITY", "look.posture", POSTURE_BABY if baby else POSTURE)
+        speaker = e.key == c.speaker
+        condition = "active" if speaker else c.enum("ENTITY", "look.condition", {
+            "active": 0.9, "hurt": 0.07, "down": 0.012, "motionless": 0.008, "obviously_dead": 0.004})
+        posture = c.enum("ENTITY", "look.posture", {k: v for k, v in (POSTURE_BABY if baby else POSTURE).items()
+                                                    if not (speaker and k in ("lying", "prone", "swimming", "climbing"))})
         if condition in ("down", "motionless", "obviously_dead"):
             posture = "prone" if d.chance(0.3) and not baby else "lying"
         moving = {"walking": {"approaching": 0.4, "leaving": 0.4, "still": 0.2}, "running": {"running": 1.0},
@@ -239,8 +260,8 @@ class PersonBuilder(RecordBuilder):
         gaze_pool = ["me"] + [k for k in c.layout.here if k != e.key] + c.layout.tkeys
         gaze = "" if condition in ("down", "motionless", "obviously_dead") else d.weighted(
             {"me": max(1.0, 0.5 * len(gaze_pool))}, allowed=gaze_pool) if d.chance(0.9) else ""
-        noise = 1.0 if p.age < ADULT else 4.0
-        seen = max(0.5, p.age + c.rng.uniform(-noise, noise))
+        noise = 0.25 if baby else 1.0 if p.age < ADULT else 4.0
+        seen = max(0.0, p.age + c.rng.uniform(-noise, noise))
         return {"dist": x.dist, "dir": c.direction(x.bearing),
                 "look.age": round(max(seen, ADULT + 1) if intimate else seen, 1),       # a partner looks an adult
                 "look.sex": p.sex if d.chance(0.95) else "unclear", "look.posture": posture,
@@ -261,15 +282,20 @@ class ThingBuilder(RecordBuilder):
             if t.animal:
                 f.update({"display": c.enum("THING", "display", DISPLAY), "motion": c.enum("THING", "motion", ANIMAL_MOTION)})
             else:
-                f.update({"props": pools.item_vector(t.kind), "amount": c.enum("THING", "amount", AMOUNT)})
+                f.update({"props": pools.item_vector(t.kind), "amount": c.enum("THING", "amount", self._amounts(c, t.kind))})
                 f["owner"] = self._believed_owner(c, t)
             c.add(Record("THING", key, f))
         for key, kind in zip(lay.ikeys, lay.carried):
-            borrowed = lay.pkeys and d.chance(0.05)                        # a tool lent by somebody he knows
+            borrowed = lay.alive and d.chance(0.05)                        # a tool lent by somebody he knows
             c.add(Record("INV", key, {"kind": kind, "props": pools.item_vector(kind),
-                                      "owner": d.pick(lay.pkeys) if borrowed else "me",
-                                      "amount": c.enum("INV", "amount", AMOUNT)}))
+                                      "owner": d.pick(lay.alive) if borrowed else "me",
+                                      "amount": c.enum("INV", "amount", self._amounts(c, kind))}))
         c.refs.owners = {r.key: r.fields["owner"] for r in c.of("THING") if r.fields.get("owner")}
+
+    @staticmethod
+    def _amounts(c: BuildContext, kind: str) -> dict:
+        """A heap of grain or coins can be many; a hammer or a table is one or two."""
+        return AMOUNT if c.pools.category_of.get(kind) in STACKS else SINGLE
 
     def _believed_owner(self, c: BuildContext, t) -> str | None:
         d = c.d
@@ -292,7 +318,7 @@ class ThingBuilder(RecordBuilder):
     @staticmethod
     def _wrong_owner(c: BuildContext, true_pid) -> str | None:
         """A plausible but wrong owner: somebody he knows, not the real one."""
-        pool = [e.key for e in c.layout.entries if e.person.pid != true_pid and e.fields["link"] != "stranger"] + ["me"]
+        pool = [e.key for e in c.layout.entries if e.person.pid != true_pid and e.fields["link"] != "stranger" and not e.dead] + ["me"]
         return c.d.pick(pool)
 
 
@@ -320,7 +346,7 @@ class PlaceBuilder(RecordBuilder):
         for key in lay.loci:
             owner = d.weighted({"me": 0.15, "": 0.55, "other": 0.3})
             if owner == "other":
-                owner = d.pick(lay.pkeys) if lay.pkeys else ""
+                owner = d.pick(lay.alive) if lay.alive else ""
             c.add(Record("LOCUS", key, {"dist": d.uniform(20, 3000, 0), "dir": c.direction(d.uniform(-3.14, 3.14, 4)),
                                         "owner": owner}))
         for key in lay.groups:
@@ -330,13 +356,15 @@ class PlaceBuilder(RecordBuilder):
 
 # ---------------------------------------------------------------------------------------------------- events
 class EventBuilder(RecordBuilder):
-    """EVENT: gestures he has just perceived. Actor and target are PRESENT (persons here, things in view); a gesture
-    that holds or uses its target only between two within reach and on a target that fits it; what is seen follows
-    the gesture's perceptibility; going, looking and listening are a third of it at most."""
+    """EVENT: gestures he has just perceived. Actor and target are PRESENT (persons here, things in view); the actor
+    is fit (active or hurt) and his posture allows the gesture; a gesture that holds or uses its target only between
+    two within reach and on a target that fits it (a person is lifted only to be carried); what is seen follows the
+    gesture's perceptibility; going, looking and listening are a third of it at most; now and then somebody speaks
+    within sight; a gift names who receives it, work and tying name the tool."""
 
     def build(self, c: BuildContext) -> None:
         lay = c.layout
-        if not lay.here:
+        if not any(self._fit(e) for e in lay.entries if e.present is not None):
             return
         n = c.count("EVENT", 0, 4) if c.scene.long else c.d.weighted({0: 0.35, 1: 0.3, 2: 0.2, 3: 0.1, 4: 0.05})
         n = min(n, c.cap["EVENT"])
@@ -348,48 +376,107 @@ class EventBuilder(RecordBuilder):
                 if self._one(c, len(c.events) + 1, first):
                     break
 
+    @staticmethod
+    def _fit(e: Entry) -> bool:
+        return e.present is not None and e.fields.get("look.condition") in FIT
+
     def _pairs(self, c: BuildContext, towards_me: bool):
-        """Every (actor, target key, target class and kind, gap, weight) that could be seen. Whoever and whatever is
-        within reach is much likelier: people do things with what is at hand."""
+        """Every (actor, target key, target, gap, weight) that could be seen. Whoever and whatever is within reach is
+        much likelier: people do things with what is at hand; what can be eaten or drunk is likelier still."""
         lay = c.layout
-        here = [e for e in lay.entries if e.present is not None]
+        here = [e for e in lay.entries if self._fit(e)]
+        persons = [e for e in lay.entries if e.present is not None]
         out = []
         for actor in here:
             x = actor.present
             share = 1.0 / len(here)
-            cands = [("me", Target("agent"), x.dist, 0.22)]
+            cands = [("me", Target("agent", None, self._carried(c.me.age, c.records.first("SELF").fields.get("body.pain", 0) > 6)), x.dist, 0.22)]
             if not towards_me:
-                others = [e for e in here if e is not actor]
-                cands += [(o.key, Target("agent"), separation(x, o.present), 0.13 / len(others)) for o in others]
-                cands += [(k, Target("animal" if t.animal else "item", t.kind), separation(x, t), 0.6 / len(lay.things))
+                others = [e for e in persons if e is not actor]
+                cands += [(o.key, Target("agent", None, self._carried(o.person.age, o.fields.get("look.condition") in ("hurt", "down"))),
+                           separation(x, o.present), 0.13 / len(others)) for o in others]
+                cands += [(k, Target("animal" if t.animal else "item", t.kind), separation(x, t),
+                           0.6 / len(lay.things) * (3.0 if self._consumable(c, t) else 1.0))
                           for k, t in zip(lay.tkeys, lay.things)]
                 cands.append(("", None, None, 0.05))
             for key, info, gap, w in cands:
                 out.append((actor, key, info, gap, share * w * (REACH_BOOST if gap is not None and gap <= REACH else 1.0)))
         return out
 
+    @staticmethod
+    def _carried(age: float, hurt: bool) -> frozenset:
+        return frozenset(("carried",)) if age < INFANT or hurt else frozenset()
+
+    @staticmethod
+    def _consumable(c: BuildContext, t) -> bool:
+        return not t.animal and (c.pools.item_has(t.kind, "edible") or c.pools.item_has(t.kind, "drinkable"))
+
+    # ---- the second object of the gesture: the recipient of a gift, the tool of the work ----------------------
+    def _roles(self, c: BuildContext, actor: Entry, g: str, target: str):
+        """-> {"with": key or None, "from_to": key or None} or None when the gesture cannot be seen without them."""
+        lay = c.layout
+        near_things = [k for k, t in zip(lay.tkeys, lay.things) if k != target and not t.animal and separation(actor.present, t) <= REACH]
+        if g == "give":
+            recipients = [e.key for e in lay.entries if e.present is not None and e is not actor and e.key != target
+                          and separation(actor.present, e.present) <= REACH]
+            if actor.present.dist <= REACH:
+                recipients.append("me")
+            return {"from_to": c.d.pick(recipients)} if recipients else None
+        if g in ("work", "tie"):
+            cats = TOOL_CATEGORIES if g == "work" else BINDERS
+            tools = [k for k in near_things if c.pools.category_of.get(c.refs.thing_kinds[k]) in cats]
+            return {"with": c.d.pick(tools)} if tools else None
+        if g == "put" and near_things and c.d.chance(0.6):
+            return {"from_to": c.d.pick(near_things)}
+        return {}
+
     def _one(self, c: BuildContext, n: int, first: bool) -> bool:
-        d = c.d
+        d, chooser = c.d, c.grammar.chooser
         pairs = self._pairs(c, first and d.chance(0.55))
         actor, target, info, gap, _ = c.rng.choices(pairs, weights=[p[4] for p in pairs])[0]
-        pick = c.grammar.chooser.pick(d, info, c.parties.party(actor.key), c.parties.party(target) if target else None,
-                                      reach_ok=gap is not None and gap <= REACH, age=actor.person.age)
-        if pick is None:
+        exclude: tuple = ()
+        for _ in range(4):
+            pick = chooser.pick(d, info, c.parties.party(actor.key), c.parties.party(target) if target else None,
+                                reach_ok=gap is not None and gap <= REACH, age=actor.person.age,
+                                posture=actor.fields["look.posture"], social=True, earshot=actor.present.dist <= EARSHOT,
+                                exclude=exclude)
+            if pick is None:
+                return False
+            roles = self._roles(c, actor, pick.gesture, target)
+            if roles is not None:
+                break
+            exclude += (pick.gesture,)
+        else:
             return False
-        chooser = c.grammar.chooser
         senses = chooser.senses(pick.gesture)
         if target == "me" and chooser.needs_reach(pick.gesture):
             senses = senses | {"felt": 0.15}
         age = c.hours_ago(0.0005, 0.02) if first else c.hours_ago(0.03, 2.0)
-        rec = Record("EVENT", f"@V{n}", {"actor": actor.key, "gesture": pick.gesture, "target": target,
-                                         "sense": d.weighted(senses), "age": age, "manner": list(pick.manner)})
+        fields = {"actor": actor.key, "gesture": pick.gesture, "target": target, "sense": d.weighted(senses), "age": age,
+                  "manner": list(pick.manner)} | {k: v for k, v in roles.items() if v}
+        rec = Record("EVENT", f"@V{n}", fields)
         c.events.append(c.add(rec))
         if target == "me":
             c.directed.append(rec)
+        self._faces(c, actor, target, pick.gesture)
         return True
+
+    def _faces(self, c: BuildContext, actor: Entry, target: str, g: str) -> None:
+        """What is seen on faces: whoever strikes is angry, whoever is struck is afraid or in pain, a gift smiles."""
+        d, fam = c.d, c.pools.cat["action"][g].family
+        tgt = next((e for e in c.layout.entries if e.key == target), None)
+        if fam == "force" and d.chance(0.7):
+            actor.fields["look.expression"] = d.pick(("anger", "anger", "contempt"))
+            if tgt is not None and tgt.present is not None and d.chance(0.6):
+                tgt.fields["look.expression"] = d.pick(("fear", "pain", "surprise"))
+        elif (fam == "care" or g == "give") and d.chance(0.6):
+            actor.fields["look.expression"] = d.pick(("smile", "tenderness", "neutral"))
 
 
 # ---------------------------------------------------------------------------------------------------- beliefs
+KEY = re.compile(r"@[ETLG]\d+")                   # the pointers a proposition mentions (not `me`)
+
+
 class BeliefBuilder(RecordBuilder):
     """BELIEF (what he holds true, from a source) and HEARD (what was just said to him, only when words wake him)."""
 
@@ -410,12 +497,18 @@ class BeliefBuilder(RecordBuilder):
         v = c.d.gauss(mu, sd)
         return round(v * 0.4, 1) if contradicted else v
 
+    @staticmethod
+    def _about_his_things(c: BuildContext, prop: str) -> bool:
+        """He knows what he has: a belief about his own inventory is something he has seen, never been told."""
+        m = re.match(r"\(has me ([^\s:)]+)", prop)
+        return bool(m and m.group(1) in set(c.layout.carried)) or bool(re.match(r"\(owns me @T", prop))
+
     def build(self, c: BuildContext) -> None:
         d, lay = c.d, c.layout
-        informants = lay.pkeys + [g.key for g in lay.ghosts]
+        informants = lay.alive + [g.key for g in lay.ghosts]
         n = 0
-        for e in lay.entries:                  # the age he believes of an absent partner: the model sees it too
-            if e.believed_age is not None:
+        for e in lay.entries:                  # the age he believes of an absent person: the model sees it too
+            if e.believed_age is not None and not e.dead:
                 prop = c.session.validate(f"(state {e.key} age_years {int(e.believed_age)})", "belief")
                 if prop is not None:
                     n += 1
@@ -426,23 +519,24 @@ class BeliefBuilder(RecordBuilder):
         for _ in range(c.count("BELIEF", 3)):
             if n >= c.cap["BELIEF"]:
                 break
-            prop = c.session.belief()
-            if prop is None or prop in c.said:
+            got = c.session.belief()
+            if got is None or got.prop in c.said:
                 continue
-            c.said.add(prop)
+            c.said.add(got.prop)
             n += 1
-            src = self._source(c, bool(informants))
-            contradicted = d.chance(0.06)
+            own = self._about_his_things(c, got.prop)
+            src = "seen" if own else self._source(c, bool(informants))
+            contradicted = got.contradicted or d.chance(0.04)
             c.add(Record("BELIEF", f"b:{n}", c.fill("BELIEF", {
-                "prop": prop, "source": src, "age": c.hours_ago(0.1, 3000), "contradicted": contradicted,
+                "prop": got.prop, "source": src, "age": c.hours_ago(0.1, 3000), "contradicted": contradicted,
                 "hops": d.between(*HOPS[src]), "certainty": self._certainty(c, src, contradicted),
                 "informant": d.pick(informants) if src in ("told", "heard") else "",       # "" = nobody told him
-                "shared": d.sample(lay.pkeys, d.between(0, 2))})))
-        if c.cause != "speech":
+                "shared": d.sample(lay.alive, d.between(0, 2))})))
+        if c.cause != "speech" or not c.speaker:
             return
         k = 0
         for _ in range(c.count("HEARD", 1, 2)):                     # the words that wake him
-            prop = c.session.belief()
+            prop = c.session.utterance(c.speaker)
             if prop is None or prop in c.said:
                 continue
             c.said.add(prop)
@@ -450,10 +544,10 @@ class BeliefBuilder(RecordBuilder):
             src = d.weighted({"told": 0.65, "heard": 0.35})
             contradicted = d.chance(0.03)
             c.add(Record("HEARD", f"h:{k}", c.fill("HEARD", {
-                "prop": prop, "source": src, "hops": d.between(1, 2), "informant": d.pick(lay.here),
+                "prop": prop, "source": src, "hops": d.between(1, 2), "informant": c.speaker,
                 "age": c.hours_ago(0.001, 0.2), "contradicted": contradicted,
                 "certainty": self._certainty(c, src, contradicted),
-                "shared": d.sample(lay.pkeys, 1) if d.chance(0.08) else []})))
+                "shared": d.sample(lay.alive, 1) if d.chance(0.08) else []})))
 
 
 class MemoryBuilder(RecordBuilder):
@@ -464,8 +558,8 @@ class MemoryBuilder(RecordBuilder):
         actions = c.pools.cat["action"]
         colour = MemoryColour(set(c.pools.interpretations) - set(c.pools.intimate_symbols), c.pools.enum("MEMORY", "emotion"))
         k = 0
-        for _ in range(c.count("MEMORY", 1)):
-            got = c.session.memory()
+        for i in range(c.count("MEMORY", 1)):
+            got = c.session.memory(death=bool(c.refs.dead) and i == 0)       # the death he knows of is remembered
             if got is None or got.prop in c.said:
                 continue
             c.said.add(got.prop)
@@ -479,41 +573,49 @@ class MemoryBuilder(RecordBuilder):
 
 
 class SocialBuilder(RecordBuilder):
-    """REQUEST (a request just heard: only when it wakes him) and COMMIT (what he owes or is owed)."""
+    """REQUEST (a request he has heard: the one that wakes him, and now and then an older one still pending) and
+    COMMIT (what he owes or is owed). A baby is asked nothing, a child has no formal engagement."""
 
     def build(self, c: BuildContext) -> None:
         d, lay = c.d, c.layout
-        if c.cause == "request" and lay.here:
-            for _ in range(c.count("REQUEST", 1, 2)):
-                asker = d.pick(lay.here)
+        asker = c.speaker
+        if asker and c.me.age >= INFANT:
+            waking = c.cause == "request"
+            pending = not waking and d.chance(0.12)                  # a request he has not answered yet
+            for _ in range(c.count("REQUEST", 1, 2) if waking else (1 if pending else 0)):
                 prop = c.session.request(asker)
                 if prop is not None:
-                    c.add(Record("REQUEST", f"q:{len(c.of('REQUEST')) + 1}",
-                                 {"from": asker, "prop": prop, "age": c.hours_ago(0.001, 2)}))
-            if not c.of("REQUEST"):                          # the request that wakes him must exist
-                asker = d.pick(lay.here)
+                    c.add(Record("REQUEST", f"q:{len(c.of('REQUEST')) + 1}", {
+                        "from": asker, "prop": prop, "age": c.hours_ago(0.001, 2) if waking else c.hours_ago(2, 24)}))
+            if waking and not c.of("REQUEST"):                       # the request that wakes him must exist
                 c.add(Record("REQUEST", "q:1", {"from": asker, "age": c.hours_ago(0.001, 2), "prop": c.session.validate(
                     f"(request (did me give {c.session.kind(gift=True)} (to {asker})))", "request")
                     or f"(ask (at {asker} where))"}))
-        if c.me.age < 12 or not lay.pkeys:
+        if c.me.age < 12 or not lay.alive:
             return
         for _ in range(c.count("COMMIT", 0, 2)):
-            who = d.pick(lay.pkeys)
+            who = d.pick(lay.alive)
             mine = d.chance(0.5)
             prop = c.session.validate(f"(did {'me' if mine else who} give {c.session.kind(gift=True)} (to {who if mine else 'me'}))", "belief")
             if prop is not None:
                 c.add(Record("COMMIT", f"c:{len(c.of('COMMIT')) + 1}", {
                     "counterparty": who, "mine": mine, "prop": prop, "deadline": c.until(1, 300),
-                    "status": c.enum("COMMIT", "status", COMMIT_STATUS), "witnesses": d.sample(lay.pkeys, d.between(0, 2))}))
+                    "status": c.enum("COMMIT", "status", COMMIT_STATUS), "witnesses": d.sample(lay.alive, d.between(0, 2))}))
 
 
 class GoalBuilder(RecordBuilder):
-    """GOAL (what he wants) and PLAN (the step he is on, consistent with the goal)."""
+    """GOAL (what he wants) and PLAN (the step he is on, consistent with an active goal)."""
+
+    @staticmethod
+    def _origin_ref(c: BuildContext, prop: str, pool: list[Record]) -> str:
+        """A belief or a memory that has something to do with the goal: it mentions one of the same pointers."""
+        keys = set(KEY.findall(prop))
+        near = [r.key for r in pool if keys & set(KEY.findall(r.fields.get("prop", "")))]
+        return c.d.pick(near) if near else ""
 
     def build(self, c: BuildContext) -> None:
         d = c.d
-        beliefs = [r.key for r in c.of("BELIEF")]
-        memories = [r.key for r in c.of("MEMORY")]
+        sources = c.of("BELIEF") + c.of("MEMORY")
         asked = [r.key for r in c.of("REQUEST")]
         deals = [r.key for r in c.of("COMMIT")]
         k = 0
@@ -526,13 +628,13 @@ class GoalBuilder(RecordBuilder):
             origin = c.enum("GOAL", "origin", GOAL_ORIGIN)
             if (origin == "asked" and not asked) or (origin == "agreement" and not deals):
                 origin = "self"
-            ref = {"asked": asked, "agreement": deals}.get(origin) or beliefs + memories
             status = c.enum("GOAL", "status", GOAL_STATUS)
+            ref = d.pick({"asked": asked, "agreement": deals}[origin]) if origin in ("asked", "agreement") else \
+                self._origin_ref(c, prop, sources)
             k += 1
             c.add(Record("GOAL", f"g:{k}", c.fill("GOAL", {
-                "prop": prop, "mode": mode, "status": status, "origin": origin,
-                "origin_ref": d.pick(ref) if ref and d.chance(0.8) else "", "age": c.hours_ago(0.1, 500),
-                "progress": 1.0 if status == "achieved" else d.uniform(0, 0.9, 2),
+                "prop": prop, "mode": mode, "status": status, "origin": origin, "origin_ref": ref,
+                "age": c.hours_ago(0.1, 500), "progress": 1.0 if status == "achieved" else d.uniform(0, 0.9, 2),
                 "deadline": c.until(1, 500) if d.chance(0.4) else None})))
         goals = c.of("GOAL")
         if c.cause == "timer":                                      # a deadline that has passed is why he wakes
@@ -549,7 +651,7 @@ class GoalBuilder(RecordBuilder):
         text = c.session.need_goal(c.d.pick(("exhaustion", "pain"))) or "(state me exhaustion low)"
         goals = c.of("GOAL")
         if len(goals) >= c.cap["GOAL"]:                              # no room: the need takes the place of the last goal
-            goals[-1].fields.update(prop=text, mode="achieve", status="active", deadline=None)
+            goals[-1].fields.update(prop=text, mode="achieve", status="active", deadline=None, origin_ref="")
             return goals[-1]
         return c.add(Record("GOAL", f"g:{k + 1}", c.fill("GOAL", {
             "prop": text, "mode": "achieve", "status": "active", "origin": "self", "origin_ref": "",
@@ -558,17 +660,17 @@ class GoalBuilder(RecordBuilder):
     def _plan(self, c: BuildContext, required: bool) -> None:
         table = PlanTable(c.pools, c.grammar.chooser)
         view = c.scene_view()
-        goals = list(c.of("GOAL"))
-        c.rng.shuffle(goals)
         for attempt in range(2 if required else 1):
+            goals = [g for g in c.of("GOAL") if g.fields["status"] == "active"]
+            c.rng.shuffle(goals)
             for g in goals:
                 got = table.make(c.d, g.fields["prop"], view, c.parties)
                 if got is not None:
                     c.add(Record("PLAN", "p:1", c.fill("PLAN", {"step": got.step, "next": got.next, "goal": g.key,
                                                                 "target": got.target})))
                     return
-            if required and attempt == 0:                           # no goal can be served: he has a need to serve
-                goals = [self._need_goal(c, len(c.of("GOAL")))]
+            if required and attempt == 0:                           # no active goal can be served: a need to serve
+                self._need_goal(c, len(c.of("GOAL")))
 
 
 class SkillBuilder(RecordBuilder):
@@ -613,18 +715,19 @@ class StateBuilder(RecordBuilder):
         s["attention"] = attention
         if me.age >= ADULT and "drive.intimacy" in intimate:
             drive = d.clip(abs(d.rng.gauss(0, 2.5)))
-            if attention and attention.startswith("@E") and c.parties.may_be_minor(attention):
-                drive = min(drive, d.uniform(0, 2))                          # D10: attention on a possible minor
+            adult_here = any(e.person.age >= ADULT for e in c.layout.entries if e.present is not None)
+            if not adult_here or (attention and attention.startswith("@E") and c.parties.may_be_minor(attention)):
+                drive = min(drive, d.uniform(0, 2))                          # D10: no adult to turn to, or a possible minor in view
             s["drive.intimacy"] = drive
         c.add(Record("SELF_STATE", "me.state", s))
 
 
 class WakeBuilder(RecordBuilder):
     """WAKE: why he decides now (the cause was drawn first; the other builders made the situation that justifies it).
-    The trigger is the record that woke him (@V, h:, q:, g:, p:); a body or a routine has none ("" = known: nobody)."""
+    The trigger is the record that woke him (@V, h:, q:, g:, p:); a body or a routine has none ("" = known: nobody).
+    The urgency follows the content: a blow aimed at him is more urgent than a glance, a need by its level."""
 
     def build(self, c: BuildContext) -> None:
-        r = c.rng
         key = lambda typ: (c.records.first(typ).key if c.records.first(typ) else "")  # noqa: E731
         late = [x.key for x in c.of("GOAL") if (x.fields.get("deadline") or 0) < 0]
         triggers = {"request": key("REQUEST"), "speech": key("HEARD"),
@@ -633,6 +736,30 @@ class WakeBuilder(RecordBuilder):
         cause = c.cause
         if cause not in ("body", "routine") and not triggers[cause]:    # the situation could not justify it
             cause = "routine"
-        lo, hi = WAKE_URGENCY[cause]
-        c.add(Record("WAKE", "wake", {"mode": r.choice(WAKE_MODES[cause]), "cause": cause, "trigger": triggers[cause],
-                                      "urgency": round(r.uniform(lo, hi), 1)}))
+        by_key = {r.key: r for r in c.records.ordered(("EVENT", "HEARD", "REQUEST", "GOAL", "PLAN"))}
+        trig = by_key.get(triggers[cause])
+        c.add(Record("WAKE", "wake", {"mode": c.rng.choice(WAKE_MODES[cause]), "cause": cause, "trigger": triggers[cause],
+                                      "urgency": round(self._urgency(c, cause, trig), 1)}))
+
+    @staticmethod
+    def _urgency(c: BuildContext, cause: str, trig) -> float:
+        d, f = c.d, (trig.fields if trig is not None else {})
+        if cause == "perception":
+            fam = c.pools.cat["action"][f["gesture"]].family
+            if f["target"] == "me":
+                return d.uniform(7.5, 10) if fam == "force" else d.uniform(3, 6) if fam in ("care", "grasp") else d.uniform(2, 5)
+            return d.uniform(4, 7) if fam == "force" else d.uniform(0.5, 3.5)
+        if cause == "body":
+            body = c.of("SELF")[0].fields
+            return d.clip(max(body[k] for k in NEEDS) - d.rng.uniform(0, 1.5), 4.0, 10.0)
+        if cause == "request":
+            head = f["prop"].split()[0].lstrip("(")
+            lo, hi = {"request": (5, 8), "offer": (3, 6), "ask": (2, 5)}.get(head, (3, 7))
+            return d.uniform(lo, hi)
+        if cause == "speech":
+            return d.clip(1 + 0.6 * f.get("importance", 3) + d.rng.uniform(0, 2), 0.5, 8.0)
+        if cause == "timer":
+            return d.clip(3 + 1.6 * math.log1p(-f["deadline"]), 3.0, 9.0)
+        if cause == "plan":
+            return d.clip(0.7 * f.get("commitment", 4) + d.rng.uniform(0, 2), 1.0, 7.0)
+        return d.uniform(0, 3)

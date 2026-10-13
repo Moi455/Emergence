@@ -60,9 +60,12 @@ class PlanTable:
             for nxt in ("wait", "rest", "set_posture"):
                 yield "go", nxt, a[1]
         elif h == "owns" and a[0] == "me":
-            yield "go", "take", a[1]
-            yield "examine", "take", a[1]
-            yield "go", "examine", a[1]
+            if view.carried(a[1]):                                   # it is on him: nothing to walk to
+                yield "examine", "take", a[1]
+            else:
+                yield "go", "take", a[1]
+                yield "examine", "take", a[1]
+                yield "go", "examine", a[1]
         elif h == "state" and a[0] == "me" and a[2] == "low":
             need = a[1]
             if need in self.NEEDS:
@@ -85,7 +88,7 @@ class PlanTable:
         elif h == "knows_how" and a[0] == "me":
             for key in view.of_category(WORKABLE):
                 yield "examine", "work", key
-        elif h == "link" and a[2] == "me" and a[1] == "friend":
+        elif h == "link" and a[2] == "me" and a[1] == "friend" and a[0] in view.here:    # only a person who is here
             yield "go", "look", a[0]
             yield "look", "wait", a[0]
 
@@ -93,8 +96,8 @@ class PlanTable:
 class SceneView:
     """What the plan table may ask of the scene: the things he sees or carries, by kind, category or property."""
 
-    def __init__(self, pools: Pools, thing_kinds: dict, animals: frozenset, carried: set):
-        self.pools, self.kinds, self.animals, self._carried = pools, thing_kinds, animals, carried
+    def __init__(self, pools: Pools, thing_kinds: dict, animals: frozenset, carried: set, here: frozenset = frozenset()):
+        self.pools, self.kinds, self.animals, self._carried, self.here = pools, thing_kinds, animals, carried, here
 
     def items(self):
         return [k for k in self.kinds if k not in self.animals]

@@ -89,23 +89,35 @@ class BuildContext:
         self.filler = Filler(pools, self.d)
         self.cap = {t: spec["count"] for t, spec in pools.interface.token_types.items()}
         self.layout = Layout(scene, self.cap, self.count("LOCUS", 0), self.count("GROUP", 0))
+        self._somebody_dies()
         self.records = RecordBook()
         self.parties = PartyBook(self.me)
         self.rules = grammar.rules
         self.climate_index = Climate(self.d).index(scene.season, scene.hour, scene.place.indoors)
         lay = self.layout
-        self.refs = Refs(persons=lay.pkeys + [g.key for g in lay.ghosts],
-                         absent=[e.key for e in lay.entries if e.present is None] + [g.key for g in lay.ghosts],
-                         things=lay.tkeys + lay.ikeys, loci=lay.loci, groups=lay.groups, here=lay.here,
+        self.refs = Refs(filed=lay.alive, ghosts=[g.key for g in lay.ghosts],
+                         absent=[e.key for e in lay.entries if e.present is None and not e.dead] + [g.key for g in lay.ghosts],
+                         dead=lay.dead, things=lay.tkeys + lay.ikeys, loci=lay.loci, groups=lay.groups, here=lay.here,
                          kinds=self.place_kinds())
         self.refs.thing_kinds = ({k: t.kind for k, t in zip(lay.tkeys, lay.things)}
                                  | dict(zip(lay.ikeys, lay.carried)))
         self.refs.animals = frozenset(k for k, t in zip(lay.tkeys, lay.things) if t.animal)
-        self.session = grammar.session(rng, self.parties, self.me, self.refs)
+        self.session = grammar.session(rng, self.parties, self.me, self.refs)    # the needs are set once the body exists
         self.said: set[str] = set()                      # propositions already in his mind (no twice the same)
         self.events: list[Record] = []
         self.directed: list[Record] = []                # events directed at the NPC himself
         self.hurt = False
+        self.speaker: str | None = None                  # who speaks or asks: fit, within earshot
+
+    # ---- death (rare) ----------------------------------------------------------------------------------------
+    DEATH_RATE = 0.03
+
+    def _somebody_dies(self) -> None:
+        """In about 3 % of the situations he knows somebody who is dead: a person who is not here and not his
+        partner. Nobody dead informs him, owes him, owns a thing, is planned for or is talked about as alive."""
+        cands = [e for e in self.layout.entries if e.present is None and e.link not in self.pools.intimate_links]
+        if cands and self.d.chance(self.DEATH_RATE):
+            self.d.pick(cands).dead = True
 
     # ---- what belongs here ---------------------------------------------------------------------------------
     def place_kinds(self) -> list[str]:
@@ -116,13 +128,13 @@ class BuildContext:
         kinds |= {t.kind for t in sc.things if not t.animal} | set(sc.carried)
         kinds |= set(pools.items_by_category.get("currency", ()))
         out = sorted(k for k in kinds if k in self.grammar.valid_kinds)
-        if self.me.age < CHILD_WEAPON_AGE:
-            out = [k for k in out if pools.category_of.get(k) not in pools.weapon_categories or self.rng.random() < 0.05]
+        if self.me.age < CHILD_WEAPON_AGE:                                  # no arms under twelve
+            out = [k for k in out if pools.category_of.get(k) not in pools.weapon_categories]
         return out or sorted(self.grammar.valid_kinds)[:20]
 
     def scene_view(self) -> SceneView:
         lay = self.layout
-        return SceneView(self.pools, self.refs.thing_kinds, self.refs.animals, set(lay.ikeys))
+        return SceneView(self.pools, self.refs.thing_kinds, self.refs.animals, set(lay.ikeys), frozenset(lay.here))
 
     # ---- shared draws --------------------------------------------------------------------------------------
     def count(self, typ: str, lo: int, hi: int | None = None) -> int:

@@ -30,15 +30,24 @@ MOUNTS = ("horse", "donkey", "camel", "ox")     # domestic species one can ride 
 # everything people do)
 BASE_WEIGHT = {
     "go": 0.45, "look": 0.35, "listen": 0.2, "examine": 0.5, "search": 0.3, "read": 1.0,
-    "take": 1.6, "put": 1.0, "give": 1.0, "throw": 0.4, "pour": 0.4, "wear": 0.4, "operate": 1.5,
+    "take": 1.6, "put": 1.0, "give": 0.3, "throw": 0.4, "pour": 0.4, "wear": 0.4, "operate": 1.5,
     "strike": 0.03, "push": 0.025, "pull": 0.025, "grab": 0.02, "guard": 0.01,
     "scoop": 1.0, "work": 2.5, "tie": 1.0, "blow": 0.4, "shape": 1.0, "channel": 0.1,
-    "eat": 2.5, "drink": 2.5, "sleep": 0.3, "rest": 0.4, "touch": 0.12,
-    "set_posture": 0.8, "mount": 0.15, "climb": 0.2, "jump": 0.2, "swim": 0.1, "wait": 0.3, "stop": 0.2,
+    "eat": 3.0, "drink": 3.0, "sleep": 0.3, "rest": 0.4, "touch": 0.12,
+    "speak": 0.2, "set_posture": 0.8, "mount": 0.15, "climb": 0.2, "jump": 0.2, "swim": 0.1, "wait": 0.3, "stop": 0.2,
 }
 YOUNG_FACTOR_FAMILY = {"tool": 0.05, "transform": 0.05, "force": 0.15}
 YOUNG_FACTOR_GESTURE = {"throw": 0.15}
 INFANT_GESTURES = ("look", "listen", "sleep", "rest", "set_posture", "eat", "drink")
+SOCIAL_GESTURES = ("speak",)                    # said aloud: only in events (a person speaking within sight), never in a told deed
+EARSHOT = 10.0                                  # metres: a speaker he can hear
+# what a body can do in each posture (a person lying down does not walk away)
+LYING_OK = ("look", "listen", "rest", "sleep", "set_posture", "eat", "drink", "wait", "stop")
+MOBILE = ("go", "climb", "jump", "swim", "mount")
+POSTURE_ALLOWED = {"lying": LYING_OK, "prone": LYING_OK, "swimming": ("swim", "look", "listen", "set_posture", "go"),
+                   "climbing": ("climb", "look", "listen", "set_posture", "go")}
+POSTURE_BLOCKED = {"sitting": MOBILE + ("strike", "push", "pull", "grab"), "kneeling": MOBILE, "crouching": ("jump", "swim", "mount")}
+BODY_PARTS = frozenset(("head", "torso", "arms", "legs", "shoulder", "back", "hands", "hand", "arm", "collar", "hair"))
 AGENT_FACTOR = {"take": 0.2, "put": 0.2, "wear": 0.3, "examine": 0.5, "go": 0.5, "look": 0.6, "listen": 0.6, "touch": 1.0}     # these are mostly done to things
 # reaching a person or a thing: these need the two to be close
 NEEDS_REACH_FAMILIES = ("grasp", "force", "tool", "transform", "consume", "care")
@@ -67,6 +76,7 @@ class Target:
     """What a gesture is done to: its class (agent, animal, item, place) and, for a thing, its kind."""
     cls: str
     kind: str | None = None
+    tags: frozenset = frozenset()               # "carried": a baby or a hurt person who can be lifted and put down
 
 
 @dataclass(frozen=True)
@@ -88,6 +98,8 @@ class Affordances:
 
     def ok(self, g: str, t: Target) -> bool:
         if t.cls == "agent":
+            if g in ("take", "put"):                                    # a person is lifted only to be carried
+                return "carried" in t.tags
             return g not in ONLY_ITEMS and g != "tie"
         if t.cls == "animal":
             return t.kind in MOUNTS if g == "mount" else g not in ONLY_ITEMS and g != "take"
@@ -118,10 +130,14 @@ class GestureChooser:
         # class of target -> gestures whose first pointer accepts it; targetless ones apart
         self.by_class: dict[str, list[str]] = {}
         self.targetless: list[str] = []
+        self.social: dict[str, list[str]] = {}
         for fam, ids in pools.gestures.items():
-            if fam == "communicate":
-                continue
             for g in ids:
+                if fam == "communicate":
+                    ref = next((p for p in self.actions[g].params if p.type == "ref"), None)
+                    for cls in (ref.accepts if (ref and g in SOCIAL_GESTURES) else []):
+                        self.social.setdefault(cls, []).append(g)
+                    continue
                 ref = next((p for p in self.actions[g].params if p.type == "ref"), None)
                 if ref is None:
                     self.targetless.append(g)
@@ -144,18 +160,29 @@ class GestureChooser:
 
     # ---- the choice ---------------------------------------------------------------------------------------
     def pick(self, d: Draw, target: Target | None, actor: Party, target_party: Party | None, reach_ok: bool = True,
-             age: float = 30.0, with_manner: bool = True) -> Choice | None:
-        """A gesture (and the manner seen) done by `actor` (of this age) to the target that the governor allows;
-        None when nothing fits. with_manner=False: a bare gesture (a plan step has no manner)."""
+             age: float = 30.0, with_manner: bool = True, posture: str = "standing", social: bool = False,
+             earshot: bool = True, only: tuple[str, ...] | None = None, exclude: tuple[str, ...] = ()) -> Choice | None:
+        """A gesture (and the manner seen) done by `actor` (of this age, in this posture) to the target that the
+        governor allows; None when nothing fits. with_manner=False: a bare gesture (a plan step has no manner);
+        social=True: a person may also speak (an event, not a told deed); earshot: the actor is within hearing;
+        only / exclude: restrict the gestures."""
         pool = self.targetless if target is None else self.by_class.get(target.cls, [])
+        if social and target is not None and earshot:
+            pool = pool + self.social.get(target.cls, [])
+        if only is not None:
+            pool = [g for g in pool if g in only]
+        if exclude:
+            pool = [g for g in pool if g not in exclude]
         for attempt in range(self.ATTEMPTS):
             reach = reach_ok and attempt < self.ATTEMPTS - 3                 # the last attempts renounce reaching
-            g = self._draw(d, pool, target, reach, age)
+            g = self._draw(d, pool, target, reach, age, posture)
             if g is None:
                 continue
             a = self.actions[g]
-            restricted = actor.may_be_minor() or bool(target_party is not None and target_party.may_be_minor())
-            manner = self._manners(d, a, restricted) if with_manner else []
+            person = target is not None and target.cls == "agent"
+            restricted = person and (actor.may_be_minor() or bool(target_party is not None and target_party.may_be_minor()))
+            body = target is not None and target.cls in ("agent", "animal")
+            manner = self._manners(d, a, restricted, body) if with_manner else []
             params = dict(manner)
             ref = self.affordances.first_ref[g]
             parties = {ref: target_party} if ref is not None and target_party is not None else {}
@@ -174,8 +201,11 @@ class GestureChooser:
         parties = {ref.name: target_party} if ref is not None and target_party is not None else {}
         return self.gov.check_gesture(g, {}, actor, parties).allowed
 
-    def _draw(self, d: Draw, pool: list[str], target: Target | None, reach: bool, age: float) -> str | None:
+    def _draw(self, d: Draw, pool: list[str], target: Target | None, reach: bool, age: float, posture: str) -> str | None:
         cands = [g for g in pool if (reach or not self.needs_reach(g)) and (target is None or self.affordances.ok(g, target))]
+        if posture in POSTURE_ALLOWED:
+            cands = [g for g in cands if g in POSTURE_ALLOWED[posture]]
+        cands = [g for g in cands if g not in POSTURE_BLOCKED.get(posture, ())]
         if age < INFANT:
             cands = [g for g in cands if g in INFANT_GESTURES]
         weights = {}
@@ -188,10 +218,16 @@ class GestureChooser:
             weights[g] = w
         return d.weighted(weights, allowed=cands) if cands else None
 
-    def _manners(self, d: Draw, a, restricted: bool) -> list[tuple[str, str]]:
+    @staticmethod
+    def is_zone(p) -> bool:
+        """A parameter that names a part of the body (contact_zone, zone, hold_zone…)."""
+        return p.type == "enum" and len(BODY_PARTS & set(p.values)) >= 3
+
+    def _manners(self, d: Draw, a, restricted: bool, body: bool = True) -> list[tuple[str, str]]:
         """(parameter, value) pairs as far as they are SEEN: at most one value per parameter, of at most two
-        parameters. Never an intimate value; with a possible minor, a contact gesture shows its whitelisted values."""
-        enums = [p for p in a.params if p.type == "enum"]
+        parameters. Never an intimate value; with a possible minor, a contact gesture shows its whitelisted values.
+        A part of the body is only named when the target has a body (a person, an animal), not a thing."""
+        enums = [p for p in a.params if p.type == "enum" and (body or not self.is_zone(p))]
         clean = lambda p: [v for v in p.values if v not in p.intimate_values]  # noqa: E731
         if restricted and a.contact and a.minor_whitelist:
             out = []

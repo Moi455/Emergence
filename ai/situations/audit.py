@@ -243,6 +243,8 @@ class D10Audit:
         p, seen = people.get(rec.key), f.get("look.age")
         if f.get("known_by") == "described" and f.get("name"):
             out.append(f"{rec.key}: a person known by description carries a name")
+        if p is not None and f.get("name") is not None and f["name"] != p.name:
+            out.append(f"{rec.key}: the file says {f['name']} but the table says {p.name}")
         if p is not None and seen is not None and abs(seen - p.age) > AGE_TOLERANCE:
             out.append(f"{rec.key}: looks {seen} but the table says {p.age:.1f}: the key map drifted")
         intimate = f.get("link") in self.intimate_links or any(f.get(n) is not None for n in self.intimate_fields.get("ENTITY", ()))

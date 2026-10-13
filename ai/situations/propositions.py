@@ -23,7 +23,7 @@ import language
 from governor import Party
 
 from .draw import Draw
-from .gestures import YOUNG, Choice, GestureChooser, Target
+from .gestures import INFANT, YOUNG, Choice, GestureChooser, Target
 from .parties import PartyBook
 from .pools import Pools
 from .scene import LinkRules, Person
@@ -32,15 +32,30 @@ PHYSICAL_QUALITIES = ("w_beautiful", "w_ugly")          # never said of a possib
 WORK_MIN_AGE = 14.0                                     # a trade, a craft: from this age
 CHILD_TECHNIQUES = ("t_climbing", "t_swimming", "t_music", "t_foraging", "t_fishing", "t_stealth", "t_riding")
 CONDITIONS = ("pain", "hunger", "thirst", "exhaustion", "stress", "sickness_felt", "intoxication")   # passing states
+# what people hold to be forbidden, shameful, obligatory, admirable or allowed: deontic word -> gestures that make sense
+NORM_DEEDS = {"forbidden": ("strike", "push", "grab", "take", "throw"), "shameful": ("strike", "push", "take", "throw"),
+              "obligatory": ("give", "work", "pour", "scoop"), "admirable": ("give", "work", "scoop", "tie"),
+              "permitted": ("eat", "drink", "sleep", "rest", "wear", "go", "take")}
+# what a thing is worth, in copper, by category (a coin is worth its metal); noise is added
+VALUE = {"bread": 2, "produce": 2, "meat": 5, "dish": 4, "drink": 3, "tableware": 4, "kitchen": 10, "container": 6,
+         "clothing": 12, "headwear": 6, "footwear": 10, "furniture": 25, "textile": 10, "toy": 3, "game": 8, "light": 3,
+         "farming": 15, "forestry": 18, "carpentry": 15, "smithing": 25, "masonry": 15, "fishing": 12, "hunting": 14,
+         "blade": 30, "blunt": 20, "polearm": 25, "ranged": 35, "armor": 60, "jewel": 90, "writing": 20, "trade": 20,
+         "music": 40, "religion": 15, "healing": 20, "medicine": 25, "magic_tool": 120, "magic_stock": 150,
+         "metal_stock": 40, "vehicle": 120, "husbandry": 15, "mining": 18, "leather": 12, "fiber": 10, "building": 8}
+COIN = {"copper_coin": 1, "silver_coin": 10, "gold_coin": 100, "debased_coin": 1, "coin_purse_full": 30}
 MAX_HOWS = 3                                            # event roles after the target (language.MAX_ROLES)
 PAST_LIMIT = 200.0                                      # game hours: `past` is more recent, `long_ago` is older
 
 
 @dataclass
 class Refs:
-    """The NPC's pointers usable in a proposition (keys of its records). Build it with keywords."""
-    persons: list[str] = field(default_factory=list)        # @E keys, present, absent or ghosts (not 'me')
-    absent: list[str] = field(default_factory=list)         # @E keys of persons not here
+    """The NPC's pointers usable in a proposition (keys of its records). Build it with keywords. Persons are the
+    living ones: the dead are apart, and a ghost (known, no file) is cited rarely."""
+    filed: list[str] = field(default_factory=list)          # @E keys of living persons with a file (here or not)
+    ghosts: list[str] = field(default_factory=list)         # @E keys of living persons without a file
+    absent: list[str] = field(default_factory=list)         # living persons who are not here (files first)
+    dead: list[str] = field(default_factory=list)           # persons he knows are dead
     things: list[str] = field(default_factory=list)         # @T keys (seen things and carried ones)
     loci: list[str] = field(default_factory=list)           # @L keys
     groups: list[str] = field(default_factory=list)         # @G keys
@@ -50,9 +65,27 @@ class Refs:
     owners: dict = field(default_factory=dict)              # @T key -> owner key as the NPC believes it
     links: dict = field(default_factory=dict)               # @E key -> ENTITY.link (what he is to the NPC)
     kinds: list[str] = field(default_factory=list)          # item kinds that belong to this place and this person
+    GHOST_RATE = 0.08
+
+    @property
+    def persons(self) -> list[str]:
+        return self.filed + self.ghosts
+
+    def someone(self, rng) -> str | None:
+        """A living person other than him: mostly one with a file."""
+        if self.ghosts and (not self.filed or rng.random() < self.GHOST_RATE):
+            return rng.choice(self.ghosts)
+        return rng.choice(self.filed) if self.filed else None
 
     def anyone(self, rng) -> str:
-        return rng.choice(self.persons + ["me"]) if self.persons else "me"
+        return "me" if (not self.filed and not self.ghosts) or rng.random() < 0.25 else self.someone(rng)
+
+
+@dataclass
+class Belief:
+    """A proposition he holds; `contradicted` when it was built to be wrong (and he has met the contradiction)."""
+    prop: str
+    contradicted: bool = False
 
 
 @dataclass
@@ -119,31 +152,36 @@ class PropositionGrammar:
         self.stats.made += 1
         return text
 
-    def session(self, rng: random.Random, book: PartyBook, me: Person, refs: Refs) -> "PropositionSession":
-        return PropositionSession(self, rng, book, me, refs)
+    def session(self, rng: random.Random, book: PartyBook, me: Person, refs: Refs, needs: dict | None = None) -> "PropositionSession":
+        return PropositionSession(self, rng, book, me, refs, needs)
+
 
 
 class PropositionSession:
     """The propositions of ONE situation."""
 
-    def __init__(self, grammar: PropositionGrammar, rng: random.Random, book: PartyBook, me: Person, refs: Refs):
+    def __init__(self, grammar: PropositionGrammar, rng: random.Random, book: PartyBook, me: Person, refs: Refs,
+                 needs: dict | None = None):
         self.g, self.rng, self.book, self.me, self.refs = grammar, rng, book, me, refs
         self.d = Draw(rng)
+        self.needs = needs or {}                  # need -> level (0-10): a need goal follows its level
 
     # ---- validation -------------------------------------------------------------------------------------
     def validate(self, text: str, kind: str = "belief") -> str | None:
         return self.g.validate(text, kind, self.book.party("me"), self.book.content_parties())
 
     def _first(self, makers, kind: str):
-        """Try the makers in a random order until one gives a valid proposition (a maker returns text or None)."""
+        """Try the makers in a random order until one gives a valid proposition (a maker returns text, a Belief or
+        None); -> the Belief."""
         makers = list(makers)
         self.rng.shuffle(makers)
         for m in makers:
-            t = m()
-            if t is not None:
-                p = self.validate(t, kind)
-                if p is not None:
-                    return p
+            got = m()
+            if got is None:
+                continue
+            got = got if isinstance(got, Belief) else Belief(got)
+            if self.validate(got.prop, kind) is not None:
+                return got
         return None
 
     # ---- pieces -----------------------------------------------------------------------------------------
@@ -168,6 +206,9 @@ class PropositionSession:
     def _person(self, key: str) -> Person | None:
         return self.me if key == "me" else self.book.truth.get(key)
 
+    def someone(self) -> str | None:
+        return self.refs.someone(self.rng)
+
     def _quality(self, subject: str) -> str:
         words = self.g.words["quality"]
         if self.book.may_be_minor(subject) or self._age(subject) < 18.0:
@@ -175,33 +216,41 @@ class PropositionSession:
         return self.rng.choice(words)
 
     def _pair(self) -> tuple[str, str] | None:
-        pool = self.refs.persons + ["me"]
-        return tuple(self.rng.sample(pool, 2)) if len(pool) >= 2 else None
+        a = self.refs.anyone(self.rng)
+        for _ in range(8):
+            b = self.refs.anyone(self.rng)
+            if b != a:
+                return a, b
+        return None
 
     def target(self, key: str) -> Target | None:
         r = self.refs
         if key in ("me", "anyone", "someone") or key.startswith(("@E", "n:")):
-            return Target("agent")
+            p = self._person(key)
+            return Target("agent", None, frozenset(("carried",)) if p is not None and p.age < 3 else frozenset())
         if key.startswith("@T"):
             return Target("animal" if key in r.animals else "item", r.thing_kinds.get(key))
         if key.startswith(("@L", "@PLACE")):
             return Target("place")
         return None
 
-    def deed(self, actor: str, target: str) -> tuple[str, Choice] | None:
+    def a_thing(self) -> str | None:
+        return self.rng.choice(self.refs.things) if self.refs.things else None
+
+    def deed(self, actor: str, target: str, only: tuple[str, ...] | None = None) -> tuple[str, Choice] | None:
         """(did ACTOR gesture TARGET [(how …)]) with a gesture the governor allows between these two."""
         t = self.target(target)
         if actor == target or t is None:
             return None
         age = self._age(actor) if actor not in ("anyone", "someone") else 30.0
-        pick = self.g.chooser.pick(self.d, t, self.book.party(actor), self.book.party(target), age=age)
+        pick = self.g.chooser.pick(self.d, t, self.book.party(actor), self.book.party(target), age=age, only=only)
         if pick is None or len(pick.manner) > MAX_HOWS:
             return None
         hows = "".join(f" (how {m})" for m in pick.manner)
         return f"(did {actor} {pick.gesture} {target}{hows})", pick
 
-    def _deed_text(self, actor: str, target: str) -> str | None:
-        got = self.deed(actor, target)
+    def _deed_text(self, actor: str, target: str, only=None) -> str | None:
+        got = self.deed(actor, target, only)
         return got[0] if got else None
 
     def _gift(self, giver: str, taker: str) -> str | None:
@@ -209,14 +258,14 @@ class PropositionSession:
         return f"(did {giver} give {self.kind(gift=True)} (to {taker}))" if giver != taker else None
 
     # ---- beliefs ------------------------------------------------------------------------------------
-    def belief(self) -> str | None:
+    def belief(self) -> Belief | None:
         rng, r = self.rng, self.refs
         subj = lambda: r.anyone(rng)  # noqa: E731
+        adult = self.me.age >= YOUNG
         makers = [
             self._owns if r.things else None,
             lambda: f"(has {subj()} {self.kind(True)})",
-            lambda: f"(at {rng.choice(r.absent)} {rng.choice(r.loci)})" if r.absent and r.loci else None,
-            lambda: f"(at {rng.choice(r.here)} @PLACE)" if r.here else None,
+            self._at_a_locus if r.absent and r.loci else None,
             lambda: f"(lives_at {subj()} {rng.choice(r.loci)})" if r.loci else None,
             self._quality_belief,
             lambda: self._state(subj()),
@@ -224,8 +273,8 @@ class PropositionSession:
             lambda: self._works(subj()),
             self._link,
             lambda: self._knows(subj()),
-            lambda: f"(worth {self.kind()} {rng.randint(1, 40)})",
-            self._norm,
+            self._worth if adult else None,
+            self._norm if adult else None,
             self._past_deed,
             self._believes,
             lambda: f"(member {subj()} {rng.choice(r.groups)})" if r.groups else None,
@@ -233,13 +282,21 @@ class PropositionSession:
         ]
         return self._first([m for m in makers if m is not None], "belief")
 
-    def _owns(self) -> str:
+    def _at_a_locus(self) -> str | None:
+        r = self.refs
+        who = r.absent[self.rng.randrange(len(r.absent))]
+        return f"(at {who} {self.rng.choice(r.loci)})"
+
+    def _owns(self) -> Belief | str:
+        """(owns X T): what he believes of the thing's owner (THING.owner); when he has no such belief, a guess that
+        he has already met the contradiction of."""
         r = self.refs
         t = self.rng.choice(r.things)
         believed = r.owners.get(t)
-        if believed and self.rng.random() < 0.6:              # what the NPC already believes of this thing
+        if believed:
             return f"(owns {believed} {t})"
-        return f"(owns {r.anyone(self.rng)} {t})"
+        who = self.refs.anyone(self.rng)
+        return Belief(f"(owns {who} {t})", contradicted=True)
 
     def _quality_belief(self) -> str:
         s = self.refs.anyone(self.rng)
@@ -276,64 +333,111 @@ class PropositionSession:
         return f"(knows_how {s} {self.rng.choice(techniques)})" if techniques else None
 
     def _believes(self) -> str | None:
-        r = self.refs
-        who, s = r.anyone(self.rng), r.anyone(self.rng)
+        who, s = self.refs.anyone(self.rng), self.refs.anyone(self.rng)
         return f"(believes {who} (quality {s} {self._quality(s)} {self._w('degree')}))" if who != s else None
 
+    def worth_of(self, kind: str) -> int:
+        """What a thing is worth, from what it is (a coin is its metal), with a merchant's noise."""
+        base = COIN.get(kind) or VALUE.get(self.g.pools.category_of.get(kind, ""), 6)
+        return max(1, round(base * self.rng.uniform(0.6, 1.6)))
+
+    def _worth(self) -> str:
+        k = self.kind().partition(":")[0]
+        return f"(worth {k} {self.worth_of(k)})"
+
     def _norm(self) -> str | None:
-        r = self.refs
-        deed = self._deed_text("anyone", self.rng.choice(r.things or ["@PLACE"]))
-        return f"(norm {self._w('deontic')} {deed})" if deed else None
+        """(norm DEONTIC (did anyone GESTURE TARGET)): a rule that makes sense (striking is forbidden, giving is
+        admirable, eating is allowed)."""
+        deontic = self.rng.choice([w for w in NORM_DEEDS if w in self.g.words["deontic"]] or ["forbidden"])
+        gestures = NORM_DEEDS[deontic]
+        targets = [x for x in (self.a_thing(), "someone") if x]
+        self.rng.shuffle(targets)
+        for t in targets:
+            deed = self._deed_text("anyone", t, only=gestures)
+            if deed:
+                return f"(norm {deontic} {deed})"
+        return None
 
     def _past_deed(self) -> str | None:
         pair = self._pair()
-        deed = self._deed_text(*pair) if pair else None
+        if pair is None:
+            return None
+        thing = self.a_thing()
+        deed = self._deed_text(pair[0], thing if thing and self.rng.random() < 0.5 else pair[1])
         return f"(past {deed})" if deed else None
 
     def _link(self) -> str | None:
         """(link X L Y) = X is the L of Y. Toward `me` it repeats ENTITY.link; between two others, a link that fits
         their ages. Never the same person twice, never an intimate link."""
         r, rng = self.refs, self.rng
-        known = [k for k in r.persons if r.links.get(k) not in (None, "stranger") and r.links[k] not in self.g.bad]
+        known = [k for k in r.filed if r.links.get(k) not in (None, "stranger") and r.links[k] not in self.g.bad]
         if known and rng.random() < 0.5:
             x = rng.choice(known)
             return f"(link {x} {r.links[x]} me)"
-        if len(r.persons) < 2:
+        if len(r.filed) < 2:
             return None
-        a, b = rng.sample(r.persons, 2)                    # two others: `me` only through ENTITY.link above
+        a, b = rng.sample(r.filed, 2)                      # two others: `me` only through ENTITY.link above
         fits = [w for w in self.g.words["link"] if self.g.rules.fits(w, self._true_age(a), self._true_age(b))]
         return f"(link {a} {rng.choice(fits)} {b})" if fits else None
 
+    # ---- what someone said to him ---------------------------------------------------------------------
+    def utterance(self, speaker: str) -> str | None:
+        """What `speaker` could plausibly tell him: what he has, where he lives, his trade, a price, who is where,
+        what he thinks of someone, who died, what happened. Not a random predicate."""
+        rng, r = self.rng, self.refs
+        other = lambda: next((x for x in (self.someone() for _ in range(6)) if x and x != speaker), None)  # noqa: E731
+        makers = [
+            lambda: f"(has {speaker} {self.kind(True)})",
+            lambda: f"(lives_at {speaker} {rng.choice(r.loci)})" if r.loci else None,
+            lambda: self._works(speaker),
+            self._worth,
+            lambda: self._at_a_locus() if r.absent and r.loci else None,
+            lambda: (lambda o: f"(quality {o} {self._quality(o)} {self._w('degree')})" if o else None)(other()),
+            lambda: (lambda o: self._past_deed_of(speaker, o))(other()),
+            lambda: f"(dead {rng.choice(r.dead)})" if r.dead else None,
+            lambda: next((f"(owns {speaker} {t})" for t in r.things if r.owners.get(t) == speaker), None),
+        ]
+        got = self._first([m for m in makers if m is not None], "belief")
+        return got.prop if got else None
+
+    def _past_deed_of(self, a: str, b: str | None) -> str | None:
+        deed = self._deed_text(a, b) if b else None
+        return f"(past {deed})" if deed else None
+
     # ---- goals --------------------------------------------------------------------------------------
+    NEED_WORDS = (("hunger", "hunger"), ("thirst", "thirst"), ("exhaustion", "exhaustion"), ("pain", "pain"))
+
     def goal(self) -> tuple[str, str] | None:
-        """-> (proposition, mode): achieve, avoid or maintain."""
+        """-> (proposition, mode): achieve, avoid or maintain. A need becomes a goal in proportion to its level."""
         rng, r = self.rng, self.refs
         young, works = self.me.age < YOUNG, self.me.age >= WORK_MIN_AGE
-        friends = [k for k in r.persons if self.g.rules.fits("friend", self._true_age(k), self.me.age)
+        friends = [k for k in r.filed if self.g.rules.fits("friend", self._true_age(k), self.me.age)
                    and r.links.get(k) not in ("friend", "spouse", "betrothed", "lover", "parent", "child", "sibling")]
 
         def trade():
             occ = self.occupation_of("me")
             return f"(works_as me {occ if occ and rng.random() < 0.6 else self._w('occupation')})" if works else None
-        makers = [
-            (lambda: f"(has me {self.kind(True)})", "achieve"),
-            (lambda: f"(at me {rng.choice(r.loci)})" if r.loci else None, "achieve"),
-            (lambda: f"(owns me {rng.choice(r.things)})" if r.things else None, "achieve"),
-            (lambda: f"(quality me {self._quality('me')} high)", "maintain"),
-            (trade, "maintain"),
-            (lambda: f"(knows_how me {self._w('technique')})" if not young and works else None, "achieve"),
-            (lambda: f"(link {rng.choice(friends)} friend me)" if friends else None, "achieve"),
-            (lambda: f"(state me {rng.choice(('hunger', 'thirst', 'exhaustion', 'pain'))} low)", "achieve"),
-            (lambda: f"(state me {rng.choice(('hunger', 'thirst', 'exhaustion', 'pain'))} high)", "avoid"),
+        makers = [  # (maker, mode, weight)
+            (lambda: f"(has me {self.kind(True)})", "achieve", 1.0),
+            (lambda: f"(at me {rng.choice(r.loci)})" if r.loci else None, "achieve", 0.7),
+            (lambda: f"(owns me {rng.choice(r.things)})" if r.things else None, "achieve", 0.8),
+            (lambda: f"(quality me {self._quality('me')} high)", "maintain", 0.3),
+            (trade, "maintain", 0.4),
+            (lambda: f"(knows_how me {self._w('technique')})" if not young and works else None, "achieve", 0.3),
+            (lambda: f"(link {rng.choice(friends)} friend me)" if friends else None, "achieve", 0.4),
         ]
-        order = list(range(len(makers)))
-        rng.shuffle(order)
-        for i in order:
-            text = makers[i][0]()
-            if text is not None:
-                ok = self.validate(text, "goal")
-                if ok is not None:
-                    return ok, makers[i][1]
+        for need, level in self.needs.items():
+            if level >= 2.5:
+                w = (level / 10.0) ** 2 * 5
+                makers.append((lambda n=need: f"(state me {n} low)", "achieve", w))
+                makers.append((lambda n=need: f"(state me {n} high)", "avoid", w * 0.25))
+        pool = list(makers)
+        while pool:
+            i = rng.choices(range(len(pool)), weights=[m[2] for m in pool])[0]
+            maker, mode, _ = pool.pop(i)
+            text = maker()
+            if text is not None and self.validate(text, "goal") is not None:
+                return text, mode
         return None
 
     def need_goal(self, need: str) -> str | None:
@@ -341,14 +445,16 @@ class PropositionSession:
         return self.validate(f"(state me {need} low)", "goal")
 
     # ---- memories -----------------------------------------------------------------------------------
-    def memory(self) -> Recalled | None:
-        """A remembered event, with the part he played; `past` if it is recent (< 200 h), `long_ago` if not."""
-        rng, P, r = self.rng, self.refs.anyone, self.refs
+    def memory(self, death: bool = False) -> Recalled | None:
+        """A remembered event, with the part he played; `past` if it is recent (< 200 h), `long_ago` if not. Deeds
+        bear on things as often as on people; a death is remembered only when somebody is dead."""
+        rng, r = self.rng, self.refs
         age = self.d.log_uniform(1, 5000)
         when = "past" if age < PAST_LIMIT else "long_ago"
+        anyone = lambda: self.refs.anyone(rng)  # noqa: E731
 
-        def deed(a: str, b: str, role: str) -> Recalled | None:
-            got = self.deed(a, b)
+        def deed(a: str, b: str | None, role: str) -> Recalled | None:
+            got = self.deed(a, b) if a and b else None
             return Recalled(f"({when} {got[0]})", role, got[1].gesture, age) if got else None
 
         def gift(a: str, b: str, role: str) -> Recalled | None:
@@ -359,23 +465,29 @@ class PropositionSession:
             pair = self._pair()
             return deed(pair[0], pair[1], rng.choice(("witness", "told"))) if pair else None
 
-        def death() -> Recalled | None:
-            if not r.absent:
-                return None
-            return Recalled(f"({when} (dead {rng.choice(r.absent)}))", rng.choice(("told", "told", "witness")), None, age, True)
-
-        makers = [lambda: deed(P(rng), "me", "target"), lambda: deed("me", P(rng), "actor"),
-                  lambda: gift(P(rng), "me", "target"), lambda: gift("me", P(rng), "actor"), other, death]
-        rng.shuffle(makers)
-        for m in makers:
-            got = m()
+        def dead() -> Recalled | None:
+            return Recalled(f"({when} (dead {rng.choice(r.dead)}))", rng.choice(("told", "told", "witness")), None, age, True) \
+                if r.dead else None
+        if death:
+            return dead()
+        makers = [(lambda: deed(anyone(), "me", "target"), 0.14), (lambda: deed("me", self.a_thing(), "actor"), 0.24),
+                  (lambda: deed(anyone(), self.a_thing(), rng.choice(("witness", "told"))), 0.22),
+                  (lambda: gift(anyone(), "me", "target"), 0.04), (lambda: gift("me", anyone(), "actor"), 0.04),
+                  (other, 0.14), (lambda: deed(self.someone(), self.a_thing(), "witness"), 0.1)]
+        pool = list(makers)
+        while pool:
+            i = rng.choices(range(len(pool)), weights=[m[1] for m in pool])[0]
+            got = pool.pop(i)[0]()
             if got is not None and self.validate(got.prop, "memory") is not None:
                 return got
         return None
 
     # ---- what someone asked of the NPC: a full utterance, frozen in the HEARER's terms --------------
     def request(self, asker: str) -> str | None:
-        """me = the NPC who heard it, `asker` = the pointer to whoever asked (language_grammar.toml: freezing)."""
+        """me = the NPC who heard it, `asker` = the pointer to whoever asked (language_grammar.toml: freezing). A baby
+        is asked nothing; a small child only to hand something over."""
+        if self.me.age < INFANT:
+            return None
         rng, r = self.rng, self.refs
         young = self.me.age < YOUNG
 
@@ -387,7 +499,8 @@ class PropositionSession:
         makers = [
             lambda: f"(request (did me give {self.kind(gift=True)} (to {asker})))",
             lambda: f"(offer (did {asker} give {self.kind(True, gift=True)} (to me)))",
-            lambda: f"(ask (at {rng.choice(r.persons)} where))" if r.persons else None,
+            lambda: f"(ask (at {self.someone() or asker} where))",
             work,
         ]
-        return self._first(makers, "request")
+        got = self._first(makers, "request")
+        return got.prop if got else None

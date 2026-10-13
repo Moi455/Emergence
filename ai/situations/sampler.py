@@ -19,6 +19,7 @@ from tok2 import DecisionContext, Encoded, Tokenizer
 from .audit import D10Audit
 from .builders import WAKE_CAUSES
 from .draw import Draw
+from .gestures import INFANT
 from .mind import MindBuilder
 from .pools import Pools
 from .propositions import PropositionGrammar
@@ -52,6 +53,8 @@ class SituationSampler:
         rng = random.Random(f"situation:{self.seed}:{index}")
         cause = Draw(rng).weighted(WAKE_CAUSES)                      # why he wakes comes first; the rest justifies it
         scene = SceneFactory(rng, self.pools, self.grammar.rules).make(needs_company=cause in NEEDS_COMPANY)
+        if scene.self_.age < INFANT and cause in ("speech", "request"):    # a baby neither speaks nor is asked anything
+            cause = "perception"
         mind = self.minds.build(scene, rng, cause)
         self.audit.check(scene.self_, mind.records, mind.people)
         ctx = DecisionContext(mind.records, known_keys=mind.known_keys())

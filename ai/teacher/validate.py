@@ -184,8 +184,9 @@ class Mind:
             return UNKNOWN
         if rec.type == "ENTITY":
             seen = rec.fields.get("look.age")
-            return Party(real_age=self.truth.real_age(key), believed_age=self._believed.get(key, seen), apparent_age=seen,
-                         resolved=rec.fields.get("known_by") == "seen")
+            here = bool(rec.fields.get("present"))
+            return Party(real_age=self.truth.real_age(key), believed_age=self._believed.get(key, seen if here else None),
+                         apparent_age=seen, resolved=rec.fields.get("known_by") == "seen", perceived=here)
         if rec.type == "GROUP":
             return UNKNOWN                                        # a group may hold a minor: deny by default
         return Party(resolved=True, person=False)                 # THING, INV, LOCUS, PLACE...

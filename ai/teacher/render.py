@@ -398,9 +398,11 @@ class PeopleSection(Section):
                 look.append(f"looks about {Units.num(round(f['look.age']))}")
             if f.get("look.sex") and f["look.sex"] != "unclear":
                 look.append(f["look.sex"])
+            seen_words = set()
             for k in ("look.posture", "look.motion", "look.expression", "look.condition"):
                 v = f.get(k)
-                if v and v not in ("still", "neutral", "active"):
+                if v and v not in ("still", "neutral", "active") and v not in seen_words:     # not "running; running"
+                    seen_words.add(v)
                     look.append(str(v))
             if f.get("look.wounds"):
                 look.append(f"wounds {Units.num(f['look.wounds'])}")
@@ -477,6 +479,9 @@ class ThingsSection(Section):
 
 class HappenedSection(Section):
     title = "WHAT JUST HAPPENED (keys: @V..., h:..., q:...)"
+    # how the second object of a gesture reads: a gift goes TO somebody, a pour goes INTO something...
+    SECOND = {"give": "to", "pour": "into", "scoop": "into", "put": "onto", "throw": "at", "take": "from", "tie": "to",
+              "pull": "toward", "eat": "feeding", "drink": "giving drink to"}
 
     def lines(self, c):
         out = []
@@ -488,7 +493,7 @@ class HappenedSection(Section):
             if f.get("with"):
                 s += f" with {f['with']}"
             if f.get("from_to"):
-                s += f" ({f['from_to']})"
+                s += f" {self.SECOND.get(f.get('gesture'), 'involving')} {f['from_to']}"
             if f.get("manner"):
                 s += f", manner: {c.fmt(f['manner'])}"
             left = c.leftovers(r, {"actor", "gesture", "target", "sense", "age", "manner", "with", "from_to"})
@@ -497,7 +502,8 @@ class HappenedSection(Section):
             f = r.fields
             who = f.get("informant")
             out.append(f"{r.key} {Units.ago(f['age'])}, {f.get('source', 'told')}" + (f" by {who}" if who else "")
-                       + f": {c.glosser.show(f.get('prop'))}")
+                       + f": {c.glosser.show(f.get('prop'))}"
+                       + ("; you believe this is NOT the case" if f.get("polarity") is False else ""))
         for r in c.of("REQUEST"):
             f = r.fields
             out.append(f"{r.key} {Units.ago(f['age'])}, {f.get('from', '?')} says to you: {c.glosser.show(f.get('prop'))}")
@@ -524,7 +530,7 @@ class BeliefsSection(Section):
             if f.get("importance") is not None and f["importance"] >= 3:
                 bits.append(f"important {Units.num(f['importance'])}")
             if f.get("polarity") is False:
-                bits.append("you hold it FALSE")
+                bits.append("you believe this is NOT the case")
             if f.get("contradicted"):
                 bits.append("contradicted")
             if f.get("secret"):
@@ -586,14 +592,16 @@ class GoalsSection(Section):
             out.append(f"{r.key} {c.glosser.show(f.get('prop'))} | " + ", ".join(bits + left))
         for r in c.of("PLAN"):
             f = r.fields
-            bits = [f"next step {f.get('step', '?')}"]
+            on = f" on {f['target']}" if f.get("target") else ""
+            bits = [f"{f.get('step', '?')} -> {f.get('next', '?')}{on}"]
             if f.get("goal"):
                 bits.append(f"serves {f['goal']}")
             if f.get("commitment") is not None:
                 bits.append(f"commitment {Units.num(f['commitment'])}/10")
             if f.get("progress") is not None:
                 bits.append(f"progress {round(f['progress'] * 100)}%")
-            out.append(f"{r.key} your current plan: " + ", ".join(bits))
+            left = c.leftovers(r, {"step", "next", "target", "goal", "commitment", "progress"})
+            out.append(f"{r.key} your current plan (step -> next step on target): " + ", ".join(bits + left))
         for r in c.of("COMMIT"):
             f = r.fields
             who = f.get("counterparty", "?")
