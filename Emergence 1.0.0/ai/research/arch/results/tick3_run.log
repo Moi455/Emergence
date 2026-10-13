@@ -1,0 +1,9 @@
+recommended tick small: {'selector': 1.7233920097351074, 'act_T64_lot32': 3.5983359813690186, 'reflect_T128_lot8': 2.2849280834198, 'speech_lot8': 4.548367977142334, 'critic': 0.23347200453281403} -> 13.53 ms (p95 13.88) -> 13.5 % GPU
+recommended tick base: {'selector': 1.701151967048645, 'act_T64_lot32': 6.60263991355896, 'reflect_T128_lot8': 3.883471965789795, 'speech_lot8': 4.74614405632019, 'critic': 0.2910560071468353} -> 28.58 ms (p95 33.48) -> 28.6 % GPU
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_tick3.json
+# runs 2 and 3 (bench_arch.py --only tick3 --iters 80), console output copied as is; arch_tick3.json = run 3
+recommended tick small: {'selector': 1.7605119943618774, 'act_T64_lot32': 6.097280025482178, 'reflect_T128_lot8': 4.723072052001953, 'speech_lot8': 9.746111869812012, 'critic': 0.29369600117206573} -> 27.45 ms (p95 28.26) -> 27.5 % GPU
+recommended tick base: {'selector': 1.8144800066947937, 'act_T64_lot32': 9.313616275787354, 'reflect_T128_lot8': 4.628927946090698, 'speech_lot8': 4.6064159870147705, 'critic': 0.2974720001220703} -> 17.41 ms (p95 17.74) -> 17.4 % GPU
+recommended tick small: {'selector': 1.7527999877929688, 'act_T64_lot32': 3.7014559507369995, 'reflect_T128_lot8': 2.339759945869446, 'speech_lot8': 4.877327919006348, 'critic': 0.24115200340747833} -> 12.76 ms (p95 16.81) -> 12.8 % GPU
+recommended tick base: {'selector': 1.7675840258598328, 'act_T64_lot32': 6.775168180465698, 'reflect_T128_lot8': 3.9734559059143066, 'speech_lot8': 4.583920001983643, 'critic': 0.30955199897289276} -> 17.45 ms (p95 17.66) -> 17.5 % GPU
+# note: a training job of another agent (student2.train) started on the GPU at 00:14, during run 2-3; GPU at 74 C

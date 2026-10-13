@@ -1,0 +1,12 @@
+  looped                    8 layers, T=128:   13.05 ms encoder_params_M=14.2
+  looped          2 layers x 4 loops, T=128:   13.22 ms encoder_params_M=3.55
+    film         base + per-NPC FiLM, T=128:   13.73 ms 
+  looped                     8 layers, T=64:    6.27 ms encoder_params_M=14.2
+  looped           2 layers x 4 loops, T=64:    6.35 ms encoder_params_M=3.55
+    film          base + per-NPC FiLM, T=64:    6.70 ms 
+     moe dense FFN (one layer, lot 32 x 128):    0.43 ms 
+     moe  (a) top-1 of 4, dense then select:    2.27 ms 
+     moe   (b) one expert per NPC, gathered:    0.89 ms 
+  critic      plan critic, 8 NPCs x 8 plans:    0.34 ms 
+  critic latent world model, 64 rollouts x 5 steps:    3.06 ms 
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/deliberation.json

@@ -1,0 +1,55 @@
+{
+ "rows": [
+  {
+   "config": "small",
+   "B": 32,
+   "weights_MiB": 11.298261642456055,
+   "torch_peak_MiB": 66.82958984375,
+   "torch_reserved_MiB": 78.0,
+   "process_MiB": 206
+  },
+  {
+   "config": "small",
+   "B": 64,
+   "weights_MiB": 11.298261642456055,
+   "torch_peak_MiB": 106.10693359375,
+   "torch_reserved_MiB": 148.0,
+   "process_MiB": 276
+  },
+  {
+   "config": "base",
+   "B": 32,
+   "weights_MiB": 31.122480392456055,
+   "torch_peak_MiB": 102.486328125,
+   "torch_reserved_MiB": 186.0,
+   "process_MiB": 314
+  },
+  {
+   "config": "base",
+   "B": 64,
+   "weights_MiB": 31.122480392456055,
+   "torch_peak_MiB": 156.763671875,
+   "torch_reserved_MiB": 266.0,
+   "process_MiB": 394
+  },
+  {
+   "config": "large",
+   "B": 32,
+   "weights_MiB": 66.39689445495605,
+   "torch_peak_MiB": 154.85009765625,
+   "torch_reserved_MiB": 248.0,
+   "process_MiB": 376
+  },
+  {
+   "config": "large",
+   "B": 64,
+   "weights_MiB": 66.39689445495605,
+   "torch_peak_MiB": 224.12744140625,
+   "torch_reserved_MiB": 364.0,
+   "process_MiB": 492
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-09 22:29"
+}

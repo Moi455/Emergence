@@ -1,0 +1,40 @@
+{
+ "rows": [
+  {
+   "size": "small",
+   "B": 8,
+   "torch_graph_ms": 3.3039358854293823,
+   "ort_cuda_graph_ms": 5.823839902877808,
+   "gesture_parity": 1.0,
+   "onnx_MB": 16.276062965393066
+  },
+  {
+   "size": "small",
+   "B": 32,
+   "torch_graph_ms": 11.209472179412842,
+   "ort_cuda_graph_ms": 20.949999809265137,
+   "gesture_parity": 1.0,
+   "onnx_MB": 28.369812965393066
+  },
+  {
+   "size": "base",
+   "B": 8,
+   "torch_graph_ms": 5.3982720375061035,
+   "ort_cuda_graph_ms": 9.35918378829956,
+   "gesture_parity": 1.0,
+   "onnx_MB": 36.91465473175049
+  },
+  {
+   "size": "base",
+   "B": 32,
+   "torch_graph_ms": 19.549264907836914,
+   "ort_cuda_graph_ms": 35.534751892089844,
+   "gesture_parity": 1.0,
+   "onnx_MB": 49.00840473175049
+  }
+ ],
+ "onnxruntime": "1.31.0",
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-12 04:16"
+}

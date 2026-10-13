@@ -1,0 +1,335 @@
+# interpretations.toml - étape 14 : ce que les témoins CONCLUENT. Jamais une option (D28).
+#
+# Un PNJ ne « vole » pas : il prend (take), peut-être discrètement, une chose qu'un autre croit à lui.
+# Un témoin peut en conclure « c'est un vol » : il écrit un souvenir dont l'interprétation est theft
+# (m_interpretation), ou dit « (assert (qualifies m:3 theft)) ». Deux témoins du même geste peuvent
+# conclure différemment (la hache reprise : vol pour le fils, rien pour le père).
+#   facts : faits PHYSIQUES que le moteur enregistre (vérité, pour la chronique et les mesures ; jamais lus
+#           par l'IA) : gestes, registre de détention, blessures, accords conclus, contenu d'une parole ;
+#   cues  : ce qu'un témoin PERÇOIT ou CROIT, écrit « CHAMP_DE_JETON[=valeur] : explication » ; le
+#           validateur vérifie que le champ existe dans ce que l'IA lit (catalogue/tools/budget.py) ;
+#   norms : les croyances de norme qui le rendent saillant, écrites dans la langue intérieure (vérifiées
+#           par catalogue/tools/language.py) ; sans elles, le même geste ne choque pas.
+
+[[interpretation]]
+id = "theft"
+label_fr = "vol"
+facts = ["la détention est passée par take, sans give de celui qui tenait la chose", "d'autres reconnaissent un propriétaire (recognized_claims)"]
+cues = ["EVENT.gesture=take : on l'a vu prendre", "EVENT.manner=discreet : en cachette", "THING.owner : la chose est crue à un autre", "ENTITY.present=false : le propriétaire cru n'était pas là"]
+norms = ["(norm forbidden (did anyone take this))"]
+
+[[interpretation]]
+id = "taking_back"
+label_fr = "reprendre son bien"
+facts = ["la détention est passée par take", "le preneur l'avait tenue et donnée par un accord de prêt"]
+cues = ["THING.owner : la chose est crue au preneur", "MEMORY.prop : un prêt dont on se souvient"]
+norms = ["(norm permitted (did anyone take this))"]
+
+[[interpretation]]
+id = "assault"
+label_fr = "agression, coups"
+facts = ["strike, push ou grab sur une personne", "blessures ou douleur causées"]
+cues = ["EVENT.gesture=strike : on l'a vu frapper", "ENTITY.look.wounds : la victime est blessée", "MEMORY.prop : la victime n'avait pas frappé d'abord"]
+norms = ["(norm forbidden (did anyone strike someone))"]
+
+[[interpretation]]
+id = "affront"
+label_fr = "affront, gifle, provocation (humilier sans vouloir blesser ; souvent un défi)"
+facts = ["strike léger, main ouverte, au visage ou à la tête, sans blessure", "devant d'autres personnes"]
+cues = ["EVENT.manner : main ouverte, léger", "SELF.body.pain : une douleur brève et faible", "PLACE.crowd : devant tout le monde", "HEARD : ce qui a été dit juste avant"]
+norms = ["(norm shameful (did anyone strike someone (how open_hand)))"]
+
+[[interpretation]]
+id = "self_defense"
+label_fr = "légitime défense"
+facts = ["l'autre a frappé ou a levé une lame le premier"]
+cues = ["MEMORY.prop : l'autre a frappé le premier", "ENTITY.look.held : l'autre tenait une lame", "EVENT.manner : il s'est arrêté quand l'autre a cédé"]
+norms = ["(norm permitted (did anyone strike someone))"]
+
+[[interpretation]]
+id = "murder"
+label_fr = "meurtre"
+facts = ["une personne est morte des blessures de coups portés par une autre"]
+cues = ["MEMORY.prop : les coups ont continué sur un corps à terre", "ENTITY.look.held : une arme", "THING.state : un corps caché"]
+norms = ["(norm forbidden (did anyone strike someone (how full)))"]
+
+[[interpretation]]
+id = "manslaughter"
+label_fr = "mort sans l'avoir voulu (rixe qui tourne mal)"
+facts = ["une personne est morte des coups d'une rixe, sans arme"]
+cues = ["MEMORY.prop : une bagarre", "ENTITY.look.expression=surprise : il est resté hébété"]
+norms = ["(norm shameful (did anyone strike someone (how hard)))"]
+
+[[interpretation]]
+id = "accident"
+label_fr = "accident"
+facts = ["une blessure ou une mort sans geste d'autrui dirigé contre la victime (chute, effondrement, bête)"]
+cues = ["MEMORY.prop : personne n'a été vu agir", "THING.state : un mur tombé, une échelle cassée"]
+norms = []
+
+[[interpretation]]
+id = "negligence"
+label_fr = "négligence"
+facts = ["une blessure ou une perte causée par une chose laissée par quelqu'un (feu non éteint, mur non étayé, bête non attachée)"]
+cues = ["THING.owner : la chose est crue à quelqu'un", "THING.state : laissée en l'état"]
+norms = ["(norm obligatory (did anyone tie this))"]
+
+[[interpretation]]
+id = "lie"
+label_fr = "mensonge"
+facts = ["le parleur a affirmé P en tenant la croyance non-P"]
+cues = ["BELIEF.contradicted : ce qu'il a dit contredit ce que j'ai vu", "ENTITY.look.signs : il a rougi, tremblé en parlant", "HEARD : deux versions qui se contredisent"]
+norms = ["(norm forbidden (did anyone speak (says b:1)))"]
+
+[[interpretation]]
+id = "slander"
+label_fr = "calomnie"
+facts = ["un parleur a affirmé d'un absent un fait qu'il croyait faux, à son détriment"]
+cues = ["HEARD : on m'a rapporté qu'il disait du mal de quelqu'un", "BELIEF.contradicted : ce qu'il disait est faux à mes yeux"]
+norms = ["(norm forbidden (did anyone speak (says b:1)))"]
+
+[[interpretation]]
+id = "betrayal"
+label_fr = "trahison"
+facts = ["un accord ou un secret confié a été rompu par une partie, au détriment de l'autre"]
+cues = ["COMMIT : une promesse dont je me souviens et que je crois rompue", "BELIEF.shared : un secret confié que d'autres savent maintenant", "ENTITY.link : celui à qui je me fiais"]
+norms = ["(norm forbidden (not (did anyone speak (says g:1))))"]
+
+[[interpretation]]
+id = "broken_promise"
+label_fr = "promesse non tenue"
+facts = ["un accord a dépassé son échéance sans être rempli"]
+cues = ["COMMIT : une promesse dont l'échéance crue est passée"]
+norms = ["(norm obligatory (did anyone give this))"]
+
+[[interpretation]]
+id = "adultery"
+intimate = true
+label_fr = "adultère, infidélité"
+facts = ["un adulte lié par un accord de mariage a eu un touch romantique ou intime avec un autre adulte"]
+cues = ["EVENT.gesture=touch : on les a vus", "EVENT.manner=romantic : de façon tendre ou amoureuse", "ENTITY.link=spouse : l'un est marié à un autre"]
+norms = ["(norm forbidden (did anyone touch someone (how romantic)))"]
+
+[[interpretation]]
+id = "injustice"
+label_fr = "injustice"
+facts = ["quelqu'un a été frappé, enfermé ou dépouillé sur la parole d'un titulaire de rôle, pour un fait que le moteur n'a pas enregistré de sa main"]
+cues = ["BELIEF.prop : je crois l'accusé innocent", "ENTITY.link : le juge est parent de l'accusateur"]
+norms = ["(norm forbidden (did anyone strike someone))"]
+
+[[interpretation]]
+id = "generosity"
+label_fr = "générosité"
+facts = ["des biens donnés (give) sans accord qui demande un retour"]
+cues = ["EVENT.gesture=give : on l'a vu donner", "ENTITY.look.attire : le donneur paraît pauvre", "PLACE.weather : en plein hiver"]
+norms = ["(norm admirable (did anyone give this))"]
+
+[[interpretation]]
+id = "kindness"
+label_fr = "gentillesse, aide"
+facts = ["un geste qui a réduit la douleur, la faim ou le travail d'un autre (work bandage, give nourriture, take by_arm)"]
+cues = ["EVENT.gesture : aider, soigner, porter", "MEMORY.prop : rien n'a été demandé en retour"]
+norms = ["(norm admirable (did anyone work someone))"]
+
+[[interpretation]]
+id = "rescue"
+label_fr = "sauvetage"
+facts = ["une personne a été portée ou tirée hors d'un feu, d'une eau profonde, d'un effondrement ou d'une bête qui chargeait"]
+cues = ["EVENT.gesture=take : il l'a portée dehors", "THING.display=charging : la bête chargeait", "THING.state : la maison brûlait"]
+norms = ["(norm admirable (did anyone take someone))"]
+
+[[interpretation]]
+id = "cowardice"
+label_fr = "lâcheté"
+facts = ["une personne s'est éloignée (go away) pendant que d'autres proches étaient frappés ou attaqués"]
+cues = ["EVENT.gesture=go : il est parti en courant", "ENTITY.link : il a laissé les siens", "THING.display=charging : la bête chargeait"]
+norms = ["(norm shameful (did anyone go (how away)))"]
+
+[[interpretation]]
+id = "heroism"
+label_fr = "héroïsme"
+facts = ["une personne est allée vers un feu, une eau profonde ou une bête qui chargeait pour en sortir quelqu'un"]
+cues = ["EVENT.gesture=go : il y est allé", "EVENT.target : vers le feu, vers la bête"]
+norms = ["(norm admirable (did anyone go (how toward)))"]
+
+[[interpretation]]
+id = "insult"
+label_fr = "insulte, humiliation"
+facts = ["une parole attribuant à l'auditeur une qualité ou un état de degré bas, dite fort devant d'autres"]
+cues = ["HEARD : ce qu'il a dit de moi", "PLACE.crowd : devant tout le monde", "EVENT.manner : à voix forte"]
+norms = ["(norm forbidden (did anyone speak (says (quality you w_bad high))))"]
+
+[[interpretation]]
+id = "mockery"
+label_fr = "moquerie, plaisanterie"
+facts = ["une parole ou un geste suivi de rires, au sujet de quelqu'un de présent"]
+cues = ["ENTITY.look.expression=laugh : ils rient", "HEARD : ce qui a été dit"]
+norms = []
+
+[[interpretation]]
+id = "threat_felt"
+label_fr = "menace"
+facts = ["une parole qui conditionne un geste nuisible à l'auditeur à un geste de l'auditeur"]
+cues = ["HEARD : si tu… alors je…", "ENTITY.look.held : une arme montrée", "ENTITY.look.expression=anger : l'air furieux"]
+norms = ["(norm forbidden (did anyone speak (says (if b:1 b:2))))"]
+
+[[interpretation]]
+id = "extortion"
+label_fr = "chantage, racket"
+facts = ["une offre qui conditionne une révélation ou un geste nuisible à un paiement, parfois à chaque période"]
+cues = ["HEARD : paie ou je dis", "COMMIT : un paiement à chaque saison"]
+norms = ["(norm forbidden (did anyone speak (says (if b:1 b:2))))"]
+
+[[interpretation]]
+id = "bribery"
+label_fr = "corruption, pot-de-vin"
+facts = ["des biens donnés à un titulaire de rôle par un accord dont l'obligation est qu'il ne fasse pas un geste attendu de ce rôle"]
+cues = ["EVENT.gesture=give : une pièce passée à un garde", "EVENT.manner=discreet : en cachette", "MEMORY.prop : ensuite le garde a laissé passer"]
+norms = ["(norm forbidden (did anyone give this (to someone)))"]
+
+[[interpretation]]
+id = "fraud"
+label_fr = "tromperie, fraude (fausse monnaie, balance faussée, marchandise trompeuse)"
+facts = ["un échange où le vendeur tenait la croyance que l'état de la chose était pire que dit ou montré"]
+cues = ["THING.kind : une pièce qui paraît légère au toucher", "THING.state : une corde qui a cassé le lendemain", "BELIEF.contradicted : ce qu'on m'avait dit d'elle"]
+norms = ["(norm forbidden (did anyone give this))"]
+
+[[interpretation]]
+id = "poisoning"
+label_fr = "empoisonnement"
+facts = ["une personne a versé ou mis une substance toxique dans ce qu'une autre a mangé ou bu"]
+cues = ["EVENT.gesture=pour : on l'a vu verser quelque chose", "EVENT.from_to : dans la chope d'un autre", "ENTITY.look.health : malade juste après avoir bu"]
+norms = ["(norm forbidden (did anyone pour this))"]
+
+[[interpretation]]
+id = "arson"
+label_fr = "incendie volontaire"
+facts = ["un feu a commencé par un geste work (torche) d'une personne sur un combustible cru à un autre"]
+cues = ["EVENT.with : une torche à la main", "THING.state : le feu a pris la nuit", "MEMORY.prop : une querelle avant"]
+norms = ["(norm forbidden (did anyone work this (with torch)))"]
+
+[[interpretation]]
+id = "vandalism"
+label_fr = "dégradation du bien d'autrui"
+facts = ["des coups ont baissé l'intégrité d'une chose crue à un autre"]
+cues = ["EVENT.gesture=strike : sur un mur, une clôture, une vitre", "THING.owner : crue à un autre"]
+norms = ["(norm forbidden (did anyone strike this))"]
+
+[[interpretation]]
+id = "trespass"
+label_fr = "intrusion"
+facts = ["une personne est entrée dans un lieu reconnu à un autre, sans y avoir été invitée par une parole"]
+cues = ["EVENT.gesture=go : entré dans la maison", "PLACE.light : de nuit", "MEMORY.prop : personne ne l'avait invité"]
+norms = ["(norm forbidden (did anyone go here))"]
+
+[[interpretation]]
+id = "encroachment"
+label_fr = "empiètement (sur un champ, un pré, une source)"
+facts = ["des gestes de travail (strike, scoop, put) sur un terrain reconnu à un autre"]
+cues = ["EVENT.gesture : il laboure, il plante", "THING.owner : le champ est cru à un autre"]
+norms = ["(norm forbidden (did anyone strike this))"]
+
+[[interpretation]]
+id = "kidnapping"
+label_fr = "enlèvement, séquestration"
+facts = ["une personne a été portée, tirée ou attachée et gardée dans un lieu fermé contre ses gestes de fuite"]
+cues = ["EVENT.gesture=tie : on l'a attachée", "EVENT.gesture=operate : la porte verrouillée", "ENTITY.present=false : elle a disparu"]
+norms = ["(norm forbidden (did anyone tie someone))"]
+
+[[interpretation]]
+id = "animal_cruelty"
+label_fr = "cruauté envers une bête"
+facts = ["des coups répétés sur une bête sans que cela serve à la nourrir, la mener ou la tuer pour la manger"]
+cues = ["EVENT.gesture=strike : sur une bête", "THING.display : la bête crie, s'enfuit"]
+norms = ["(norm shameful (did anyone strike this))"]
+
+[[interpretation]]
+id = "revenge"
+label_fr = "vengeance"
+facts = ["un geste nuisible contre quelqu'un qui avait d'abord nui à l'acteur ou aux siens"]
+cues = ["MEMORY.prop : l'autre lui avait fait du tort", "ENTITY.rel.resentment : une vieille rancune"]
+norms = ["(norm admirable (did anyone strike someone))"]
+
+[[interpretation]]
+id = "sorcery"
+label_fr = "sorcellerie (ce qu'on croit tel)"
+facts = ["un geste channel, une plante ou un objet étrange, ou un phénomène, suivi d'un malheur"]
+cues = ["EVENT.gesture=channel : une lueur au bout d'une baguette", "PLACE.signs : des lumières étranges", "ENTITY.look.health : une maladie qui a suivi"]
+norms = ["(norm forbidden (did anyone channel this))"]
+
+[[interpretation]]
+id = "sacrilege"
+label_fr = "sacrilège"
+facts = ["des gestes de coup, de prise ou de saleté sur une chose que d'autres tiennent pour sacrée (symbole, relique, tombe, temple)"]
+cues = ["EVENT.gesture=strike : sur la statue, la tombe", "THING.kind : un symbole sacré, une relique"]
+norms = ["(norm forbidden (did anyone strike this))"]
+
+[[interpretation]]
+id = "hypocrisy"
+label_fr = "hypocrisie"
+facts = ["une personne a affirmé une norme et a fait un geste qu'elle interdit"]
+cues = ["HEARD : il prêchait cela", "EVENT.gesture : il a été vu faire le contraire"]
+norms = ["(norm shameful (did anyone speak (says b:1)))"]
+
+[[interpretation]]
+id = "disrespect_absence"
+label_fr = "manque d'égards (absence remarquée)"
+facts = ["une personne n'était pas présente à un rassemblement (funérailles, noces, fête) où d'autres sont venus"]
+cues = ["ENTITY.present=false : il n'est pas venu", "BELIEF.prop : la coutume dit que tout le monde vient"]
+norms = ["(custom @G1 (did everyone go here))"]
+
+[[interpretation]]
+id = "ingratitude"
+label_fr = "ingratitude"
+facts = ["une personne aidée ou nourrie par une autre a refusé ensuite de l'aider, ou lui a nui"]
+cues = ["MEMORY.prop : je l'ai aidé", "HEARD : il refuse", "ENTITY.rel.obligation : il me devait bien ça"]
+norms = ["(norm obligatory (did anyone give this))"]
+
+[[interpretation]]
+id = "drunkenness"
+label_fr = "ivrognerie"
+facts = ["une personne a bu jusqu'à tituber, souvent"]
+cues = ["ENTITY.look.signs : il titube", "MEMORY.prop : souvent à la taverne"]
+norms = ["(norm shameful (did anyone drink this (how all)))"]
+
+[[interpretation]]
+id = "laziness"
+label_fr = "paresse"
+facts = ["une personne reste sans geste de travail des jours où d'autres travaillent"]
+cues = ["ENTITY.look.posture=sitting : assis pendant la moisson", "MEMORY.prop : souvent"]
+norms = ["(norm shameful (did anyone rest))"]
+
+[[interpretation]]
+id = "loyalty"
+label_fr = "loyauté, fidélité"
+facts = ["une personne a tenu un accord ou gardé un secret alors que cela lui coûtait (on l'interrogeait, on la frappait)"]
+cues = ["HEARD : elle a refusé de dire", "MEMORY.prop : elle est restée quand les autres sont partis"]
+norms = ["(norm admirable (not (did anyone speak (says b:1))))"]
+
+[[interpretation]]
+id = "hospitality"
+label_fr = "hospitalité"
+facts = ["une personne en a laissé entrer une autre chez elle, lui a donné à manger ou un lit"]
+cues = ["EVENT.gesture=give : du pain au voyageur", "HEARD : bienvenue"]
+norms = ["(norm admirable (did anyone give this))"]
+
+[[interpretation]]
+id = "rebellion"
+label_fr = "rébellion, désobéissance"
+facts = ["une personne a dit non à une demande d'un titulaire cru de rôle, ou a fait le geste qu'un décret dit interdit"]
+cues = ["HEARD : il a refusé devant tous", "BELIEF.prop : le décret l'interdit"]
+norms = ["(norm obligatory (did anyone go here))"]
+
+[[interpretation]]
+id = "usurpation"
+label_fr = "usurpation"
+facts = ["une personne a dit tenir un rôle que d'autres croient tenu par un vivant, et des gestes de gardes l'ont suivie"]
+cues = ["HEARD : il dit être le chef", "BELIEF.prop : le chef est vivant"]
+norms = ["(norm forbidden (did anyone speak (says (holds me @G1))))"]
+
+[[interpretation]]
+id = "nothing_special"
+label_fr = "rien de particulier"
+facts = []
+cues = ["EVENT.gesture : un geste ordinaire"]
+norms = []

@@ -1,0 +1,23 @@
+{
+ "rows": [
+  {
+   "kind": "gru",
+   "npcs": 500,
+   "events_per_tick": 4,
+   "graph_ms": 0.27239999175071716,
+   "gpu_share_at_10Hz": 0.0027239999175071718,
+   "state_KiB_per_npc": 0.5
+  },
+  {
+   "kind": "delta",
+   "npcs": 500,
+   "events_per_tick": 4,
+   "graph_ms": 0.5294400155544281,
+   "gpu_share_at_10Hz": 0.005294400155544281,
+   "state_KiB_per_npc": 8.0
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-12 04:10"
+}

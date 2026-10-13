@@ -1,0 +1,66 @@
+{
+ "rows": [
+  {
+   "part": "looped",
+   "name": "8 layers, T=128",
+   "graph_ms": 13.046159744262695,
+   "encoder_params_M": 14.2
+  },
+  {
+   "part": "looped",
+   "name": "2 layers x 4 loops, T=128",
+   "graph_ms": 13.223936080932617,
+   "encoder_params_M": 3.55
+  },
+  {
+   "part": "film",
+   "name": "base + per-NPC FiLM, T=128",
+   "graph_ms": 13.731904029846191
+  },
+  {
+   "part": "looped",
+   "name": "8 layers, T=64",
+   "graph_ms": 6.273760080337524,
+   "encoder_params_M": 14.2
+  },
+  {
+   "part": "looped",
+   "name": "2 layers x 4 loops, T=64",
+   "graph_ms": 6.346240043640137,
+   "encoder_params_M": 3.55
+  },
+  {
+   "part": "film",
+   "name": "base + per-NPC FiLM, T=64",
+   "graph_ms": 6.697727918624878
+  },
+  {
+   "part": "moe",
+   "name": "dense FFN (one layer, lot 32 x 128)",
+   "graph_ms": 0.43006399273872375
+  },
+  {
+   "part": "moe",
+   "name": "(a) top-1 of 4, dense then select",
+   "graph_ms": 2.2684160470962524
+  },
+  {
+   "part": "moe",
+   "name": "(b) one expert per NPC, gathered",
+   "graph_ms": 0.8882719874382019
+  },
+  {
+   "part": "critic",
+   "name": "plan critic, 8 NPCs x 8 plans",
+   "graph_ms": 0.3399679958820343
+  },
+  {
+   "part": "critic",
+   "name": "latent world model, 64 rollouts x 5 steps",
+   "graph_ms": 3.0635839700698853
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-13 00:12"
+}

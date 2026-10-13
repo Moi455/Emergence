@@ -1,0 +1,21 @@
+{
+ "rows": [
+  {
+   "config": "small:lora4",
+   "B": 32,
+   "sgd_step_ms_eager": 53.010128021240234,
+   "forward_ms_eager": 12.747600078582764,
+   "adapter_KiB_per_npc": 48.0
+  },
+  {
+   "config": "base:lora4",
+   "B": 32,
+   "sgd_step_ms_eager": 61.82868766784668,
+   "forward_ms_eager": 22.35863971710205,
+   "adapter_KiB_per_npc": 96.0
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-12 04:10"
+}

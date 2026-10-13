@@ -1,0 +1,89 @@
+{
+ "rows": [
+  {
+   "d": 256,
+   "layers": 2,
+   "params_M": 2.909716,
+   "B": 1,
+   "eager_ms": 22.910256385803223,
+   "graph_ms": 5.3497278690338135,
+   "utterances_per_s": 186.92539592310231,
+   "all_words_grammatical": true
+  },
+  {
+   "d": 256,
+   "layers": 2,
+   "params_M": 2.909716,
+   "B": 8,
+   "eager_ms": 22.766128540039062,
+   "graph_ms": 4.693727970123291,
+   "utterances_per_s": 1704.4021406698316,
+   "all_words_grammatical": true
+  },
+  {
+   "d": 256,
+   "layers": 2,
+   "params_M": 2.909716,
+   "B": 32,
+   "eager_ms": 22.471888542175293,
+   "graph_ms": 9.7467679977417,
+   "utterances_per_s": 3283.139601498088,
+   "all_words_grammatical": true
+  },
+  {
+   "d": 256,
+   "layers": 2,
+   "params_M": 2.909716,
+   "B": 64,
+   "eager_ms": 22.624239921569824,
+   "graph_ms": 16.13924789428711,
+   "utterances_per_s": 3965.4883808219092,
+   "all_words_grammatical": true
+  },
+  {
+   "d": 384,
+   "layers": 4,
+   "params_M": 10.669844,
+   "B": 1,
+   "eager_ms": 40.818687438964844,
+   "graph_ms": 6.385312080383301,
+   "utterances_per_s": 156.60941664420127,
+   "all_words_grammatical": true
+  },
+  {
+   "d": 384,
+   "layers": 4,
+   "params_M": 10.669844,
+   "B": 8,
+   "eager_ms": 40.505680084228516,
+   "graph_ms": 11.40940809249878,
+   "utterances_per_s": 701.175725781925,
+   "all_words_grammatical": true
+  },
+  {
+   "d": 384,
+   "layers": 4,
+   "params_M": 10.669844,
+   "B": 32,
+   "eager_ms": 40.12516784667969,
+   "graph_ms": 27.148303985595703,
+   "utterances_per_s": 1178.7108328011393,
+   "all_words_grammatical": true
+  },
+  {
+   "d": 384,
+   "layers": 4,
+   "params_M": 10.669844,
+   "B": 64,
+   "eager_ms": 48.39321517944336,
+   "graph_ms": 48.10428810119629,
+   "utterances_per_s": 1330.4427219744764,
+   "all_words_grammatical": true
+  }
+ ],
+ "vocab": 1556,
+ "max_len": 16,
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-09 22:28"
+}

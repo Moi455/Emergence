@@ -1,0 +1,24 @@
+ small     baseline B=8      2.30 ms
+ small          T64 B=8      1.33 ms
+ small     fp16_acc B=8      2.22 ms
+ small   embed_only B=8      0.90 ms
+W1012 04:11:26.507000 131321 torch/_inductor/utils.py:1806] [0/0] Not enough SMs to use max_autotune_gemm mode
+ small     compiled B=8      2.60 ms
+ small     baseline B=32     6.99 ms
+ small          T64 B=32     3.56 ms
+ small     fp16_acc B=32     6.91 ms
+ small   embed_only B=32     2.86 ms
+ small     compiled B=32     7.38 ms
+  base     baseline B=8      3.81 ms
+  base          T64 B=8      2.20 ms
+  base     fp16_acc B=8      3.69 ms
+  base   embed_only B=8      1.13 ms
+  base     compiled B=8      4.50 ms
+  base     baseline B=32    13.35 ms
+  base          T64 B=32     6.47 ms
+  base     fp16_acc B=32    12.86 ms
+  base   embed_only B=32     4.00 ms
+  base     compiled B=32    11.73 ms
+   sel   selector48 B=8      0.71 ms
+   sel   selector48 B=32     1.69 ms
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/fusion.json

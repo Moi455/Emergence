@@ -1,0 +1,69 @@
+/home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/bench_ort.py:79: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(model, args, path, input_names=list(INPUTS), output_names=list(OUTPUTS),
+/home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/arch_common.py:316: TracerWarning: Iterating over a tensor might cause the trace to be incorrect. Passing a tensor of different shape won't change the number of iterations executed (and might lead to errors or silently give incorrect results).
+  q, k, v = qkv.view(B, T, 3, self.h, D // self.h).permute(2, 0, 3, 1, 4)
+[0;93m2026-10-12 04:16:19.241855279 [W:onnxruntime:Default, onnxruntime_pybind_state.cc:856 operator()] No registered plugin EP device found for 'CUDAExecutionProvider' with device_id=0[m
+[0;93m2026-10-12 04:16:19.275892168 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+[0;93m2026-10-12 04:16:19.276598960 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:19.276862552 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:19.277117710 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:19.277368709 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:19.277629557 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:19.293550649 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:19.293613731 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:19.293672867 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:19.293725269 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:19.293775592 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:19.293835329 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+ small B=8   torch+graph   3.30 ms | ORT CUDA EP + graph   5.82 ms | same gesture 100.0 % | onnx 16.3 MB
+[0;93m2026-10-12 04:16:20.906300901 [W:onnxruntime:Default, onnxruntime_pybind_state.cc:856 operator()] No registered plugin EP device found for 'CUDAExecutionProvider' with device_id=0[m
+[0;93m2026-10-12 04:16:20.922744899 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+[0;93m2026-10-12 04:16:20.923551393 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:20.923814190 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:20.924067610 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:20.924321160 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:20.924581861 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:20.941101050 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:20.941164432 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:20.941218880 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:20.941269636 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:20.941318614 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:20.941367654 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+ small B=32  torch+graph  11.21 ms | ORT CUDA EP + graph  20.95 ms | same gesture 100.0 % | onnx 28.4 MB
+[0;93m2026-10-12 04:16:23.070793574 [W:onnxruntime:Default, onnxruntime_pybind_state.cc:856 operator()] No registered plugin EP device found for 'CUDAExecutionProvider' with device_id=0[m
+[0;93m2026-10-12 04:16:23.091001060 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+[0;93m2026-10-12 04:16:23.091678742 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:23.091946986 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:23.092204773 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:23.092465223 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:23.092719391 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:23.092969470 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.6/Sqrt'[m
+[0;93m2026-10-12 04:16:23.093216442 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.7/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113032476 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.7/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113095306 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.6/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113148271 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113198620 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113247536 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113296258 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113344365 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:23.113393760 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+  base B=8   torch+graph   5.40 ms | ORT CUDA EP + graph   9.36 ms | same gesture 100.0 % | onnx 36.9 MB
+[0;93m2026-10-12 04:16:25.325733497 [W:onnxruntime:Default, onnxruntime_pybind_state.cc:856 operator()] No registered plugin EP device found for 'CUDAExecutionProvider' with device_id=0[m
+[0;93m2026-10-12 04:16:25.346895935 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+[0;93m2026-10-12 04:16:25.347722250 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:25.347991534 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:25.348247910 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:25.348510299 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:25.348762133 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:25.349014906 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.6/Sqrt'[m
+[0;93m2026-10-12 04:16:25.349263572 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.7/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369309878 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.7/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369371682 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.6/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369425460 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.5/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369485379 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.4/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369546540 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.3/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369595220 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.2/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369647364 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.1/Sqrt'[m
+[0;93m2026-10-12 04:16:25.369695244 [W:onnxruntime:, constant_folding.cc:588 ApplyImpl] Could not find a CPU kernel and hence can't constant fold Sqrt node '/brain/blocks.0/Sqrt'[m
+  base B=32  torch+graph  19.55 ms | ORT CUDA EP + graph  35.53 ms | same gesture 100.0 % | onnx 49.0 MB
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/ort.json

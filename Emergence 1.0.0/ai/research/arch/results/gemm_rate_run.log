@@ -1,0 +1,12 @@
+  acc=fp32 M=4096   K=4096  N=4096    5.9586 ms    23.1 TFLOP/s
+  acc=fp32 M=16384  K=256   N=1024    0.5652 ms    15.2 TFLOP/s
+  acc=fp32 M=16384  K=1024  N=256     0.4066 ms    21.1 TFLOP/s
+  acc=fp32 M=2560   K=384   N=1536    0.1784 ms    16.9 TFLOP/s
+  acc=fp32 M=25600  K=512   N=2048    2.4346 ms    22.1 TFLOP/s
+  acc=fp16 M=4096   K=4096  N=4096    5.4097 ms    25.4 TFLOP/s
+  acc=fp16 M=16384  K=256   N=1024    0.4851 ms    17.7 TFLOP/s
+  acc=fp16 M=16384  K=1024  N=256     0.3939 ms    21.8 TFLOP/s
+  acc=fp16 M=2560   K=384   N=1536    0.1671 ms    18.1 TFLOP/s
+  acc=fp16 M=25600  K=512   N=2048    2.3494 ms    22.9 TFLOP/s
+SMs=30 clocks={'sm_clock_MHz_median': 1020.0, 'sm_clock_MHz_min': 855.0, 'power_W_median': 77.13} -> Turing full-rate FP16 peak at that clock = 31.3 TFLOP/s
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/gemm_rate.json

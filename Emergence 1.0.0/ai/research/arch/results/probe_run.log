@@ -1,0 +1,150 @@
+references: {'answer_current_location': 0.508819580078125, 'chance': 0.2, 'false_belief_share': 0.491180419921875}
+== win16 seed 0: 0.91 M params, 52 MFLOP/decision
+  [win16 s0] step     0 loss 1.616 acc 0.196 (2 s)
+  [win16 s0] step   250 loss 1.043 acc 0.583 (66 s)
+  [win16 s0] step   500 loss 0.522 acc 0.832 (123 s)
+  [win16 s0] step   750 loss 0.434 acc 0.849 (179 s)
+  [win16 s0] step  1000 loss 0.437 acc 0.849 (234 s)
+  [win16 s0] step  1250 loss 0.442 acc 0.845 (290 s)
+  [win16 s0] step  1500 loss 0.441 acc 0.842 (345 s)
+  [win16 s0] step  1750 loss 0.451 acc 0.839 (404 s)
+  [win16 s0] step  2000 loss 0.460 acc 0.837 (467 s)
+  [win16 s0] step  2250 loss 0.448 acc 0.843 (526 s)
+  [win16 s0] step  2499 loss 0.445 acc 0.844 (588 s)
+   eval win16 s0: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 1.000, false-belief/mid(8-15) 1.000, true-belief/old(16+) 0.793, false-belief/old(16+) 0.566, true-belief/initial 0.883, false-belief/initial 0.697, ALL 0.846, true-belief 0.958, false-belief 0.732
+== win16 seed 1: 0.91 M params, 52 MFLOP/decision
+  [win16 s1] step     0 loss 1.621 acc 0.202 (0 s)
+  [win16 s1] step   250 loss 1.048 acc 0.603 (57 s)
+  [win16 s1] step   500 loss 0.864 acc 0.715 (114 s)
+  [win16 s1] step   750 loss 0.465 acc 0.843 (176 s)
+  [win16 s1] step  1000 loss 0.442 acc 0.845 (234 s)
+  [win16 s1] step  1250 loss 0.477 acc 0.833 (294 s)
+  [win16 s1] step  1500 loss 0.437 acc 0.849 (354 s)
+  [win16 s1] step  1750 loss 0.452 acc 0.838 (410 s)
+  [win16 s1] step  2000 loss 0.427 acc 0.850 (466 s)
+  [win16 s1] step  2250 loss 0.457 acc 0.845 (523 s)
+  [win16 s1] step  2499 loss 0.440 acc 0.842 (579 s)
+   eval win16 s1: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 1.000, false-belief/mid(8-15) 1.000, true-belief/old(16+) 0.793, false-belief/old(16+) 0.566, true-belief/initial 0.883, false-belief/initial 0.697, ALL 0.846, true-belief 0.958, false-belief 0.732
+== ret16 seed 0: 0.91 M params, 52 MFLOP/decision
+  [ret16 s0] step     0 loss 1.616 acc 0.196 (0 s)
+  [ret16 s0] step   250 loss 0.966 acc 0.578 (58 s)
+  [ret16 s0] step   500 loss 0.735 acc 0.695 (117 s)
+  [ret16 s0] step   750 loss 0.091 acc 0.970 (174 s)
+  [ret16 s0] step  1000 loss 0.011 acc 0.996 (236 s)
+  [ret16 s0] step  1250 loss 0.011 acc 0.996 (297 s)
+  [ret16 s0] step  1500 loss 0.004 acc 0.999 (360 s)
+  [ret16 s0] step  1750 loss 0.002 acc 0.999 (422 s)
+  [ret16 s0] step  2000 loss 0.001 acc 1.000 (483 s)
+  [ret16 s0] step  2250 loss 0.002 acc 1.000 (545 s)
+  [ret16 s0] step  2499 loss 0.001 acc 1.000 (606 s)
+   eval ret16 s0: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 1.000, false-belief/mid(8-15) 1.000, true-belief/old(16+) 0.999, false-belief/old(16+) 0.999, true-belief/initial 0.999, false-belief/initial 0.998, ALL 0.999, true-belief 1.000, false-belief 0.999
+== ret16 seed 1: 0.91 M params, 52 MFLOP/decision
+  [ret16 s1] step     0 loss 1.621 acc 0.202 (0 s)
+  [ret16 s1] step   250 loss 0.980 acc 0.590 (62 s)
+  [ret16 s1] step   500 loss 0.670 acc 0.736 (125 s)
+  [ret16 s1] step   750 loss 0.156 acc 0.946 (187 s)
+  [ret16 s1] step  1000 loss 0.022 acc 0.991 (250 s)
+  [ret16 s1] step  1250 loss 0.008 acc 0.998 (312 s)
+  [ret16 s1] step  1500 loss 0.004 acc 1.000 (373 s)
+  [ret16 s1] step  1750 loss 0.004 acc 0.999 (429 s)
+  [ret16 s1] step  2000 loss 0.002 acc 1.000 (491 s)
+  [ret16 s1] step  2250 loss 0.001 acc 1.000 (552 s)
+  [ret16 s1] step  2499 loss 0.003 acc 0.999 (614 s)
+   eval ret16 s1: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 1.000, false-belief/mid(8-15) 1.000, true-belief/old(16+) 0.999, false-belief/old(16+) 0.999, true-belief/initial 0.999, false-belief/initial 0.998, ALL 0.999, true-belief 1.000, false-belief 0.999
+== mem8 seed 0: 0.94 M params, 52 MFLOP/decision
+  [mem8 s0] step     0 loss 1.616 acc 0.195 (0 s)
+  [mem8 s0] step   250 loss 1.072 acc 0.589 (64 s)
+  [mem8 s0] step   500 loss 0.960 acc 0.644 (129 s)
+  [mem8 s0] step   750 loss 0.705 acc 0.748 (193 s)
+  [mem8 s0] step  1000 loss 0.724 acc 0.727 (258 s)
+  [mem8 s0] step  1250 loss 0.728 acc 0.725 (323 s)
+  [mem8 s0] step  1500 loss 0.730 acc 0.722 (388 s)
+  [mem8 s0] step  1750 loss 0.726 acc 0.721 (453 s)
+  [mem8 s0] step  2000 loss 0.742 acc 0.718 (518 s)
+  [mem8 s0] step  2250 loss 0.722 acc 0.726 (583 s)
+  [mem8 s0] step  2499 loss 0.716 acc 0.728 (645 s)
+   eval mem8 s0: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 0.973, false-belief/mid(8-15) 0.789, true-belief/old(16+) 0.746, false-belief/old(16+) 0.274, true-belief/initial 0.869, false-belief/initial 0.499, ALL 0.730, true-belief 0.945, false-belief 0.511
+== mem8 seed 1: 0.94 M params, 52 MFLOP/decision
+  [mem8 s1] step     0 loss 1.622 acc 0.204 (0 s)
+  [mem8 s1] step   250 loss 1.049 acc 0.606 (65 s)
+  [mem8 s1] step   500 loss 0.789 acc 0.716 (129 s)
+  [mem8 s1] step   750 loss 0.738 acc 0.721 (193 s)
+  [mem8 s1] step  1000 loss 0.728 acc 0.724 (258 s)
+  [mem8 s1] step  1250 loss 0.755 acc 0.717 (322 s)
+  [mem8 s1] step  1500 loss 0.707 acc 0.740 (386 s)
+  [mem8 s1] step  1750 loss 0.734 acc 0.723 (451 s)
+  [mem8 s1] step  2000 loss 0.704 acc 0.735 (516 s)
+  [mem8 s1] step  2250 loss 0.725 acc 0.721 (581 s)
+  [mem8 s1] step  2499 loss 0.709 acc 0.727 (633 s)
+   eval mem8 s1: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 0.973, false-belief/mid(8-15) 0.789, true-belief/old(16+) 0.742, false-belief/old(16+) 0.274, true-belief/initial 0.868, false-belief/initial 0.500, ALL 0.730, true-belief 0.944, false-belief 0.511
+== mem8fw seed 0: 1.05 M params, 59 MFLOP/decision
+  [mem8fw s0] step     0 loss 1.616 acc 0.195 (0 s)
+  [mem8fw s0] step   250 loss 1.060 acc 0.595 (93 s)
+  [mem8fw s0] step   500 loss 0.977 acc 0.636 (175 s)
+  [mem8fw s0] step   750 loss 0.822 acc 0.715 (256 s)
+  [mem8fw s0] step  1000 loss 0.745 acc 0.725 (345 s)
+  [mem8fw s0] step  1250 loss 0.738 acc 0.723 (435 s)
+  [mem8fw s0] step  1500 loss 0.735 acc 0.721 (525 s)
+  [mem8fw s0] step  1750 loss 0.730 acc 0.719 (615 s)
+  [mem8fw s0] step  2000 loss 0.741 acc 0.715 (705 s)
+  [mem8fw s0] step  2250 loss 0.722 acc 0.727 (795 s)
+  [mem8fw s0] step  2499 loss 0.718 acc 0.727 (884 s)
+   eval mem8fw s0: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 0.972, false-belief/mid(8-15) 0.789, true-belief/old(16+) 0.747, false-belief/old(16+) 0.273, true-belief/initial 0.868, false-belief/initial 0.499, ALL 0.730, true-belief 0.945, false-belief 0.510
+== mem8fw seed 1: 1.05 M params, 59 MFLOP/decision
+  [mem8fw s1] step     0 loss 1.622 acc 0.204 (0 s)
+  [mem8fw s1] step   250 loss 1.071 acc 0.600 (91 s)
+  [mem8fw s1] step   500 loss 0.805 acc 0.709 (175 s)
+  [mem8fw s1] step   750 loss 0.743 acc 0.720 (266 s)
+  [mem8fw s1] step  1000 loss 0.730 acc 0.726 (358 s)
+  [mem8fw s1] step  1250 loss 0.758 acc 0.718 (450 s)
+  [mem8fw s1] step  1500 loss 0.710 acc 0.741 (539 s)
+  [mem8fw s1] step  1750 loss 0.734 acc 0.724 (631 s)
+  [mem8fw s1] step  2000 loss 0.705 acc 0.733 (721 s)
+  [mem8fw s1] step  2250 loss 0.728 acc 0.721 (811 s)
+  [mem8fw s1] step  2499 loss 0.707 acc 0.726 (901 s)
+   eval mem8fw s1: true-belief/recent(<8) 1.000, false-belief/recent(<8) 1.000, true-belief/mid(8-15) 0.973, false-belief/mid(8-15) 0.788, true-belief/old(16+) 0.744, false-belief/old(16+) 0.274, true-belief/initial 0.868, false-belief/initial 0.499, ALL 0.730, true-belief 0.945, false-belief 0.510
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/probe_belief.json
+references: {'answer_current_location': 0.508819580078125, 'chance': 0.2, 'false_belief_share': 0.491180419921875}
+== gru seed 0: 2.57 M params, 31 MFLOP/decision
+  [gru s0] step     0 loss 2.661 acc 0.209 (0 s)
+  [gru s0] step   250 loss 1.583 acc 0.254 (10 s)
+  [gru s0] step   500 loss 1.544 acc 0.310 (20 s)
+  [gru s0] step   750 loss 1.531 acc 0.312 (30 s)
+  [gru s0] step  1000 loss 1.537 acc 0.304 (41 s)
+  [gru s0] step  1250 loss 1.524 acc 0.325 (51 s)
+  [gru s0] step  1500 loss 1.513 acc 0.329 (62 s)
+  [gru s0] step  1750 loss 1.511 acc 0.328 (72 s)
+  [gru s0] step  2000 loss 1.503 acc 0.331 (83 s)
+  [gru s0] step  2250 loss 1.495 acc 0.339 (93 s)
+  [gru s0] step  2499 loss 1.500 acc 0.335 (104 s)
+   eval gru s0: true-belief/recent(<8) 0.392, false-belief/recent(<8) 0.534, true-belief/mid(8-15) 0.314, false-belief/mid(8-15) 0.347, true-belief/old(16+) 0.321, false-belief/old(16+) 0.242, true-belief/initial 0.253, false-belief/initial 0.316, ALL 0.332, true-belief 0.352, false-belief 0.312
+== gru seed 1: 2.57 M params, 31 MFLOP/decision
+  [gru s1] step     0 loss 2.576 acc 0.206 (0 s)
+  [gru s1] step   250 loss 1.593 acc 0.260 (10 s)
+  [gru s1] step   500 loss 1.547 acc 0.299 (20 s)
+  [gru s1] step   750 loss 1.537 acc 0.310 (29 s)
+  [gru s1] step  1000 loss 1.533 acc 0.318 (39 s)
+  [gru s1] step  1250 loss 1.526 acc 0.317 (49 s)
+  [gru s1] step  1500 loss 1.517 acc 0.327 (58 s)
+  [gru s1] step  1750 loss 1.514 acc 0.324 (68 s)
+  [gru s1] step  2000 loss 1.495 acc 0.341 (78 s)
+  [gru s1] step  2250 loss 1.505 acc 0.325 (87 s)
+  [gru s1] step  2499 loss 1.490 acc 0.344 (97 s)
+   eval gru s1: true-belief/recent(<8) 0.390, false-belief/recent(<8) 0.532, true-belief/mid(8-15) 0.318, false-belief/mid(8-15) 0.350, true-belief/old(16+) 0.323, false-belief/old(16+) 0.246, true-belief/initial 0.252, false-belief/initial 0.313, ALL 0.332, true-belief 0.351, false-belief 0.313
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/probe_belief.json
+references: {'answer_current_location': 0.508819580078125, 'chance': 0.2, 'false_belief_share': 0.491180419921875}
+== all64 seed 0: 0.91 M params, 139 MFLOP/decision
+  [all64 s0] step     0 loss 1.614 acc 0.202 (3 s)
+  [all64 s0] step   250 loss 0.943 acc 0.605 (172 s)
+  [all64 s0] step   500 loss 0.807 acc 0.658 (343 s)
+  [all64 s0] step   750 loss 0.450 acc 0.821 (513 s)
+  [all64 s0] step  1000 loss 0.282 acc 0.885 (683 s)
+  [all64 s0] step  1250 loss 0.197 acc 0.919 (853 s)
+  [all64 s0] step  1500 loss 0.146 acc 0.939 (1022 s)
+  [all64 s0] step  1750 loss 0.124 acc 0.947 (1191 s)
+  [all64 s0] step  2000 loss 0.095 acc 0.956 (1360 s)
+  [all64 s0] step  2250 loss 0.089 acc 0.963 (1529 s)
+  [all64 s0] step  2499 loss 0.090 acc 0.966 (1698 s)
+   eval all64 s0: true-belief/recent(<8) 1.000, false-belief/recent(<8) 0.991, true-belief/mid(8-15) 0.996, false-belief/mid(8-15) 0.988, true-belief/old(16+) 0.920, false-belief/old(16+) 0.897, true-belief/initial 0.974, false-belief/initial 0.961, ALL 0.964, true-belief 0.985, false-belief 0.943
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/probe_belief.json
+PROBEDONE

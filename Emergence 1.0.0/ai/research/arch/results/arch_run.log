@@ -1,0 +1,83 @@
+             small:set_ptr B=8     6.46 M  state    0.0 KiB/NPC | eager    5.03 ms | graph   2.29 ms (p95 2.33) |    3493 dec/s | peak    95 MiB
+             small:set_ptr B=16    6.46 M  state    0.0 KiB/NPC | eager    5.04 ms | graph   3.91 ms (p95 3.94) |    4093 dec/s | peak   120 MiB
+             small:set_ptr B=32    6.46 M  state    0.0 KiB/NPC | eager    7.42 ms | graph   7.16 ms (p95 7.24) |    4468 dec/s | peak   160 MiB
+             small:set_ptr B=64    6.46 M  state    0.0 KiB/NPC | eager   14.19 ms | graph  13.88 ms (p95 14.07) |    4610 dec/s | peak   235 MiB
+   small:set_ptr+prop_attn B=8     6.44 M  state    0.0 KiB/NPC | eager    5.80 ms | graph   2.79 ms (p95 2.84) |    2868 dec/s | peak   113 MiB
+   small:set_ptr+prop_attn B=16    6.44 M  state    0.0 KiB/NPC | eager    5.84 ms | graph   4.94 ms (p95 4.99) |    3238 dec/s | peak   138 MiB
+   small:set_ptr+prop_attn B=32    6.44 M  state    0.0 KiB/NPC | eager    9.48 ms | graph   9.09 ms (p95 9.18) |    3519 dec/s | peak   178 MiB
+   small:set_ptr+prop_attn B=64    6.44 M  state    0.0 KiB/NPC | eager   17.81 ms | graph  17.58 ms (p95 17.80) |    3640 dec/s | peak   252 MiB
+        small:set_ptr+mem8 B=8     6.59 M  state    4.0 KiB/NPC | eager    5.41 ms | graph   2.61 ms (p95 2.72) |    3061 dec/s | peak   162 MiB
+        small:set_ptr+mem8 B=16    6.59 M  state    4.0 KiB/NPC | eager    5.39 ms | graph   4.43 ms (p95 4.45) |    3609 dec/s | peak   187 MiB
+        small:set_ptr+mem8 B=32    6.59 M  state    4.0 KiB/NPC | eager    8.62 ms | graph   8.31 ms (p95 8.41) |    3851 dec/s | peak   227 MiB
+        small:set_ptr+mem8 B=64    6.59 M  state    4.0 KiB/NPC | eager   16.16 ms | graph  15.83 ms (p95 15.96) |    4044 dec/s | peak   302 MiB
+        small:set_ptr+fw64 B=8     6.68 M  state    8.0 KiB/NPC | eager    6.88 ms | graph   2.82 ms (p95 2.87) |    2835 dec/s | peak   197 MiB
+        small:set_ptr+fw64 B=16    6.68 M  state    8.0 KiB/NPC | eager    6.90 ms | graph   4.86 ms (p95 4.93) |    3289 dec/s | peak   222 MiB
+        small:set_ptr+fw64 B=32    6.68 M  state    8.0 KiB/NPC | eager    9.23 ms | graph   8.85 ms (p95 8.92) |    3614 dec/s | peak   262 MiB
+        small:set_ptr+fw64 B=64    6.68 M  state    8.0 KiB/NPC | eager   17.41 ms | graph  17.04 ms (p95 17.21) |    3755 dec/s | peak   338 MiB
+   small:set_ptr+mem8+fw64 B=8     6.81 M  state   12.0 KiB/NPC | eager    7.06 ms | graph   2.90 ms (p95 2.96) |    2757 dec/s | peak   231 MiB
+   small:set_ptr+mem8+fw64 B=16    6.81 M  state   12.0 KiB/NPC | eager    7.04 ms | graph   5.02 ms (p95 5.11) |    3189 dec/s | peak   256 MiB
+   small:set_ptr+mem8+fw64 B=32    6.81 M  state   12.0 KiB/NPC | eager    9.69 ms | graph   9.31 ms (p95 9.40) |    3436 dec/s | peak   297 MiB
+   small:set_ptr+mem8+fw64 B=64    6.81 M  state   12.0 KiB/NPC | eager   17.97 ms | graph  17.78 ms (p95 17.85) |    3600 dec/s | peak   372 MiB
+       small:set_ptr+lora4 B=8     6.46 M  state   48.0 KiB/NPC | eager    7.38 ms | graph   2.71 ms (p95 2.77) |    2949 dec/s | peak   281 MiB
+       small:set_ptr+lora4 B=16    6.46 M  state   48.0 KiB/NPC | eager    7.37 ms | graph   4.64 ms (p95 4.77) |    3449 dec/s | peak   306 MiB
+       small:set_ptr+lora4 B=32    6.46 M  state   48.0 KiB/NPC | eager    8.78 ms | graph   8.46 ms (p95 8.48) |    3785 dec/s | peak   346 MiB
+       small:set_ptr+lora4 B=64    6.46 M  state   48.0 KiB/NPC | eager   16.62 ms | graph  16.23 ms (p95 16.43) |    3943 dec/s | peak   421 MiB
+              base:set_ptr B=8    17.37 M  state    0.0 KiB/NPC | eager    5.74 ms | graph   3.90 ms (p95 3.95) |    2051 dec/s | peak   336 MiB
+              base:set_ptr B=16   17.37 M  state    0.0 KiB/NPC | eager    7.00 ms | graph   6.94 ms (p95 6.95) |    2307 dec/s | peak   362 MiB
+              base:set_ptr B=32   17.37 M  state    0.0 KiB/NPC | eager   14.23 ms | graph  13.78 ms (p95 13.93) |    2322 dec/s | peak   409 MiB
+              base:set_ptr B=64   17.37 M  state    0.0 KiB/NPC | eager   26.47 ms | graph  26.42 ms (p95 26.77) |    2422 dec/s | peak   493 MiB
+    base:set_ptr+prop_attn B=8    17.45 M  state    0.0 KiB/NPC | eager    6.62 ms | graph   4.65 ms (p95 4.80) |    1719 dec/s | peak   350 MiB
+    base:set_ptr+prop_attn B=16   17.45 M  state    0.0 KiB/NPC | eager    8.79 ms | graph   8.32 ms (p95 8.42) |    1924 dec/s | peak   380 MiB
+    base:set_ptr+prop_attn B=32   17.45 M  state    0.0 KiB/NPC | eager   16.93 ms | graph  16.54 ms (p95 16.59) |    1935 dec/s | peak   434 MiB
+    base:set_ptr+prop_attn B=64   17.45 M  state    0.0 KiB/NPC | eager   31.62 ms | graph  31.54 ms (p95 32.13) |    2029 dec/s | peak   524 MiB
+         base:set_ptr+mem8 B=8    17.67 M  state    6.0 KiB/NPC | eager    6.12 ms | graph   4.27 ms (p95 4.32) |    1875 dec/s | peak   387 MiB
+         base:set_ptr+mem8 B=16   17.67 M  state    6.0 KiB/NPC | eager    6.46 ms | graph   8.49 ms (p95 10.53) |    1885 dec/s | peak   406 MiB
+         base:set_ptr+mem8 B=32   17.67 M  state    6.0 KiB/NPC | eager   16.04 ms | graph  15.29 ms (p95 15.40) |    2093 dec/s | peak   444 MiB
+         base:set_ptr+mem8 B=64   17.67 M  state    6.0 KiB/NPC | eager   29.85 ms | graph  29.72 ms (p95 30.21) |    2154 dec/s | peak   522 MiB
+         base:set_ptr+fw64 B=8    17.69 M  state    8.0 KiB/NPC | eager    7.65 ms | graph   4.57 ms (p95 4.79) |    1750 dec/s | peak   388 MiB
+         base:set_ptr+fw64 B=16   17.69 M  state    8.0 KiB/NPC | eager    8.59 ms | graph   8.31 ms (p95 8.43) |    1927 dec/s | peak   408 MiB
+         base:set_ptr+fw64 B=32   17.69 M  state    8.0 KiB/NPC | eager   16.61 ms | graph  16.37 ms (p95 16.58) |    1955 dec/s | peak   446 MiB
+         base:set_ptr+fw64 B=64   17.69 M  state    8.0 KiB/NPC | eager   31.16 ms | graph  30.85 ms (p95 31.40) |    2074 dec/s | peak   523 MiB
+    base:set_ptr+mem8+fw64 B=8    17.99 M  state   14.0 KiB/NPC | eager    7.84 ms | graph   4.71 ms (p95 5.00) |    1697 dec/s | peak   392 MiB
+    base:set_ptr+mem8+fw64 B=16   17.99 M  state   14.0 KiB/NPC | eager    9.08 ms | graph   8.74 ms (p95 8.76) |    1830 dec/s | peak   411 MiB
+    base:set_ptr+mem8+fw64 B=32   17.99 M  state   14.0 KiB/NPC | eager   16.95 ms | graph  16.51 ms (p95 16.63) |    1938 dec/s | peak   449 MiB
+    base:set_ptr+mem8+fw64 B=64   17.99 M  state   14.0 KiB/NPC | eager   32.40 ms | graph  32.30 ms (p95 32.64) |    1981 dec/s | peak   527 MiB
+        base:set_ptr+lora4 B=8    17.37 M  state   96.0 KiB/NPC | eager    8.85 ms | graph   4.70 ms (p95 4.93) |    1704 dec/s | peak   431 MiB
+        base:set_ptr+lora4 B=16   17.37 M  state   96.0 KiB/NPC | eager    8.84 ms | graph   8.28 ms (p95 8.42) |    1932 dec/s | peak   451 MiB
+        base:set_ptr+lora4 B=32   17.37 M  state   96.0 KiB/NPC | eager   16.59 ms | graph  16.15 ms (p95 16.34) |    1981 dec/s | peak   488 MiB
+        base:set_ptr+lora4 B=64   17.37 M  state   96.0 KiB/NPC | eager   31.11 ms | graph  30.92 ms (p95 31.32) |    2070 dec/s | peak   563 MiB
+             large:set_ptr B=8    36.54 M  state    0.0 KiB/NPC | eager    6.59 ms | graph   6.42 ms (p95 6.51) |    1246 dec/s | peak   446 MiB
+             large:set_ptr B=16   36.54 M  state    0.0 KiB/NPC | eager   12.63 ms | graph  12.01 ms (p95 12.15) |    1333 dec/s | peak   467 MiB
+             large:set_ptr B=32   36.54 M  state    0.0 KiB/NPC | eager   23.72 ms | graph  23.41 ms (p95 23.92) |    1367 dec/s | peak   511 MiB
+             large:set_ptr B=64   36.54 M  state    0.0 KiB/NPC | eager   45.32 ms | graph  45.23 ms (p95 45.67) |    1415 dec/s | peak   597 MiB
+   large:set_ptr+mem8+fw64 B=8    37.50 M  state   16.0 KiB/NPC | eager    8.27 ms | graph   7.81 ms (p95 7.92) |    1024 dec/s | peak   458 MiB
+   large:set_ptr+mem8+fw64 B=16   37.50 M  state   16.0 KiB/NPC | eager   14.78 ms | graph  14.41 ms (p95 14.58) |    1110 dec/s | peak   481 MiB
+   large:set_ptr+mem8+fw64 B=32   37.50 M  state   16.0 KiB/NPC | eager   27.66 ms | graph  27.44 ms (p95 27.83) |    1166 dec/s | peak   527 MiB
+   large:set_ptr+mem8+fw64 B=64   37.50 M  state   16.0 KiB/NPC | eager   53.99 ms | graph  53.61 ms (p95 54.01) |    1194 dec/s | peak   623 MiB
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_brains.json
+speech d=256 L=2 B=8   20 steps:   4.54 ms (p95 4.80) |   1761 utt/s | grammatical=True
+speech d=256 L=2 B=16  20 steps:   5.63 ms (p95 5.67) |   2841 utt/s | grammatical=True
+speech d=256 L=2 B=32  20 steps:   7.25 ms (p95 7.36) |   4415 utt/s | grammatical=True
+speech d=384 L=3 B=8   20 steps:   7.32 ms (p95 7.38) |   1092 utt/s | grammatical=True
+speech d=384 L=3 B=16  20 steps:   9.36 ms (p95 9.39) |   1710 utt/s | grammatical=True
+speech d=384 L=3 B=32  20 steps:  12.33 ms (p95 12.37) |   2596 utt/s | grammatical=True
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_speech.json
+event stream   gru: 500 NPCs x 4 events per tick: 0.272 ms -> 0.27 % GPU at 10 Hz
+event stream delta: 500 NPCs x 4 events per tick: 0.529 ms -> 0.53 % GPU at 10 Hz
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_stream.json
+     gpt2-small-like (85 M non-emb.) T=128  B=8      15.26 ms |     524 dec/s | GPU at 200/s:   38.1 %
+     gpt2-small-like (85 M non-emb.) T=128  B=32     56.88 ms |     563 dec/s | GPU at 200/s:   35.5 %
+     gpt2-small-like (85 M non-emb.) T=512  B=8      59.75 ms |     134 dec/s | GPU at 200/s:  149.4 %
+     gpt2-small-like (85 M non-emb.) T=512  B=32    229.61 ms |     139 dec/s | GPU at 200/s:  143.5 %
+  SmolLM2-135M-like (106 M non-emb.) T=128  B=8      17.74 ms |     451 dec/s | GPU at 200/s:   44.3 %
+  SmolLM2-135M-like (106 M non-emb.) T=128  B=32     66.08 ms |     484 dec/s | GPU at 200/s:   41.3 %
+  SmolLM2-135M-like (106 M non-emb.) T=512  B=8      70.54 ms |     113 dec/s | GPU at 200/s:  176.3 %
+  SmolLM2-135M-like (106 M non-emb.) T=512  B=32    274.58 ms |     117 dec/s | GPU at 200/s:  171.6 %
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_llm.json
+online LoRA step small:lora4: fwd+bwd+SGD 53.01 ms (eager) vs forward 12.75 ms (eager) | adapter 48.0 KiB/NPC
+online LoRA step base:lora4: fwd+bwd+SGD 61.83 ms (eager) vs forward 22.36 ms (eager) | adapter 96.0 KiB/NPC
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_online.json
+tick small:mem8+fw64: {'stream': 0.5120799839496613, 'selector': 4.428864002227783, 'policy': 9.424255847930908, 'speech': 4.58951997756958} -> total 18.89 ms (p95 19.02) -> 18.9 % GPU at 200 decisions/s
+tick base:mem8+fw64: {'stream': 0.5137119889259338, 'selector': 4.429311990737915, 'policy': 16.623215675354004, 'speech': 5.332992076873779} -> total 26.72 ms (p95 27.54) -> 26.7 % GPU at 200 decisions/s
+tick large:mem8+fw64: {'stream': 0.5099520087242126, 'selector': 4.42519998550415, 'policy': 27.427663803100586, 'speech': 6.141952037811279} -> total 38.91 ms (p95 39.37) -> 38.9 % GPU at 200 decisions/s
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_tick.json

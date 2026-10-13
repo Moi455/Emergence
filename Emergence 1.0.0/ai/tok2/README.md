@@ -1,0 +1,77 @@
+# tok-2 : ce que le Transformer lit
+
+Oracle Python du tokeniseur. Le portage C++ (D31) devra rendre les mêmes tableaux : même empreinte (`Encoded.digest`), vérifiée sur les jeux d'or (`golden/`).
+
+**Ce que `golden/layout.json` permet de porter sans lire le Python** : tout ce qui fabrique les tableaux (colonnes et leur ordre d'écriture, formules de normalisation, vocabulaire, règles des clés et des noms, symboles réservés, numérotation des fantômes, mise en commun des objets tenus, drapeaux inconnu/vide, empreinte) et tous les refus, **SAUF la validation des propositions**. Celle-ci est un portage de `catalogue/tools/language.py` (`Expression`), alimenté par les tables de la section `grammar` du même fichier ; les cas d'or `bad_prop_*` (mauvais type d'argument, profondeur 3, 4 pointeurs, trop de symboles) servent à le vérifier. Un portage sans cette validation rend les mêmes tableaux sur les contextes valides, mais n'en refuse pas les propositions mal formées.
+
+**Entrée.** Les dossiers de l'esprit d'un PNJ, ceux que le sélecteur de contexte a gardés : sa propre personne, les personnes qu'il connaît, les choses qu'il voit, ses croyances, ses souvenirs, ses objectifs, la raison de son réveil (`WAKE`), etc. Chaque dossier a une clé (`@E3`, `b:7`, `me`, `wake`…). Rien ne vient de la vérité : le moteur fabrique ces dossiers à partir de ce que le PNJ perçoit et croit.
+
+**Sortie.** Au plus 128 jetons, un par dossier. Chaque jeton est rangé dans des colonnes fixes par type (`num` 65 colonnes en float16, `cat` 38 en int16, `ptr` 5 en uint8, `prop` 20 positions), chacune avec son drapeau « connu » (`known`, `cat_known`, `ptr_known`). Tout est tiré de `catalogue/generated/model_interface.json` : ajouter une variable au catalogue ajoute sa colonne.
+
+## Conventions des Records (ce que le moteur doit respecter)
+
+- **Unités de la charte.** Les échelles psychologiques vont de −10 à +10 (de 0 à 10 pour les échelles non signées) ; le tokeniseur divise par 10. Un pourcentage (0..100) ou une valeur déjà normalisée (0..1) est une erreur du moteur : refusé, jamais raboté. Âges et échéances en heures de jeu, distances en mètres, masses en kg, volumes en litres. Les quantités sont ≥ 0 (sauf les °C) et au plus 1e7. **Tolérance aux bornes** : ε = 1e-9 (dans l'unité de l'échelle) ; à moins de ε d'une borne, la valeur est ramenée à la borne (bruit de virgule flottante : 10.0000000001, −1e-12) ; au-delà, `TokenError`. Les composantes nommées (sin/cos, axes de réputation) sont données en [−1, 1]. Aux bornes ±1e7 (heures, quantités) la tolérance ne joue pas : l'espacement des flottants y dépasse ε.
+- **Inconnu n'est pas vide.** Champ absent ou `None` : inconnu (drapeau 0). Pointeur `""` : connu, « personne ». Liste `[]` : connue vide. `[]` pour un vecteur signifie « connu, toutes composantes à 0 » **seulement** pour une liste de vecteurs, c'est-à-dire les objets tenus (`SELF.held`, `ENTITY.look.held`, drapeau `multi` de l'interface) ; pour `rep`, `props`, `dir`… `[]` est une `TokenError` (l'inconnu est `None` ou l'absence), et une liste de dictionnaires n'est acceptée que pour les objets tenus. Champ mot (`word`) à `""` : connu, aucun (id `<pad>` = 0, drapeau 1 ; par exemple `PLAN.next = ""` = fin du plan) ; `""` est refusé pour une énumération et dans une liste. Une composante absente d'un dictionnaire reste inconnue.
+- **L'ordre des listes compte.** Dans un type (les trois dossiers `BELIEF`, les `ENTITY`…) et dans chaque liste de mots ou de pointeurs, l'ordre donné est la saillance choisie par le moteur : le plus saillant d'abord. Le tokeniseur ne trie jamais. Les types, eux, sont rangés dans l'ordre du registre. **Ordre d'écriture** : dans un dossier, les champs sont écrits dans l'ordre des colonnes du registre (ordre d'ajout, pas l'ordre alphabétique ni celui du dictionnaire du Record) ; c'est lui qui numérote les alias de noms.
+- **Plafonds.** Au plus `count` dossiers par type (budget), 6 mots par liste de mots, 4 pointeurs par liste de pointeurs, 20 symboles par proposition. `SELF` et `PLACE` sont obligatoires. Une personne `present=False` ne porte ni `dist`, ni `dir`, ni `look.*`.
+- **Objets tenus.** Plusieurs objets dans les mains ou dans celles d'autrui : la masse (`mass`) s'additionne, toute autre composante prend le maximum. Chaque objet est contrôlé séparément avant la mise en commun. Le mode de mise en commun de chaque composante (`pool`: sum ou max) est **épinglé dans le registre** : un changement ultérieur de `codecs.SUM_COMPONENTS` ne touche que les composantes nouvelles ; renommer `mass` sans que le nouveau nom reprenne la somme est un conflit.
+- **Échéances signées.** `deadline` (GOAL, COMMIT) est un nombre d'heures *jusqu'à* l'échéance ; négatif si elle est dépassée ; le modèle lit un log signé. Un `age` reste un âge (heures écoulées).
+- **Pointeurs typés (`ref_types`).** Chaque champ `mref` déclare les types de dossiers qu'il accepte (`WAKE.trigger` : EVENT, HEARD, REQUEST, GOAL, PLAN ; `PLAN.goal` : GOAL ; `BELIEF.informant`, `REQUEST.from`, `COMMIT.counterparty` : ENTITY ; `SELF.place` : PLACE, LOCUS ; propriétaires : ENTITY, GROUP, SELF ; regard : ENTITY, THING, INV, SELF, LOCUS, PLACE ; attention : ENTITY, THING, INV, SELF, EVENT, HEARD…). Un pointeur d'un autre genre est refusé, fantômes compris (le genre d'un fantôme est celui de sa clé : `@T` est THING ou INV). La table est `ModelInterface.REF_TYPES` (catalogue/tools/model_interface.py) ; un nouveau champ `mref` sans entrée fait échouer la génération.
+- **Propositions.** Validées par la grammaire du catalogue (`language.Expression`) : proposition nue pour croyances, objectifs, souvenirs, engagements ; énoncé complet (avec humeur) pour `REQUEST.prop`. Une citation nue (`b:7`, `m:2`, `g:1`) est une proposition ; un dossier ne peut pas se citer lui-même (`b:1` dans `b:1`). Texte en ASCII imprimable plus espace, tabulation, saut de ligne et retour chariot (CR) (pas d'espace non ASCII ni de caractère de contrôle). `Record.to_dict` et `dumps` écrivent le texte canonique (arbre réimprimé, un espace entre symboles) : deux graphies d'une même proposition donnent le même JSON. Nombres et comptes en chiffres ASCII, sans zéro de tête, au plus 1e7 ; clés canoniques (`@E7`, jamais `@E07`). Les symboles réservés (`<pad>`, `<num>`, `@E`…) sont refusés dans les champs de mots.
+- **Toute erreur d'entrée est une `TokenError`**, jamais une `ValueError`, une `TypeError` ou une `OverflowError`. Les scalaires numpy sont acceptés.
+
+## Pointeurs, esprit du PNJ et fantômes
+
+`DecisionContext(records, known_keys)` : `known_keys` contient les clés de **tout** l'esprit du PNJ (défaut : les clés des records). Un pointeur vers une clé inconnue de l'esprit est refusé. Un pointeur vers une clé connue mais absente du lot devient un **fantôme** : emplacement `129 + k`, k de 0 à 31, numéroté par première apparition dans l'ordre d'encodage (lignes, puis colonnes `ptr`, puis positions de proposition) ; au-delà de 32 fantômes, `161`. Deux pointeurs vers le même fantôme donnent le même emplacement ; deux fantômes différents, deux emplacements : `(owns @E7 …)(at @E7 …)` ≠ `(owns @E7 …)(at @E9 …)`. Le modèle ne voit jamais le numéro du dossier, seulement l'identité. Le décodeur écrit `@E~k` (`@E?` au-delà de 32).
+
+## Identifiants stables (`registry.json`)
+
+Les poids d'un modèle sont liés aux identifiants de types, de symboles et de colonnes : ils ne bougent jamais quand le catalogue grandit.
+
+```
+cd ai && python3 -m tok2.registry            # ce qui manque au registre
+cd ai && python3 -m tok2.registry --update   # ajoute les nouveautés À LA FIN
+cd ai && python3 -m tok2.registry --check    # code de sortie 1 si périmé
+```
+
+Ajout seul : un nouveau type prend le numéro suivant, un nouveau champ les colonnes libres suivantes de son bloc, un nouveau symbole l'identifiant suivant. Chaque champ enregistre son sens (`scale`, `unit`, `list_of`) et chaque vecteur ses composantes (nom, échelle, unité, colonne) :
+
+- un changement de sens (échelle, unité, bloc, codec, échelle ou unité d'une composante, **ordre** des composantes) est un **conflit** : donner au champ un autre nom ;
+- un vecteur ne grandit qu'en fin : ajouter une propriété à l'objet (`THING.props`, `INV.props`, `SELF.held`, `ENTITY.look.held`) passe par `--update` sans conflit ; la nouvelle composante prend la prochaine colonne libre du bloc du type (les colonnes d'un vecteur ne sont donc pas toujours contiguës), les anciennes ne bougent pas ;
+- l'ordre déclaré des composantes déjà enregistrées ne change pas (inverser deux composantes est un conflit : renommer la COMPOSANTE, ce qui lui donne une colonne neuve) ; une composante ajoutée au milieu de la liste du catalogue est ajoutée en fin de registre et l'ordre déclaré est ré-enregistré ;
+- ce que l'interface retire reste réservé (marqué `retired`, jamais réutilisé) ; une composante renommée est une composante retirée plus une nouvelle (colonne neuve : on ne relit jamais mal un modèle entraîné).
+
+Les largeurs de bloc sont le maximum utilisé (colonnes retirées comprises). Le registre est contrôlé à chaque chargement (dans le même `try` : toute malformation est une `TokenError`) : numéros de types uniques et entiers, colonnes entières sans recouvrement par (type, bloc), symboles uniques, `widths` obligatoire en v2 et cohérent. **Réparer une collision de colonnes** (fusion de deux branches qui ont chacune ajouté un champ au même type) : renuméroter à la main la colonne la plus récente dans `registry.json` (première colonne libre du bloc, puis corriger `widths`), et seulement si aucun modèle n'a été entraîné dessus ; sinon renommer le champ récent dans le catalogue. `--update` écrit aussi les retraits (`retired`), même sans ajout ; `--check` les signale. Une option inconnue des deux commandes (`--chek`) est une erreur. Le `Tokenizer` refuse une interface qui contient un élément absent du registre et dit la commande à lancer. L'ancien format (v1, sans sens enregistré) est lu et complété par `--update`.
+
+## Parité C++ et jeux d'or
+
+- Les nombres sont normalisés en double précision, puis arrondis **une seule fois** en float16 (IEEE binary16, arrondi au pair) ; un résultat nul APRÈS arrondi est `+0.0` (`-0.0` et `-1e-9` donnent 0). `num` et `prop_num` sont en float16. Les formules sont dans `golden/layout.json`.
+- Nombres d'une proposition : `log1p(n + 1)` ; 0 signifie « pas de compte », donc `silver_coin:0` ≠ `silver_coin`. Exact jusqu'à environ 250 au décodage (binary16).
+- `Encoded.digest()` : `zlib.crc32` enchaîné sur les octets petit-boutiens de `n` (uint32) puis de chaque tableau de `Encoded.ARRAYS`, dans l'ordre, en ordre C, avec son dtype.
+- L'empreinte de l'interface porte sur le JSON canonique du seul sous-arbre `input` et de ce que tok-2 lit de `speech` ; la version de schéma est vérifiée.
+- `python3 -m tok2.golden --update` écrit `golden/layout.json`, suffisant pour écrire un portage sans lire le Python : types, colonnes **dans l'ordre d'écriture** (bloc, colonne, largeur, codec, formule de normalisation, énumérations, `ref_types`, composantes des vecteurs avec leurs colonnes), largeurs, constantes 0/129/161, vocabulaire id→symbole, table mot de parole → id d'entrée (pour lier les plongements), section `grammar` (tables de `language.py` : catégories de mots, arités et types d'arguments des prédicats, `ACCEPTS`, `CATEGORY_TYPES`, paramètres des gestes, rôles d'événement, limites de symboles, de profondeur et de pointeurs) et `reading_rules` (règles de lecture : listes de mots et de pointeurs, ordre d'écriture, mise en commun des objets tenus, numérotation des fantômes…).
+- `layout.json` exporte aussi les règles des clés (`keys` : `num` = `0|[1-9][0-9]{0,11}`, les clés fixes `me`, `me.mind`, `me.state`, `wake`, `@PLACE` comparées par égalité et non par préfixe, le plafond de 12 chiffres des noms `n:`) et les `reserved_symbols` avec leurs identifiants.
+- **Empreinte de disposition** = FNV-1a 64 du JSON canonique (clés triées, séparateurs `,` et `:`, UTF-8) de `layout.json` privé des clés `fingerprints`, `grammar` et `reading_rules` ; un portage la recalcule (`GoldenLayout.fingerprint_of`).
+- `golden/cases.jsonl` : 55 décisions, dont 12 tirées du sampler à graine fixe et **gelées** : leurs dossiers ne sont jamais redessinés par `--update` ni `--check`. Après un changement de disposition, `--update` (ou `--rehead` seul) relit leurs dossiers, réécrit leur en-tête et leur empreinte et vérifie qu'ils s'encodent encore ; si l'en-tête est à jour mais l'empreinte fausse (régression), le test échoue au lieu de masquer. Seul `--update-sampler` tire de nouveaux cas et 43 faites à la main pour les bords, dont 20 refus. Un test vérifie que tout est à jour et épingle les empreintes.
+- Sérialisation : `Record.to_dict/from_dict`, `DecisionContext.dumps/loads(tokenizer)` en JSON canonique (clés triées, sans espaces) avec un en-tête `{schema, interface, layout}` ; un contexte écrit pour une autre interface est refusé.
+
+## Choix faits
+
+- Les noms propres forment un ensemble ouvert : dans une décision, le k-ième nom distinct devient `<name k>` ; à partir du 65e, `<name_other>`. Le modèle sait seulement que deux mentions désignent le même nom.
+- Une valeur hors échelle est refusée, jamais rabotée : c'est un défaut du moteur.
+- Les listes de mots sont limitées à 6, les listes de pointeurs à 4 ; le moteur garde les plus saillants.
+
+## Limites connues
+
+- **Même chaîne, même identifiant** : deux mots écrits pareil sont le même symbole dans tous les champs (le plongement du champ les distingue).
+- **Alias de noms** : seuls 64 noms distincts par décision gardent leur identité ; les suivants partagent `<name_other>` (et ne sont plus distinguables entre eux). Le décodeur rend `n:?`.
+- **Rename de composante** : le registre ne peut pas distinguer un renommage d'un retrait suivi d'un ajout ; il traite les deux pareil (colonne neuve), ce qui est sûr mais perd l'apprentissage de l'ancienne colonne.
+- **`@T` partagé** : `INV` (objets portés) et `THING` (objets vus) numérotent tous deux en `@T` dans la même décision ; le moteur doit donner des numéros distincts.
+- **Quantités exactes absentes de la parole** : une proposition garde `log1p(n + 1)` en binary16, pas l'entier ; au-delà de 250 environ le compte n'est plus exact (le modèle n'a besoin que de l'ordre de grandeur).
+- `log1p` n'est pas garanti identique au dernier bit entre bibliothèques : après l'arrondi en float16 l'écart n'apparaît que sur un cas limite très rare ; un portage qui diverge sur un cas d'or doit être examiné valeur par valeur.
+
+## Taille et vitesse
+
+Mesures dans `ai/situations/README.md` (ms par encodage, octets par décision). Les données d'entraînement se stockent en dossiers (`dumps`), et la mise en jetons se fait à la volée.
+
+Tests : `python3 -m unittest discover -s ai/tok2/tests -t ai`.

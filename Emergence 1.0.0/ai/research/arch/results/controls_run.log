@@ -1,0 +1,109 @@
+teacher in closed loop: {'success': 1.0, 'secrecy_violation': 0.0, 'reflected_knows_exact': 1.0}
+world: {'coalition_share': 0.7998046875, 'mean_knowers': 3.520751953125, 'mean_coalition': 2.140625}
+== tomsince4 seed 0: 0.91 M params, 51 MFLOP/decision
+  [tomsince4 s0] step     0 loss 13.353 type acc 0.125 (2 s)
+  [tomsince4 s0] step   250 loss 1.109 type acc 0.989 (27 s)
+  [tomsince4 s0] step   500 loss 0.869 type acc 0.993 (46 s)
+  [tomsince4 s0] step   750 loss 0.299 type acc 0.997 (83 s)
+  [tomsince4 s0] step  1000 loss 0.110 type acc 0.999 (102 s)
+  [tomsince4 s0] step  1250 loss 0.044 type acc 0.999 (121 s)
+  [tomsince4 s0] step  1500 loss 0.034 type acc 0.999 (139 s)
+  [tomsince4 s0] step  1750 loss 0.013 type acc 0.999 (157 s)
+  [tomsince4 s0] step  2000 loss 0.077 type acc 0.999 (174 s)
+  [tomsince4 s0] step  2250 loss 0.010 type acc 0.999 (192 s)
+  [tomsince4 s0] step  2500 loss 0.007 type acc 0.999 (210 s)
+  [tomsince4 s0] step  2750 loss 0.011 type acc 0.999 (228 s)
+  [tomsince4 s0] step  2999 loss 0.003 type acc 1.000 (248 s)
+   eval tomsince4 s0: success 0.967, success_coalition 0.989, success_no_coalition 0.880, exact_invites 0.988, secrecy_violation 0.032, decisions_per_episode_per_villager 24.000, success/hops<=1 0.986, n/hops<=1 1456, success/hops=2 0.990, n/hops=2 1437, success/hops>=3 0.997, n/hops>=3 383
+== tomsince4 seed 1: 0.91 M params, 51 MFLOP/decision
+  [tomsince4 s1] step     0 loss 11.648 type acc 0.014 (0 s)
+  [tomsince4 s1] step   250 loss 1.287 type acc 0.986 (21 s)
+  [tomsince4 s1] step   500 loss 0.923 type acc 0.991 (41 s)
+  [tomsince4 s1] step   750 loss 0.213 type acc 0.994 (59 s)
+  [tomsince4 s1] step  1000 loss 0.123 type acc 0.999 (78 s)
+  [tomsince4 s1] step  1250 loss 0.030 type acc 0.999 (99 s)
+  [tomsince4 s1] step  1500 loss 0.013 type acc 0.999 (121 s)
+  [tomsince4 s1] step  1750 loss 0.007 type acc 1.000 (140 s)
+  [tomsince4 s1] step  2000 loss 0.003 type acc 1.000 (159 s)
+  [tomsince4 s1] step  2250 loss 0.003 type acc 1.000 (178 s)
+  [tomsince4 s1] step  2500 loss 0.003 type acc 0.999 (198 s)
+  [tomsince4 s1] step  2750 loss 0.002 type acc 1.000 (216 s)
+  [tomsince4 s1] step  2999 loss 0.002 type acc 1.000 (235 s)
+   eval tomsince4 s1: success 0.981, success_coalition 0.981, success_no_coalition 0.980, exact_invites 0.973, secrecy_violation 0.018, decisions_per_episode_per_villager 24.000, success/hops<=1 0.975, n/hops<=1 1456, success/hops=2 0.987, n/hops=2 1437, success/hops>=3 0.982, n/hops>=3 383
+== reflect4noisy seed 0: 0.91 M params, 51 MFLOP/decision
+  [reflect4noisy s0] step     0 loss 12.749 type acc 0.082 (0 s)
+  [reflect4noisy s0] step   250 loss 2.356 type acc 0.919 (19 s)
+  [reflect4noisy s0] step   500 loss 2.511 type acc 0.917 (39 s)
+  [reflect4noisy s0] step   750 loss 2.295 type acc 0.941 (58 s)
+  [reflect4noisy s0] step  1000 loss 2.258 type acc 0.935 (78 s)
+  [reflect4noisy s0] step  1250 loss 1.949 type acc 0.949 (97 s)
+  [reflect4noisy s0] step  1500 loss 1.840 type acc 0.954 (117 s)
+  [reflect4noisy s0] step  1750 loss 2.043 type acc 0.952 (136 s)
+  [reflect4noisy s0] step  2000 loss 1.998 type acc 0.945 (157 s)
+  [reflect4noisy s0] step  2250 loss 1.763 type acc 0.962 (177 s)
+  [reflect4noisy s0] step  2500 loss 1.909 type acc 0.953 (197 s)
+  [reflect4noisy s0] step  2750 loss 1.700 type acc 0.965 (217 s)
+  [reflect4noisy s0] step  2999 loss 2.037 type acc 0.963 (236 s)
+   eval reflect4noisy s0: reflected_knows_exact 1.000, success 0.801, success_coalition 0.831, success_no_coalition 0.679, exact_invites 0.723, secrecy_violation 0.196, decisions_per_episode_per_villager 28.541, success/hops<=1 0.792, n/hops<=1 1456, success/hops=2 0.848, n/hops=2 1437, success/hops>=3 0.919, n/hops>=3 383
+== reflect4noisy seed 1: 0.91 M params, 51 MFLOP/decision
+  [reflect4noisy s1] step     0 loss 12.709 type acc 0.391 (0 s)
+  [reflect4noisy s1] step   250 loss 2.544 type acc 0.922 (20 s)
+  [reflect4noisy s1] step   500 loss 2.431 type acc 0.939 (41 s)
+  [reflect4noisy s1] step   750 loss 2.340 type acc 0.917 (58 s)
+  [reflect4noisy s1] step  1000 loss 1.840 type acc 0.951 (76 s)
+  [reflect4noisy s1] step  1250 loss 2.263 type acc 0.949 (93 s)
+  [reflect4noisy s1] step  1500 loss 1.940 type acc 0.949 (112 s)
+  [reflect4noisy s1] step  1750 loss 1.797 type acc 0.965 (132 s)
+  [reflect4noisy s1] step  2000 loss 1.937 type acc 0.964 (152 s)
+  [reflect4noisy s1] step  2250 loss 1.746 type acc 0.961 (172 s)
+  [reflect4noisy s1] step  2500 loss 2.107 type acc 0.967 (192 s)
+  [reflect4noisy s1] step  2750 loss 2.226 type acc 0.955 (212 s)
+  [reflect4noisy s1] step  2999 loss 1.912 type acc 0.959 (232 s)
+   eval reflect4noisy s1: reflected_knows_exact 0.999, success 0.718, success_coalition 0.739, success_no_coalition 0.635, exact_invites 0.623, secrecy_violation 0.281, decisions_per_episode_per_villager 28.540, success/hops<=1 0.673, n/hops<=1 1456, success/hops=2 0.765, n/hops=2 1437, success/hops>=3 0.888, n/hops>=3 383
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/probe_coalition.json
+teacher in closed loop: {'success': 1.0, 'secrecy_violation': 0.0, 'reflected_knows_exact': 1.0}
+world: {'coalition_share': 0.7998046875, 'mean_knowers': 3.520751953125, 'mean_coalition': 2.140625}
+== direct8long seed 0: 1.70 M params, 101 MFLOP/decision
+  [direct8long s0] step     0 loss 10.344 type acc 0.125 (2 s)
+  [direct8long s0] step   250 loss 0.284 type acc 0.982 (31 s)
+  [direct8long s0] step   500 loss 0.339 type acc 0.992 (60 s)
+  [direct8long s0] step   750 loss 0.173 type acc 0.993 (88 s)
+  [direct8long s0] step  1000 loss 0.093 type acc 0.996 (117 s)
+  [direct8long s0] step  1250 loss 0.139 type acc 0.995 (145 s)
+  [direct8long s0] step  1500 loss 0.283 type acc 0.991 (173 s)
+  [direct8long s0] step  1750 loss 0.127 type acc 0.997 (202 s)
+  [direct8long s0] step  2000 loss 0.113 type acc 0.998 (230 s)
+  [direct8long s0] step  2250 loss 0.142 type acc 0.996 (258 s)
+  [direct8long s0] step  2500 loss 0.087 type acc 0.996 (287 s)
+  [direct8long s0] step  2750 loss 0.185 type acc 0.995 (315 s)
+  [direct8long s0] step  3000 loss 0.176 type acc 0.995 (344 s)
+  [direct8long s0] step  3250 loss 0.136 type acc 1.000 (372 s)
+  [direct8long s0] step  3500 loss 0.120 type acc 1.000 (401 s)
+  [direct8long s0] step  3750 loss 0.116 type acc 0.996 (429 s)
+  [direct8long s0] step  4000 loss 0.088 type acc 0.999 (458 s)
+  [direct8long s0] step  4250 loss 0.072 type acc 0.997 (485 s)
+  [direct8long s0] step  4500 loss 0.113 type acc 0.995 (512 s)
+  [direct8long s0] step  4750 loss 0.107 type acc 0.995 (538 s)
+  [direct8long s0] step  5000 loss 0.060 type acc 0.997 (564 s)
+  [direct8long s0] step  5250 loss 0.053 type acc 0.997 (591 s)
+  [direct8long s0] step  5500 loss 0.023 type acc 0.999 (618 s)
+  [direct8long s0] step  5750 loss 0.068 type acc 0.999 (644 s)
+  [direct8long s0] step  5999 loss 0.104 type acc 0.998 (670 s)
+   eval direct8long s0: success 0.796, success_coalition 0.832, success_no_coalition 0.650, exact_invites 0.825, secrecy_violation 0.187, decisions_per_episode_per_villager 24.000, success/hops<=1 0.793, n/hops<=1 1456, success/hops=2 0.849, n/hops=2 1437, success/hops>=3 0.916, n/hops>=3 383
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/probe_coalition.json
+references: {'answer_current_location': 0.508819580078125, 'chance': 0.2, 'false_belief_share': 0.491180419921875}
+== win8 seed 0: 0.91 M params, 39 MFLOP/decision
+  [win8 s0] step     0 loss 1.616 acc 0.197 (2 s)
+  [win8 s0] step   250 loss 1.113 acc 0.581 (61 s)
+  [win8 s0] step   500 loss 0.863 acc 0.694 (117 s)
+  [win8 s0] step   750 loss 0.748 acc 0.743 (176 s)
+  [win8 s0] step  1000 loss 0.767 acc 0.728 (235 s)
+  [win8 s0] step  1250 loss 0.777 acc 0.723 (290 s)
+  [win8 s0] step  1500 loss 0.775 acc 0.721 (349 s)
+  [win8 s0] step  1750 loss 0.780 acc 0.719 (408 s)
+  [win8 s0] step  2000 loss 0.787 acc 0.714 (468 s)
+  [win8 s0] step  2250 loss 0.773 acc 0.722 (527 s)
+  [win8 s0] step  2499 loss 0.771 acc 0.725 (585 s)
+   eval win8 s0: true-belief/recent(<8) 1.000, false-belief/recent(<8) 0.999, true-belief/mid(8-15) 0.974, false-belief/mid(8-15) 0.786, true-belief/old(16+) 0.760, false-belief/old(16+) 0.263, true-belief/initial 0.876, false-belief/initial 0.491, ALL 0.728, true-belief 0.948, false-belief 0.503
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/probe_belief.json
+CONTROLSDONE

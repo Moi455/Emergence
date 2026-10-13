@@ -1,0 +1,7 @@
+tick small:mem8+fw64 T=128: {'stream': 0.7191679775714874, 'selector': 2.357248067855835, 'policy': 9.129983901977539, 'speech': 4.509727954864502} -> total 15.84 ms (p95 16.21) -> 15.8 % GPU at 200 decisions/s
+tick small:mem8+fw64 T=64: {'stream': 0.5070079863071442, 'selector': 1.716223955154419, 'policy': 4.649471998214722, 'speech': 4.50163197517395} -> total 11.28 ms (p95 11.41) -> 11.3 % GPU at 200 decisions/s
+tick base:mem8+fw64 T=128: {'stream': 0.5058879852294922, 'selector': 1.7174239754676819, 'policy': 16.016511917114258, 'speech': 5.19379186630249} -> total 23.35 ms (p95 23.99) -> 23.3 % GPU at 200 decisions/s
+tick base:mem8+fw64 T=64: {'stream': 0.5080319941043854, 'selector': 1.7175520062446594, 'policy': 8.155663967132568, 'speech': 5.201200008392334} -> total 15.58 ms (p95 16.02) -> 15.6 % GPU at 200 decisions/s
+tick large:mem8+fw64 T=128: {'stream': 0.5120000243186951, 'selector': 1.7220799922943115, 'policy': 26.485584259033203, 'speech': 5.988447904586792} -> total 34.79 ms (p95 35.77) -> 34.8 % GPU at 200 decisions/s
+tick large:mem8+fw64 T=64: {'stream': 0.5079360008239746, 'selector': 1.7141759991645813, 'policy': 13.999311923980713, 'speech': 6.012176036834717} -> total 21.94 ms (p95 22.38) -> 21.9 % GPU at 200 decisions/s
+saved /home/samuelpyrat/Documents/Codex/emergence/ai/research/arch/results/arch_tick2.json

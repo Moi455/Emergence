@@ -1,0 +1,45 @@
+{
+ "rows": [
+  {
+   "policy": "small",
+   "params_M": 6.460097,
+   "parts_ms": {
+    "selector": 1.7527999877929688,
+    "act_T64_lot32": 3.7014559507369995,
+    "reflect_T128_lot8": 2.339759945869446,
+    "speech_lot8": 4.877327919006348,
+    "critic": 0.24115200340747833
+   },
+   "tick_ms": 12.76475191116333,
+   "tick_p95_ms": 16.81177520751953,
+   "gpu_share_at_200_per_s": 0.1276475191116333,
+   "capacity_per_s": {
+    "act": 320,
+    "reflect": 80,
+    "utterances": 80
+   }
+  },
+  {
+   "policy": "base",
+   "params_M": 17.367617,
+   "parts_ms": {
+    "selector": 1.7675840258598328,
+    "act_T64_lot32": 6.775168180465698,
+    "reflect_T128_lot8": 3.9734559059143066,
+    "speech_lot8": 4.583920001983643,
+    "critic": 0.30955199897289276
+   },
+   "tick_ms": 17.451168060302734,
+   "tick_p95_ms": 17.662784576416016,
+   "gpu_share_at_200_per_s": 0.17451168060302735,
+   "capacity_per_s": {
+    "act": 320,
+    "reflect": 80,
+    "utterances": 80
+   }
+  }
+ ],
+ "gpu": "Quadro RTX 3000",
+ "torch": "2.14.0+cu130",
+ "date": "2026-10-13 00:14"
+}

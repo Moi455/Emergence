@@ -1,0 +1,13 @@
+# Emergence 1.0.0 - what Claude never reads (token economy, Monsieur 13 oct.)
+build/
+**/__pycache__/
+# generated or bulky: read only through their tools
+catalogue/generated/
+catalogue/CATALOGUE.md
+engine/social/generated/
+engine/social/tests/governor_vectors.inc
+ai/tok2/golden/
+ai/tok2/registry.json
+ai/student2/output_registry.json
+ai/research/results/
+ai/research/arch/results/
