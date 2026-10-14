@@ -26,9 +26,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "tools"))
 from schema import Catalogue  # noqa: E402
 from governor import LEDGER_CAPACITY, SELF_HOLDERS, Governor, Party, WriteLedger, age_tenths, tenths  # noqa: E402
-from gen_cpp import ident  # noqa: E402
+from gen_cpp import Orders, ident  # noqa: E402
 
 OUT = ROOT.parent / "engine" / "social" / "tests" / "governor_vectors.inc"
+ORDERS = None   # gen_cpp.Orders: the C++ value index of an enum param is its position in the model's manner head
 NAN = float("nan")
 # Ages in YEARS, as the Python governor sees them; the C++ side gets them in tenths (floored, toward "minor")
 # and Party::from_years is checked against the same numbers.
@@ -223,7 +224,7 @@ def gen_gestures(cat, g, rng, L, counts):
             given = rng.random() < present_p
             if given:
                 if p.type == "enum":
-                    k = rng.randrange(len(p.values)); vals[i] = k; params[p.name] = p.values[k]
+                    k = rng.randrange(len(p.values)); vals[i] = ORDERS.value_index(a.id, p, p.values[k]); params[p.name] = p.values[k]
                 elif p.type == "ref":
                     vals[i] = 0; params[p.name] = "@E1"
                 elif p.type == "expression":
@@ -257,7 +258,7 @@ def gen_gestures(cat, g, rng, L, counts):
             kind = rng.choice(["enum_n", "enum_far", "enum_neg", "other_one", "other_neg", "extra"])
             if kind.startswith("enum") and enum_idx:
                 i = rng.choice(enum_idx); p = a.params[i]
-                vals[i] = {"enum_n": len(p.values), "enum_far": 100, "enum_neg": -2}[kind]
+                vals[i] = {"enum_n": len(ORDERS.param_values(a.id, p)), "enum_far": 100, "enum_neg": -2}[kind]
                 params[p.name] = "__invalid__"
                 v = g.check_gesture(a.id, params, party_ref(ai), parties, executed=executed)
                 assert v.code == "invalid_value", (a.id, p.name)
@@ -279,7 +280,9 @@ def gen_gestures(cat, g, rng, L, counts):
 
 
 def main():
+    global ORDERS
     cat = Catalogue.load()
+    ORDERS = Orders(cat)
     g = Governor(cat)
     rng = random.Random(SEED)
     counts = {k: Counter() for k in ("write", "writes", "gesture")}

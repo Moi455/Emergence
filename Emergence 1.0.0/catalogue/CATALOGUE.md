@@ -1008,39 +1008,39 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 
 ## Processus (lois de transformation, jamais choisis)
 
-| id | libellé | entrées | conditions | effet |
-|---|---|---|---|---|
-| cut | couper, trancher | matière tendre (bois, chair, tissu, plante, corde) | cuts | sépare en morceaux selon la force et l'angle ; l'outil s'use |
-| split | fendre (le bois dans le fil, la pierre litée) | bois, ardoise, calcaire | impacts, edge | éclats et planches grossières |
-| fracture | casser, briser | toute matière | impacts | si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse ; silex contre fer : des étincelles (qui allument l'amadou) |
-| crush | écraser, moudre, broyer | grain, minerai, herbe, os | impacts | grain → farine ; minerai → minerai broyé ; herbe → pâte |
-| extract | extraire (arracher du terrain : creuser, piocher) | terrain | digs | retire des voxels ; la matière extraite devient objet ; la stabilité voisine change |
-| till | labourer, retourner la terre | sol (terrain) | digs | le sol passe à « labouré » (soil_state) ; l'humidité et la fertilité s'en ressentent ; une houe, une bêche ou un araire tiré par un bœuf |
-| assemble | assembler (empiler, emboîter, clouer, maçonner) | pièces de bois, pierres, briques, mortier | graspable | crée ou agrandit une structure ; la stabilité dépend des appuis |
-| bind | lier, nouer, coudre | corde, fil, cuir, tissu | binds | attache deux choses ; tient tant que la ténacité du lien n'est pas dépassée |
-| mix | mélanger, pétrir, dissoudre | farine + eau, argile + eau, teinture + eau, sel + eau | contains | produit un mélange (pâte, mortier, saumure, bain de teinture) |
-| spin_weave | filer et tisser (fibre → fil → étoffe) | laine, lin, chanvre |  | étoffe, dont la qualité suit la maîtrise |
-| carve | tailler, sculpter, graver | bois, pierre, os | cuts | change la forme ; peut produire une inscription |
-| forge | forger (déformer le métal chaud par des coups) | métal chaud | impacts, heats | outils, lames, clous, serrures ; qualité selon maîtrise, chaleur, outil |
-| mold_cast | mouler, couler (argile façonnée, métal fondu dans un moule) | argile humide, métal fondu | contains | forme imposée par le moule ou la main |
-| magic_shape | façonner par magie (bâtir, assembler ou désassembler la matière) | matières présentes | shapes_matter | transforme des matières disponibles en construction ou objet, sans en créer ; consomme la charge ; échec ou accident si la puissance dépasse la maîtrise |
-| heat | chauffer |  | heats | la température monte selon la source, la masse, la conduction ; un frottement long et fort (bois sec contre bois) chauffe jusqu'à la braise |
-| combust | brûler |  | fuel, ignites | consomme le combustible, crée un feu qui se propage selon l'inflammabilité, l'humidité, le vent ; produit cendre et fumée |
-| melt | fondre |  | heats | au-delà du point de fusion, la matière devient fluide |
-| smelt | réduire le minerai (bas fourneau) | minerai broyé + charbon | heats | minerai → métal brut, scories |
-| fire_clay | cuire l'argile | argile façonnée sèche | heats | argile → céramique (pots, tuiles, briques) |
-| cook | cuire un aliment | pâte, chair, légumes, grain | heats | pâte → pain ; chair crue → cuite (plus nourrissante, moins de maladie) ; trop cuit → brûlé |
-| cool_freeze | refroidir, geler |  |  | la température baisse vers celle du lieu ; l'eau gèle sous 0 °C |
-| ferment | fermenter | grain, fruit, lait + eau, dans un récipient fermé | contains | bière, vin, fromage, après des jours |
-| rot | pourrir, se gâter |  |  | la fraîcheur baisse ; à zéro, l'aliment devient toxique ; le bois mouillé perd son intégrité |
-| dry_preserve | sécher, saler, fumer (conserver) | chair, poisson, herbe, grain |  | la fraîcheur baisse beaucoup plus lentement |
-| tan | tanner | peau + écorce + eau |  | peau → cuir, après des jours |
-| dye_process | teindre | étoffe + bain de teinture |  | change la teinte |
-| heal_tissue | cicatriser |  |  | les blessures se referment avec le temps, plus vite si propres, soignées et au repos ; l'infection les aggrave |
-| wear | s'user |  |  | l'usage et le temps baissent l'intégrité et la qualité ; le fer rouille à l'humidité |
-| grow | pousser, mûrir, se reproduire (plantes, animaux) |  |  | selon saison, eau, sol, lumière ; les graines tombent, les troupeaux s'agrandissent |
-| flow | couler, s'écouler |  |  | un liquide versé ou libéré descend et s'étale ; un seau renversé mouille |
-| absorb_evaporate | absorber, s'évaporer |  |  | le sol boit l'eau, la chaleur l'évapore ; un puits se remplit par la nappe |
+| id | libellé | entrées | conditions | effet | déclencheur | horloge | durée nominale (s de jeu) | consomme | produit |
+|---|---|---|---|---|---|---|---|---|---|
+| cut | couper, trancher | matière tendre (bois, chair, tissu, plante, corde) | cuts | sépare en morceaux selon la force et l'angle ; l'outil s'use |  |  |  |  |  |
+| split | fendre (le bois dans le fil, la pierre litée) | bois, ardoise, calcaire | impacts, edge | éclats et planches grossières |  |  |  |  |  |
+| fracture | casser, briser | toute matière | impacts | si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse ; silex contre fer : des étincelles (qui allument l'amadou) |  |  |  |  |  |
+| crush | écraser, moudre, broyer | grain, minerai, herbe, os | impacts | grain → farine ; minerai → minerai broyé ; herbe → pâte |  |  |  |  |  |
+| extract | extraire (arracher du terrain : creuser, piocher) | terrain | digs | retire des voxels ; la matière extraite devient objet ; la stabilité voisine change |  |  |  |  |  |
+| till | labourer, retourner la terre | sol (terrain) | digs | le sol passe à « labouré » (soil_state) ; l'humidité et la fertilité s'en ressentent ; une houe, une bêche ou un araire tiré par un bœuf |  |  |  |  |  |
+| assemble | assembler (empiler, emboîter, clouer, maçonner) | pièces de bois, pierres, briques, mortier | graspable | crée ou agrandit une structure ; la stabilité dépend des appuis |  |  |  |  |  |
+| bind | lier, nouer, coudre | corde, fil, cuir, tissu | binds | attache deux choses ; tient tant que la ténacité du lien n'est pas dépassée |  |  |  |  |  |
+| mix | mélanger, pétrir, dissoudre | farine + eau, argile + eau, teinture + eau, sel + eau | contains | produit un mélange (pâte, mortier, saumure, bain de teinture) |  |  |  |  |  |
+| spin_weave | filer et tisser (fibre → fil → étoffe) | laine, lin, chanvre |  | étoffe, dont la qualité suit la maîtrise |  |  |  |  |  |
+| carve | tailler, sculpter, graver | bois, pierre, os | cuts | change la forme ; peut produire une inscription |  |  |  |  |  |
+| forge | forger (déformer le métal chaud par des coups) | métal chaud | impacts, heats | outils, lames, clous, serrures ; qualité selon maîtrise, chaleur, outil |  |  |  |  |  |
+| mold_cast | mouler, couler (argile façonnée, métal fondu dans un moule) | argile humide, métal fondu | contains | forme imposée par le moule ou la main |  |  |  |  |  |
+| magic_shape | façonner par magie (bâtir, assembler ou désassembler la matière) | matières présentes | shapes_matter | transforme des matières disponibles en construction ou objet, sans en créer ; consomme la charge ; échec ou accident si la puissance dépasse la maîtrise |  |  |  |  |  |
+| heat | chauffer |  | heats | la température monte selon la source, la masse, la conduction ; un frottement long et fort (bois sec contre bois) chauffe jusqu'à la braise |  |  |  |  |  |
+| combust | brûler |  | fuel, ignites | consomme le combustible, crée un feu qui se propage selon l'inflammabilité, l'humidité, le vent ; produit cendre et fumée |  |  |  |  |  |
+| melt | fondre |  | heats | au-delà du point de fusion, la matière devient fluide |  |  |  |  |  |
+| smelt | réduire le minerai (bas fourneau) | minerai broyé + charbon | heats | minerai → métal brut, scories |  |  |  |  |  |
+| fire_clay | cuire l'argile | argile façonnée sèche | heats | argile → céramique (pots, tuiles, briques) |  |  |  |  |  |
+| cook | cuire un aliment | pâte, chair, légumes, grain | heats | pâte → pain ; chair crue → cuite (plus nourrissante, moins de maladie) ; trop cuit → brûlé |  |  |  |  |  |
+| cool_freeze | refroidir, geler |  |  | la température baisse vers celle du lieu ; l'eau gèle sous 0 °C |  |  |  |  |  |
+| ferment | fermenter | grain, fruit, lait + eau, dans un récipient fermé | contains | bière, vin, fromage, après des jours |  |  |  |  |  |
+| rot | pourrir, se gâter |  |  | la fraîcheur baisse ; à zéro, l'aliment devient toxique ; le bois mouillé perd son intégrité |  |  |  |  |  |
+| dry_preserve | sécher, saler, fumer (conserver) | chair, poisson, herbe, grain |  | la fraîcheur baisse beaucoup plus lentement |  |  |  |  |  |
+| tan | tanner | peau + écorce + eau |  | peau → cuir, après des jours |  |  |  |  |  |
+| dye_process | teindre | étoffe + bain de teinture |  | change la teinte |  |  |  |  |  |
+| heal_tissue | cicatriser |  |  | les blessures se referment avec le temps, plus vite si propres, soignées et au repos ; l'infection les aggrave |  |  |  |  |  |
+| wear | s'user |  |  | l'usage et le temps baissent l'intégrité et la qualité ; le fer rouille à l'humidité |  |  |  |  |  |
+| grow | pousser, mûrir, se reproduire (plantes, animaux) |  |  | selon saison, eau, sol, lumière ; les graines tombent, les troupeaux s'agrandissent |  |  |  |  |  |
+| flow | couler, s'écouler |  |  | un liquide versé ou libéré descend et s'étale ; un seau renversé mouille |  |  |  |  |  |
+| absorb_evaporate | absorber, s'évaporer |  |  | le sol boit l'eau, la chaleur l'évapore ; un puits se remplit par la nappe |  |  |  |  |  |
 
 ## Formes de parties (la grammaire des objets)
 
@@ -1112,87 +1112,87 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 
 ## Espèces vivantes (lois du moteur)
 
-| id | libellé | règne | habitat | domestique | produits (partie:matière) | danger | comportement |
-|---|---|---|---|---|---|---|---|
-| sheep | mouton, brebis | animal | meadow, mountain | oui | fleece:wool, meat:flesh, milk:milk, hide:hide, bone:bone, fat:tallow |  | suit le troupeau, fuit le loup, rentre au son de la voix connue |
-| goat | chèvre | animal | mountain, meadow, desert | oui | milk:milk, meat:flesh, hide:hide, horn:horn |  | grimpe, mange tout, s'échappe des enclos mal fermés |
-| cow | vache | animal | meadow | oui | milk:milk, meat:flesh, hide:hide, bone:bone, fat:tallow, horn:horn | 1 |  |
-| ox | bœuf (trait) | animal | fields | oui | meat:flesh, hide:hide | 2 | tire la charrue sous le joug |
-| horse | cheval | animal | meadow | oui | hide:hide, hair:rope_fiber | 2 | se monte, tire, prend peur au feu |
-| donkey | âne, mule | animal | fields, desert, mountain | oui | hide:hide | 1 | porte le bât ; têtu, s'effraie et rue |
-| camel | chameau (caravanes du désert) | animal | desert | oui | milk:milk, hair:wool, hide:hide | 2 | porte loin sans boire |
-| pig | cochon | animal | village, forest | oui | meat:flesh, fat:tallow, hide:hide | 1 | fouille, mange les déchets, s'échappe |
-| chicken | poule, coq | animal | village | oui | egg:egg, meat:flesh, feather:feather |  | pond, picore, chante à l'aube |
-| goose | oie, canard | animal | village, river | oui | egg:egg, meat:flesh, feather:feather, fat:tallow |  | crie à l'approche d'un étranger |
-| dog | chien | animal | village | oui |  | 2 | s'attache à qui le nourrit ; garde son territoire (là où il dort et mange) ; aboie, suit ; mord qui frappe celui auquel il est attaché, ou qui entre la nuit sur son territoire |
-| cat | chat | animal | village | oui |  |  | chasse les rats, va où il veut |
-| bee | abeilles (colonie) | animal | meadow, village | oui | honey:honey, wax:wax | 1 | pique qui ouvre la ruche sans fumée |
-| deer | cerf, biche | animal | forest |  | meat:flesh, hide:hide, antler:horn, bone:bone | 1 | fuit au moindre bruit, revient aux mêmes passages |
-| boar | sanglier | animal | forest |  | meat:flesh, hide:hide, tusk:bone | 5 | charge quand il est blessé ou acculé, ravage les champs |
-| hare | lièvre, lapin | animal | meadow, fields |  | meat:flesh, fur:fur |  |  |
-| fox | renard | animal | forest, fields |  | fur:fur | 1 | vole les poules la nuit |
-| wolf | loup | animal | forest, mountain, marches |  | fur:fur | 7 | chasse en meute ; affamé en hiver, il ose approcher des villages ; plus nombreux à mesure qu'on s'enfonce dans les marches |
-| bear | ours | animal | forest, mountain |  | fur:fur, meat:flesh, fat:tallow | 9 | évite l'homme, sauf surpris, blessé ou avec ses petits ; attiré par le miel |
-| ibex | bouquetin | animal | mountain |  | meat:flesh, hide:hide, horn:horn | 1 |  |
-| marmot | marmotte | animal | mountain |  | fat:tallow, fur:fur |  | siffle quand un prédateur ou un humain s'approche à moins de quelques dizaines de mètres |
-| crow | corbeau, corneille | animal | fields, village, marches |  | feather:feather |  | suit les morts et les champs semés ; présage pour certains |
-| owl | chouette, hibou | animal | forest |  | feather:feather |  | chasse la nuit ; son cri fait peur à qui y croit |
-| eagle | aigle | animal | mountain |  | feather:feather | 1 |  |
-| rat | rat, souris | animal | village |  |  | 1 | mange les réserves, porte les maladies |
-| snake | serpent (vipère) | animal | meadow, desert |  |  | 4 | mord si on marche dessus ; venin |
-| scorpion | scorpion | animal | desert |  |  | 4 | se cache dans les bottes et les pierres |
-| vulture | vautour | animal | desert, mountain |  | feather:feather |  | tourne au-dessus des corps et des bêtes blessées ou immobiles (ce qui se voit) |
-| frog | grenouille, crapaud | animal | river |  |  |  |  |
-| river_fish | poisson de rivière (truite, carpe) | animal | river |  | meat:flesh, bone:bone |  |  |
-| sea_fish | poisson de mer (hareng, morue) | animal | sea |  | meat:flesh, bone:bone, oil:oil |  | bancs qui vont et viennent selon la saison |
-| eel | anguille | animal | river, sea |  | meat:flesh |  |  |
-| shellfish_bed | coquillages, crabes | animal | sea |  | meat:flesh |  |  |
-| seal | phoque | animal | sea |  | fur:fur, fat:oil, meat:flesh | 2 |  |
-| wheat | blé | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | semé au printemps ou en automne, mûr à l'été ; versé par l'orage |
-| barley | orge | plant | fields, mountain | oui | grain:grain, straw:straw, seed:grain |  |  |
-| oats | avoine | plant | fields | oui | grain:grain, straw:straw, seed:grain |  |  |
-| rye | seigle (peut porter l'ergot qui rend fou) | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | les années humides, l'ergot rend le grain toxique : visions, convulsions |
-| beans | pois, fèves, lentilles | plant | fields | oui | pod:vegetable, seed:vegetable |  |  |
-| cabbage | chou | plant | fields | oui | leaf:vegetable, seed:vegetable |  |  |
-| turnip | navet, rave | plant | fields | oui | root:vegetable, seed:vegetable |  |  |
-| onion | oignon, poireau, ail | plant | fields | oui | bulb:vegetable, seed:vegetable |  |  |
-| carrot | carotte, panais | plant | fields | oui | root:vegetable, seed:vegetable |  |  |
-| flax | lin | plant | fields | oui | fiber:linen, seed:oil |  |  |
-| hemp | chanvre | plant | fields | oui | fiber:rope_fiber, seed:oil |  |  |
-| grapevine | vigne | plant | fields, desert | oui | fruit:vegetable, wood:oak_raw |  |  |
-| apple_tree | pommier | plant | village, fields | oui | fruit:vegetable, wood:oak_raw, seed:vegetable |  |  |
-| pear_tree | poirier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  |
-| cherry_tree | cerisier, prunier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  |
-| walnut_tree | noyer, châtaignier, noisetier | plant | forest, village |  | nut:vegetable, wood:oak_raw, husk:dye |  |  |
-| oak | chêne | plant | forest |  | wood:oak_raw, bark:bark, acorn:vegetable |  |  |
-| beech | hêtre | plant | forest |  | wood:oak_raw, nut:vegetable |  |  |
-| pine | pin, sapin | plant | mountain, forest |  | wood:softwood, resin:pitch |  |  |
-| birch | bouleau | plant | forest, mountain |  | wood:oak_raw, bark:bark |  |  |
-| willow | saule (osier) | plant | river |  | withy:wicker, bark:bark |  |  |
-| yew | if (arcs ; toxique) | plant | forest |  | wood:yew_wood | 3 |  |
-| date_palm | palmier dattier | plant | desert |  | fruit:vegetable, fiber:rope_fiber |  |  |
-| olive_tree | olivier | plant | desert, village |  | fruit:vegetable, oil:oil, wood:oak_raw |  |  |
-| meadow_grass | herbe des prés, foin | plant | meadow |  | hay:straw |  |  |
-| reed_plant | roseau, jonc | plant | river |  | stem:reed |  |  |
-| heather | bruyère, ajonc | plant | mountain, marches |  | stem:straw, flower:herb |  |  |
-| bramble | ronce (mûres) | plant | forest, fields |  | berry:vegetable |  |  |
-| berry_bush | baies sauvages (certaines toxiques) | plant | forest, mountain |  | berry:vegetable | 2 |  |
-| edible_mushroom | champignon comestible | plant | forest |  | cap:vegetable |  |  |
-| death_cap | champignon mortel (ressemble au comestible) | plant | forest |  | cap:vegetable | 8 | toxique ; vu comme « champignon blanc » sauf par un œil exercé (maîtrise de la cueillette, pc_kind_seen) ; savoir lequel est mortel est en plus une croyance, qu'on apprend ou qu'on vous transmet |
-| chamomile | camomille (calme, sommeil) | plant | meadow |  | flower:herb |  |  |
-| yarrow | achillée (arrête le sang) | plant | meadow |  | leaf:herb |  |  |
-| nettle | ortie (pique ; soupe, fibre) | plant | village, forest |  | leaf:herb, fiber:rope_fiber |  |  |
-| sage | sauge, thym, menthe | plant | meadow, desert |  | leaf:herb |  |  |
-| willow_bark_herb | écorce de saule (contre la douleur et la fièvre) | plant | river |  | bark:herb |  |  |
-| foxglove | digitale (remède au cœur à petite dose, poison sinon) | plant | forest |  | leaf:herb | 7 |  |
-| nightshade | belladone (poison, visions) | plant | forest, village |  | berry:herb | 8 |  |
-| poppy | pavot (sommeil, oubli de la douleur) | plant | fields |  | sap:herb, seed:vegetable | 3 |  |
-| mandrake | mandragore (racine aux pouvoirs crus ; en partie réels) | plant | marches |  | root:herb | 5 |  |
-| seaweed | algues | plant | sea |  | frond:vegetable |  |  |
-| cactus | cactus, plantes grasses (eau cachée) | plant | desert |  | flesh:water | 1 |  |
-| moss | mousse, lichen (amadou, pansement) | plant | forest, mountain |  | mat:herb |  |  |
-| ivy | lierre (grimpe sur les murs) | plant | village, forest |  | vine:vine |  | couvre lentement les murs abandonnés |
-| arcane_bloom | fleur arcanique (pousse là où dort le cristal ; nature inconnue) | plant | marches, mountain |  | petal:arcane_crystal | 3 | luit faiblement la nuit ; ce qu'elle fait à qui la mange n'est connu que par ses effets |
+| id | libellé | règne | habitat | domestique | produits (partie:matière) | danger | comportement | semis | jours à maturité | fenêtre de récolte (j) | repousse produit (j) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| sheep | mouton, brebis | animal | meadow, mountain | oui | fleece:wool, meat:flesh, milk:milk, hide:hide, bone:bone, fat:tallow |  | suit le troupeau, fuit le loup, rentre au son de la voix connue |  |  |  |  |
+| goat | chèvre | animal | mountain, meadow, desert | oui | milk:milk, meat:flesh, hide:hide, horn:horn |  | grimpe, mange tout, s'échappe des enclos mal fermés |  |  |  |  |
+| cow | vache | animal | meadow | oui | milk:milk, meat:flesh, hide:hide, bone:bone, fat:tallow, horn:horn | 1 |  |  |  |  |  |
+| ox | bœuf (trait) | animal | fields | oui | meat:flesh, hide:hide | 2 | tire la charrue sous le joug |  |  |  |  |
+| horse | cheval | animal | meadow | oui | hide:hide, hair:rope_fiber | 2 | se monte, tire, prend peur au feu |  |  |  |  |
+| donkey | âne, mule | animal | fields, desert, mountain | oui | hide:hide | 1 | porte le bât ; têtu, s'effraie et rue |  |  |  |  |
+| camel | chameau (caravanes du désert) | animal | desert | oui | milk:milk, hair:wool, hide:hide | 2 | porte loin sans boire |  |  |  |  |
+| pig | cochon | animal | village, forest | oui | meat:flesh, fat:tallow, hide:hide | 1 | fouille, mange les déchets, s'échappe |  |  |  |  |
+| chicken | poule, coq | animal | village | oui | egg:egg, meat:flesh, feather:feather |  | pond, picore, chante à l'aube |  |  |  |  |
+| goose | oie, canard | animal | village, river | oui | egg:egg, meat:flesh, feather:feather, fat:tallow |  | crie à l'approche d'un étranger |  |  |  |  |
+| dog | chien | animal | village | oui |  | 2 | s'attache à qui le nourrit ; garde son territoire (là où il dort et mange) ; aboie, suit ; mord qui frappe celui auquel il est attaché, ou qui entre la nuit sur son territoire |  |  |  |  |
+| cat | chat | animal | village | oui |  |  | chasse les rats, va où il veut |  |  |  |  |
+| bee | abeilles (colonie) | animal | meadow, village | oui | honey:honey, wax:wax | 1 | pique qui ouvre la ruche sans fumée |  |  |  |  |
+| deer | cerf, biche | animal | forest |  | meat:flesh, hide:hide, antler:horn, bone:bone | 1 | fuit au moindre bruit, revient aux mêmes passages |  |  |  |  |
+| boar | sanglier | animal | forest |  | meat:flesh, hide:hide, tusk:bone | 5 | charge quand il est blessé ou acculé, ravage les champs |  |  |  |  |
+| hare | lièvre, lapin | animal | meadow, fields |  | meat:flesh, fur:fur |  |  |  |  |  |  |
+| fox | renard | animal | forest, fields |  | fur:fur | 1 | vole les poules la nuit |  |  |  |  |
+| wolf | loup | animal | forest, mountain, marches |  | fur:fur | 7 | chasse en meute ; affamé en hiver, il ose approcher des villages ; plus nombreux à mesure qu'on s'enfonce dans les marches |  |  |  |  |
+| bear | ours | animal | forest, mountain |  | fur:fur, meat:flesh, fat:tallow | 9 | évite l'homme, sauf surpris, blessé ou avec ses petits ; attiré par le miel |  |  |  |  |
+| ibex | bouquetin | animal | mountain |  | meat:flesh, hide:hide, horn:horn | 1 |  |  |  |  |  |
+| marmot | marmotte | animal | mountain |  | fat:tallow, fur:fur |  | siffle quand un prédateur ou un humain s'approche à moins de quelques dizaines de mètres |  |  |  |  |
+| crow | corbeau, corneille | animal | fields, village, marches |  | feather:feather |  | suit les morts et les champs semés ; présage pour certains |  |  |  |  |
+| owl | chouette, hibou | animal | forest |  | feather:feather |  | chasse la nuit ; son cri fait peur à qui y croit |  |  |  |  |
+| eagle | aigle | animal | mountain |  | feather:feather | 1 |  |  |  |  |  |
+| rat | rat, souris | animal | village |  |  | 1 | mange les réserves, porte les maladies |  |  |  |  |
+| snake | serpent (vipère) | animal | meadow, desert |  |  | 4 | mord si on marche dessus ; venin |  |  |  |  |
+| scorpion | scorpion | animal | desert |  |  | 4 | se cache dans les bottes et les pierres |  |  |  |  |
+| vulture | vautour | animal | desert, mountain |  | feather:feather |  | tourne au-dessus des corps et des bêtes blessées ou immobiles (ce qui se voit) |  |  |  |  |
+| frog | grenouille, crapaud | animal | river |  |  |  |  |  |  |  |  |
+| river_fish | poisson de rivière (truite, carpe) | animal | river |  | meat:flesh, bone:bone |  |  |  |  |  |  |
+| sea_fish | poisson de mer (hareng, morue) | animal | sea |  | meat:flesh, bone:bone, oil:oil |  | bancs qui vont et viennent selon la saison |  |  |  |  |
+| eel | anguille | animal | river, sea |  | meat:flesh |  |  |  |  |  |  |
+| shellfish_bed | coquillages, crabes | animal | sea |  | meat:flesh |  |  |  |  |  |  |
+| seal | phoque | animal | sea |  | fur:fur, fat:oil, meat:flesh | 2 |  |  |  |  |  |
+| wheat | blé | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | semé au printemps ou en automne, mûr à l'été ; versé par l'orage |  |  |  |  |
+| barley | orge | plant | fields, mountain | oui | grain:grain, straw:straw, seed:grain |  |  |  |  |  |  |
+| oats | avoine | plant | fields | oui | grain:grain, straw:straw, seed:grain |  |  |  |  |  |  |
+| rye | seigle (peut porter l'ergot qui rend fou) | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | les années humides, l'ergot rend le grain toxique : visions, convulsions |  |  |  |  |
+| beans | pois, fèves, lentilles | plant | fields | oui | pod:vegetable, seed:vegetable |  |  |  |  |  |  |
+| cabbage | chou | plant | fields | oui | leaf:vegetable, seed:vegetable |  |  |  |  |  |  |
+| turnip | navet, rave | plant | fields | oui | root:vegetable, seed:vegetable |  |  |  |  |  |  |
+| onion | oignon, poireau, ail | plant | fields | oui | bulb:vegetable, seed:vegetable |  |  |  |  |  |  |
+| carrot | carotte, panais | plant | fields | oui | root:vegetable, seed:vegetable |  |  |  |  |  |  |
+| flax | lin | plant | fields | oui | fiber:linen, seed:oil |  |  |  |  |  |  |
+| hemp | chanvre | plant | fields | oui | fiber:rope_fiber, seed:oil |  |  |  |  |  |  |
+| grapevine | vigne | plant | fields, desert | oui | fruit:vegetable, wood:oak_raw |  |  |  |  |  |  |
+| apple_tree | pommier | plant | village, fields | oui | fruit:vegetable, wood:oak_raw, seed:vegetable |  |  |  |  |  |  |
+| pear_tree | poirier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  |  |  |  |  |
+| cherry_tree | cerisier, prunier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  |  |  |  |  |
+| walnut_tree | noyer, châtaignier, noisetier | plant | forest, village |  | nut:vegetable, wood:oak_raw, husk:dye |  |  |  |  |  |  |
+| oak | chêne | plant | forest |  | wood:oak_raw, bark:bark, acorn:vegetable |  |  |  |  |  |  |
+| beech | hêtre | plant | forest |  | wood:oak_raw, nut:vegetable |  |  |  |  |  |  |
+| pine | pin, sapin | plant | mountain, forest |  | wood:softwood, resin:pitch |  |  |  |  |  |  |
+| birch | bouleau | plant | forest, mountain |  | wood:oak_raw, bark:bark |  |  |  |  |  |  |
+| willow | saule (osier) | plant | river |  | withy:wicker, bark:bark |  |  |  |  |  |  |
+| yew | if (arcs ; toxique) | plant | forest |  | wood:yew_wood | 3 |  |  |  |  |  |
+| date_palm | palmier dattier | plant | desert |  | fruit:vegetable, fiber:rope_fiber |  |  |  |  |  |  |
+| olive_tree | olivier | plant | desert, village |  | fruit:vegetable, oil:oil, wood:oak_raw |  |  |  |  |  |  |
+| meadow_grass | herbe des prés, foin | plant | meadow |  | hay:straw |  |  |  |  |  |  |
+| reed_plant | roseau, jonc | plant | river |  | stem:reed |  |  |  |  |  |  |
+| heather | bruyère, ajonc | plant | mountain, marches |  | stem:straw, flower:herb |  |  |  |  |  |  |
+| bramble | ronce (mûres) | plant | forest, fields |  | berry:vegetable |  |  |  |  |  |  |
+| berry_bush | baies sauvages (certaines toxiques) | plant | forest, mountain |  | berry:vegetable | 2 |  |  |  |  |  |
+| edible_mushroom | champignon comestible | plant | forest |  | cap:vegetable |  |  |  |  |  |  |
+| death_cap | champignon mortel (ressemble au comestible) | plant | forest |  | cap:vegetable | 8 | toxique ; vu comme « champignon blanc » sauf par un œil exercé (maîtrise de la cueillette, pc_kind_seen) ; savoir lequel est mortel est en plus une croyance, qu'on apprend ou qu'on vous transmet |  |  |  |  |
+| chamomile | camomille (calme, sommeil) | plant | meadow |  | flower:herb |  |  |  |  |  |  |
+| yarrow | achillée (arrête le sang) | plant | meadow |  | leaf:herb |  |  |  |  |  |  |
+| nettle | ortie (pique ; soupe, fibre) | plant | village, forest |  | leaf:herb, fiber:rope_fiber |  |  |  |  |  |  |
+| sage | sauge, thym, menthe | plant | meadow, desert |  | leaf:herb |  |  |  |  |  |  |
+| willow_bark_herb | écorce de saule (contre la douleur et la fièvre) | plant | river |  | bark:herb |  |  |  |  |  |  |
+| foxglove | digitale (remède au cœur à petite dose, poison sinon) | plant | forest |  | leaf:herb | 7 |  |  |  |  |  |
+| nightshade | belladone (poison, visions) | plant | forest, village |  | berry:herb | 8 |  |  |  |  |  |
+| poppy | pavot (sommeil, oubli de la douleur) | plant | fields |  | sap:herb, seed:vegetable | 3 |  |  |  |  |  |
+| mandrake | mandragore (racine aux pouvoirs crus ; en partie réels) | plant | marches |  | root:herb | 5 |  |  |  |  |  |
+| seaweed | algues | plant | sea |  | frond:vegetable |  |  |  |  |  |  |
+| cactus | cactus, plantes grasses (eau cachée) | plant | desert |  | flesh:water | 1 |  |  |  |  |  |
+| moss | mousse, lichen (amadou, pansement) | plant | forest, mountain |  | mat:herb |  |  |  |  |  |  |
+| ivy | lierre (grimpe sur les murs) | plant | village, forest |  | vine:vine |  | couvre lentement les murs abandonnés |  |  |  |  |
+| arcane_bloom | fleur arcanique (pousse là où dort le cristal ; nature inconnue) | plant | marches, mountain |  | petal:arcane_crystal | 3 | luit faiblement la nuit ; ce qu'elle fait à qui la mange n'est connu que par ses effets |  |  |  |  |
 
 ## Types d'objets connus
 
@@ -1646,48 +1646,48 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 
 ## Gestes physiques
 
-| id | famille | libellé | paramètres | effets | perception | histoires |
-|---|---|---|---|---|---|---|
-| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion | 55 |
-| climb | move | grimper, escalader, descendre une paroi | target:ref; pace:enum=slow/walk/brisk | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu | 1 |
-| swim | move | nager | target:ref; intensity:enum=faint/light/firm/hard/full | épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade | vu, entendu | 0 |
-| jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu | 0 |
-| mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu | 0 |
-| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie_down | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | 4 |
-| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | 26 |
-| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | 22 |
-| give | grasp | tendre, donner en main propre (une chose, une bête qu'on cède), nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | 26 |
-| throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) | 3 |
-| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | 2 |
-| wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref?; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu | 0 |
-| operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) | 5 |
-| strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) | 22 |
-| push | force | pousser, bousculer, renverser | target:ref; intensity:enum=faint/light/firm/hard/full; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu | 9 |
-| pull | force | tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre) | target:ref; intensity:enum=faint/light/firm/hard/full; toward:ref? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu | 1 |
-| grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu | 5 |
-| guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu | 2 |
-| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | 9 |
-| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | 9 |
-| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu | 6 |
-| blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu | 1 |
-| shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu | 4 |
-| channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:ref; intent:enum=assemble/disassemble/mend/shape; intensity:enum=faint/light/firm/hard/full; into:ref? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu | 3 |
-| eat | consume | manger, ou faire manger (un enfant, un malade, une bête) | item:ref; amount:enum=little/some/all; to:ref? | faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté | vu | 1 |
-| drink | consume | boire, ou faire boire | item:ref; amount:enum=little/some/all; to:ref? | soif ; ivresse ou poison selon ce qu'il y a dedans | vu | 4 |
-| sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu | 2 |
-| rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu | 1 |
-| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | 6 |
-| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | 9 |
-| listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché | 1 |
-| search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu | 4 |
-| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu | 3 |
-| read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu | 1 |
-| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | 128 |
-| sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu | 7 |
-| write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:ref; content:expression | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu | 1 |
-| perform | communicate | chanter, jouer d'un instrument, danser (les paroles d'un chant passent par speak) | with:ref?; mood:enum=joyful/sad/solemn/lively/eerie; duration:enum=brief/a_while/long | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu | 1 |
-| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu | 4 |
-| stop | meta | s'arrêter, interrompre ce qu'on fait |  | interrompt l'intention en cours ; le PNJ repasse au Transformer | vu | 0 |
+| id | famille | libellé | paramètres | effets | perception | fin naturelle | cadence (ms) | productif | histoires |
+|---|---|---|---|---|---|---|---|---|---|
+| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion |  |  |  | 55 |
+| climb | move | grimper, escalader, descendre une paroi | target:ref; pace:enum=slow/walk/brisk | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu |  |  |  | 1 |
+| swim | move | nager | target:ref; intensity:enum=faint/light/firm/hard/full | épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade | vu, entendu |  |  |  | 0 |
+| jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu |  |  |  | 0 |
+| mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu |  |  |  | 0 |
+| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie_down | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu |  |  |  | 4 |
+| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise |  |  |  | 26 |
+| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion |  |  |  | 22 |
+| give | grasp | tendre, donner en main propre (une chose, une bête qu'on cède), nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu |  |  |  | 26 |
+| throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) |  |  |  | 3 |
+| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu |  |  |  | 2 |
+| wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref?; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu |  |  |  | 0 |
+| operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) |  |  |  | 5 |
+| strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) |  |  |  | 22 |
+| push | force | pousser, bousculer, renverser | target:ref; intensity:enum=faint/light/firm/hard/full; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu |  |  |  | 9 |
+| pull | force | tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre) | target:ref; intensity:enum=faint/light/firm/hard/full; toward:ref? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu |  |  |  | 1 |
+| grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu |  |  |  | 5 |
+| guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu |  |  |  | 2 |
+| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu |  |  |  | 9 |
+| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu |  |  |  | 9 |
+| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu |  |  |  | 6 |
+| blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu |  |  |  | 1 |
+| shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu |  |  |  | 4 |
+| channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:ref; intent:enum=assemble/disassemble/mend/shape; intensity:enum=faint/light/firm/hard/full; into:ref? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu |  |  |  | 3 |
+| eat | consume | manger, ou faire manger (un enfant, un malade, une bête) | item:ref; amount:enum=little/some/all; to:ref? | faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté | vu |  |  |  | 1 |
+| drink | consume | boire, ou faire boire | item:ref; amount:enum=little/some/all; to:ref? | soif ; ivresse ou poison selon ce qu'il y a dedans | vu |  |  |  | 4 |
+| sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu |  |  |  | 2 |
+| rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu |  |  |  | 1 |
+| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu |  |  |  | 6 |
+| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) |  |  |  | 9 |
+| listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché |  |  |  | 1 |
+| search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu |  |  |  | 4 |
+| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu |  |  |  | 3 |
+| read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu |  |  |  | 1 |
+| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) |  |  |  | 128 |
+| sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu |  |  |  | 7 |
+| write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:ref; content:expression | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu |  |  |  | 1 |
+| perform | communicate | chanter, jouer d'un instrument, danser (les paroles d'un chant passent par speak) | with:ref?; mood:enum=joyful/sad/solemn/lively/eerie; duration:enum=brief/a_while/long | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu |  |  |  | 1 |
+| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu |  |  |  | 4 |
+| stop | meta | s'arrêter, interrompre ce qu'on fait |  | interrompt l'intention en cours ; le PNJ repasse au Transformer | vu |  |  |  | 0 |
 
 ## Langue intérieure : concepts
 

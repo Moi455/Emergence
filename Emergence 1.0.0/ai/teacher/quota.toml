@@ -7,6 +7,12 @@
 # de prudence, pas des mesures). Un 429 qui donne un `quotaValue` plus bas les ABAISSE (min(fichier, appris)), jamais plus haut.
 # Le jour de quota se remet a zero a minuit, heure du Pacifique.
 # thinking_budget : 0 coupe la reflexion interne (modeles 2.5) ; absent = laisse le defaut du modele.
+# system_instruction / json_schema : false = le modele refuse systemInstruction / le schema JSON structure (valeur OBSERVEE par la sonde
+#   ou par une vraie requete) ; absent = ce que sa famille accepte. Un modele sans l'un des deux est interroge par PromptOnlyStrategy
+#   (consignes et schema ecrits dans le texte, JSON pur demande puis extrait).
+# max_k : le modele ne prend que de PETITS lots (au plus max_k situations par requete) ; le generateur lui reserve alors des tours a part.
+# enabled = false : le modele reste LISTE (avec `note`, la raison) mais n'entre pas dans la chaine ; `--models` peut le nommer.
+# Les mesures de ces notes sont dans README.md, section "Modeles" ; sonde : python3 -m teacher.probe ; qualite : python3 -m teacher.bench.
 
 margin = 1.05          # l'intervalle entre deux requetes d'un modele est 60/rpm x margin (jamais de rafale)
 
@@ -69,10 +75,8 @@ tpd = 2000000
 
 [[model]]
 name = "gemini-2.5-flash"
-rpm = 5
-rpd = 20
-tpm = 250000
-tpd = 2000000
+enabled = false
+note = "404 le 14 oct. : plus disponible aux nouveaux utilisateurs (sonde et banc)"
 thinking_budget = 0
 
 [[model]]
@@ -81,3 +85,74 @@ rpm = 5
 rpd = 20
 tpm = 250000
 tpd = 2000000
+
+# ---- 14 oct. : modeles ajoutes apres la sonde (teacher.probe) et le banc de qualite (teacher.bench) ; limites inconnues = champs absents.
+
+[[model]]
+name = "gemini-flash-lite-latest"       # alias ; limites inconnues (le generateur les apprend des 429)
+
+[[model]]
+name = "gemma-4-31b-it"
+enabled = false
+note = "67 % valides au premier coup (4/6 ; 2 variables inconnues du gouverneur), 196 s pour 6 situations (3 requetes de 2, ~2 200 jetons de reflexion chacune), 0 % de passifs, <70 % : ecarte"
+tpm = 16000                            # OBSERVE : 429 "GenerateContentInputTokensPerModelPerMinute-FreeTier", quotaValue 16000
+json_schema = false                    # OBSERVE : 400 "invalid argument" avec le vrai schema (le petit schema de la sonde passait)
+max_k = 2                              # 2 situations = ~15 000 jetons Gemma d'entree (OBSERVE) : un lot de 6 depasse les 16 000/min
+
+[[model]]
+name = "gemma-4-26b-a4b-it"
+enabled = false
+note = "67 % valides au premier coup (4/6 ; bad_param, engine_owned), 243 s pour 6 situations (reflexion ~3 700 jetons par requete) : ecarte, <70 %"
+tpm = 16000
+json_schema = false
+max_k = 2
+
+[[model]]
+name = "gemini-flash-latest"            # alias ; reflechit beaucoup (OBSERVE : ~3 500 jetons de reflexion, 46 s pour 6 situations)
+
+# ---- modeles interroges et ECARTES (sonde du 14 oct., teacher.probe) : listes pour memoire, hors chaine.
+
+[[model]]
+name = "gemini-2.5-pro"
+enabled = false
+note = "404 : plus disponible aux nouveaux utilisateurs"
+
+[[model]]
+name = "gemini-3.1-pro-preview"
+enabled = false
+note = "429 : limite gratuite 0 (requetes et jetons) = facturation requise"
+
+[[model]]
+name = "gemini-pro-latest"
+enabled = false
+note = "429 : limite gratuite 0 = facturation requise"
+
+[[model]]
+name = "gemini-4-argon"
+enabled = false
+note = "429 : limite gratuite 0 = facturation requise"
+
+[[model]]
+name = "gemini-omni-1.1-flash"
+enabled = false
+note = "429 : limite gratuite 0 = facturation requise"
+
+[[model]]
+name = "gemini-omni-flash-preview"
+enabled = false
+note = "429 : limite gratuite 0 = facturation requise"
+
+[[model]]
+name = "antigravity-preview-latest"
+enabled = false
+note = "400 : agent, 'This model only supports Interactions API' (pas generateContent)"
+
+[[model]]
+name = "antigravity-preview-05-2026"
+enabled = false
+note = "400 : agent, Interactions API seulement"
+
+[[model]]
+name = "antigravity-preview-09-2026"
+enabled = false
+note = "400 : agent, Interactions API seulement"

@@ -1,5 +1,5 @@
 # Social engine (decision D31): tables generated from catalogue/ (python3 catalogue/tools/gen_cpp.py).
-add_library(emergence_social STATIC src/governor.cpp)
+add_library(emergence_social STATIC src/governor.cpp src/side_table.cpp)
 target_include_directories(emergence_social PUBLIC include generated)
 emergence_strict_target(emergence_social)
 
@@ -20,3 +20,9 @@ target_link_libraries(test_social_clock PRIVATE emergence_social)
 target_include_directories(test_social_clock PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
 emergence_strict_target(test_social_clock)
 add_test(NAME test_social_clock COMMAND test_social_clock)
+
+add_executable(test_social_side_table tests/test_side_table.cpp)
+target_link_libraries(test_social_side_table PRIVATE emergence_social)
+target_include_directories(test_social_side_table PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
+emergence_strict_target(test_social_side_table)
+add_test(NAME test_social_side_table COMMAND test_social_side_table)

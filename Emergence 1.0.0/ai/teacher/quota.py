@@ -33,6 +33,8 @@ from datetime import datetime, time as dtime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from .gemini import STRUCTURED, ModelFamilies, ModelFamily, PromptOnlyStrategy, RequestStrategy
+
 PACIFIC = ZoneInfo("America/Los_Angeles")
 DEFAULT_CONFIG = Path(__file__).with_name("quota.toml")
 WINDOW = 60.0
@@ -84,32 +86,60 @@ class Limits:
 
 @dataclass(frozen=True)
 class ModelSpec:
+    """One model of quota.toml. system_instruction / json_schema: None = what its family accepts (gemini.ModelFamilies), else
+    what the probe OBSERVED. enabled = False keeps the model listed (with its `note`, the reason) but out of the chain."""
     name: str
     limits: Limits
     thinking_budget: int | None = None
+    system_instruction: bool | None = None
+    json_schema: bool | None = None
+    enabled: bool = True
+    note: str = ""
+    max_k: int | None = None            # a model that only takes SMALL batches (e.g. a tight tokens-per-minute limit): at most this many situations
+
+    @property
+    def family(self) -> ModelFamily:
+        return ModelFamilies.of(self.name)
+
+    def strategy(self) -> RequestStrategy:
+        """Structured JSON when the model accepts systemInstruction and a response schema, else the prompt-only way."""
+        fam = self.family
+        system = fam.system_instruction if self.system_instruction is None else self.system_instruction
+        schema = fam.json_schema if self.json_schema is None else self.json_schema
+        if system and schema:
+            return STRUCTURED
+        return PromptOnlyStrategy(fold_system=not system, fold_schema=not schema, thinking_config=fam.thinking_config)
 
 
 @dataclass(frozen=True)
 class QuotaConfig:
-    models: tuple
+    models: tuple                                   # the enabled models, in order of preference (the chain)
     margin: float = 1.05
+    disabled: tuple = ()                            # listed but off (enabled = false), with their reason in `note`
 
     @classmethod
     def load(cls, path: Path | str = DEFAULT_CONFIG) -> "QuotaConfig":
         raw = tomllib.loads(Path(path).read_text(encoding="utf-8"))
-        specs = [ModelSpec(m["name"], Limits.from_dict(m), m.get("thinking_budget")) for m in raw.get("model", [])]
-        if not specs:
-            raise ValueError(f"{path}: no [[model]]")
+        specs = [ModelSpec(m["name"], Limits.from_dict(m), m.get("thinking_budget"), m.get("system_instruction"),
+                           m.get("json_schema"), bool(m.get("enabled", True)), str(m.get("note", "")), m.get("max_k")) for m in raw.get("model", [])]
         names = [s.name for s in specs]
         if len(set(names)) != len(names):
             raise ValueError(f"{path}: a model is listed twice")
-        return cls(tuple(specs), float(raw.get("margin", 1.05)))
+        on = tuple(s for s in specs if s.enabled)
+        if not on:
+            raise ValueError(f"{path}: no enabled [[model]]")
+        return cls(on, float(raw.get("margin", 1.05)), tuple(s for s in specs if not s.enabled))
 
     def only(self, names: list[str]) -> "QuotaConfig":
-        """The listed models, in that order (an unlisted model gets the Flash Lite defaults)."""
-        by = {s.name: s for s in self.models}
+        """The listed models, in that order (a disabled model named here is used; an unlisted one gets the Flash Lite defaults)."""
+        by = {s.name: s for s in (*self.models, *self.disabled)}
         return QuotaConfig(tuple(by.get(n) or ModelSpec(n, Limits(15, 500) if "lite" in n else Limits(5, 20)) for n in names),
                            self.margin)
+
+    def install(self, client) -> None:
+        """Teach the client how to ask each model (structured, or prompt-only)."""
+        for s in (*self.models, *self.disabled):
+            client.strategies[s.name] = s.strategy()
 
 
 # ---------------------------------------------------------------------------------------------------- a 429
@@ -213,6 +243,8 @@ class QuotaBook:
         if lim.tpd is not None and self.day_tokens + est_tokens > lim.tpd and self.day_tokens > 0:
             self.exhaust(now, "tpd")
             return self.exhausted_until
+        if lim.tpm and est_tokens > lim.tpm:              # this request alone is above the per-minute ceiling: waiting never helps
+            return FAR
         t = max(now, self.blocked_until)
         if lim.rpm:
             t = max(t, self.last_sent + 60.0 / lim.rpm * self.margin)
@@ -362,15 +394,15 @@ class QuotaDesk:
     def spec(self, model: str) -> ModelSpec:
         return self.books[model].spec
 
-    def choose(self, now: float, chars: int) -> Choice:
-        """The model that can answer first (ties go to the preference order)."""
+    def choose(self, now: float, chars: int, only: str | None = None) -> Choice:
+        """The model that can answer first (ties go to the preference order). `only` restricts the choice to one model."""
         best, best_at = None, FAR
-        for name in self.order:
+        for name in ([only] if only else self.order):
             b = self.books[name]
             at = b.available_at(now, b.estimate_input(chars))
             if at < best_at - 0.25:
                 best, best_at = name, at
-        exhausted = all(self.books[n].exhausted_until > now for n in self.order)
+        exhausted = all(self.books[n].exhausted_until > now for n in ([only] if only else self.order))
         return Choice(best, best_at, exhausted)
 
     def next_reset(self, now: float) -> float:

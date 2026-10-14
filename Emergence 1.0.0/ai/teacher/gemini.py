@@ -2,7 +2,10 @@
 
     key        ApiKeyLoader        GEMINI_API_KEY, else ~/.config/emergence/API_Keys (never printed, logged or written)
     client     GeminiClient        models.list, countTokens, generateContent (structured JSON output)
-    models     ModelCatalog        which models to use, in which order (Flash Lite first, then Flash)
+    models     ModelCatalog        which models to use, in which order (Flash Lite first, then Flash; other families on request)
+    families   ModelFamilies       what each family of models can do (systemInstruction, structured JSON, thinking setting)
+    strategy   RequestStrategy     how a request is built for a model: StructuredStrategy (normal) or PromptOnlyStrategy
+                                   (everything folded in the user text, pure JSON asked, JSON extracted from the reply)
     limits     RateLimiter         spacing between calls of one model; QuotaBook remembers the models spent for the day
 
 The key travels in the x-goog-api-key header, never in a URL. Every text that may reach a log goes through Redactor.
@@ -133,11 +136,44 @@ class QuotaBook:
         return [m for m in models if m not in self.spent and self.calls.get(m, 0) < QuotaTable.for_model(m).rpd]
 
 
+@dataclass(frozen=True)
+class ModelFamily:
+    """A family of models and what its members accept by default (a quota.toml model can override each flag, with what the
+    probe OBSERVED)."""
+    name: str
+    pattern: str
+    system_instruction: bool = True
+    json_schema: bool = True
+    thinking_config: bool = True
+
+    def matches(self, model: str) -> bool:
+        return re.match(self.pattern, model) is not None
+
+
+class ModelFamilies:
+    """The registry. Order matters: the first family that matches wins (flash-lite before flash)."""
+
+    FLASH_LITE = ModelFamily("gemini-flash-lite", r"^gemini-(?:[\d.]+-)?flash-lite(?:-|$)")
+    FLASH = ModelFamily("gemini-flash", r"^gemini-(?:[\d.]+-)?flash(?:-|$)")
+    PRO = ModelFamily("gemini-pro", r"^gemini-(?:[\d.]+-)?pro(?:-|$)")
+    GEMMA = ModelFamily("gemma", r"^gemma-", thinking_config=False)       # thinkingConfig never asked of Gemma
+    OTHER = ModelFamily("other", r"")
+    ALL = (FLASH_LITE, FLASH, PRO, GEMMA)
+    DEFAULT = (FLASH_LITE, FLASH)                                       # what ModelCatalog.chain() lists without arguments
+
+    @classmethod
+    def of(cls, model: str) -> ModelFamily:
+        return next((f for f in cls.ALL if f.matches(model)), cls.OTHER)
+
+
 class ModelCatalog:
-    """From the models.list answer, the models usable for the pilot: Flash Lite (newest stable first), then Flash."""
+    """From the models.list answer, the models usable for the pilot. By default Flash Lite (newest stable first), then Flash;
+    `families` opens other families (ModelFamilies.ALL: + pro, gemma), still without the aliases ("latest") and the
+    non-text models."""
 
     EXCLUDE = ("tts", "image", "live", "audio", "embedding", "robotics", "computer", "exp", "learnlm", "vision", "aqa",
-               "gemma", "imagen", "veo", "thinking", "customtools", "latest")
+               "gemma", "imagen", "veo", "thinking", "customtools", "latest", "transcribe", "lyria", "deep-research", "nano-banana",
+               "antigravity", "omni")
 
     def __init__(self, models: list[dict]):
         self.models = models
@@ -153,16 +189,140 @@ class ModelCatalog:
         stable = not re.search(r"preview|-\d{2}-\d{2,4}|-\d{3}$", n)
         return (not stable, tuple(-x for x in ver), n)
 
-    def chain(self) -> list[str]:
-        lite, flash = [], []
+    def chain(self, families: tuple = ModelFamilies.DEFAULT) -> list[str]:
+        by_family: dict = {f.name: [] for f in families}
         for m in self.models:
             n = self.short(m.get("name", ""))
             if "generateContent" not in m.get("supportedGenerationMethods", []):
                 continue
-            if not re.match(r"^gemini-[\d.]+-flash(-lite)?(-|$)", n) or any(x in n for x in self.EXCLUDE):
+            fam = ModelFamilies.of(n)
+            exclude = [x for x in self.EXCLUDE if not (fam.name == "gemma" and x == "gemma")]
+            if fam.name not in by_family or any(x in n for x in exclude):
                 continue
-            (lite if "flash-lite" in n else flash).append(n)
-        return sorted(lite, key=self.key) + sorted(flash, key=self.key)
+            by_family[fam.name].append(n)
+        return [n for f in families for n in sorted(by_family[f.name], key=self.key)]
+
+
+# ---------------------------------------------------------------------------------------------------- strategies
+class SchemaText:
+    """A Gemini response schema (upper-case types) as the plain JSON Schema a model can read in a prompt."""
+
+    @classmethod
+    def plain(cls, schema):
+        if isinstance(schema, dict):
+            return {k: (v.lower() if k == "type" and isinstance(v, str) else cls.plain(v)) for k, v in schema.items()}
+        if isinstance(schema, list):
+            return [cls.plain(x) for x in schema]
+        return schema
+
+    @classmethod
+    def text(cls, schema: dict) -> str:
+        return json.dumps(cls.plain(schema), separators=(",", ":"), ensure_ascii=False)
+
+
+class JsonExtractor:
+    """The first balanced top-level JSON object of a reply that may carry a Markdown fence or a sentence around it."""
+
+    @staticmethod
+    def extract(text: str) -> str:
+        """The object as text, or the reply unchanged when none is found (the validator then refuses it by its usual code)."""
+        s = text.strip()
+        start = s.find("{")
+        while start != -1:
+            depth, in_str, esc = 0, False, False
+            for i in range(start, len(s)):
+                c = s[i]
+                if in_str:
+                    if esc:
+                        esc = False
+                    elif c == "\\":
+                        esc = True
+                    elif c == '"':
+                        in_str = False
+                    continue
+                if c == '"':
+                    in_str = True
+                elif c == "{":
+                    depth += 1
+                elif c == "}":
+                    depth -= 1
+                    if depth == 0:
+                        candidate = s[start:i + 1]
+                        try:
+                            json.loads(candidate)
+                            return candidate
+                        except ValueError:
+                            break
+            start = s.find("{", start + 1)
+        return text
+
+
+class RequestStrategy:
+    """How one request is written for a model. body() -> the generateContent JSON; shape() -> the ApiResult the rest sees."""
+
+    name = "base"
+
+    def body(self, system: str, user: str, schema: dict, temperature: float, max_output_tokens: int,
+             thinking_budget: int | None) -> dict:
+        raise NotImplementedError
+
+    def shape(self, result: "ApiResult") -> "ApiResult":
+        return result
+
+
+class StructuredStrategy(RequestStrategy):
+    """systemInstruction + responseMimeType/responseSchema (what every Gemini model of the chain accepts)."""
+
+    name = "structured"
+
+    def body(self, system, user, schema, temperature, max_output_tokens, thinking_budget):
+        cfg = {"responseMimeType": "application/json", "responseSchema": schema, "temperature": temperature,
+               "maxOutputTokens": max_output_tokens}
+        if thinking_budget is not None:
+            cfg["thinkingConfig"] = {"thinkingBudget": thinking_budget}
+        return {**GeminiClient._contents(system, user), "generationConfig": cfg}
+
+
+class PromptOnlyStrategy(RequestStrategy):
+    """For a model without structured JSON and/or without systemInstruction (probable for Gemma): the instructions go in
+    the user text, the schema is written in the prompt, pure JSON is asked, and the JSON object is extracted from the reply.
+    `fold_system` / `fold_schema` can be turned off one by one when a model lacks only one of the two features. The validator
+    and the governor stay the judges of what comes out; this class only changes the way of asking."""
+
+    name = "prompt_only"
+
+    def __init__(self, fold_system: bool = True, fold_schema: bool = True, thinking_config: bool = False):
+        self.fold_system, self.fold_schema, self.thinking_config = fold_system, fold_schema, thinking_config
+
+    def prompt(self, system: str, user: str, schema: dict) -> str:
+        parts = []
+        if self.fold_system:
+            parts.append("=== INSTRUCTIONS (follow them exactly) ===\n" + system.strip())
+        if self.fold_schema:
+            parts.append("=== REPLY FORMAT ===\nReply with ONE JSON object and nothing else: no sentence before or after it, "
+                         "no Markdown fence, no comment. It must follow this JSON Schema exactly:\n" + SchemaText.text(schema))
+        parts.append(("=== TASK ===\n" if parts else "") + user.strip())
+        return "\n\n".join(parts) + ("\n\nReply now with the JSON object only." if self.fold_schema else "")
+
+    def body(self, system, user, schema, temperature, max_output_tokens, thinking_budget):
+        cfg = {"temperature": temperature, "maxOutputTokens": max_output_tokens}
+        if not self.fold_schema:
+            cfg.update({"responseMimeType": "application/json", "responseSchema": schema})
+        if thinking_budget is not None and self.thinking_config:
+            cfg["thinkingConfig"] = {"thinkingBudget": thinking_budget}
+        contents = [{"role": "user", "parts": [{"text": self.prompt(system, user, schema)}]}]
+        out = {"contents": contents, "generationConfig": cfg}
+        if not self.fold_system:
+            out["systemInstruction"] = {"parts": [{"text": system}]}
+        return out
+
+    def shape(self, result):
+        if result.text:
+            result.text = JsonExtractor.extract(result.text)
+        return result
+
+
+STRUCTURED = StructuredStrategy()
 
 
 # ---------------------------------------------------------------------------------------------------- client
@@ -185,6 +345,7 @@ class GeminiClient:
         self.key, self.base, self.timeout = key, base_url, timeout
         self.redactor = Redactor(key)
         self._open = opener or urllib.request.urlopen
+        self.strategies: dict[str, RequestStrategy] = {}        # model -> how to ask it (default: structured)
 
     # ---- plumbing
     def _request(self, method: str, path: str, body: dict | None = None) -> tuple[int, dict, float]:
@@ -233,6 +394,10 @@ class GeminiClient:
         return int(payload["totalTokens"])
 
     # ---- generateContent
+    def post_generate(self, model: str, body: dict) -> tuple[int, dict, float]:
+        """A raw generateContent call: (HTTP status, JSON payload, latency). For the probe, which reads the payload itself."""
+        return self._request("POST", f"models/{model}:generateContent", body)
+
     @staticmethod
     def _contents(system: str, user: str) -> dict:
         return {"systemInstruction": {"parts": [{"text": system}]},
@@ -240,19 +405,16 @@ class GeminiClient:
 
     def generate(self, model: str, system: str, user: str, schema: dict, temperature: float = 0.9,
                  max_output_tokens: int = 2048, thinking_budget: int | None = None) -> ApiResult:
-        cfg = {"responseMimeType": "application/json", "responseSchema": schema, "temperature": temperature,
-               "maxOutputTokens": max_output_tokens}
-        if thinking_budget is not None:
-            cfg["thinkingConfig"] = {"thinkingBudget": thinking_budget}
-        status, payload, latency = self._request("POST", f"models/{model}:generateContent",
-                                                 {**self._contents(system, user), "generationConfig": cfg})
+        strategy = self.strategies.get(model, STRUCTURED)
+        body = strategy.body(system, user, schema, temperature, max_output_tokens, thinking_budget)
+        status, payload, latency = self.post_generate(model, body)
         if status != 200:
             return self._failure(status, payload, latency)
         cands = payload.get("candidates") or []
         parts = (cands[0].get("content", {}).get("parts") or []) if cands else []
         text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
         finish = cands[0].get("finishReason", "") if cands else "NO_CANDIDATE:" + str(payload.get("promptFeedback", {}))
-        return ApiResult(bool(text), 200, text, finish, payload.get("usageMetadata", {}), latency)
+        return strategy.shape(ApiResult(bool(text), 200, text, finish, payload.get("usageMetadata", {}), latency))
 
     # ---- errors
     @staticmethod

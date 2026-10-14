@@ -180,5 +180,94 @@ class TestCatalogue(unittest.TestCase):
         self.assertTrue(any("unknown fields" in p for p in cat.validate()))
 
 
+class TestTimeFields(unittest.TestCase):
+    """T07: the optional time and matter fields of actions, processes, species, duration levels and illnesses."""
+
+    @staticmethod
+    def problems(kind, row, strict=False, extra=()):
+        cat = Catalogue()
+        for k, r in extra:
+            cat._add(k, r, "test")
+        cat._add(kind, row, "test")
+        mine = f"{kind} {row['id']}:"                     # an empty catalogue has other problems: keep this entry's only
+        return [x for x in cat.validate(strict=strict) if x.startswith(mine) or "unknown fields" in x]
+
+    def test_real_catalogue_has_no_such_field_yet(self):
+        cat = Catalogue.load()
+        self.assertTrue(all(a.natural_end is None and a.cadence_ms == 0 and not a.productive for a in cat["action"].values()))
+        self.assertEqual(cat["duration_level"], {})
+        self.assertEqual(cat["illness"], {})
+
+    def test_action_fields_accepted(self):
+        row = {"id": "chop", "family": "force", "natural_end": False, "cadence_ms": 900, "productive": True}
+        self.assertEqual(self.problems("action", row), [])
+
+    def test_action_negative_cadence(self):
+        self.assertTrue(any("cadence_ms" in p for p in self.problems("action", {"id": "chop", "cadence_ms": -1})))
+
+    def test_strict_requires_gesture_time(self):
+        p = self.problems("action", {"id": "chop"}, strict=True)
+        self.assertTrue(any("natural_end undeclared" in x for x in p) and any("cadence_ms undeclared" in x for x in p))
+        self.assertFalse(any("undeclared" in x for x in self.problems("action", {"id": "chop", "natural_end": True, "cadence_ms": 500}, strict=True)))
+        self.assertFalse(any("undeclared" in x for x in self.problems("action", {"id": "chop"})))
+
+    def test_process_fields_accepted(self):
+        mats = [("material", {"id": "grain"}), ("material", {"id": "flour"})]
+        row = {"id": "mill", "trigger": "tool", "clock": "game", "nominal_game_s": 600, "consumes": ["grain"], "produces": ["flour"]}
+        self.assertEqual(self.problems("process", row, extra=mats), [])
+
+    def test_process_bad_clock_duration_and_matter(self):
+        p = self.problems("process", {"id": "x", "clock": "sundial", "nominal_game_s": -5, "consumes": ["nope"], "produces": ["nada"]})
+        for needle in ("clock", "nominal_game_s", "consumes unknown", "produces unknown"):
+            self.assertTrue(any(needle in x for x in p), needle)
+
+    def test_species_fields_accepted(self):
+        row = {"id": "wheat", "kingdom": "plant", "sow_seasons": ["autumn"], "days_to_mature": 200,
+               "harvest_window_days": 20, "product_regrow_days": 0}
+        self.assertEqual(self.problems("species", row), [])
+
+    def test_species_bad_season_and_negative(self):
+        p = self.problems("species", {"id": "wheat", "kingdom": "plant", "sow_seasons": ["monsoon"], "days_to_mature": -1})
+        self.assertTrue(any("sow_season" in x for x in p) and any("days_to_mature" in x for x in p))
+
+    def test_duration_level(self):
+        self.assertEqual(self.problems("duration_level", {"id": "brief", "game_s": 120}), [])
+        self.assertTrue(any("game_s" in x for x in self.problems("duration_level", {"id": "brief"})))
+
+    def test_illness_accepted(self):
+        row = {"id": "fever", "transmission": ["air", "contact"], "incubation_days": 2, "course_days": 6,
+               "symptoms": ["pale"], "lethality": 5}
+        self.assertEqual(self.problems("illness", row, extra=[("percept_word", {"id": "pale", "category": "sign"})]), [])
+
+    def test_illness_bad_fields(self):
+        p = self.problems("illness", {"id": "x", "transmission": ["telepathy"], "symptoms": ["ghost"], "lethality": 101, "course_days": -1})
+        for needle in ("transmission", "symptom", "lethality", "negative"):
+            self.assertTrue(any(needle in x for x in p), needle)
+
+    def test_process_allowed_in_body_file(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "body.toml").write_text('[[process]]\nid = "heal"\nclock = "calendar"\nnominal_game_s = 86400\n', encoding="utf-8")
+            cat = Catalogue.load(Path(d))
+        self.assertEqual(cat.load_errors, [])
+        self.assertEqual(cat["process"]["heal"].file, "body.toml")
+
+    def test_unknown_field_still_strict_on_new_kinds(self):
+        self.assertTrue(any("unknown fields" in x for x in self.problems("illness", {"id": "x", "cure": 1})))
+
+    def test_render_shows_new_fields(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+        import render
+        cat = Catalogue()
+        cat._add("action", {"id": "chop", "natural_end": False, "cadence_ms": 900, "productive": True}, "test")
+        cat._add("process", {"id": "mill", "clock": "game", "nominal_game_s": 600}, "test")
+        cat._add("species", {"id": "wheat", "kingdom": "plant", "days_to_mature": 200}, "test")
+        cat._add("duration_level", {"id": "brief", "game_s": 120}, "test")
+        cat._add("illness", {"id": "fever", "lethality": 5}, "test")
+        out = render.render(cat)
+        for needle in ("| non | 900 | oui |", "| game | 600 |", "| 200 |", "| brief |", "| fever |"):
+            self.assertIn(needle, out)
+
+
 if __name__ == "__main__":
     unittest.main()

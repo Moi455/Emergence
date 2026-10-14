@@ -345,6 +345,7 @@ class WriteChecker:
     def __init__(self, tk: Toolkit, mind: Mind, speech: SpeechChecker):
         self.tk, self.mind, self.speech = tk, mind, speech
         self.gov = tk.governor
+        self._ref_types: dict[str, tuple] = {}
 
     def check(self, raw: list, actor: Party) -> tuple[list, list]:
         ledger, out, notes, seen = WriteLedger(), [], [], set()
@@ -421,6 +422,25 @@ class WriteChecker:
             raise Refusal(Codes.GOVERNOR + v.code, v.reason)
         return Write(target, wv.id, v.value, v.code)
 
+    TOKEN_FIELD = re.compile(r"^(\w+)\.([\w.]+)")
+
+    def ref_types(self, wv: WritableVar) -> tuple:
+        """The record types a pointer variable may aim at: read from the variable's token in the catalogue
+        ("SELF_STATE.attention (pointeur)") and `ref_types` of that field in model_interface.json. Empty = unconstrained."""
+        if wv.id in self._ref_types:
+            return self._ref_types[wv.id]
+        slots = list(wv.fields)
+        var = self.tk.cat["variable"].get(wv.id)
+        m = self.TOKEN_FIELD.match(getattr(var, "token", "") or "")
+        if m:
+            slots.insert(0, (m.group(1), m.group(2)))
+        types: set = set()
+        for tname, fname in slots:
+            f = self.tk.interface.token_types.get(tname, {}).get("fields", {}).get(fname, {})
+            types.update(f.get("ref_types", ()))
+        self._ref_types[wv.id] = out = tuple(sorted(types))
+        return out
+
     # ---- enum, word, bool, mref, time
     def _structured(self, wv, target, key, value, actor) -> Write:
         parsed: object = value
@@ -435,6 +455,10 @@ class WriteChecker:
         elif wv.scale == "mref":
             if not self.mind.has(value):
                 raise Refusal(Codes.BAD_POINTER, f"{wv.id}={value!r} is not among your records")
+            allowed = self.ref_types(wv)
+            actual = self.mind.by_key[value].type
+            if allowed and actual not in allowed:
+                raise Refusal(Codes.BAD_POINTER, f"{wv.id}={value!r} is a {actual}, accepted: {list(allowed)}")
         parties = None
         if wv.id == "m_interpretation":
             rec = self.mind.by_key.get(key)
@@ -452,7 +476,10 @@ class WriteChecker:
     # ---- propositions (a new or replaced belief, goal, memory)
     def _proposition(self, wv, target, key, value, actor) -> Write:
         e = self.speech.check(value, wrap="assert")
-        v = self.gov.check_record(PROPOSITION_KIND[wv.target_kind], e, actor, self.mind.content_parties(),
+        kind = PROPOSITION_KIND.get(wv.target_kind)
+        if kind is None:
+            raise Refusal(Codes.BAD_WRITE, f"{wv.id}: no proposition record of kind {wv.target_kind!r}")
+        v = self.gov.check_record(kind, e, actor, self.mind.content_parties(),
                                   expand=self.mind.expand)
         if not v.allowed:
             raise Refusal(Codes.GOVERNOR + v.code, v.reason)

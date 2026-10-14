@@ -142,6 +142,9 @@ struct GestureCall {
   GestureCall() { value.fill(-1); }
 };
 
+// A condition id the model may name: false for gen::Condition::kCount, out of range, or a retired slot (retired_N).
+bool condition_is_live(gen::Condition c);
+
 class Governor {
  public:
   Verdict check_write(const WriteRequest& request, WriteLedger& ledger) const;

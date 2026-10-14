@@ -33,16 +33,29 @@ WriteRequest request(gen::Var var, int old_value, int proposed, std::uint32_t ta
 
 // ---- the generated tables --------------------------------------------------------------------------------
 
-TEST(gesture_table_is_sorted_like_the_model_gesture_head) {
-  CHECK(std::is_sorted(gen::kGestureNames.begin(), gen::kGestureNames.end()));
+TEST(gesture_table_follows_the_stable_registry) {
+  CHECK(gen::kGestureRegistryFingerprint != 0 && gen::kConditionRegistryFingerprint != 0);
+  CHECK(gen::kVarRegistryFingerprint != 0 && gen::kSymbolRegistryFingerprint != 0);
+  for (const auto& g : gen::kGestures) CHECK(!g.retired);   // nothing retired in the shipped catalogue
+  for (const auto& v : gen::kVariables) CHECK(!v.retired);
   CHECK_EQ(gen::kGestureNames.size(), gen::kGestures.size());
   CHECK_EQ(static_cast<std::size_t>(gen::Gesture::kCount), gen::kGestures.size());
   for (std::size_t i = 0; i < gen::kGestures.size(); ++i) CHECK(gen::kGestures[i].id == gen::kGestureNames[i]);
   CHECK(gen::kGestureNames[static_cast<std::size_t>(gen::Gesture::touch)] == "touch");
 }
 
-TEST(variable_table_is_sorted_and_flags_self_holders) {
-  CHECK(std::is_sorted(gen::kVarNames.begin(), gen::kVarNames.end()));
+TEST(retired_condition_slots_are_refused) {
+  CHECK_EQ(gen::kConditionLive.size(), static_cast<std::size_t>(gen::Condition::kCount));
+  CHECK(!condition_is_live(gen::Condition::kCount));
+  CHECK(!condition_is_live(static_cast<gen::Condition>(250)));
+  CHECK(condition_is_live(gen::Condition::c_done));
+  for (std::size_t i = 0; i < gen::kConditionLive.size(); ++i)
+    CHECK(condition_is_live(static_cast<gen::Condition>(i)) == (gen::kConditionNames[i].substr(0, 8) != "retired_"));
+}
+
+TEST(variable_table_is_stable_and_flags_self_holders) {
+  CHECK_EQ(gen::kVarNames.size(), gen::kVariables.size());
+  for (std::size_t i = 0; i < gen::kVariables.size(); ++i) CHECK(gen::kVariables[i].id == gen::kVarNames[i]);
   const auto& need = gen::kVariables[static_cast<std::size_t>(gen::Var::need_intimacy)];
   const auto& relation = gen::kVariables[static_cast<std::size_t>(gen::Var::r_attraction)];
   CHECK(need.intimate && need.self_holder);

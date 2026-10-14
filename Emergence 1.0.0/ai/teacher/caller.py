@@ -31,6 +31,10 @@ class FatalError(RuntimeError):
     """The run cannot go on without a human (exit code 3: the service is not restarted)."""
 
 
+class LaneBusy(RuntimeError):
+    """The model a round was reserved for (`ModelCaller.only`) cannot answer now: the round is given up, nothing was held."""
+
+
 class Pacer:
     """Interruptible waits on an injectable clock (epoch seconds)."""
 
@@ -78,6 +82,7 @@ class ModelCaller:
         self.client, self.desk, self.pacer, self.log, self.event = client, desk, pacer, log, event
         self.temperature, self.max_output_tokens, self.max_requests = temperature, max_output_tokens, max_requests
         self.stats = CallStats()
+        self.only: str | None = None        # reserve the NEXT request for this model (a small-batch lane); consumed by its answer
         self._transient = 0
         self._client_error_models: set = set()
 
@@ -93,13 +98,16 @@ class ModelCaller:
             if not self.can_call():
                 return None
             now = self.pacer.clock()
-            choice = self.desk.choose(now, chars)
+            choice = self.desk.choose(now, chars, self.only)
+            if self.only and (choice.model is None or choice.at > now + 1.0):
+                raise LaneBusy(self.only)
             if choice.at > now:
                 self.wait_for(choice, now)
                 continue
             r = self.send(choice.model, system, user, schema, chars)
             if r is None:
                 continue
+            self.only = None
             return choice.model, r
         return None
 

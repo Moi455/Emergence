@@ -212,7 +212,9 @@ class QuotaDeskTests(unittest.TestCase):
         self.assertEqual(qc.models[0].limits, Limits(15, 500, 250000, 20_000_000))
         self.assertEqual([s.name for s in qc.models if s.limits.rpd == 20][:2], ["gemini-3.8-flash", "gemini-3.7-flash"])
         self.assertEqual(qc.only(["a-flash-lite", "gemini-2.5-flash"]).models[0].limits, Limits(15, 500))
-        for m in qc.models:                                                  # every model has a local token cap (estimates, in the file)
+        for m in qc.models:                    # the models with known limits have a local token cap (estimates); added models may have none
+            if m.limits.rpm is None:
+                continue
             self.assertEqual(m.limits.tpm, 250000, m.name)
             self.assertEqual(m.limits.tpd, 20_000_000 if "lite" in m.name else 2_000_000, m.name)
 

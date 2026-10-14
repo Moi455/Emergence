@@ -1,7 +1,7 @@
 """check.py - validate the catalogue. Exit code 1 if any problem.
 
     python3 catalogue/tools/check.py            # structure, references, the three layers
-    python3 catalogue/tools/check.py --strict   # + every entry cited by a story, every story decomposed
+    python3 catalogue/tools/check.py --strict   # + every story expressible, every gesture with natural_end and cadence_ms (T07)
 """
 import sys
 from pathlib import Path

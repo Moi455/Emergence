@@ -29,6 +29,11 @@ Verdict refuse(Reason r) { return {false, 0, r}; }
 
 }  // namespace
 
+bool condition_is_live(gen::Condition c) {
+  const auto i = static_cast<std::size_t>(c);
+  return i < gen::kConditionLive.size() && gen::kConditionLive[i];
+}
+
 // ---- Party -----------------------------------------------------------------------------------------------
 
 bool Party::may_be_minor() const {
@@ -166,7 +171,7 @@ bool WriteLedger::restore(std::int32_t now_day, std::int32_t now_life_year, std:
 
 Verdict Governor::check_write(const WriteRequest& r, WriteLedger& ledger) const {
   const auto idx = static_cast<std::size_t>(r.var);
-  if (idx >= gen::kVariables.size()) return refuse(Reason::unknown_variable);
+  if (idx >= gen::kVariables.size() || gen::kVariables[idx].retired) return refuse(Reason::unknown_variable);
   const gen::VariableSpec& v = gen::kVariables[idx];
   const bool jump = (v.writers & gen::writer::T_jump) != 0, stepw = (v.writers & gen::writer::T_step) != 0;
   const bool sloww = (v.writers & gen::writer::T_slow) != 0;
@@ -225,7 +230,7 @@ std::size_t Governor::check_writes(std::span<const WriteKey> keys, std::span<Ver
 
 Verdict Governor::check_gesture(const GestureCall& call, const Party* actor, bool executed) const {
   const auto gi = static_cast<std::size_t>(call.gesture);
-  if (gi >= gen::kGestures.size()) return refuse(Reason::unknown_gesture);
+  if (gi >= gen::kGestures.size() || gen::kGestures[gi].retired) return refuse(Reason::unknown_gesture);
   const gen::GestureSpec& g = gen::kGestures[gi];
 
   // 1. Every given value must be a valid index; with `executed`, every non-optional param must be given.
@@ -240,7 +245,7 @@ Verdict Governor::check_gesture(const GestureCall& call, const Party* actor, boo
       if (executed && !p.optional) return refuse(Reason::invalid_value);
       continue;
     }
-    const bool valid = p.type == gen::ParamType::enum_ ? (val >= 0 && val < p.n_values) : val == 0;
+    const bool valid = p.type == gen::ParamType::enum_ ? (val >= 0 && val < p.n_values && bit(p.valid_mask, val)) : val == 0;
     if (!valid) return refuse(Reason::invalid_value);
   }
   for (int i = 0; i < g.n_params; ++i)                          // content: check_utterance, not ported yet

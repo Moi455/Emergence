@@ -150,6 +150,12 @@ class Process(Entry):
     inputs: str = ""
     conditions: list[str] = field(default_factory=list)     # property / affordance ids required
     effect: str = ""
+    # time and matter flow (T07, docs/16 4.6); all optional until T08 fills them
+    trigger: str = ""                                       # what starts it (contact, heat, tool, time...)
+    clock: str = ""                                         # PROCESS_CLOCKS: how its duration is counted
+    nominal_game_s: int = 0                                 # nominal duration in game seconds (0 = instant / unset)
+    consumes: list[str] = field(default_factory=list)       # material ids taken in
+    produces: list[str] = field(default_factory=list)       # material ids given out
 
 
 @dataclass
@@ -186,6 +192,11 @@ class Species(Entry):
     lookalike: str = ""                  # perceptual class shared with look-alikes (death cap ~ edible mushroom);
                                          # perception shows the true species only to a skilled eye
     mountable: bool = False              # an animal one can ride (mount) : read from the species, a flag, not a rule
+    # time of crops and herds (T07, docs/16 4.6); all optional until T08 fills them
+    sow_seasons: list[str] = field(default_factory=list)    # SEASONS in which it is sown / bred
+    days_to_mature: int = 0                                 # game days from sowing / birth to harvest / adulthood
+    harvest_window_days: int = 0                            # game days during which the harvest stays good
+    product_regrow_days: int = 0                            # game days between two takes of a product (milk, wool, fruit)
 
 
 @dataclass
@@ -234,6 +245,26 @@ class Action(Entry):
     minor_whitelist: dict = field(default_factory=dict)      # param -> values allowed when a minor is involved;
                                                              # with a minor, every whitelisted param is REQUIRED
     status: str = "N"
+    # time of a gesture (T07, docs/16 4.6, docs/14 4.3-4.4); optional until T08, required by check.py --strict
+    natural_end: bool | None = None      # True: it ends by itself (a swallow); False: it needs a stop condition; None = undeclared
+    cadence_ms: int = 0                  # engine cycle in REAL milliseconds (one blow, one step); 0 = undeclared
+    productive: bool = False             # work that task compression may speed up (never bodily harm)
+
+
+@dataclass
+class DurationLevel(Entry):
+    """A chosen duration word (brief, a_while, long), counted in GAME seconds (docs/14 4.4)."""
+    game_s: int = 0
+
+
+@dataclass
+class Illness(Entry):
+    """A disease of the body laws (contagion, illness_course): how it passes, how it runs, what shows."""
+    transmission: list[str] = field(default_factory=list)   # ILLNESS_TRANSMISSIONS
+    incubation_days: int = 0                                # game days before the first sign
+    course_days: int = 0                                    # game days from first sign to cure or death
+    symptoms: list[str] = field(default_factory=list)       # percept_word ids (what others can SEE)
+    lethality: int = 0                                      # 0..100 percent of the sick who die untreated
 
 
 @dataclass
@@ -314,8 +345,12 @@ KINDS: dict[str, type[Entry]] = {
     "entity": EntityKind, "component": Component, "variable": Variable, "property": Property,
     "action": Action, "concept": Concept, "grammar": Grammar, "interpretation": Interpretation,
     "hard_rule": HardRule, "shape": Shape, "story": Story, "site": Site, "percept_word": PerceptWord, "material": Material, "process": Process, "form": Form, "item_type": ItemType, "species": Species, "migration": Migration,
+    "duration_level": DurationLevel, "illness": Illness,
 }
 ENGINE_MATERIALS = Path(__file__).resolve().parents[1] / "engine" / "data" / "materials.csv"
+SEASONS = ("spring", "summer", "autumn", "winter")
+PROCESS_CLOCKS = ("real", "calendar", "game")           # docs/14 4.4: engine cycle, slow process, chosen duration
+ILLNESS_TRANSMISSIONS = ("contact", "air", "water", "bite", "wound", "birth")
 PROPERTY_CATEGORIES = ("intrinsic", "affordance", "state")
 STORY_REFS = {"actions": "action", "concepts": "concept", "variables": "variable", "entities": "entity",
               "properties": "property", "interpretations": "interpretation"}
@@ -447,8 +482,60 @@ class Catalogue:
         p += self._check_refs()
         p += self._check_layers()
         p += self._check_hard_rules()
+        p += self._check_time_fields()
         if strict:
             p += self._check_coverage()
+            p += self._check_gesture_time()
+        return p
+
+    def _check_time_fields(self) -> list[str]:
+        """Time and matter fields (T07). Optional: an unset field (0, empty, None) is never a problem here."""
+        p = []
+        for a in self["action"].values():
+            if a.cadence_ms < 0:
+                p.append(f"action {a.id}: cadence_ms {a.cadence_ms} < 0")
+            if a.natural_end is not None and not isinstance(a.natural_end, bool):
+                p.append(f"action {a.id}: natural_end must be true or false")
+        for pc in self["process"].values():
+            if pc.clock and pc.clock not in PROCESS_CLOCKS:
+                p.append(f"process {pc.id}: clock '{pc.clock}' not in {PROCESS_CLOCKS}")
+            if pc.nominal_game_s < 0:
+                p.append(f"process {pc.id}: nominal_game_s {pc.nominal_game_s} < 0")
+            for field_name in ("consumes", "produces"):
+                for m in getattr(pc, field_name):
+                    if m not in self["material"]:
+                        p.append(f"process {pc.id}: {field_name} unknown material '{m}'")
+        for sp in self["species"].values():
+            for s in sp.sow_seasons:
+                if s not in SEASONS:
+                    p.append(f"species {sp.id}: sow_season '{s}' not in {SEASONS}")
+            for name in ("days_to_mature", "harvest_window_days", "product_regrow_days"):
+                if getattr(sp, name) < 0:
+                    p.append(f"species {sp.id}: {name} < 0")
+        for d in self["duration_level"].values():
+            if d.game_s <= 0:
+                p.append(f"duration_level {d.id}: game_s must be > 0")
+        for il in self["illness"].values():
+            for t in il.transmission:
+                if t not in ILLNESS_TRANSMISSIONS:
+                    p.append(f"illness {il.id}: transmission '{t}' not in {ILLNESS_TRANSMISSIONS}")
+            for s in il.symptoms:
+                if s not in self["percept_word"]:
+                    p.append(f"illness {il.id}: symptom '{s}' is not a percept word")
+            if not 0 <= il.lethality <= 100:
+                p.append(f"illness {il.id}: lethality {il.lethality} not in 0..100")
+            if il.incubation_days < 0 or il.course_days < 0:
+                p.append(f"illness {il.id}: negative duration")
+        return p
+
+    def _check_gesture_time(self) -> list[str]:
+        """--strict: every gesture declares how it ends and how fast the engine cycles it."""
+        p = []
+        for a in self["action"].values():
+            if a.natural_end is None:
+                p.append(f"action {a.id}: natural_end undeclared")
+            if a.cadence_ms <= 0:
+                p.append(f"action {a.id}: cadence_ms undeclared")
         return p
 
     def _check_enums(self) -> list[str]:

@@ -90,7 +90,7 @@ class Evaluator:
 
     @torch.no_grad()
     def predict(self, model: StudentModel) -> Predictions:
-        model.eval()
+        model.to(self.device).eval()
         names = Targets.names()
         truth: dict[str, list] = {k: [] for k in names}
         pred: dict[str, list] = {k: [] for k in names}
@@ -227,7 +227,10 @@ class Evaluator:
     def _verdict(self, decision: dict, meta: dict) -> str:
         ages = meta["source"].get("ages") if isinstance(meta["source"].get("ages"), dict) else {}
         sit = SimpleNamespace(context=SimpleNamespace(records=meta["records"]), ages=ages, scene=None)
-        o = self.validator.validate(Migration.raw_answer(decision), sit)
+        try:
+            o = self.validator.validate(Migration.raw_answer(decision), sit)
+        except Exception as e:                  # noqa: BLE001  (a crash of the validator itself is counted, not hidden)
+            return f"validator_crash:{type(e).__name__}"
         return "ok" if o.ok else o.code
 
     def _validity(self, p: Predictions) -> dict:
@@ -292,8 +295,14 @@ def flatten(rep: dict, prefix: str = "") -> dict[str, dict]:
 
 def table(rep: dict) -> str:
     rows = [f"{'metric':<58}{'n':>7}{'accuracy':>10}"]
-    for name, s in flatten(rep).items():
+    flat = flatten(rep)
+    empty = [k for k, s in flat.items() if s["n"] == 0]
+    for name, s in flat.items():
+        if s["n"] == 0:
+            continue
         rows.append(f"{name:<58}{s['n']:>7}{'n/a' if s['acc'] is None else f'{100 * s['acc']:.1f} %':>10}")
+    if empty:
+        rows.append(f"(no entry in the evaluation set, not computable: {', '.join(empty)})")
     v = rep["validity"]
     rows.append(f"{'validator: decisions valid (real governor)':<58}{rep['decisions']:>7}{100 * v['decision_valid']:>9.1f}%")
     rows.append(f"{'validator: teacher labels valid (ceiling)':<58}{rep['decisions']:>7}{100 * v['teacher_labels_valid']:>9.1f}%")

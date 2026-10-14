@@ -15,6 +15,7 @@ VIS_FR = {"private": "privé", "observable": "observable", "public": "public", "
 SECTIONS = [("story", "Histoires (tests d'acceptation)"), ("entity", "Types d'entités"),
             ("component", "Composants"), ("variable", "Variables d'état"), ("property", "Propriétés et affordances"),
             ("material", "Matières"), ("process", "Processus (lois de transformation, jamais choisis)"),
+            ("duration_level", "Durées choisies (secondes de jeu)"), ("illness", "Maladies"),
             ("form", "Formes de parties (la grammaire des objets)"), ("species", "Espèces vivantes (lois du moteur)"), ("item_type", "Types d'objets connus"),
             ("action", "Gestes physiques"), ("concept", "Langue intérieure : concepts"),
             ("grammar", "Langue intérieure : grammaire"), ("interpretation", "Interprétations (jamais des options)"),
@@ -56,10 +57,12 @@ def render(cat):
                 L.append("")
             continue
         elif kind == "action":
-            L += table(["id", "famille", "libellé", "paramètres", "effets", "perception", "histoires"],
+            L += table(["id", "famille", "libellé", "paramètres", "effets", "perception", "fin naturelle", "cadence (ms)", "productif", "histoires"],
                        [[a.id, a.family, a.label_fr,
                          "; ".join(f"{p.name}:{p.type}" + (f"={'/'.join(p.values)}" if p.values else "") + ("?" if p.optional else "")
-                                   for p in a.params), a.effects, a.perceptibility, len(cited["action"].get(a.id, []))]
+                                   for p in a.params), a.effects, a.perceptibility,
+                         {None: "", True: "oui", False: "non"}[a.natural_end], a.cadence_ms or "", "oui" if a.productive else "",
+                         len(cited["action"].get(a.id, []))]
                         for a in items])
         elif kind == "concept":
             L += table(["id", "catégorie", "arguments", "libellé", "renvoie à"], [[c.id, c.category, c.args, c.label_fr, c.refers] for c in items])
@@ -82,10 +85,18 @@ def render(cat):
                          m.toughness if m.toughness >= 0 else "", m.flammability, m.cohesion,
                          m.melting_c if m.melting_c >= 0 else "", m.edible or ""] for m in items])
         elif kind == "process":
-            L += table(["id", "libellé", "entrées", "conditions", "effet"], [[x.id, x.label_fr, x.inputs, x.conditions, x.effect] for x in items])
+            L += table(["id", "libellé", "entrées", "conditions", "effet", "déclencheur", "horloge", "durée nominale (s de jeu)", "consomme", "produit"],
+                       [[x.id, x.label_fr, x.inputs, x.conditions, x.effect, x.trigger, x.clock, x.nominal_game_s or "", x.consumes, x.produces]
+                        for x in items])
+        elif kind == "duration_level":
+            L += table(["id", "libellé", "secondes de jeu"], [[x.id, x.label_fr, x.game_s] for x in items])
+        elif kind == "illness":
+            L += table(["id", "libellé", "transmission", "incubation (j)", "durée (j)", "symptômes visibles", "létalité %"],
+                       [[x.id, x.label_fr, x.transmission, x.incubation_days, x.course_days, x.symptoms, x.lethality] for x in items])
         elif kind == "species":
-            L += table(["id", "libellé", "règne", "habitat", "domestique", "produits (partie:matière)", "danger", "comportement"],
-                       [[x.id, x.label_fr, x.kingdom, x.habitat, "oui" if x.domestic else "", x.products, x.danger or "", x.behavior] for x in items])
+            L += table(["id", "libellé", "règne", "habitat", "domestique", "produits (partie:matière)", "danger", "comportement", "semis", "jours à maturité", "fenêtre de récolte (j)", "repousse produit (j)"],
+                       [[x.id, x.label_fr, x.kingdom, x.habitat, "oui" if x.domestic else "", x.products, x.danger or "", x.behavior,
+                         x.sow_seasons, x.days_to_mature or "", x.harvest_window_days or "", x.product_regrow_days or ""] for x in items])
         elif kind == "form":
             L += table(["id", "forme", "donne", "règle"], [[x.id, x.label_fr, x.gives, x.rule] for x in items])
         elif kind == "item_type":

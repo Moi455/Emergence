@@ -1,0 +1,1079 @@
+{
+ "schema": "var-registry-1",
+ "vars": [
+  {
+   "name": "a_document"
+  },
+  {
+   "name": "a_form"
+  },
+  {
+   "name": "a_kind_label"
+  },
+  {
+   "name": "a_obligations"
+  },
+  {
+   "name": "a_parties"
+  },
+  {
+   "name": "a_status"
+  },
+  {
+   "name": "a_witnesses"
+  },
+  {
+   "name": "age_years"
+  },
+  {
+   "name": "agility"
+  },
+  {
+   "name": "air_temperature"
+  },
+  {
+   "name": "alive"
+  },
+  {
+   "name": "altruism"
+  },
+  {
+   "name": "ambient_noise"
+  },
+  {
+   "name": "anger"
+  },
+  {
+   "name": "animal_aggression"
+  },
+  {
+   "name": "animal_attachment"
+  },
+  {
+   "name": "animal_fear_humans"
+  },
+  {
+   "name": "animal_group"
+  },
+  {
+   "name": "animal_species"
+  },
+  {
+   "name": "animal_tameness"
+  },
+  {
+   "name": "anxiety"
+  },
+  {
+   "name": "anxiousness"
+  },
+  {
+   "name": "assurance"
+  },
+  {
+   "name": "attention"
+  },
+  {
+   "name": "attire_seen"
+  },
+  {
+   "name": "attracted_to"
+  },
+  {
+   "name": "b_acquired"
+  },
+  {
+   "name": "b_certainty"
+  },
+  {
+   "name": "b_confirmed"
+  },
+  {
+   "name": "b_contradicted"
+  },
+  {
+   "name": "b_hops"
+  },
+  {
+   "name": "b_importance"
+  },
+  {
+   "name": "b_informant"
+  },
+  {
+   "name": "b_origin_fact"
+  },
+  {
+   "name": "b_polarity"
+  },
+  {
+   "name": "b_proposition"
+  },
+  {
+   "name": "b_secret"
+  },
+  {
+   "name": "b_source"
+  },
+  {
+   "name": "b_told_to"
+  },
+  {
+   "name": "b_truth"
+  },
+  {
+   "name": "b_unintelligible"
+  },
+  {
+   "name": "b_weight"
+  },
+  {
+   "name": "baseline_mood"
+  },
+  {
+   "name": "belief_capacity"
+  },
+  {
+   "name": "biological_parents"
+  },
+  {
+   "name": "bleeding"
+  },
+  {
+   "name": "blood_volume"
+  },
+  {
+   "name": "body_mass"
+  },
+  {
+   "name": "body_temperature"
+  },
+  {
+   "name": "boredom"
+  },
+  {
+   "name": "breath"
+  },
+  {
+   "name": "calendar_params"
+  },
+  {
+   "name": "carried"
+  },
+  {
+   "name": "cloud_cover"
+  },
+  {
+   "name": "commitments_seen"
+  },
+  {
+   "name": "condition"
+  },
+  {
+   "name": "confusion"
+  },
+  {
+   "name": "consciousness"
+  },
+  {
+   "name": "contempt"
+  },
+  {
+   "name": "coordination"
+  },
+  {
+   "name": "creativity"
+  },
+  {
+   "name": "crowding"
+  },
+  {
+   "name": "custody_log"
+  },
+  {
+   "name": "custom_aggregate"
+  },
+  {
+   "name": "day_of_year"
+  },
+  {
+   "name": "deposit"
+  },
+  {
+   "name": "diligence"
+  },
+  {
+   "name": "disgust"
+  },
+  {
+   "name": "endurance"
+  },
+  {
+   "name": "envy"
+  },
+  {
+   "name": "ep_age"
+  },
+  {
+   "name": "ep_attire"
+  },
+  {
+   "name": "ep_build"
+  },
+  {
+   "name": "ep_condition"
+  },
+  {
+   "name": "ep_dir"
+  },
+  {
+   "name": "ep_dist"
+  },
+  {
+   "name": "ep_expression"
+  },
+  {
+   "name": "ep_gaze"
+  },
+  {
+   "name": "ep_health"
+  },
+  {
+   "name": "ep_held"
+  },
+  {
+   "name": "ep_marks"
+  },
+  {
+   "name": "ep_motion"
+  },
+  {
+   "name": "ep_posture"
+  },
+  {
+   "name": "ep_sex"
+  },
+  {
+   "name": "ep_signs"
+  },
+  {
+   "name": "ep_wounds"
+  },
+  {
+   "name": "ev_actor"
+  },
+  {
+   "name": "ev_age"
+  },
+  {
+   "name": "ev_among"
+  },
+  {
+   "name": "ev_count"
+  },
+  {
+   "name": "ev_from_to"
+  },
+  {
+   "name": "ev_gesture"
+  },
+  {
+   "name": "ev_manner_seen"
+  },
+  {
+   "name": "ev_sense"
+  },
+  {
+   "name": "ev_target"
+  },
+  {
+   "name": "ev_with"
+  },
+  {
+   "name": "exhaustion"
+  },
+  {
+   "name": "expression"
+  },
+  {
+   "name": "fairness"
+  },
+  {
+   "name": "fear"
+  },
+  {
+   "name": "fearfulness"
+  },
+  {
+   "name": "fecundity"
+  },
+  {
+   "name": "fire_extent"
+  },
+  {
+   "name": "fire_fuel"
+  },
+  {
+   "name": "fire_heat"
+  },
+  {
+   "name": "fire_spread"
+  },
+  {
+   "name": "fog"
+  },
+  {
+   "name": "forgiveness"
+  },
+  {
+   "name": "frontier_depth"
+  },
+  {
+   "name": "g_deadline"
+  },
+  {
+   "name": "g_desired"
+  },
+  {
+   "name": "g_mode"
+  },
+  {
+   "name": "g_origin"
+  },
+  {
+   "name": "g_origin_ref"
+  },
+  {
+   "name": "g_priority"
+  },
+  {
+   "name": "g_progress"
+  },
+  {
+   "name": "g_since"
+  },
+  {
+   "name": "g_status"
+  },
+  {
+   "name": "g_when"
+  },
+  {
+   "name": "game_time"
+  },
+  {
+   "name": "gaze"
+  },
+  {
+   "name": "gentleness"
+  },
+  {
+   "name": "gratitude"
+  },
+  {
+   "name": "greed_avoidance"
+  },
+  {
+   "name": "grief"
+  },
+  {
+   "name": "grooming"
+  },
+  {
+   "name": "group_cohesion"
+  },
+  {
+   "name": "guilt"
+  },
+  {
+   "name": "hands"
+  },
+  {
+   "name": "heard_unprocessed"
+  },
+  {
+   "name": "hearing"
+  },
+  {
+   "name": "height"
+  },
+  {
+   "name": "held_seen"
+  },
+  {
+   "name": "hostility_drivers"
+  },
+  {
+   "name": "hunger"
+  },
+  {
+   "name": "i_commitment"
+  },
+  {
+   "name": "i_serves"
+  },
+  {
+   "name": "i_speech"
+  },
+  {
+   "name": "i_step_index"
+  },
+  {
+   "name": "i_step_targets"
+  },
+  {
+   "name": "i_steps"
+  },
+  {
+   "name": "ice"
+  },
+  {
+   "name": "illnesses"
+  },
+  {
+   "name": "immunities"
+  },
+  {
+   "name": "indoors"
+  },
+  {
+   "name": "inquisitiveness"
+  },
+  {
+   "name": "inside_of"
+  },
+  {
+   "name": "intellect"
+  },
+  {
+   "name": "intoxication"
+  },
+  {
+   "name": "inv_seen"
+  },
+  {
+   "name": "involuntary_signs"
+  },
+  {
+   "name": "jealousy"
+  },
+  {
+   "name": "joy"
+  },
+  {
+   "name": "k_last_practice"
+  },
+  {
+   "name": "k_mastery"
+  },
+  {
+   "name": "k_self_estimate"
+  },
+  {
+   "name": "k_technique"
+  },
+  {
+   "name": "lc_dir"
+  },
+  {
+   "name": "lc_dist"
+  },
+  {
+   "name": "lc_file"
+  },
+  {
+   "name": "lc_kind"
+  },
+  {
+   "name": "lc_owner"
+  },
+  {
+   "name": "legitimacy"
+  },
+  {
+   "name": "life_clock"
+  },
+  {
+   "name": "life_stage"
+  },
+  {
+   "name": "light_level"
+  },
+  {
+   "name": "load_margin"
+  },
+  {
+   "name": "load_ratio"
+  },
+  {
+   "name": "look_age_seen"
+  },
+  {
+   "name": "look_build_seen"
+  },
+  {
+   "name": "look_drunk_seen"
+  },
+  {
+   "name": "look_marks_seen"
+  },
+  {
+   "name": "look_sex_seen"
+  },
+  {
+   "name": "m_content"
+  },
+  {
+   "name": "m_defining"
+  },
+  {
+   "name": "m_emotion"
+  },
+  {
+   "name": "m_fact_ref"
+  },
+  {
+   "name": "m_importance"
+  },
+  {
+   "name": "m_interpretation"
+  },
+  {
+   "name": "m_rehearsals"
+  },
+  {
+   "name": "m_role"
+  },
+  {
+   "name": "m_secret"
+  },
+  {
+   "name": "m_valence"
+  },
+  {
+   "name": "m_vividness"
+  },
+  {
+   "name": "m_when"
+  },
+  {
+   "name": "m_where"
+  },
+  {
+   "name": "magic_attunement"
+  },
+  {
+   "name": "magic_stability"
+  },
+  {
+   "name": "manipulation"
+  },
+  {
+   "name": "masking"
+  },
+  {
+   "name": "memory_capacity"
+  },
+  {
+   "name": "memory_store_capacity"
+  },
+  {
+   "name": "mobility"
+  },
+  {
+   "name": "modesty"
+  },
+  {
+   "name": "mood_energy"
+  },
+  {
+   "name": "mood_valence"
+  },
+  {
+   "name": "moon_phase"
+  },
+  {
+   "name": "need_achievement"
+  },
+  {
+   "name": "need_acquisition"
+  },
+  {
+   "name": "need_autonomy"
+  },
+  {
+   "name": "need_company"
+  },
+  {
+   "name": "need_esteem"
+  },
+  {
+   "name": "need_intimacy"
+  },
+  {
+   "name": "need_meaning"
+  },
+  {
+   "name": "need_novelty"
+  },
+  {
+   "name": "need_play"
+  },
+  {
+   "name": "need_security"
+  },
+  {
+   "name": "orientation"
+  },
+  {
+   "name": "own_held_seen"
+  },
+  {
+   "name": "pain"
+  },
+  {
+   "name": "patience"
+  },
+  {
+   "name": "pc_amount_seen"
+  },
+  {
+   "name": "pc_color_seen"
+  },
+  {
+   "name": "pc_depth_seen"
+  },
+  {
+   "name": "pc_dir"
+  },
+  {
+   "name": "pc_display"
+  },
+  {
+   "name": "pc_dist"
+  },
+  {
+   "name": "pc_file"
+  },
+  {
+   "name": "pc_file_certainty"
+  },
+  {
+   "name": "pc_kind_seen"
+  },
+  {
+   "name": "pc_motion"
+  },
+  {
+   "name": "pc_owner_believed"
+  },
+  {
+   "name": "pc_props_seen"
+  },
+  {
+   "name": "pc_state_seen"
+  },
+  {
+   "name": "perceptiveness"
+  },
+  {
+   "name": "permanent_marks"
+  },
+  {
+   "name": "phenomenon_effects"
+  },
+  {
+   "name": "phenomenon_intensity"
+  },
+  {
+   "name": "phenomenon_kind"
+  },
+  {
+   "name": "phenomenon_signs"
+  },
+  {
+   "name": "place_bounds"
+  },
+  {
+   "name": "place_in"
+  },
+  {
+   "name": "place_recognized"
+  },
+  {
+   "name": "plant_health"
+  },
+  {
+   "name": "plant_species"
+  },
+  {
+   "name": "plant_stage"
+  },
+  {
+   "name": "plant_yield"
+  },
+  {
+   "name": "position"
+  },
+  {
+   "name": "posture"
+  },
+  {
+   "name": "posture_felt"
+  },
+  {
+   "name": "pp_air_felt"
+  },
+  {
+   "name": "pp_crowd_seen"
+  },
+  {
+   "name": "pp_indoors"
+  },
+  {
+   "name": "pp_light"
+  },
+  {
+   "name": "pp_noise"
+  },
+  {
+   "name": "pp_signs"
+  },
+  {
+   "name": "pp_sun"
+  },
+  {
+   "name": "pp_weather_seen"
+  },
+  {
+   "name": "precipitation"
+  },
+  {
+   "name": "pregnancy"
+  },
+  {
+   "name": "pride"
+  },
+  {
+   "name": "prudence"
+  },
+  {
+   "name": "q_content"
+  },
+  {
+   "name": "q_from"
+  },
+  {
+   "name": "q_since"
+  },
+  {
+   "name": "r_affection"
+  },
+  {
+   "name": "r_attraction"
+  },
+  {
+   "name": "r_familiarity"
+  },
+  {
+   "name": "r_fear"
+  },
+  {
+   "name": "r_group_goal"
+  },
+  {
+   "name": "r_group_kind"
+  },
+  {
+   "name": "r_group_leader"
+  },
+  {
+   "name": "r_group_members"
+  },
+  {
+   "name": "r_group_role"
+  },
+  {
+   "name": "r_group_size"
+  },
+  {
+   "name": "r_id_certainty"
+  },
+  {
+   "name": "r_known_by"
+  },
+  {
+   "name": "r_last_contact"
+  },
+  {
+   "name": "r_link_believed"
+  },
+  {
+   "name": "r_name_believed"
+  },
+  {
+   "name": "r_obligation"
+  },
+  {
+   "name": "r_perceived_regard"
+  },
+  {
+   "name": "r_present"
+  },
+  {
+   "name": "r_reputation_seen"
+  },
+  {
+   "name": "r_resentment"
+  },
+  {
+   "name": "r_respect"
+  },
+  {
+   "name": "r_rivalry"
+  },
+  {
+   "name": "r_shared_history"
+  },
+  {
+   "name": "r_true_entity"
+  },
+  {
+   "name": "r_trust"
+  },
+  {
+   "name": "recognized_claims"
+  },
+  {
+   "name": "recognized_members"
+  },
+  {
+   "name": "relation_capacity"
+  },
+  {
+   "name": "reputation_aggregate"
+  },
+  {
+   "name": "reserves"
+  },
+  {
+   "name": "resilience"
+  },
+  {
+   "name": "robustness"
+  },
+  {
+   "name": "role_holder_support"
+  },
+  {
+   "name": "s_introduced_at"
+  },
+  {
+   "name": "s_introduced_by"
+  },
+  {
+   "name": "s_name"
+  },
+  {
+   "name": "s_scope"
+  },
+  {
+   "name": "sadness"
+  },
+  {
+   "name": "season_felt"
+  },
+  {
+   "name": "seen_direction"
+  },
+  {
+   "name": "seen_distance"
+  },
+  {
+   "name": "seen_motion"
+  },
+  {
+   "name": "self_control"
+  },
+  {
+   "name": "self_regard"
+  },
+  {
+   "name": "senescence"
+  },
+  {
+   "name": "sentimentality"
+  },
+  {
+   "name": "sex"
+  },
+  {
+   "name": "shame"
+  },
+  {
+   "name": "sickness_felt"
+  },
+  {
+   "name": "sim_depth"
+  },
+  {
+   "name": "sincerity"
+  },
+  {
+   "name": "sleepiness"
+  },
+  {
+   "name": "smoke"
+  },
+  {
+   "name": "snow_cover"
+  },
+  {
+   "name": "sociability"
+  },
+  {
+   "name": "soil_fertility"
+  },
+  {
+   "name": "soil_moisture"
+  },
+  {
+   "name": "soil_state"
+  },
+  {
+   "name": "storm"
+  },
+  {
+   "name": "strength"
+  },
+  {
+   "name": "stress"
+  },
+  {
+   "name": "surprise"
+  },
+  {
+   "name": "symptoms"
+  },
+  {
+   "name": "tastes"
+  },
+  {
+   "name": "tenderness"
+  },
+  {
+   "name": "thermal_comfort"
+  },
+  {
+   "name": "think_more"
+  },
+  {
+   "name": "thirst"
+  },
+  {
+   "name": "time_felt"
+  },
+  {
+   "name": "time_of_day"
+  },
+  {
+   "name": "trace_direction"
+  },
+  {
+   "name": "trace_fact"
+  },
+  {
+   "name": "trace_freshness"
+  },
+  {
+   "name": "trace_kind"
+  },
+  {
+   "name": "trace_maker_cue"
+  },
+  {
+   "name": "transactions"
+  },
+  {
+   "name": "unconventionality"
+  },
+  {
+   "name": "underground_depth"
+  },
+  {
+   "name": "unrest"
+  },
+  {
+   "name": "v_achievement"
+  },
+  {
+   "name": "v_authority"
+  },
+  {
+   "name": "v_honor"
+  },
+  {
+   "name": "v_liberty"
+  },
+  {
+   "name": "v_loyalty"
+  },
+  {
+   "name": "v_pleasure"
+  },
+  {
+   "name": "v_power"
+  },
+  {
+   "name": "v_sanctity"
+  },
+  {
+   "name": "velocity"
+  },
+  {
+   "name": "village_temperament"
+  },
+  {
+   "name": "visible_damage"
+  },
+  {
+   "name": "visible_injury"
+  },
+  {
+   "name": "vision"
+  },
+  {
+   "name": "w_think_budget"
+  },
+  {
+   "name": "water_flow"
+  },
+  {
+   "name": "water_level"
+  },
+  {
+   "name": "water_quality"
+  },
+  {
+   "name": "water_volume"
+  },
+  {
+   "name": "wealth_objective"
+  },
+  {
+   "name": "wind"
+  },
+  {
+   "name": "worn"
+  },
+  {
+   "name": "wounds"
+  },
+  {
+   "name": "year"
+  },
+  {
+   "name": "zones"
+  }
+ ]
+}

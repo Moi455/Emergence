@@ -33,7 +33,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .batch import BatchInstructions, BatchPrompt, BatchSchema, GroupedRound, RoundResult
-from .caller import FatalError, ModelCaller, Pacer
+from .caller import FatalError, LaneBusy, ModelCaller, Pacer
 from .dataset import LabelRecord
 from .gemini import ApiKeyError, ApiKeyLoader, GeminiClient, Redactor
 from .phrasebook import DEFAULT_COUNT, PhraseBook
@@ -51,6 +51,8 @@ REEXEC = "EMERGENCE_REEXEC"
 UNUSABLE_ASIDE = 3600.0         # a model whose batch gave no valid decision at all (even repaired) is left alone for an hour
 PERMANENT = ("not found", "HTTP 400", "HTTP 401", "HTTP 403")      # exhausted_why of a model that is out for good
 MAX_SAMPLE_ERRORS = 50
+LANE_PAUSE = 120.0              # a small-batch model that could not answer when its turn came waits this long before the next try
+SITUATION_CHARS = 6500          # first guess of the rendered size of one situation (the real mean is learned from the rounds)
 MAX_CRASHES = 5                 # rounds in a row that raised an unexpected exception: stop
 
 
@@ -159,6 +161,8 @@ class Generator:
         self._sampler_factory = sampler_factory or self._default_sampler
         self._samplers: dict = {}
         self._unusable_models: set = set()
+        self._lane_until: dict = {}                    # small-batch model -> epoch second before which it is not tried again
+        self._situation_chars = SITUATION_CHARS        # running estimate of the rendered size of one situation
         self.holding = False            # a reply is held, not yet written: no restart now (it would be asked again)
         if watcher is not None and self.pacer.idle is None:
             self.pacer.idle = self.check_restart
@@ -263,21 +267,45 @@ class Generator:
             self.log("stopped on request; state saved")
         return code
 
+    def small_lane(self) -> str | None:
+        """A model that only takes small batches (quota.toml `max_k`) and may answer right now: this round is for it. The
+        size of its prompt is estimated from the last rounds (characters per situation)."""
+        now = self.pacer.clock()
+        fixed = len(self.instructions.text()) + 1500
+        best, best_sent = None, float("inf")
+        for name in self.desk.order:
+            spec = self.desk.spec(name)
+            book = self.desk.books[name]
+            if not spec.max_k or self._lane_until.get(name, 0.0) > now:
+                continue
+            chars = fixed + spec.max_k * self._situation_chars
+            if book.available_at(now, book.estimate_input(chars)) <= now + 0.25 and book.last_sent < best_sent:
+                best, best_sent = name, book.last_sent
+        return best
+
     def one_round(self) -> bool:
-        pairs = self.cursor.take(self.k)
+        lane = self.small_lane()
+        k = min(self.k, self.desk.spec(lane).max_k) if lane else self.k
+        pairs = self.cursor.take(k)
         sits = self.build_situations(pairs)
         if not sits:
             self.cursor.commit()
             return True
         t0 = time.monotonic()
+        self.caller.only = lane
         try:
             res = self.round.run(sits)
             if res is None:                               # stopped or capped before an answer: nothing is consumed
                 self.cursor.rewind()
                 return False
             self.commit(res, time.monotonic() - t0)
+        except LaneBusy:                                  # the small-batch model could not answer: nothing was held, try the normal way
+            self.cursor.rewind()
+            self._lane_until[lane] = self.pacer.clock() + LANE_PAUSE
+            return True
         finally:
             self.holding = False
+            self.caller.only = None
         return True
 
     def _hold(self) -> None:
@@ -303,6 +331,11 @@ class Generator:
                 continue
             lines.append(line)
             valid += 1
+        first = res.requests[0]
+        if first.labels:
+            seen = (first.prompt_chars - len(self.instructions.text())) / len(first.labels)
+            if seen > 0:
+                self._situation_chars = 0.8 * self._situation_chars + 0.2 * seen
         self.dataset.append(lines)
         self.cursor.commit()                              # the labels are on disk: these situations are never asked again
         for rq in res.requests:
@@ -519,6 +552,7 @@ def main(argv=None) -> int:
         print(f"error: series {series.name} is already running (lock {lock.path} is held)", file=sys.stderr)
         return EXIT_LOCKED
     client = GeminiClient(key)
+    qc.install(client)                       # how to ask each model: structured JSON, or the prompt-only way
     log = Log(Redactor(key))
     watcher = None if a.no_restart else RestartWatcher(CodeFingerprint())
     gen = Generator(series, client, qc, a.k, a.seed, a.days, a.max_requests, a.temperature, not a.no_repair, a.phrases, log=log,

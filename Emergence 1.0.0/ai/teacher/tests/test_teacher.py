@@ -21,7 +21,7 @@ from teacher.pilot import DryRun, ModelPool, PilotRun, RunDirectory, RunSummary
 from teacher.render import SituationRenderer
 from teacher.schema import EXAMPLES, DecisionSchema
 from teacher.toolkit import ROOT, Toolkit
-from teacher.validate import AnswerValidator, SceneTruth, TruthSource
+from teacher.validate import AnswerValidator, Codes, Mind, SceneTruth, TruthSource, WriteChecker
 
 TK = Toolkit()
 SAMPLER = SituationSampler(7)
@@ -307,6 +307,42 @@ class ValidatorTests(unittest.TestCase):
         self.assertRefused(self.check(answer("wait", [("until", "c_done")], "(hello)")), "bad_speech")
         long = "(assert " + "(and " * 6 + "(dead @E1)" + " (dead @E1))" * 6 + ")"
         self.assertRefused(self.check(answer("speak", SPEAK, long)), "bad_speech")
+
+    def test_pointer_write_type_checked(self):
+        """attention accepts ENTITY/THING/INV/SELF/EVENT/HEARD only; the types come from model_interface.json."""
+        ok_types = set(TK.interface.token_types["SELF_STATE"]["fields"]["attention"]["ref_types"])
+        self.assertTrue({"ENTITY", "THING", "SELF"} <= ok_types and not {"PLACE", "MEMORY", "LOCUS"} & ok_types)
+        for key in ("@PLACE", "m:1", "@L1"):
+            self.assertRefused(self.check(answer("wait", [("until", "c_done")], "", [("self", "attention", key)])), "bad_pointer")
+        for key in ("@E1", "@T1", "me"):
+            out = self.check(answer("wait", [("until", "c_done")], "", [("self", "attention", key)]))
+            self.assertTrue(out.ok, (key, out.code, out.detail))
+
+    def test_pointer_write_every_record_type(self):
+        recs = [Record("SELF", "me", {"age": 30.0}), Record("SELF_MIND", "me.mind", {}), Record("SELF_STATE", "me.state", {}),
+                Record("INV", "@I1", {"kind": "wooden_bowl"}), Record("EVENT", "ev:1", {}), Record("HEARD", "h:1", {}),
+                Record("GROUP", "@G1", {}), Record("PLACE", "@PLACE", {"indoors": False}),
+                Record("MEMORY", "m:1", {"prop": "(owns @E1 @T1)"}), Record("LOCUS", "@L1", {})]
+        base = mini_situation().context.records
+        sit = SimpleNamespace(context=SimpleNamespace(records=list(base) + [r for r in recs if r.key not in {b.key for b in base}]),
+                              scene=None)
+        for key, good in (("@I1", True), ("ev:1", True), ("h:1", True), ("@G1", False), ("@PLACE", False), ("m:1", False)):
+            out = self.check(answer("wait", [("until", "c_done")], "", [("self", "attention", key)]), sit)
+            self.assertEqual(out.ok, good, (key, out.code, out.detail))
+
+    def test_i_serves_and_origin_ref_types(self):
+        wc = WriteChecker(TK, Mind(TK, mini_situation().context.records, FakeTruth({})), None)
+        self.assertEqual(wc.ref_types(TK.spec.writes["attention"]), tuple(sorted(
+            TK.interface.token_types["SELF_STATE"]["fields"]["attention"]["ref_types"])))
+        self.assertEqual(wc.ref_types(TK.spec.writes["i_serves"]), ("GOAL",))
+        self.assertIn("GROUP", wc.ref_types(TK.spec.writes["g_origin_ref"]))
+        self.assertNotIn("PLAN", wc.ref_types(TK.spec.writes["i_serves"]))
+
+    def test_proposition_write_on_a_plan_never_raises(self):
+        recs = list(mini_situation().context.records) + [Record("PLAN", "p:1", {"goal": "g:1"})]
+        sit = SimpleNamespace(context=SimpleNamespace(records=recs), scene=None)
+        out = self.check(answer("wait", [("until", "c_done")], "", [("p:1", "i_speech", "(assert (owns @E1 @T1))")]), sit)
+        self.assertTrue(out.ok or out.code in Codes.ALL or out.code.startswith(Codes.GOVERNOR), out.code)      # a defined path, no KeyError
 
     def test_too_many_writes(self):
         w = [("self", v, "3") for v in ("anger", "fear", "joy", "pride", "shame")]

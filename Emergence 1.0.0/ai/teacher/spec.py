@@ -16,7 +16,7 @@ TARGET_KINDS = (("self", "self"), ("ENTITY", "entity"), ("BELIEF", "belief"), ("
                 ("MEMORY", "memory"), ("the current PLAN", "plan"))
 # key prefixes that designate a record of each target kind
 KEY_PREFIX = {"entity": ("@E", "@G"), "belief": ("b:", "h:"), "goal": ("g:",), "memory": ("m:",), "plan": ("p:",)}
-PROPOSITION_KIND = {"belief": "belief", "goal": "goal", "memory": "memory"}     # record kind for governor.check_record
+PROPOSITION_KIND = {"belief": "belief", "goal": "goal", "memory": "memory", "plan": "plan"}     # record kind for governor.check_record
 PASSIVE_GESTURES = frozenset({"wait", "look", "listen", "rest", "sleep", "stop"})
 
 
