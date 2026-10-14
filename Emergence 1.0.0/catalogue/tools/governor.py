@@ -8,7 +8,7 @@ It sits between the Transformer and the world. Whatever the model outputs, the g
   * enforces hard rule D10 on gestures, utterances and records, DENY BY DEFAULT: a minor by real, believed OR
     apparent age, an unknown age, or a person known only by name or description counts as a minor. D10 looks at
     the PARTICIPANTS of an intimate act or link; the hearers matter only when an intimate act or desire is SAID
-    (P30). Every cited record (b:, m:, g:, bare or in `that`) is unfolded and checked as said.
+    (P30). Every cited record (b:, m:, g:, h:, q:, c:, bare or in `that`) is unfolded and checked as said.
 
 It never decides anything: it only clips or refuses. Values on the charter scale (-10..+10), computed in integer
 TENTHS like the C++ port (the engine stores tenths).
@@ -28,7 +28,7 @@ WRITES_PER_DECISION = 4
 LEDGER_CAPACITY = 512          # live (target, variable) entries per NPC; beyond, a NEW key is refused (ledger_full)
 MAX_AGE_TENTHS = 32767         # an age beyond this (int16 tenths) is absurd: it reads as UNKNOWN (a possible minor)
 MAX_DAY_JUMP, MAX_YEAR_JUMP = 1000, 100   # a larger jump of the clock in one roll is aberrant: ignored (review 13)
-CITE = re.compile(r"^([bmg]:|@V)[0-9]+$")  # a cited record or perceived event: its frozen content is what is said
+CITE = re.compile(r"^([bmghqc]:|@V)[0-9]+$")  # a cited record or perceived event: its frozen content is what is said
 _CAT = Catalogue.load()
 ADULT_AGE = float(_CAT["hard_rule"]["D10_minors"].adult_age_years)   # pinned in hard_rules.toml (18)
 SCALE_BOUNDS = {"bipolar10": (-100, 100), "unipolar10": (0, 100)}     # in tenths
@@ -336,16 +336,29 @@ class Governor:
                     or sym in self.vocab.manner_intimate)
 
     @staticmethod
-    def _participants(node):
-        """The referring arguments of a node: pointers, deictics, quantifiers, names and descriptions."""
+    def _content_refs(node) -> list:
+        """Every referring symbol of a (cited) content: pointers to persons and places, deictics, quantifiers, names, and
+        the descriptions and parts: the persons the record is about. Citations inside it are not persons."""
+        from language import POINTER, REF_WORDS
+        if isinstance(node, str):
+            return [node] if (POINTER.match(node) and not CITE.match(node)) or node in REF_WORDS else []
+        if hasattr(node, "head") and node.head in ("described", "of"):
+            return [node]
+        return [r for a in getattr(node, "args", []) for r in Governor._content_refs(a)]
+
+    def _participants(self, node):
+        """The referring arguments of a node: pointers, deictics, quantifiers, names and descriptions, and the REF of
+        every role of a described gesture (the roles are the gesture's own parameters: to, at, where, toward, on…)."""
         from language import POINTER, REF_WORDS
         out = []
+        a = self.cat["action"].get(node.args[1]) if node.head == "did" and len(node.args) > 1 and isinstance(node.args[1], str) else None
+        role_names = {"to", "with", "into"} | {p.name for p in a.params if p.type == "ref"} if a is not None else {"to", "with", "into"}
         for x in node.args:
-            if isinstance(x, str) and (POINTER.match(x) or x in REF_WORDS):
+            if isinstance(x, str) and (POINTER.match(x) or x in REF_WORDS) and not CITE.match(x):     # a citation is a record, not a person
                 out.append(x)
-            elif hasattr(x, "head") and x.head == "described":
+            elif hasattr(x, "head") and x.head in ("described", "of"):       # a description, a part of a group: unidentified
                 out.append(x)
-            elif hasattr(x, "head") and x.head in ("to", "with", "into") and x.args:
+            elif hasattr(x, "head") and x.head in role_names and x.args and (node.head == "did" or x.head in ("to", "with", "into")):
                 out.append(x.args[0])
         return out
 
@@ -367,7 +380,7 @@ class Governor:
 
     @staticmethod
     def _unfold(ref, expand, depth):
-        """The frozen copy of a cited record (b:, m:, g:) or perceived event (@V), or None: refused as unexpanded
+        """The frozen copy of a cited record (b:, m:, g:, h:, q:, c:) or perceived event (@V), or None: refused as unexpanded
         (no copy, too deep, or not a valid Expression - an utterance or a bare proposition)."""
         import language
         if expand is None or depth > 2 or not isinstance(ref, str):
@@ -409,7 +422,14 @@ class Governor:
                 return Verdict(False, None, "described gesture refused: " + v.reason, v.code)
         # an intimate word in this node: every participant (its referring arguments) is checked
         if any(self._is_intimate(x) for x in [node.head] + node.args):
-            for r in self._participants(node):
+            refs = self._participants(node)
+            for c in node.args:                                   # (qualifies m:1 adultery): the persons are those of the cited record
+                if isinstance(c, str) and CITE.match(c):
+                    inner = self._unfold(c, expand, depth)
+                    if inner is None:
+                        return no("unexpanded", "the content of a cited record must be checked (frozen copy)")
+                    refs += self._content_refs(inner.root)
+            for r in refs:
                 if resolve(r).may_be_minor():
                     return no("d10_intimate", "D10: an intimate act or link with a possible minor")
         for x in node.args:

@@ -115,7 +115,7 @@ class TestRefTypes(Base):
         self.assertEqual(ft["PLAN"]["fields"]["goal"]["ref_types"], ["GOAL"])
         self.assertEqual(ft["REQUEST"]["fields"]["from"]["ref_types"], ["ENTITY"])
         self.assertEqual(ft["BELIEF"]["fields"]["informant"]["ref_types"], ["ENTITY"])
-        self.assertEqual(ft["COMMIT"]["fields"]["counterparty"]["ref_types"], ["ENTITY"])
+        self.assertEqual(ft["COMMIT"]["fields"]["counterparty"]["ref_types"], ["ENTITY", "GROUP"])        # 19a: a commitment can bind a group
         self.assertEqual(ft["SELF"]["fields"]["place"]["ref_types"], ["PLACE", "LOCUS"])
         self.assertEqual(ft["HEARD"]["fields"]["informant"]["ref_types"], ["ENTITY"])        # an alias inherits
         self.assertEqual(set(ft["SELF_STATE"]["fields"]["attention"]["ref_types"]),

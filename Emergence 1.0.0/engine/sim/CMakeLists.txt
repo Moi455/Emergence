@@ -1,0 +1,3 @@
+add_executable(emergence_sim main.cpp)
+target_link_libraries(emergence_sim PRIVATE emergence_core)
+emergence_strict_target(emergence_sim)

@@ -14,6 +14,14 @@
 
 # ─── Intrinsèques ───────────────────────────────────────────────────────────────────────────────
 [[property]]
+id = "color"
+perceptible = true
+label_fr = "couleur (un mot : rouge, bleu, vert… ; se voit, ternie par la lumière)"
+applies_to = ["item", "structure", "plant", "animal"]
+scale = "word"
+rule = "tirée du matériau principal et de la teinture ; la vue la réduit à un mot de couleur (percept_words.toml) selon la lumière"
+
+[[property]]
 id = "mass"
 perceptible = true
 in_vector = true

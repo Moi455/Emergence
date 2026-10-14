@@ -2,7 +2,7 @@
 
 Tu travailles sur **Emergence**, un jeu médiéval-fantastique pour Steam : 500 PNJ pilotés par un Transformer, dans une simulation où tout doit émerger. Le porteur du projet est **Monsieur**. Il écrit en français : réponds-lui en français, simplement, en commençant par la réponse.
 
-Ce dossier est le paquet **1.0.0** (branche `emergence-1.0.0`) : le moteur social, l'IA des PNJ et leur documentation, repris de la branche `claude/moteur-social`, plus les documents d'architecture utiles des développeurs précédents. Le monde en voxels, le rendu et les personnages 3D restent dans l'ancienne branche.
+Ce dossier est le paquet **1.0.0** (branche `emergence-1.0.0`), **fusionné le 14 oct.** avec l'ancienne branche `claude/moteur-social` (carte et tri par date : `docs/13_fusion_1.0.0.md`). Il contient tout : moteur social et IA des PNJ (travail actif), mais aussi le monde en voxels, le rendu, les personnages 3D, l'eau et l'ancienne IA, **mis en `.claudeignore`** pour cette session (moteur social des PNJ). Pour les lire, retirer la ligne de `.claudeignore` puis lancer `python3 scripts/sync_claudeignore.py`.
 
 Machine de Monsieur : Quadro RTX 3000 6 Go (Turing, float16 seulement), i9-10885H 8 cœurs, 62 Go de RAM. C'est la cible de mesure : ce qui tourne dessus tournera sur la RTX 3060 mobile des joueurs.
 
@@ -47,7 +47,7 @@ Machine de Monsieur : Quadro RTX 3000 6 Go (Turing, float16 seulement), i9-10885
 - **Relecteur systématique** : après chaque travail, un sous-agent relecteur adverse, puis corriger ce qu'il trouve avant de présenter.
 - **Sous-agents : Sonnet 5.5 par défaut** ; Opus seulement si Monsieur le demande.
 - **Pousser souvent** sur GitHub (branche `emergence-1.0.0`, jamais `main`, jamais de force push), sauf consigne contraire de Monsieur pour une session.
-- **Économie de tokens** : respecter `.claudeignore` ; lire par morceaux ; ne pas relire ce qu'on vient d'écrire.
+- **Économie de tokens** : respecter `.claudeignore` (synchronisé par `scripts/sync_claudeignore.py`) ; lire par morceaux ; ne pas relire ce qu'on vient d'écrire.
 
 ## Commandes
 
@@ -73,4 +73,10 @@ ai/situations/     situations d'amorçage plausibles (avec audit D10)
 ai/teacher/        professeur LLM : rendu, schéma de réponse, validation, pilote et générateur de données
 ai/student2/       l'élève : modèle, étiquettes, entraînement en float16
 ai/research/       bancs d'essai et sondes mesurés (docs/07, docs/09)
+
+Ignorés pour cette session (présents, lisibles sur demande, voir `.claudeignore`) :
+engine/core/{base,world,mesh}, gdext, terrain, em_water   moteur voxel, extension Godot, eau (Rust)
+worldgen/ game/ prototypes/ characters/ tools/voxelizer/   monde, scène Godot, village web, villageois 3D, voxeliseur
+ai/npc_pipeline/ ai/student/ sim/                          ancienne IA et ancienne simulation à règles
+archive/ docs/style/ docs/reference/ docs/npc/             historique et barre visuelle
 ```

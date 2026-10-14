@@ -1,7 +1,7 @@
 """keys.py - how a record of the NPC's mind is designated inside one decision.
 
-Pointers of the inner language (@E3, @T5, @G1, @L2, @V4, @PLACE, b:7, m:2, g:1) and the private keys of records the
-language cannot point to (h:, q:, c:, p:, k:, t:, and the fixed keys me, me.mind, me.state, wake). A key is
+Pointers of the inner language (@E3, @T5, @G1, @L2, @V4, @PLACE, b:7, m:2, g:1, and since 19a h:3 heard, q:1 asked,
+c:2 agreed) and the private keys of records the language cannot point to (p:, k:, t:, and the fixed keys me, me.mind, me.state, wake). A key is
 canonical: ASCII digits, no leading zero, at most 12 digits (so one record has one string).
 """
 from __future__ import annotations

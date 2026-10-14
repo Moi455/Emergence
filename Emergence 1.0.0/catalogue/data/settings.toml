@@ -1,0 +1,20 @@
+# settings.toml - étape 19a : réglages de la partie, lus par le modèle dans le jeton WAKE.
+#
+# Un RÉGLAGE n'est ni une croyance, ni une perception, ni un état du monde : c'est un paramètre du jeu. Le moteur
+# l'écrit (le joueur le choisit), le Transformer le lit, jamais l'inverse. Canal « setting ».
+#
+# TEMPÉRAMENT DU VILLAGE (Monsieur, 13 oct. 2026) : le jeu sera amusant parce que les PNJ auront souvent des réactions
+# DISPROPORTIONNÉES, voire absurdes. Le joueur choisit à la création de la partie si son village est de sages, de
+# modérés, de caractériels ou de fous. C'est une GRADUATION, pas une liste de règles : le même modèle apprend, avec
+# le tempérament en entrée, à doser ses réactions (une colère qui saute pour une broutille, une panique collective, ou
+# au contraire une longue délibération). Il n'y a AUCUNE règle écrite à la main qui décide à la place du modèle.
+# Repères nommés (l'interface du joueur les propose ; la valeur reste un nombre) :
+#   0-1 sages · 2-3 posés · 4-6 modérés (défaut 5) · 7-8 caractériels · 9-10 fous.
+# CE QUE LE TEMPÉRAMENT NE CHANGE JAMAIS : les règles dures (D10 : rien d'intime avec un mineur), les bornes du
+# gouverneur (step, rate, slow_rate, 4 écritures), les lois du monde. Une réaction absurde reste un geste physique
+# valide ou une parole valide ; le gouverneur ne lit pas ce réglage (testé).
+
+variable = [
+  { id = "village_temperament", label_fr = "tempérament du village (0 sages, 5 modérés, 10 fous) : à quel point les réactions des habitants sont mesurées, ou disproportionnées et absurdes", holder = "setting", scale = "unipolar10", writer = ["engine"], visibility = "public", dynamics = "choisi par le joueur à la création de la partie, par village (le même pour tous ses habitants) ; peut être changé dans les options ; le moteur ne le fait jamais bouger tout seul", token = "WAKE.temperament", clock = "none", note = "Défaut 5. Les données d'entraînement le tirent par situation ; la consigne du professeur change avec lui (docs/12)." },
+  { id = "w_think_budget", label_fr = "combien de pas de réflexion encore accordés dans cette suite (pensée écrite)", holder = "setting", scale = "qty", writer = ["engine"], visibility = "private", dynamics = "fixé par l'ordonnanceur (profondeur de simulation du PNJ, charge du GPU) ; décroît d'un à chaque pas de réflexion ; à 0 le modèle doit agir", token = "WAKE.budget", clock = "real" },
+]

@@ -46,7 +46,7 @@ class ModelInterface:
     ALIASES = {"HEARD": "BELIEF", "INV": "THING"}
     # A deadline is a point in the FUTURE (hours until it; negative = overdue): the model reads a signed log. A
     # variable declared scale=time is an age (hours since); only these fields are rewritten.
-    TIME_UNTIL_FIELDS = {"deadline"}
+    TIME_UNTIL_FIELDS = {"deadline", "when"}
     EXPLICIT = {
         "TASTE": {"concept": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                   "attitude": {"scale": "bipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
@@ -54,6 +54,7 @@ class ModelInterface:
                    "mine": {"scale": "bool", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "prop": {"scale": "proposition", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "deadline": {"scale": "time_until", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                   "when": {"scale": "time_until", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "status": {"scale": "enum", "values": ["open", "fulfilled", "broken", "released"], "unit": "", "list_of": "", "components": [], "component_scales": []},
                    "witnesses": {"scale": "list", "values": [], "unit": "", "list_of": "mref", "components": [], "component_scales": []}},
         "PLAN": {"step": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
@@ -72,19 +73,22 @@ class ModelInterface:
     REF_TYPES = {
         "BELIEF.informant": ["ENTITY"],
         "BELIEF.shared": ["ENTITY", "GROUP"],
-        "COMMIT.counterparty": ["ENTITY"],
+        "COMMIT.counterparty": ["ENTITY", "GROUP"],               # a person or a group (several parties: the group lists them)
         "COMMIT.witnesses": ["ENTITY"],
         "ENTITY.look.gaze": ["ENTITY", "THING", "INV", "SELF", "LOCUS", "PLACE"],      # "un lieu" too
-        "EVENT.actor": ["ENTITY", "SELF"],
+        "EVENT.actor": ["ENTITY", "SELF", "GROUP"],               # a group acts together
         "EVENT.target": ["ENTITY", "GROUP", "SELF", "THING", "INV", "LOCUS", "PLACE"],
         "EVENT.with": ["THING", "INV"],
         "EVENT.from_to": ["ENTITY", "GROUP", "SELF", "THING", "INV", "LOCUS", "PLACE"],
         "GOAL.origin_ref": ["BELIEF", "HEARD", "MEMORY", "REQUEST", "COMMIT", "ENTITY", "GROUP"],
+        "GROUP.leader": ["ENTITY", "SELF"],
+        "GROUP.members": ["ENTITY", "SELF"],
         "LOCUS.file": ["LOCUS"],
         "LOCUS.owner": ["ENTITY", "GROUP", "SELF"],
         "MEMORY.place": ["LOCUS", "PLACE"],
         "PLAN.goal": ["GOAL"],
         "PLAN.target": ["ENTITY", "THING", "INV", "LOCUS", "PLACE", "GROUP", "SELF"],
+        "PLAN.step_targets": ["ENTITY", "THING", "INV", "LOCUS", "PLACE", "GROUP", "SELF"],
         "REQUEST.from": ["ENTITY"],
         "SELF.place": ["PLACE", "LOCUS"],
         "SELF_STATE.attention": ["ENTITY", "THING", "INV", "SELF", "EVENT", "HEARD"],   # a noise, a spoken word
@@ -119,8 +123,11 @@ class ModelInterface:
                 if scale == "time" and key.rpartition(".")[2] in self.TIME_UNTIL_FIELDS:
                     scale = "time_until"
                 units = [self.cat["property"][c].unit for c in comps] if v.components == ["@object_vector"] else [""] * len(comps)
-                out.setdefault(key, {"from": v.id, "scale": scale, "values": values, "unit": v.unit, "list_of": v.list_of,
-                                     "components": comps, "component_scales": scales, "component_units": units})
+                spec = {"from": v.id, "scale": scale, "values": values, "unit": v.unit, "list_of": v.list_of,
+                        "components": comps, "component_scales": scales, "component_units": units}
+                if v.words_from:                                  # a CLOSED set of words (percept_words.toml), not any word
+                    spec["words"] = self.cat.words_of(v.words_from)
+                out.setdefault(key, spec)
         return out
 
     def input_spec(self) -> dict:
@@ -137,8 +144,8 @@ class ModelInterface:
         for typ, base in self.ALIASES.items():                     # same layout as another record type
             types[typ]["fields"] = dict(types[base]["fields"])
             types[typ]["alias_of"] = base
-        for typ, flds in self.EXPLICIT.items():                     # record tokens fed by list variables
-            types[typ]["fields"] = {k: dict(v) for k, v in flds.items()}
+        for typ, flds in self.EXPLICIT.items():                     # record tokens fed by list variables (and by variables)
+            types[typ]["fields"] = {**types[typ]["fields"], **{k: dict(v) for k, v in flds.items()}}
         self._attach_ref_types(types)
         for key in self.MULTI_VECTOR_FIELDS:
             typ, _, fname = key.partition(".")

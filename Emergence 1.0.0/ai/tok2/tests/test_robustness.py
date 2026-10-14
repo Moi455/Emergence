@@ -55,8 +55,8 @@ class Refusals(unittest.TestCase):
         self.refuses(Record("ENTITY", "@E1", {"dist": "3"}))
         self.refuses(Record("ENTITY", "@E1", {"link": ["friend"]}))
         self.refuses(Record("ENTITY", "@E1", {"link": 3}))
-        self.refuses(Record("ENTITY", "@E1", {"look.attire": "w_poor"}))
-        self.refuses(Record("ENTITY", "@E1", {"look.attire": [["w_poor"]]}))
+        self.refuses(Record("ENTITY", "@E1", {"look.attire": "tattered"}))
+        self.refuses(Record("ENTITY", "@E1", {"look.attire": [["tattered"]]}))
         self.refuses(Record("ENTITY", "@E1", {"look.gaze": 4}))
         self.refuses(Record("ENTITY", "@E1", {"look.gaze": ["me"]}))
         self.refuses(Record("ENTITY", "@E1", {"dir": "up"}))
@@ -148,7 +148,7 @@ class Refusals(unittest.TestCase):
     # ---- L10: an absent person is not seen --------------------------------------------------------------
     def test_an_absent_person_has_no_distance_direction_or_appearance(self):
         self.accepts(Record("ENTITY", "@E1", {"present": False, "link": "friend", "rel.trust": 3}))
-        for f, v in (("dist", 3.0), ("dir", {"sin": 0, "cos": 1}), ("look.sex", "male"), ("look.attire", ["w_poor"]),
+        for f, v in (("dist", 3.0), ("dir", {"sin": 0, "cos": 1}), ("look.sex", "male"), ("look.attire", ["tattered"]),
                      ("look.gaze", "me"), ("look.wounds", 1.0)):
             self.refuses(Record("ENTITY", "@E1", {"present": False, f: v}))
         self.accepts(Record("ENTITY", "@E1", {"present": True, "dist": 3.0, "look.sex": "male"}))

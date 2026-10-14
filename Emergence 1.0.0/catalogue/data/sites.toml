@@ -1,0 +1,322 @@
+# sites.toml - étape 19a : les SORTES de lieux et de constructions (la table `sortes` de la langue, comme les types d'objets).
+#
+# Un lieu ou une construction a une SORTE apparente : « une maison », « le pont », « une cité au-delà du désert ». C'est ce
+# que lc_kind (le lieu tel qu'on le croit) et pc_kind_seen (la chose vue) portent, et ce que la langue peut nommer : dans
+# exists, recipe, is_a, described, et (channel … (into house)) pour bâtir. Une sorte n'est ni une histoire ni une règle ;
+# `built = true` : faite de mains, on peut y façonner la matière (forme) ; un lieu naturel ne se bâtit pas.
+# Budget : ces mots sont dans la table des sortes (≤ 1 024 avec les types, matières, espèces, formes et mots perçus),
+# pas dans les 768 mots de grammaire.
+
+
+# ─── building ───
+[[site]]
+id = "house"
+category = "building"
+built = true
+label_fr = "maison"
+
+[[site]]
+id = "hut"
+category = "building"
+built = true
+label_fr = "cabane"
+
+[[site]]
+id = "barn"
+category = "building"
+built = true
+label_fr = "grange"
+
+[[site]]
+id = "stable"
+category = "building"
+built = true
+label_fr = "étable, écurie"
+
+[[site]]
+id = "workshop"
+category = "building"
+built = true
+label_fr = "atelier"
+
+[[site]]
+id = "mill"
+category = "building"
+built = true
+label_fr = "moulin"
+
+[[site]]
+id = "inn"
+category = "building"
+built = true
+label_fr = "auberge"
+
+[[site]]
+id = "hall"
+category = "building"
+built = true
+label_fr = "maison commune"
+
+[[site]]
+id = "temple"
+category = "building"
+built = true
+label_fr = "temple"
+
+[[site]]
+id = "tower"
+category = "building"
+built = true
+label_fr = "tour"
+
+[[site]]
+id = "granary"
+category = "building"
+built = true
+label_fr = "grenier"
+
+
+# ─── work ───
+[[site]]
+id = "wall"
+category = "work"
+built = true
+label_fr = "mur, rempart"
+
+[[site]]
+id = "gate"
+category = "work"
+built = true
+label_fr = "porte de ville, portail"
+
+[[site]]
+id = "fence"
+category = "work"
+built = true
+label_fr = "clôture"
+
+[[site]]
+id = "bridge"
+category = "work"
+built = true
+label_fr = "pont"
+
+[[site]]
+id = "well"
+category = "work"
+built = true
+label_fr = "puits"
+
+[[site]]
+id = "dam"
+category = "work"
+built = true
+label_fr = "barrage"
+
+[[site]]
+id = "stairs"
+category = "work"
+built = true
+label_fr = "escalier"
+
+
+# ─── land ───
+[[site]]
+id = "field"
+category = "land"
+label_fr = "champ"
+
+[[site]]
+id = "garden"
+category = "land"
+label_fr = "jardin"
+
+[[site]]
+id = "pasture"
+category = "land"
+label_fr = "pré, pâture"
+
+[[site]]
+id = "orchard"
+category = "land"
+label_fr = "verger"
+
+[[site]]
+id = "mine"
+category = "land"
+label_fr = "mine"
+
+[[site]]
+id = "quarry"
+category = "land"
+label_fr = "carrière"
+
+[[site]]
+id = "market"
+category = "land"
+label_fr = "marché"
+
+[[site]]
+id = "square"
+category = "land"
+label_fr = "place"
+
+[[site]]
+id = "graveyard"
+category = "land"
+label_fr = "cimetière"
+
+[[site]]
+id = "camp"
+category = "land"
+label_fr = "campement"
+
+[[site]]
+id = "ruins"
+category = "land"
+label_fr = "ruines"
+
+
+# ─── settlement ───
+[[site]]
+id = "hamlet"
+category = "settlement"
+label_fr = "hameau"
+
+[[site]]
+id = "village"
+category = "settlement"
+label_fr = "village"
+
+[[site]]
+id = "city"
+category = "settlement"
+label_fr = "cité, ville"
+
+
+# ─── wild ───
+[[site]]
+id = "forest"
+category = "wild"
+label_fr = "forêt"
+
+[[site]]
+id = "clearing"
+category = "wild"
+label_fr = "clairière"
+
+[[site]]
+id = "meadow"
+category = "wild"
+label_fr = "prairie"
+
+[[site]]
+id = "hill"
+category = "wild"
+label_fr = "colline"
+
+[[site]]
+id = "mountain"
+category = "wild"
+label_fr = "montagne"
+
+[[site]]
+id = "valley"
+category = "wild"
+label_fr = "vallée"
+
+[[site]]
+id = "cave"
+category = "wild"
+label_fr = "grotte"
+
+[[site]]
+id = "desert"
+category = "wild"
+label_fr = "désert"
+
+[[site]]
+id = "swamp"
+category = "wild"
+label_fr = "marais"
+
+[[site]]
+id = "coast"
+category = "wild"
+label_fr = "côte"
+
+
+# ─── water ───
+[[site]]
+id = "river"
+category = "water"
+label_fr = "rivière"
+
+[[site]]
+id = "lake"
+category = "water"
+label_fr = "lac"
+
+[[site]]
+id = "pond"
+category = "water"
+label_fr = "étang"
+
+[[site]]
+id = "source"
+category = "water"
+label_fr = "source"
+
+[[site]]
+id = "sea"
+category = "water"
+label_fr = "mer"
+
+[[site]]
+id = "ford"
+category = "water"
+label_fr = "gué"
+
+
+# ─── route ───
+[[site]]
+id = "road"
+category = "route"
+label_fr = "route"
+
+[[site]]
+id = "path"
+category = "route"
+label_fr = "sentier"
+
+[[site]]
+id = "pass"
+category = "route"
+label_fr = "col"
+
+
+# ─── sky ───
+[[site]]
+id = "sky"
+category = "sky"
+label_fr = "ciel"
+
+[[site]]
+id = "moon"
+category = "sky"
+label_fr = "lune"
+
+[[site]]
+id = "sun"
+category = "sky"
+label_fr = "soleil"
+
+[[site]]
+id = "star"
+category = "sky"
+label_fr = "étoile"
+
+[[site]]
+id = "cloud"
+category = "sky"
+label_fr = "nuage"

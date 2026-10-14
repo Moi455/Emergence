@@ -237,6 +237,8 @@ Entraînement sur la Quadro en float16 avec mise à l'échelle des gradients : u
 
 ## 7. Ce qui manque au catalogue et à la langue (pour l'étape 19)
 
+> **Mis à jour le 13 oct. (étape 19a)** : toutes les lignes du tableau ci-dessous sont faites, voir `catalogue/ETAT.md` (temps, groupes, accords, parts, « continuer à réfléchir » = `think_more` + `WAKE.budget`, parole prévue `PLAN.says`, plan lisible, `c_sees_ref` sur un groupe, compagnon `with`). Le tableau est conservé tel que posé le 13 oct. au matin.
+
 Vérifié dans `catalogue/data/*.toml` et `catalogue/generated/model_interface.json`.
 
 | Manque | Pour quoi | Ce qui existe déjà | Proposition |

@@ -31,6 +31,8 @@ La richesse vit dans le moteur et les données ; le Transformer (≈ 5 M de para
 | Ce qu'une décision écrit | geste choisi + **≤ 4 écritures** (pointeur, variable, valeur ; créer une croyance, un objectif, un souvenir ou un plan = une écriture dont la proposition sort du décodeur de la parole) | chacune bornée par le pas par décision et le taux par jour ; le reste suit les lois de retour du moteur (revue du 9 oct.) |
 | Rythme | gestes rapides, objectifs lents | tout ne se décide pas à chaque pas |
 
+**Étape 19a (13 oct.)** : la langue sait dire le temps (`at_time` rendez-vous ≠ `before` échéance, moments du jour, saisons, `span`), les groupes (`us`, `@G` agissent ; dossier GROUP : membres, chef, but), les accords précis (`(yes h:2)`), les parts (`share`), les quantités (`(of most @G3)`), les descriptions relatives (`the_one`), les questions enchâssées (`knows`) et les lieux (56 sortes). Voir `ETAT.md`. Les jetons passent à 90 (GROUP 4). Les réglages de partie (`village_temperament`, `w_think_budget`) entrent par `WAKE` (canal `setting`).
+
 **Unités de temps** (D30) : minute de jeu = 3,75 s réelles ; heure de jeu = 3 min 45 s ; jour = 1 h 30 (1 h de jour, 30 min de nuit) ; saison = 1 h 45 ; an = 7 h ; année de vie ≈ 2 h 30 à l'âge adulte (horloge de vie). Chaque dynamique déclare son horloge (`clock` : `real`, `day` = calendrier, `life` = horloge de vie).
 
 **Durées des processus** (D30, D32 ; un PNJ décide en moyenne toutes les 2,5 s réelles = 40 s de jeu) :
@@ -66,6 +68,8 @@ Champ `token` d'une variable : où l'IA la voit (`SELF.body.pain`, `ENTITY.look.
 python3 catalogue/tools/check.py            # structure, références, séparation des couches
 python3 catalogue/tools/check.py --strict   # + toutes les sondes exprimables
 python3 catalogue/tools/render.py           # écrit catalogue/CATALOGUE.md (pour Monsieur)
+python3 catalogue/tools/probes.py           # chaque parole et chaque ligne de trace des sondes est une phrase valide
+python3 catalogue/tools/shapes.py "(offer …)" # quelle forme de parole (promesse, menace, rendez-vous…) et quel mot-clé
 python3 catalogue/tools/budget.py           # ce que l'IA voit, compté (budget)
 python3 -m unittest discover -s catalogue/tests
 ```

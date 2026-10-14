@@ -24,7 +24,7 @@ concept = [
   { id = "c_time", category = "condition", args = ["time"], label_fr = "il est (l'heure ressentie : time_felt)" },
   { id = "c_elapsed", category = "condition", args = ["quantity"], label_fr = "il s'est passé (durée ressentie)" },
   { id = "c_stopped", category = "condition", label_fr = "on me retient physiquement (une main sur le bras, quelqu'un entre moi et la cible) ; un cri passe par c_addressed" },
-  { id = "c_sees_ref", category = "condition", args = ["entity"], label_fr = "je vois cette personne ou cette chose (un dossier connu)" },
+  { id = "c_sees_ref", category = "condition", args = ["entity"], label_fr = "je vois cette personne ou cette chose (un dossier connu) ; sur un GROUPE : je vois tous les membres que je crois siens (« attendre que tous soient là »)" },
   { id = "c_state_seen", category = "condition", args = ["entity", "concept"], label_fr = "l'état VU de … est … (le pain paraît cuit, le métal est rouge, le mur est tombé, le seau est plein, le sang ne coule plus) : lu dans pc_state_seen" },
   { id = "c_rested", category = "condition", label_fr = "je me sens reposé" },
 ]

@@ -6,7 +6,10 @@ trained checkpoint would silently change meaning. So, like `ai/tok2/registry.jso
 indices are recorded once in `ai/student2/output_registry.json` and only ever APPENDED to:
 
   gestures, conditions, write_vars   name + signature (what its parameters mean): a changed signature is a CONFLICT,
-                                     give the thing another name
+                                     give the thing another name. One exception, a WIDENING: a pointer parameter that
+                                     accepts MORE kinds of target (give an animal, take a plant, step 19a) keeps its
+                                     index and its weights; only the feasibility mask grows. The signature is rewritten
+                                     by --update, and an older checkpoint stays compatible (its signature is narrower).
   forms, enum_values, directions     names
   manner                             heads in order, each with its values in order and a fixed CAPACITY
 
@@ -71,6 +74,22 @@ class Needs:
         self.manner = {h: list(spec.manner_heads[h]["values"]) for h in sorted(spec.manner_heads)}
 
 
+def widens(old: str, new: str) -> bool:
+    """True when `new` is `old` with some pointer parameters accepting MORE targets (same names, order, optionality)."""
+    po, pn = old.split("|"), new.split("|")
+    if len(po) != len(pn):
+        return False
+    for a, b in zip(po, pn):
+        if a == b:
+            continue
+        fa, fb = a.split(":"), b.split(":")
+        if len(fa) != 4 or len(fb) != 4 or fa[0] != "ref" or fb[0] != "ref" or fa[:3] != fb[:3]:
+            return False
+        if not set(fa[3].split("/")) <= set(fb[3].split("/")):
+            return False
+    return True
+
+
 class OutputRegistry:
     def __init__(self, data: dict | None = None):
         self.d = data or {"schema": SCHEMA, "capacity": dict(CAPACITY), "manner_reserve": MANNER_RESERVE,
@@ -120,7 +139,10 @@ class OutputRegistry:
                 if n not in have:
                     add.append(f"{kind}: {n}")
                 elif have[n] != sig:
-                    bad.append(f"{kind}: {n} changed meaning ({have[n]!r} -> {sig!r}): give it another name")
+                    if widens(have[n], sig):
+                        add.append(f"{kind}: {n} widened")
+                    else:
+                        bad.append(f"{kind}: {n} changed meaning ({have[n]!r} -> {sig!r}): give it another name")
             if len(have) + sum(1 for n in want if n not in have) > self.capacity[kind]:
                 bad.append(f"{kind}: more than the capacity {self.capacity[kind]} (a new schema version)")
         for kind, want in (("forms", need.forms), ("enum_values", need.enum_values), ("directions", need.directions)):
@@ -162,6 +184,9 @@ class OutputRegistry:
         for kind, want in (("gestures", need.gestures), ("conditions", need.conditions), ("write_vars", need.write_vars)):
             have = set(new.names(kind))
             new.d[kind] += [{"name": n, "sig": s} for n, s in want.items() if n not in have]
+            for e in new.d[kind]:                                  # a widened pointer mask: same index, wider signature
+                if e["name"] in want and e["sig"] != want[e["name"]] and widens(e["sig"], want[e["name"]]):
+                    e["sig"] = want[e["name"]]
         for kind, want in (("forms", need.forms), ("enum_values", need.enum_values), ("directions", need.directions)):
             new.d[kind] += [n for n in want if n not in set(new.d[kind])]
         heads = {h["name"]: h for h in new.d["manner"]}
@@ -182,7 +207,10 @@ class OutputRegistry:
             why.append("capacities differ")
         for kind in ("gestures", "conditions", "write_vars", "forms", "enum_values", "directions"):
             a, b = older.get(kind, []), self.d[kind]
-            if b[:len(a)] != a:
+            same = len(b) >= len(a) and all(
+                x == y or (isinstance(x, dict) and isinstance(y, dict) and x["name"] == y["name"] and widens(x["sig"], y["sig"]))
+                for x, y in zip(a, b))
+            if not same:
                 why.append(f"{kind}: not an extension of the checkpoint's list")
         a, b = older.get("manner", []), self.d["manner"]
         for i, h in enumerate(a):

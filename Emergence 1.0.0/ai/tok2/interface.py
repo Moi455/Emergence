@@ -81,7 +81,7 @@ class InputVocabulary:
     (reserved) but is no longer accepted."""
 
     PAD, UNK, NUM, NAME_OTHER = "<pad>", "<unk>", "<num>", "<name_other>"   # <num>: a bare number in a proposition
-    POINTER_KINDS = ("@E", "@T", "@G", "@L", "@V", "@PLACE", "b:", "m:", "g:")
+    POINTER_KINDS = ("@E", "@T", "@G", "@L", "@V", "@PLACE", "b:", "m:", "g:", "h:", "q:", "c:")   # h: heard, q: request, c: commitment (19a)
     NAME_SLOTS = 64
 
     @classmethod

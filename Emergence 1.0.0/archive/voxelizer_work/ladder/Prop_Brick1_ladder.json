@@ -1,0 +1,31 @@
+[
+ {
+  "status": "ok",
+  "voxels": 1969532,
+  "surface": 89702,
+  "interior": 1879830,
+  "cells": [
+   173,
+   105,
+   126
+  ],
+  "size_m": [
+   3.46,
+   2.1,
+   2.52
+  ],
+  "seconds": 87.8,
+  "stages": {
+   "chargement": 0.6,
+   "surface": 10.7,
+   "remplissage": 65.7,
+   "couleurs": 1.0,
+   "palette": 0.2,
+   "entités": 5.4
+  },
+  "rss_mb": 873,
+  "png": "/home/claude/work/ladder/Prop_Brick1_x10.png",
+  "warnings": [],
+  "scale": 10.0
+ }
+]

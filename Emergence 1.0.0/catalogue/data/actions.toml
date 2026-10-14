@@ -113,7 +113,7 @@ id = "take"
 family = "grasp"
 label_fr = "prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un)"
 params = [
-  { name = "target", type = "ref", accepts = ["item", "agent", "animal"] },
+  { name = "target", type = "ref", accepts = ["item", "agent", "animal", "plant"] },
   { name = "from", type = "enum", values = ["ground", "container", "hand_of", "worn_by"], note = "worn_by : à la ceinture, dans la bourse, sur le corps" },
   { name = "hold", type = "enum", values = ["in_hand", "in_arms", "on_back", "by_arm"], note = "by_arm : soutenir quelqu'un qui marche" },
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
@@ -153,9 +153,9 @@ animation = ["put_down", "trowel_place", "store_crouch"]
 [[action]]
 id = "give"
 family = "grasp"
-label_fr = "tendre, donner en main propre, nourrir une bête à la main"
+label_fr = "tendre, donner en main propre (une chose, une bête qu'on cède), nourrir une bête à la main"
 params = [
-  { name = "item", type = "ref", accepts = ["item"] },
+  { name = "item", type = "ref", accepts = ["item", "animal"] },
   { name = "to", type = "ref", accepts = ["agent", "animal"] },
   { name = "mode", type = "enum", values = ["offer", "press"], note = "offer : tendre, l'autre prend s'il veut ; press : mettre de force dans la main" },
 ]
@@ -283,7 +283,7 @@ id = "pull"
 family = "force"
 label_fr = "tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre)"
 params = [
-  { name = "target", type = "ref", accepts = ["agent", "animal", "item", "structure", "voxel"] },
+  { name = "target", type = "ref", accepts = ["agent", "animal", "item", "structure", "voxel", "plant"] },
   { name = "intensity", type = "enum", values = ["faint", "light", "firm", "hard", "full"], ordinal = true },
   { name = "toward", type = "ref", accepts = ["place", "direction"], optional = true },
 ]

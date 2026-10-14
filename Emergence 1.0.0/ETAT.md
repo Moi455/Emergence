@@ -1,4 +1,8 @@
-# État du dépôt (10 octobre 2026)
+# État du dépôt (14 octobre 2026)
+
+**Fusion du 14 oct.** : l'ancien dépôt (`claude/moteur-social`) est fusionné dans ce paquet (règle : la version la plus récente gagne ; 357 fichiers repris, 62 conflits tous tranchés pour 1.0.0). Tests verts : `scripts/test_all.sh` (Python, ctest social) et CMake complet avec le monde (9/9). Le monde, le rendu, les personnages et l'ancienne IA sont présents mais en `.claudeignore`. Carte complète : `docs/13_fusion_1.0.0.md`.
+
+L'état ci-dessous date du 10 oct.
 
 **Depuis le 9 oct. (Claude Code sur la machine de Monsieur)** : branche `claude/moteur-social` poussée sur GitHub. Focus : moteur social et Transformer (le reste est mis de côté, `.claudeignore`).
 

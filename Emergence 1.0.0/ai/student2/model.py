@@ -461,15 +461,19 @@ class SequenceDecoder(nn.Module):
                 x = x + ly["ff"](ly["ln3"](x))
             h = self.ln(x)
             first = torch.full((Sn, 1), t == 0, dtype=torch.bool, device=dev)
-            sym = self.symbol_logits(h, (top > 0).view(Sn, 1), first)[:, 0].argmax(-1)
-            if t == L - 1:
-                sym = torch.full_like(sym, self.S.eos)                                   # the last step is the end
-            is_end = sym == self.S.eos
-            sym_in = sym.clamp(max=self.S.vocab_size - 1)
             # the tree must be able to close inside the symbol budget, and the stack stays bounded
             consumed = (top > 0).long()
             after = pending.sum(1, keepdim=True) - consumed.unsqueeze(1) + (arities.unsqueeze(0) - 1).clamp(min=0)
             fits = (after <= (max_symbols - 1 - t)) & ((arities.unsqueeze(0) <= 1) | (top.unsqueeze(1) < STACK))
+            # a symbol none of whose arities fits cannot be chosen: near the budget only leaves remain (review 22)
+            feasible = (self.arity_ok[:self.S.vocab_size].unsqueeze(0) & fits.unsqueeze(1)).any(-1)
+            lg = self.symbol_logits(h, (top > 0).view(Sn, 1), first)[:, 0]
+            lg = torch.cat([lg[:, :self.S.vocab_size].masked_fill(~feasible, NEG), lg[:, self.S.vocab_size:]], -1)
+            sym = lg.argmax(-1)
+            if t == L - 1:
+                sym = torch.full_like(sym, self.S.eos)                                   # the last step is the end
+            is_end = sym == self.S.eos
+            sym_in = sym.clamp(max=self.S.vocab_size - 1)
             ar_l, ct_l, sl_l = self.conditioned(h, sym_in[:, None], enc, enc_ok, slot_ptrkind, fits[:, None, :])
             ar, ct, sl = ar_l[:, 0].argmax(-1), ct_l[:, 0].argmax(-1), sl_l[:, 0].argmax(-1) + 1
             pointer = self.is_pointer[sym_in] & ~is_end

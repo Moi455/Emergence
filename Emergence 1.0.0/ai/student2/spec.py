@@ -484,23 +484,31 @@ class SequenceSpace:
             if cat == "mood":
                 heads[name] = {2}
             elif cat == "formula":
-                heads[name] = {1, 2}
+                heads[name] = {1, 2, 3}                                  # (yes) (yes UTT) (yes h:2) (yes h:2 UTT)
             elif cat == "logic":
                 heads[name] = {2} if name in ("not", "that") else {3}
             elif cat in ("time", "evidential"):
                 heads[name] = {2}
+            elif cat == "time_op":                                       # (at_time TIME PROP)
+                heads[name] = {3}
             elif cat == "event_role":
                 heads[name] = {2}
             elif cat == "predicate":
                 heads[name] = {1 + len(c.args)}
         heads["did"] = set(range(3, 8))                              # agent, gesture, [target], <= 3 roles: 2..6 arguments
         heads["described"] = set(range(2, MAX_ARITY))
+        for g in tk.vocab.cat["action"].values():                    # a role is named by a parameter of a gesture: (to X), (at X), (where X)
+            for prm in g.params:
+                if prm.type == "ref" and prm.name in v.ids:
+                    heads.setdefault(prm.name, set()).add(2)
+        heads["span"] = {3}                                          # (span N UNIT)
+        heads["of"] = {3}                                            # (of QUANTITY GROUP)
         for name, arities in heads.items():
             if name not in v.ids:
                 continue
             i = v.ids[name]
             cats = tk.vocab.cats.get(name, set())
-            as_leaf = bool(cats - {"mood", "formula", "logic", "time", "evidential", "event_role", "predicate"})
+            as_leaf = bool(cats - {"mood", "formula", "logic", "time", "evidential", "event_role", "predicate", "time_op", "time_form", "ref_node"})
             ok[i] = False
             ok[i, list(arities)] = True
             ok[i, 0] = as_leaf                                           # a word that is also a kind or a manner can be a leaf

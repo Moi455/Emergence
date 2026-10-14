@@ -23,6 +23,13 @@
 #     tirée de ce que le parleur en perçoit (« described smith tall ») ; jamais l'identité vraie ;
 #   - l'AUDITEUR apparie cette forme à ses propres dossiers avec ses croyances (named), sa perception (il voit
 #     qui est désigné) ou ses descriptions, avec une certitude ; sinon il crée un dossier « un certain … ».
+#   - `us` (étape 19a) : « nous » se fige en un GROUPE de circonstance dont les membres sont le parleur, ceux à qui il
+#     parle et ceux qu'il nomme dans la même parole ; `(count us 3)` dit combien. L'auditeur crée (ou retrouve) un dossier
+#     GROUP avec ces membres (≤ 4 gardés), un chef cru si la parole en désigne un (leads), un but cru si elle en annonce un
+#     (intends, wants). Le moteur ne décide ni qui est membre ni qui mène : ce sont des croyances (member, leads).
+#   - échange des personnes (l'étape « I ↔ YOU » d'ELIZA, docs/11) : pour l'auditeur, `me` devient le dossier du parleur
+#     dans son esprit et `you` devient son propre `me` ; `us` reste `us`.
+#   - h:3 / q:1 / c:2 (étape 19a) : ce que le parleur a entendu, ce qu'on lui a demandé, ce qu'il a convenu ; figés comme b:/m:/g:.
 # Ainsi l'IA écrit court, l'auditeur reçoit une proposition dans ses propres termes, et l'on peut parler
 # d'Aldric à quelqu'un qui ne le connaît pas, se tromper de personne, ou désigner sans nommer.
 # Vocabulaire (catalogue/tools/language.py le construit) : mots de grammaire = les concepts, les gestes,
@@ -30,13 +37,14 @@
 # sosies (table séparée, ≤ 1 024) ; noms propres = n:<id> dans la table des noms.
 
 grammar = [
-  { id = "utterance", rule = "UTT := MOOD PROP | FORMULA | FORMULA UTT", label_fr = "une parole" },
-  { id = "proposition", rule = "PROP := [not] [TIME] [EVID] PRED ARG* ROLE* | LOGIC PROP PROP | that PTR", label_fr = "une proposition" },
+  { id = "utterance", rule = "UTT := MOOD PROP | FORMULA | FORMULA UTT | (yes|no) PTR [UTT]  (PTR : h: q: c:)", label_fr = "une parole" },
+  { id = "proposition", rule = "PROP := [not] [TIME] [EVID] PRED ARG* ROLE* | LOGIC PROP PROP | TIME_OP TE PROP | that PTR   ;  TE := DAYPART | SEASON | today | tomorrow | yesterday | sometime | (span N UNIT) | PTR", label_fr = "une proposition" },
   { id = "logic", rule = "LOGIC := and | or | if | because", label_fr = "relier deux propositions (si…, parce que…)" },
-  { id = "argument", rule = "ARG := REF | KIND[:QTY] | QTY | DEGREE | WORD | PROP | WH", label_fr = "un argument" },
-  { id = "reference", rule = "REF := me | you | this | here | @E<n> | @T<n> | @G<n> | @L<n> | @PLACE | n:<n° de nom> | someone | anyone | everyone | no_one | (described WORD+)  — WORD : descriptor, role_word, occupation, sorte", label_fr = "désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description" },
-  { id = "role", rule = "ROLE := (with REF) | (to REF) | (into REF) | (how WORD) | (says PROP)", label_fr = "les rôles d'un événement (étape 6, cadre did)" },
+  { id = "argument", rule = "ARG := REF | KIND[:QTY] | QTY | DEGREE | WORD | PROP | WH (seulement sous ask et sous knows)", label_fr = "un argument" },
+  { id = "reference", rule = "REF := me | you | us | this | here | @E<n> | @T<n> | @G<n> | @L<n> | @PLACE | n:<n° de nom> | someone | anyone | everyone | no_one | somewhere | something | (of QTY REF) | (described WORD+ [CLAUSE])  — WORD : descriptor, role_word, occupation, sorte (lieu, mot perçu) ; CLAUSE : un prédicat dont un argument est the_one", label_fr = "désigner : soi, l'autre, ce qu'on montre, un pointeur du contexte, un nom, une description" },
+  { id = "role", rule = "ROLE := (NOM_DE_PARAMÈTRE REF) | (how WORD) | (says PROP) ; NOM_DE_PARAMÈTRE : un paramètre-pointeur du geste (to, at, with, into, from, where, toward, on, against) ; with REF = compagnon si REF est une personne ou un groupe", label_fr = "les rôles d'un événement (cadre did) : les paramètres du geste, typés" },
   { id = "question", rule = "WH := who | what | where | when | why | how_much | which", label_fr = "le trou d'une question (ask)" },
+  { id = "keyword_ranks", rule = "RANK[category] : la priorité d'un mot pour dire de quoi parle une parole (ELIZA : le mot-clé de plus haut rang commande)", ranks = { interpretation = 9, deontic = 8, gesture = 7, time_op = 6, logic = 5, event_role = 4, predicate = 4, quantity = 3, fraction = 3, evidential = 3, link = 3, emotion = 3, mood = 2, time = 2, formula = 1 }, label_fr = "rang des mots-clés" },
   { id = "limits", rule = "≤ 20 symboles ; imbrication d'arguments-propositions ≤ 2 ; un seul mode par parole", label_fr = "budget de l'IA" },
 ]
 
@@ -64,11 +72,44 @@ concept = [
   { id = "long_ago", category = "time", label_fr = "il y a longtemps" },
   { id = "today", category = "time", label_fr = "aujourd'hui" },
   { id = "tomorrow", category = "time", label_fr = "demain" },
-  { id = "at_festival", category = "time", label_fr = "à la fête" },
-  { id = "before_winter", category = "time", label_fr = "avant l'hiver" },
+  { id = "sometime", category = "time_mark", label_fr = "un jour, à un moment (indéfini)" },
+  { id = "yesterday", category = "time", label_fr = "hier" },
+  # ─── Repères de temps GÉNÉRAUX (étape 19a) : moments, saisons, unités, décalages et durées ───
+  # Un repère (TE) est : un moment du jour, une saison, today / tomorrow / yesterday, un décalage ou une durée
+  # (span N UNITÉ), ou un événement dont on se souvient (m:2, @V4). Quatre opérateurs le combinent à une
+  # proposition : (at_time TE P) = rendez-vous « à T » ; (before TE P) = échéance « avant T » ; (after TE P) ;
+  # (until TE P) ; (for DURÉE P) = « pendant ». Un décalage se lit depuis maintenant : « dans 3 jours » =
+  # (at_time (span 3 day) P) ; sous (past …) il se lit depuis alors. L'ancien « à la fête » est
+  # (at_time m:3 P) ou (at_time @V2 P) ; « avant l'hiver » est (before winter P) : plus de mot propre à une histoire.
+  { id = "at_time", category = "time_op", label_fr = "à (tel moment) : le rendez-vous, distinct de l'échéance" },
+  { id = "before", category = "time_op", label_fr = "avant (tel moment) : l'échéance" },
+  { id = "after", category = "time_op", label_fr = "après (tel moment)" },
+  { id = "until", category = "time_op", label_fr = "jusqu'à (tel moment)" },
+  { id = "for", category = "time_op", label_fr = "pendant (telle durée)" },
+  { id = "span", category = "time_form", label_fr = "une durée ou un décalage : (span 3 day)" },
+  { id = "dawn", category = "daypart", label_fr = "l'aube" },
+  { id = "morning", category = "daypart", label_fr = "le matin" },
+  { id = "noon", category = "daypart", label_fr = "midi" },
+  { id = "afternoon", category = "daypart", label_fr = "l'après-midi" },
+  { id = "evening", category = "daypart", label_fr = "le soir" },
+  { id = "night", category = "daypart", label_fr = "la nuit" },
+  { id = "spring", category = "season", label_fr = "le printemps" },
+  { id = "summer", category = "season", label_fr = "l'été" },
+  { id = "autumn", category = "season", label_fr = "l'automne" },
+  { id = "winter", category = "season", label_fr = "l'hiver" },
+  { id = "hour", category = "time_unit", label_fr = "heure" },
+  { id = "day", category = "time_unit", label_fr = "jour" },
+  { id = "season", category = "time_unit", label_fr = "saison" },
+  { id = "year", category = "time_unit", label_fr = "année" },
   # ─── D'où on le tient (évidentialité : la rumeur commence ici) ───
-  { id = "seen_myself", category = "evidential", label_fr = "je l'ai vu" },
-  { id = "heard_said", category = "evidential", label_fr = "on m'a dit, il paraît" },
+  # Un évidentiel par SOURCE de croyance (concept de catégorie source) : ce que la parole annonce est ce que la croyance garde.
+  { id = "seen_myself", category = "evidential", refers = "seen", label_fr = "je l'ai vu" },
+  { id = "overheard", category = "evidential", refers = "heard", label_fr = "je l'ai entendu sans qu'on s'adresse à moi" },
+  { id = "heard_said", category = "evidential", refers = "told", label_fr = "on m'a dit, il paraît" },
+  { id = "read_it", category = "evidential", refers = "read", label_fr = "je l'ai lu" },
+  { id = "deduced", category = "evidential", refers = "inferred", label_fr = "j'en déduis" },
+  { id = "they_say", category = "evidential", refers = "assumed", label_fr = "tout le monde sait, on dit" },
+  { id = "dreamt_it", category = "evidential", refers = "dreamt", label_fr = "je l'ai rêvé, je l'ai vu en vision" },
   { id = "think", category = "evidential", label_fr = "je pense, je crois" },
   { id = "sure", category = "evidential", label_fr = "j'en suis sûr" },
   { id = "maybe", category = "evidential", label_fr = "peut-être" },
@@ -82,9 +123,15 @@ concept = [
   { id = "one", category = "quantity", label_fr = "un" },
   { id = "few", category = "quantity", label_fr = "quelques" },
   { id = "many", category = "quantity", label_fr = "beaucoup" },
+  { id = "most", category = "quantity", label_fr = "la plupart" },
   { id = "all", category = "quantity", label_fr = "tout, tous" },
   { id = "more", category = "quantity", label_fr = "plus" },
   { id = "less", category = "quantity", label_fr = "moins" },
+  # ─── Parts et fractions (partager le butin, étape 19a) ───
+  { id = "half", category = "fraction", label_fr = "la moitié" },
+  { id = "third", category = "fraction", label_fr = "un tiers" },
+  { id = "quarter", category = "fraction", label_fr = "un quart" },
+  { id = "equal", category = "fraction", label_fr = "à parts égales" },
   # ─── Questions ───
   { id = "who", category = "wh", label_fr = "qui ?" },
   { id = "what", category = "wh", label_fr = "quoi ?" },
@@ -99,8 +146,8 @@ concept = [
   { id = "thanks", category = "formula", label_fr = "merci" },
   { id = "sorry", category = "formula", label_fr = "pardon, désolé" },
   { id = "please", category = "formula", label_fr = "s'il te plaît" },
-  { id = "yes", category = "formula", label_fr = "oui" },
-  { id = "no", category = "formula", label_fr = "non" },
+  { id = "yes", category = "formula", answers = true, label_fr = "oui (seul, ou à UNE chose précise : (yes h:2) accepte l'offre entendue h:2, (yes q:1) la demande q:1)" },
+  { id = "no", category = "formula", answers = true, label_fr = "non (seul, ou à UNE chose précise : (no h:2) refuse cette offre-là et pas une autre)" },
   { id = "welcome", category = "formula", label_fr = "bienvenue" },
   { id = "help", category = "formula", label_fr = "à l'aide !" },
   { id = "watch_out", category = "formula", label_fr = "attention !" },

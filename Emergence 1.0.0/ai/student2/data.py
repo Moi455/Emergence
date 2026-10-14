@@ -141,7 +141,7 @@ class BatchSpec:
     prop_rows: int
     gestures: int
     self_type: int
-    n_pointer_kinds: int = 9
+    n_pointer_kinds: int = len(InputVocabulary.POINTER_KINDS)
 
     @classmethod
     def of(cls, rt: Runtime) -> "BatchSpec":

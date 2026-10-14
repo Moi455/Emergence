@@ -1,0 +1,8 @@
+[configuration]
+entry_symbol = "emergence_library_init"
+compatibility_minimum = "4.6"
+
+[libraries]
+linux.x86_64 = "res://bin/libemergence.so"
+windows.x86_64 = "res://bin/emergence.dll"
+macos = "res://bin/libemergence.dylib"

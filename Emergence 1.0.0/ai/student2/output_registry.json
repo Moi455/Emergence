@@ -37,7 +37,7 @@
   },
   {
    "name": "give",
-   "sig": "ref:item:0:item|ref:to:0:agent/animal|enum:mode:give.mode:0"
+   "sig": "ref:item:0:animal/item|ref:to:0:agent/animal|enum:mode:give.mode:0"
   },
   {
    "name": "go",
@@ -81,7 +81,7 @@
   },
   {
    "name": "pull",
-   "sig": "ref:target:0:agent/animal/item/structure/voxel|enum:intensity:intensity:0|ref:toward:1:direction/place"
+   "sig": "ref:target:0:agent/animal/item/plant/structure/voxel|enum:intensity:intensity:0|ref:toward:1:direction/place"
   },
   {
    "name": "push",
@@ -141,7 +141,7 @@
   },
   {
    "name": "take",
-   "sig": "ref:target:0:agent/animal/item|enum:from:from:0|enum:hold:hold:0|enum:stealth:stealth:0|enum:contact_zone:contact_zone:0"
+   "sig": "ref:target:0:agent/animal/item/plant|enum:from:from:0|enum:hold:hold:0|enum:stealth:stealth:0|enum:contact_zone:contact_zone:0"
   },
   {
    "name": "throw",
@@ -630,6 +630,18 @@
   {
    "name": "v_sanctity",
    "sig": "unipolar10|slow|0.1|self|0|"
+  },
+  {
+   "name": "g_when",
+   "sig": "time_until|jump|0.0|goal|1|"
+  },
+  {
+   "name": "i_speech",
+   "sig": "proposition|jump|0.0|plan|0|"
+  },
+  {
+   "name": "think_more",
+   "sig": "bool|jump|0.0|self|0|"
   }
  ],
  "forms": [

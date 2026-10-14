@@ -6,7 +6,7 @@
 
 namespace em::social::gen {
 
-inline constexpr std::uint64_t kCatalogueFingerprint = 0x4f22d90a14e96479ull;  // FNV-1a 64 of model_interface.json text + this file without this line
+inline constexpr std::uint64_t kCatalogueFingerprint = 0xfc9464e86e2a5386ull;  // FNV-1a 64 of model_interface.json text + this file without this line
 inline constexpr int kMaxParams = 6;
 inline constexpr int kMaxValues = 12;
 inline constexpr int kAdultAgeYears = 18;   // D10, read from life_stage
@@ -379,6 +379,7 @@ enum class Var : std::uint16_t {
   b_source,
   b_told_to,
   b_truth,
+  b_unintelligible,
   b_weight,
   baseline_mood,
   belief_capacity,
@@ -426,6 +427,8 @@ enum class Var : std::uint16_t {
   ep_wounds,
   ev_actor,
   ev_age,
+  ev_among,
+  ev_count,
   ev_from_to,
   ev_gesture,
   ev_manner_seen,
@@ -454,6 +457,7 @@ enum class Var : std::uint16_t {
   g_progress,
   g_since,
   g_status,
+  g_when,
   game_time,
   gaze,
   gentleness,
@@ -472,7 +476,9 @@ enum class Var : std::uint16_t {
   hunger,
   i_commitment,
   i_serves,
+  i_speech,
   i_step_index,
+  i_step_targets,
   i_steps,
   ice,
   illnesses,
@@ -545,6 +551,7 @@ enum class Var : std::uint16_t {
   pain,
   patience,
   pc_amount_seen,
+  pc_color_seen,
   pc_depth_seen,
   pc_dir,
   pc_display,
@@ -591,6 +598,12 @@ enum class Var : std::uint16_t {
   r_attraction,
   r_familiarity,
   r_fear,
+  r_group_goal,
+  r_group_kind,
+  r_group_leader,
+  r_group_members,
+  r_group_role,
+  r_group_size,
   r_id_certainty,
   r_known_by,
   r_last_contact,
@@ -647,6 +660,7 @@ enum class Var : std::uint16_t {
   tastes,
   tenderness,
   thermal_comfort,
+  think_more,
   thirst,
   time_felt,
   time_of_day,
@@ -668,9 +682,11 @@ enum class Var : std::uint16_t {
   v_power,
   v_sanctity,
   velocity,
+  village_temperament,
   visible_damage,
   visible_injury,
   vision,
+  w_think_budget,
   water_flow,
   water_level,
   water_quality,
@@ -683,11 +699,11 @@ enum class Var : std::uint16_t {
   zones,
   kCount
 };
-inline constexpr std::array<std::string_view, 342> kVarNames = {
-  "a_document", "a_form", "a_kind_label", "a_obligations", "a_parties", "a_status", "a_witnesses", "age_years", "agility", "air_temperature", "alive", "altruism", "ambient_noise", "anger", "animal_aggression", "animal_attachment", "animal_fear_humans", "animal_group", "animal_species", "animal_tameness", "anxiety", "anxiousness", "assurance", "attention", "attire_seen", "attracted_to", "b_acquired", "b_certainty", "b_confirmed", "b_contradicted", "b_hops", "b_importance", "b_informant", "b_origin_fact", "b_polarity", "b_proposition", "b_secret", "b_source", "b_told_to", "b_truth", "b_weight", "baseline_mood", "belief_capacity", "biological_parents", "bleeding", "blood_volume", "body_mass", "body_temperature", "boredom", "breath", "calendar_params", "carried", "cloud_cover", "commitments_seen", "condition", "confusion", "consciousness", "contempt", "coordination", "creativity", "crowding", "custody_log", "custom_aggregate", "day_of_year", "deposit", "diligence", "disgust", "endurance", "envy", "ep_age", "ep_attire", "ep_build", "ep_condition", "ep_dir", "ep_dist", "ep_expression", "ep_gaze", "ep_health", "ep_held", "ep_marks", "ep_motion", "ep_posture", "ep_sex", "ep_signs", "ep_wounds", "ev_actor", "ev_age", "ev_from_to", "ev_gesture", "ev_manner_seen", "ev_sense", "ev_target", "ev_with", "exhaustion", "expression", "fairness", "fear", "fearfulness", "fecundity", "fire_extent", "fire_fuel", "fire_heat", "fire_spread", "fog", "forgiveness", "frontier_depth", "g_deadline", "g_desired", "g_mode", "g_origin", "g_origin_ref", "g_priority", "g_progress", "g_since", "g_status", "game_time", "gaze", "gentleness", "gratitude", "greed_avoidance", "grief", "grooming", "group_cohesion", "guilt", "hands", "heard_unprocessed", "hearing", "height", "held_seen", "hostility_drivers", "hunger", "i_commitment", "i_serves", "i_step_index", "i_steps", "ice", "illnesses", "immunities", "indoors", "inquisitiveness", "inside_of", "intellect", "intoxication", "inv_seen", "involuntary_signs", "jealousy", "joy", "k_last_practice", "k_mastery", "k_self_estimate", "k_technique", "lc_dir", "lc_dist", "lc_file", "lc_kind", "lc_owner", "legitimacy", "life_clock", "life_stage", "light_level", "load_margin", "load_ratio", "look_age_seen", "look_build_seen", "look_drunk_seen", "look_marks_seen", "look_sex_seen", "m_content", "m_defining", "m_emotion", "m_fact_ref", "m_importance", "m_interpretation", "m_rehearsals", "m_role", "m_secret", "m_valence", "m_vividness", "m_when", "m_where", "magic_attunement", "magic_stability", "manipulation", "masking", "memory_capacity", "memory_store_capacity", "mobility", "modesty", "mood_energy", "mood_valence", "moon_phase", "need_achievement", "need_acquisition", "need_autonomy", "need_company", "need_esteem", "need_intimacy", "need_meaning", "need_novelty", "need_play", "need_security", "orientation", "own_held_seen", "pain", "patience", "pc_amount_seen", "pc_depth_seen", "pc_dir", "pc_display", "pc_dist", "pc_file", "pc_file_certainty", "pc_kind_seen", "pc_motion", "pc_owner_believed", "pc_props_seen", "pc_state_seen", "perceptiveness", "permanent_marks", "phenomenon_effects", "phenomenon_intensity", "phenomenon_kind", "phenomenon_signs", "place_bounds", "place_in", "place_recognized", "plant_health", "plant_species", "plant_stage", "plant_yield", "position", "posture", "posture_felt", "pp_air_felt", "pp_crowd_seen", "pp_indoors", "pp_light", "pp_noise", "pp_signs", "pp_sun", "pp_weather_seen", "precipitation", "pregnancy", "pride", "prudence", "q_content", "q_from", "q_since", "r_affection", "r_attraction", "r_familiarity", "r_fear", "r_id_certainty", "r_known_by", "r_last_contact", "r_link_believed", "r_name_believed", "r_obligation", "r_perceived_regard", "r_present", "r_reputation_seen", "r_resentment", "r_respect", "r_rivalry", "r_shared_history", "r_true_entity", "r_trust", "recognized_claims", "recognized_members", "relation_capacity", "reputation_aggregate", "reserves", "resilience", "robustness", "role_holder_support", "s_introduced_at", "s_introduced_by", "s_name", "s_scope", "sadness", "season_felt", "seen_direction", "seen_distance", "seen_motion", "self_control", "self_regard", "senescence", "sentimentality", "sex", "shame", "sickness_felt", "sim_depth", "sincerity", "sleepiness", "smoke", "snow_cover", "sociability", "soil_fertility", "soil_moisture", "soil_state", "storm", "strength", "stress", "surprise", "symptoms", "tastes", "tenderness", "thermal_comfort", "thirst", "time_felt", "time_of_day", "trace_direction", "trace_fact", "trace_freshness", "trace_kind", "trace_maker_cue", "transactions", "unconventionality", "underground_depth", "unrest", "v_achievement", "v_authority", "v_honor", "v_liberty", "v_loyalty", "v_pleasure", "v_power", "v_sanctity", "velocity", "visible_damage", "visible_injury", "vision", "water_flow", "water_level", "water_quality", "water_volume", "wealth_objective", "wind", "worn", "wounds", "year", "zones"
+inline constexpr std::array<std::string_view, 358> kVarNames = {
+  "a_document", "a_form", "a_kind_label", "a_obligations", "a_parties", "a_status", "a_witnesses", "age_years", "agility", "air_temperature", "alive", "altruism", "ambient_noise", "anger", "animal_aggression", "animal_attachment", "animal_fear_humans", "animal_group", "animal_species", "animal_tameness", "anxiety", "anxiousness", "assurance", "attention", "attire_seen", "attracted_to", "b_acquired", "b_certainty", "b_confirmed", "b_contradicted", "b_hops", "b_importance", "b_informant", "b_origin_fact", "b_polarity", "b_proposition", "b_secret", "b_source", "b_told_to", "b_truth", "b_unintelligible", "b_weight", "baseline_mood", "belief_capacity", "biological_parents", "bleeding", "blood_volume", "body_mass", "body_temperature", "boredom", "breath", "calendar_params", "carried", "cloud_cover", "commitments_seen", "condition", "confusion", "consciousness", "contempt", "coordination", "creativity", "crowding", "custody_log", "custom_aggregate", "day_of_year", "deposit", "diligence", "disgust", "endurance", "envy", "ep_age", "ep_attire", "ep_build", "ep_condition", "ep_dir", "ep_dist", "ep_expression", "ep_gaze", "ep_health", "ep_held", "ep_marks", "ep_motion", "ep_posture", "ep_sex", "ep_signs", "ep_wounds", "ev_actor", "ev_age", "ev_among", "ev_count", "ev_from_to", "ev_gesture", "ev_manner_seen", "ev_sense", "ev_target", "ev_with", "exhaustion", "expression", "fairness", "fear", "fearfulness", "fecundity", "fire_extent", "fire_fuel", "fire_heat", "fire_spread", "fog", "forgiveness", "frontier_depth", "g_deadline", "g_desired", "g_mode", "g_origin", "g_origin_ref", "g_priority", "g_progress", "g_since", "g_status", "g_when", "game_time", "gaze", "gentleness", "gratitude", "greed_avoidance", "grief", "grooming", "group_cohesion", "guilt", "hands", "heard_unprocessed", "hearing", "height", "held_seen", "hostility_drivers", "hunger", "i_commitment", "i_serves", "i_speech", "i_step_index", "i_step_targets", "i_steps", "ice", "illnesses", "immunities", "indoors", "inquisitiveness", "inside_of", "intellect", "intoxication", "inv_seen", "involuntary_signs", "jealousy", "joy", "k_last_practice", "k_mastery", "k_self_estimate", "k_technique", "lc_dir", "lc_dist", "lc_file", "lc_kind", "lc_owner", "legitimacy", "life_clock", "life_stage", "light_level", "load_margin", "load_ratio", "look_age_seen", "look_build_seen", "look_drunk_seen", "look_marks_seen", "look_sex_seen", "m_content", "m_defining", "m_emotion", "m_fact_ref", "m_importance", "m_interpretation", "m_rehearsals", "m_role", "m_secret", "m_valence", "m_vividness", "m_when", "m_where", "magic_attunement", "magic_stability", "manipulation", "masking", "memory_capacity", "memory_store_capacity", "mobility", "modesty", "mood_energy", "mood_valence", "moon_phase", "need_achievement", "need_acquisition", "need_autonomy", "need_company", "need_esteem", "need_intimacy", "need_meaning", "need_novelty", "need_play", "need_security", "orientation", "own_held_seen", "pain", "patience", "pc_amount_seen", "pc_color_seen", "pc_depth_seen", "pc_dir", "pc_display", "pc_dist", "pc_file", "pc_file_certainty", "pc_kind_seen", "pc_motion", "pc_owner_believed", "pc_props_seen", "pc_state_seen", "perceptiveness", "permanent_marks", "phenomenon_effects", "phenomenon_intensity", "phenomenon_kind", "phenomenon_signs", "place_bounds", "place_in", "place_recognized", "plant_health", "plant_species", "plant_stage", "plant_yield", "position", "posture", "posture_felt", "pp_air_felt", "pp_crowd_seen", "pp_indoors", "pp_light", "pp_noise", "pp_signs", "pp_sun", "pp_weather_seen", "precipitation", "pregnancy", "pride", "prudence", "q_content", "q_from", "q_since", "r_affection", "r_attraction", "r_familiarity", "r_fear", "r_group_goal", "r_group_kind", "r_group_leader", "r_group_members", "r_group_role", "r_group_size", "r_id_certainty", "r_known_by", "r_last_contact", "r_link_believed", "r_name_believed", "r_obligation", "r_perceived_regard", "r_present", "r_reputation_seen", "r_resentment", "r_respect", "r_rivalry", "r_shared_history", "r_true_entity", "r_trust", "recognized_claims", "recognized_members", "relation_capacity", "reputation_aggregate", "reserves", "resilience", "robustness", "role_holder_support", "s_introduced_at", "s_introduced_by", "s_name", "s_scope", "sadness", "season_felt", "seen_direction", "seen_distance", "seen_motion", "self_control", "self_regard", "senescence", "sentimentality", "sex", "shame", "sickness_felt", "sim_depth", "sincerity", "sleepiness", "smoke", "snow_cover", "sociability", "soil_fertility", "soil_moisture", "soil_state", "storm", "strength", "stress", "surprise", "symptoms", "tastes", "tenderness", "thermal_comfort", "think_more", "thirst", "time_felt", "time_of_day", "trace_direction", "trace_fact", "trace_freshness", "trace_kind", "trace_maker_cue", "transactions", "unconventionality", "underground_depth", "unrest", "v_achievement", "v_authority", "v_honor", "v_liberty", "v_loyalty", "v_pleasure", "v_power", "v_sanctity", "velocity", "village_temperament", "visible_damage", "visible_injury", "vision", "w_think_budget", "water_flow", "water_level", "water_quality", "water_volume", "wealth_objective", "wind", "worn", "wounds", "year", "zones"
 };
 
-inline constexpr std::array<VariableSpec, 342> kVariables = {{
+inline constexpr std::array<VariableSpec, 358> kVariables = {{
   VariableSpec{"a_document", "agreement_terms", Scale::id, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"a_form", "agreement_terms", Scale::enum_, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"a_kind_label", "agreement_terms", Scale::enum_, 0x40, 0, 0, 0, false, false, false},
@@ -728,6 +744,7 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"b_source", "belief", Scale::enum_, 0x03, 0, 0, 0, false, false, false},
   VariableSpec{"b_told_to", "belief", Scale::list, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"b_truth", "belief", Scale::bool_, 0x01, 0, 0, 0, false, false, false},
+  VariableSpec{"b_unintelligible", "belief", Scale::bool_, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"b_weight", "belief", Scale::bipolar10, 0x04, 3, 3, 0, false, false, false},
   VariableSpec{"baseline_mood", "mind_static", Scale::bipolar10, 0x18, 1, 0, 5, false, false, true},
   VariableSpec{"belief_capacity", "beliefs", Scale::qty, 0x40, 0, 0, 0, false, false, false},
@@ -775,6 +792,8 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"ep_wounds", "entity_percept", Scale::unipolar10, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"ev_actor", "event_seen", Scale::mref, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"ev_age", "event_seen", Scale::time, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"ev_among", "event_seen", Scale::qty, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"ev_count", "event_seen", Scale::qty, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"ev_from_to", "event_seen", Scale::mref, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"ev_gesture", "event_seen", Scale::word, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"ev_manner_seen", "event_seen", Scale::list, 0x40, 0, 0, 0, false, false, false},
@@ -803,6 +822,7 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"g_progress", "goal", Scale::ratio, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"g_since", "goal", Scale::time, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"g_status", "goal", Scale::enum_, 0x03, 0, 0, 0, false, false, false},
+  VariableSpec{"g_when", "goal", Scale::time, 0x03, 0, 0, 0, false, false, false},
   VariableSpec{"game_time", "clock", Scale::time, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"gaze", "appearance", Scale::id, 0x40, 0, 0, 0, false, true, false},
   VariableSpec{"gentleness", "mind_static", Scale::bipolar10, 0x18, 1, 0, 10, false, false, true},
@@ -821,7 +841,9 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"hunger", "needs", Scale::unipolar10, 0x01, 0, 0, 0, false, true, true},
   VariableSpec{"i_commitment", "intention", Scale::unipolar10, 0x02, 0, 0, 0, false, false, false},
   VariableSpec{"i_serves", "intention", Scale::mref, 0x02, 0, 0, 0, false, false, false},
+  VariableSpec{"i_speech", "intention", Scale::proposition, 0x02, 0, 0, 0, false, false, false},
   VariableSpec{"i_step_index", "intention", Scale::qty, 0x01, 0, 0, 0, false, false, false},
+  VariableSpec{"i_step_targets", "intention", Scale::list, 0x02, 0, 0, 0, false, false, false},
   VariableSpec{"i_steps", "intention", Scale::list, 0x02, 0, 0, 0, false, false, false},
   VariableSpec{"ice", "flow", Scale::qty, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"illnesses", "body", Scale::list, 0x01, 0, 0, 0, false, true, true},
@@ -894,6 +916,7 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"pain", "body", Scale::unipolar10, 0x01, 0, 0, 0, false, true, true},
   VariableSpec{"patience", "mind_static", Scale::bipolar10, 0x18, 1, 0, 10, false, false, true},
   VariableSpec{"pc_amount_seen", "percept", Scale::enum_, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"pc_color_seen", "percept", Scale::word, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"pc_depth_seen", "percept", Scale::enum_, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"pc_dir", "percept", Scale::qty, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"pc_display", "percept", Scale::enum_, 0x40, 0, 0, 0, false, false, false},
@@ -940,6 +963,12 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"r_attraction", "relation", Scale::unipolar10, 0x05, 5, 20, 0, true, false, false},
   VariableSpec{"r_familiarity", "relation", Scale::unipolar10, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"r_fear", "relation", Scale::unipolar10, 0x03, 0, 0, 0, false, false, false},
+  VariableSpec{"r_group_goal", "relation", Scale::proposition, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"r_group_kind", "relation", Scale::word, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"r_group_leader", "relation", Scale::mref, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"r_group_members", "relation", Scale::list, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"r_group_role", "relation", Scale::word, 0x40, 0, 0, 0, false, false, false},
+  VariableSpec{"r_group_size", "relation", Scale::qty, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"r_id_certainty", "relation", Scale::unipolar10, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"r_known_by", "relation", Scale::enum_, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"r_last_contact", "relation", Scale::time, 0x01, 0, 0, 0, false, false, false},
@@ -996,6 +1025,7 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"tastes", "mind_static", Scale::list, 0x18, 1, 0, 10, false, false, true},
   VariableSpec{"tenderness", "mind_dynamic", Scale::unipolar10, 0x03, 0, 0, 0, false, false, true},
   VariableSpec{"thermal_comfort", "needs", Scale::bipolar10, 0x40, 0, 0, 0, false, true, true},
+  VariableSpec{"think_more", "mind_dynamic", Scale::bool_, 0x02, 0, 0, 0, false, false, true},
   VariableSpec{"thirst", "needs", Scale::unipolar10, 0x01, 0, 0, 0, false, true, true},
   VariableSpec{"time_felt", "beliefs", Scale::qty, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"time_of_day", "clock", Scale::qty, 0x40, 0, 0, 0, false, false, false},
@@ -1017,9 +1047,11 @@ inline constexpr std::array<VariableSpec, 342> kVariables = {{
   VariableSpec{"v_power", "mind_static", Scale::unipolar10, 0x18, 1, 0, 5, false, false, true},
   VariableSpec{"v_sanctity", "mind_static", Scale::unipolar10, 0x18, 1, 0, 5, false, false, true},
   VariableSpec{"velocity", "spatial", Scale::qty, 0x01, 0, 0, 0, false, true, false},
+  VariableSpec{"village_temperament", "setting", Scale::unipolar10, 0x01, 0, 0, 0, false, true, false},
   VariableSpec{"visible_damage", "stability", Scale::unipolar10, 0x40, 0, 0, 0, false, false, false},
   VariableSpec{"visible_injury", "appearance", Scale::unipolar10, 0x40, 0, 0, 0, false, true, false},
   VariableSpec{"vision", "body", Scale::unipolar10, 0x11, 0, 0, 0, false, true, true},
+  VariableSpec{"w_think_budget", "setting", Scale::qty, 0x01, 0, 0, 0, false, true, false},
   VariableSpec{"water_flow", "flow", Scale::qty, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"water_level", "flow", Scale::qty, 0x01, 0, 0, 0, false, false, false},
   VariableSpec{"water_quality", "substance", Scale::unipolar10, 0x01, 0, 0, 0, false, false, false},

@@ -84,6 +84,7 @@ struct MindDynamic {
   std::int16_t stress{};  // tenths of the charter scale
   std::int16_t surprise{};  // tenths of the charter scale
   std::int16_t tenderness{};  // tenths of the charter scale
+  bool think_more{};
 };
 
 // body: corps : anatomie par zones, blessures, douleur, conscience, vie
@@ -194,6 +195,7 @@ struct Belief {
   std::uint8_t b_source{};  // value index
   ListRef b_told_to{};  // handle into a side table (variable-size data)
   bool b_truth{};
+  bool b_unintelligible{};
   std::int16_t b_weight{};  // tenths of the charter scale
 };
 
@@ -238,6 +240,8 @@ struct Episode {
 struct EventSeen {
   MRef ev_actor{};  // persistent id of one of the NPC's own records
   GameTime ev_age{};  // game seconds
+  std::int32_t ev_among{};  // milli-units of its unit
+  std::int32_t ev_count{};  // milli-units of its unit
   MRef ev_from_to{};  // persistent id of one of the NPC's own records
   std::uint16_t ev_gesture{};  // vocabulary id
   ListRef ev_manner_seen{};  // handle into a side table (variable-size data)
@@ -257,13 +261,16 @@ struct Goal {
   std::int16_t g_progress{};  // per-mille
   GameTime g_since{};  // game seconds
   std::uint8_t g_status{};  // value index
+  GameTime g_when{};  // game seconds
 };
 
 // intention: l'intention en cours : la suite de gestes choisie pour un objectif (records, 1 per NPC)
 struct Intention {
   std::int16_t i_commitment{};  // tenths of the charter scale
   MRef i_serves{};  // persistent id of one of the NPC's own records
+  Proposition i_speech{};
   std::int32_t i_step_index{};  // milli-units of its unit
+  ListRef i_step_targets{};  // handle into a side table (variable-size data)
   ListRef i_steps{};  // handle into a side table (variable-size data)
 };
 
@@ -279,6 +286,7 @@ struct Locus {
 // percept: une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité (records, 16 per NPC)
 struct Percept {
   std::uint8_t pc_amount_seen{};  // value index
+  std::uint16_t pc_color_seen{};  // vocabulary id
   std::uint8_t pc_depth_seen{};  // value index
   std::int32_t pc_dir{};  // milli-units of its unit
   std::uint8_t pc_display{};  // value index
@@ -310,6 +318,12 @@ struct Relation {
   std::int16_t r_attraction{};  // tenths of the charter scale
   std::int16_t r_familiarity{};  // tenths of the charter scale
   std::int16_t r_fear{};  // tenths of the charter scale
+  Proposition r_group_goal{};
+  std::uint16_t r_group_kind{};  // vocabulary id
+  MRef r_group_leader{};  // persistent id of one of the NPC's own records
+  ListRef r_group_members{};  // handle into a side table (variable-size data)
+  std::uint16_t r_group_role{};  // vocabulary id
+  std::int32_t r_group_size{};  // milli-units of its unit
   std::int16_t r_id_certainty{};  // tenths of the charter scale
   std::uint8_t r_known_by{};  // value index
   GameTime r_last_contact{};  // game seconds

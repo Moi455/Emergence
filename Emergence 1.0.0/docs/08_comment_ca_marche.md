@@ -24,7 +24,7 @@ Le validateur refuse un geste dont l'identifiant serait `steal`, `slap`, `threat
 
 Les histoires (`data/stories.toml`) ne sont **que des questions** : « le catalogue permet-il d'exprimer cela ? ». Si la réponse est non, on ajoute une **primitive générale**, jamais une entrée propre à l'histoire. Une histoire ne justifie aucune entrée et ne contraint aucun PNJ.
 
-Aujourd'hui, 146 sondes existent ; une quinzaine sont décomposées en gestes et en paroles. L'étape 18, en cours, décompose les autres et ajoute les primitives générales qui manquent.
+Aujourd'hui, 148 sondes existent, 142 sont exprimables (l'étape 19a en a fermé 12 et ajouté deux, décomposées pas à pas) et 6 restent en trou, toutes des lois du moteur. Les étapes 18 et 19a ont ajouté les primitives générales qui manquent.
 
 Plus tard, des **rails légers** (coutumes connues, comme faire la cour ou marchander) pourront aider l'entraînement. Un PNJ pourra les suivre, les dévier ou les ignorer. Ils ne sont pas faits.
 
@@ -65,11 +65,11 @@ Le Transformer a un budget. Chiffres donnés par `python3 catalogue/tools/budget
 
 | Quoi | Mesuré | Limite |
 |---|---|---|
-| Jetons par décision | 87 | 128 (cible ≈ 96) |
-| Variables | 342 au total : 202 vues par l'IA, 140 moteur seul | |
+| Jetons par décision | 90 | 128 (cible ≈ 96) |
+| Variables | 358 au total : 217 vues par l'IA, 141 moteur seul | |
 | Propriétés d'un objet (vecteur fixe) | 43 | 48 |
-| Mots de grammaire | 654 | 768 |
-| Sortes (types d'objets, matières, espèces, formes) | 643 | 1 024 |
+| Mots de grammaire | 704 | 768 |
+| Sortes (types d'objets, matières, espèces, formes, lieux, mots perçus) | 799 | 1 024 |
 | Gestes | 40 | 64 |
 | Écritures par décision | au plus 4, plus le geste | 4 |
 
@@ -91,6 +91,24 @@ Exemple (histoire « Interrogé sur sa nuit ») :
 
 Un homme affirme qu'il dormait chez lui alors qu'il était à la mine. Le mensonge n'a pas de mot : c'est affirmer ce qu'on croit faux.
 
+## 6 bis. Ce que la langue sait dire (étape 19a)
+
+Pour que les PNJ fassent des choses COMPLEXES et COLLECTIVES (« Pierre, Jacques et Jean tuent George, car il a trompé leurs femmes » ; « le maire organise une expédition pour trouver de l'or »), la langue a reçu des primitives GÉNÉRALES, jamais un mot propre à une histoire :
+
+| Il faut pouvoir dire | Comment | Exemple |
+|---|---|---|
+| un rendez-vous, une échéance, une durée | `at_time` ≠ `before`, moments du jour, saisons, `span` | `(offer (at_time night (at us @L9)))` |
+| « nous trois » | `us` ou `@G1` agissent ; le dossier GROUP garde membres, chef, but | `(offer (future (caused us (dead @E4))))` |
+| accepter UNE offre | pointeurs `h:` (entendu), `q:` (demandé), `c:` (convenu) | `(yes h:2)` |
+| partager | `share`, `half`, `equal` | `(offer (share gold:100 us equal))` |
+| « la plupart des gens » | `(of most @G3)`, percept collectif | `(past (did (of 12 everyone) sign (at @E27)))` |
+| « la fille du chef » | description relative, trou `the_one` | `(described d_woman (link the_one child @E3))` |
+| « je ne sais pas où il est » | `knows` avec un trou de question | `(not (knows me (at @E9 where)))` |
+| une grange, un pont, une cité | 56 sortes de lieux et constructions | `(channel @T1 (into barn))` |
+| réfléchir encore, préparer ce qu'on dira | `think_more`, `PLAN.says`, `PLAN.steps` | la pensée écrite (docs/09) |
+
+Le tempérament du village (fous, modérés, sages) est un réglage de partie lu dans `WAKE` : il ne touche jamais le gouverneur (`docs/12`). La logique d'ELIZA sert à reconnaître les formes de parole après coup (`docs/11`).
+
 ## 7. Le gouverneur
 
 Le gouverneur (`catalogue/tools/governor.py`) se place entre le Transformer et le monde. Il **coupe ou refuse**, il ne décide jamais. Il :
@@ -108,7 +126,7 @@ La version C++ (`engine/social/`) doit reproduire les décisions du gouverneur P
 |---|---|---|
 | Validateur | `python3 catalogue/tools/check.py` (option `--strict`) | Structure, références, séparation des couches, règles D10 |
 | Budget | `python3 catalogue/tools/budget.py` | Ce que l'IA lit et écrit, compté |
-| Tests du catalogue | `python3 -m unittest discover -s catalogue/tests` | 24 tests de catalogue, 18 tests du gouverneur |
+| Tests du catalogue | `python3 -m unittest discover -s catalogue/tests` | tests du catalogue, du gouverneur, de la langue et des primitives collectives (`test_language_collective.py`) |
 | Interface du modèle | `catalogue/generated/model_interface.json` (`model_interface.py`) | Entrées, sorties, écritures de l'IA |
 | Tables C++ | `engine/social/generated/` (`gen_cpp.py`) | Gestes, variables, mots, générés depuis le catalogue |
 | Tests C++ | `engine/social/tests/` (`test_governor.cpp`, `test_state.cpp`, `test_clock.cpp`) | Le moteur C++ suit le catalogue |

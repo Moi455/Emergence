@@ -1,0 +1,1046 @@
+{
+ "schema": {
+  "version": "0.3",
+  "self": {
+   "traits": [
+    "aggression",
+    "courage",
+    "empathy",
+    "sociability",
+    "honesty",
+    "impulsivity",
+    "curiosity",
+    "justice",
+    "grudge"
+   ],
+   "temperament": [
+    "reactivity",
+    "resilience"
+   ],
+   "values": [
+    "kin_protection",
+    "property_respect",
+    "honor",
+    "life_value",
+    "romantic_fidelity",
+    "taboo_sensitivity"
+   ],
+   "drives": [
+    "libido",
+    "social_need",
+    "achievement",
+    "hoarding"
+   ],
+   "states_unsigned": [
+    "hunger",
+    "thirst",
+    "pain",
+    "fear",
+    "shock",
+    "confusion"
+   ],
+   "states_signed": [
+    "fatigue",
+    "anger",
+    "stress",
+    "joy"
+   ],
+   "stock_gap": [
+    "food",
+    "fuel",
+    "tools"
+   ],
+   "body": [
+    "hp",
+    "strength",
+    "load_ratio",
+    "job_skill"
+   ],
+   "activity": [
+    "progress",
+    "commitment",
+    "secs_since_decision"
+   ],
+   "time": [
+    "hour_sin",
+    "hour_cos",
+    "season_sin",
+    "season_cos"
+   ],
+   "categories": [
+    "age_cat",
+    "love_status",
+    "job",
+    "current_action",
+    "weather",
+    "place_type",
+    "tool_in_hand"
+   ]
+  },
+  "inventory": {
+   "scalars": [
+    "qty",
+    "quality",
+    "wear"
+   ],
+   "categories": [
+    "item_type"
+   ],
+   "max": 8
+  },
+  "title": {
+   "scalars": [
+    "authority",
+    "confidence",
+    "legitimacy",
+    "n_claimants"
+   ],
+   "categories": [
+    "title_concept",
+    "my_role"
+   ],
+   "pointers": [
+    "holder",
+    "claimants"
+   ],
+   "max": 6
+  },
+  "link": {
+   "scalars": [
+    "believed_affinity",
+    "confidence"
+   ],
+   "categories": [
+    "link_kind"
+   ],
+   "pointers": [
+    "a",
+    "b"
+   ],
+   "max": 6,
+   "status": "specified; third-party ties (who likes whom); the generator only produces them as link_belief memories"
+  },
+  "place": {
+   "scalars": [
+    "danger",
+    "fondness",
+    "taboo",
+    "n_memories"
+   ],
+   "max": 1,
+   "status": "specified; computed by memory_service.place_reputation"
+  },
+  "object": {
+   "scalars": [
+    "value",
+    "owner_known_conf",
+    "concealed_evidence",
+    "owned_by_me",
+    "owned_by_other"
+   ],
+   "categories": [
+    "item_type"
+   ],
+   "pointers": [
+    "believed_owner"
+   ],
+   "max": 8,
+   "status": "specified; nearby objects with believed owner (social_rules.believed_owner)"
+  },
+  "group": {
+   "scalars": [
+    "identification",
+    "cohesion",
+    "rank"
+   ],
+   "categories": [
+    "group_kind"
+   ],
+   "pointers": [
+    "leader"
+   ],
+   "max": 3,
+   "status": "specified only (case 29)"
+  },
+  "entity": {
+   "relation_signed": [
+    "affection",
+    "trust",
+    "respect",
+    "romance",
+    "debt"
+   ],
+   "relation_unsigned": [
+    "fear",
+    "familiarity",
+    "grudge"
+   ],
+   "mood": [
+    "mood_toward",
+    "urge_to_interact"
+   ],
+   "social_flags": [
+    "suspicion",
+    "indirect_threat"
+   ],
+   "perception": [
+    "chemistry",
+    "perceived",
+    "distance",
+    "beauty",
+    "days_since_contact",
+    "rep_trust",
+    "rep_danger",
+    "understanding"
+   ],
+   "categories": [
+    "kin_links",
+    "age_cat",
+    "love_status",
+    "visible_action"
+   ]
+  },
+  "event": {
+   "scalars": [
+    "intensity",
+    "salience",
+    "understanding",
+    "reliability",
+    "delay",
+    "out_of_world",
+    "force",
+    "politeness",
+    "negation",
+    "conditional",
+    "apparent_intent"
+   ],
+   "norm_violation": [
+    "kin",
+    "property",
+    "honor",
+    "life",
+    "fidelity",
+    "truth",
+    "fairness",
+    "taboo"
+   ],
+   "categories": [
+    "type",
+    "role",
+    "source",
+    "speech_act",
+    "modality"
+   ]
+  },
+  "memory": {
+   "scalars": [
+    "age_days",
+    "certainty",
+    "importance",
+    "valence",
+    "defining",
+    "secret",
+    "focus_knows",
+    "conflict"
+   ],
+   "categories": [
+    "type",
+    "role",
+    "source"
+   ]
+  },
+  "goal": {
+   "scalars": [
+    "priority",
+    "progress",
+    "deadline_h"
+   ],
+   "categories": [
+    "type",
+    "target"
+   ],
+   "pointers": [
+    "partner"
+   ]
+  }
+ },
+ "actions": [
+  {
+   "id": "eat",
+   "cat": "body",
+   "args": "item:I",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "drink",
+   "cat": "body",
+   "args": "item:I?,place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "sleep",
+   "cat": "body",
+   "args": "place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "rest",
+   "cat": "body",
+   "args": "",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "go_to",
+   "cat": "move",
+   "args": "place:P?,entity:E?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "follow",
+   "cat": "move",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "approach",
+   "cat": "move",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "avoid",
+   "cat": "move",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "flee",
+   "cat": "move",
+   "args": "entity:E?,place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "wander",
+   "cat": "move",
+   "args": "",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "wait",
+   "cat": "move",
+   "args": "secs:N?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "hide",
+   "cat": "move",
+   "args": "place:P?",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "return_home",
+   "cat": "move",
+   "args": "",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "equip",
+   "cat": "work",
+   "args": "tool:T",
+   "core": true,
+   "note": "take a tool in hand (the action engine inserts it when missing)"
+  },
+  {
+   "id": "unequip",
+   "cat": "work",
+   "args": "",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "dig",
+   "cat": "work",
+   "args": "dir:D,length:N,tool:T,width:N?,depth:N?",
+   "core": true,
+   "note": "remove blocks along a direction; pickaxe/shovel/trowel only"
+  },
+  {
+   "id": "place",
+   "cat": "work",
+   "args": "block:B,pattern:X?,tool:T?",
+   "core": true,
+   "note": "put blocks; pattern in {pile, line, wall, floor, fill}"
+  },
+  {
+   "id": "till",
+   "cat": "work",
+   "args": "place:P?,tool:T?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "plant",
+   "cat": "work",
+   "args": "seed:I,place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "harvest",
+   "cat": "work",
+   "args": "kind:X,place:P?",
+   "core": true,
+   "note": "kind in {flower, fruit, vegetable}; by hand"
+  },
+  {
+   "id": "cut",
+   "cat": "work",
+   "args": "target:B,tool:T?",
+   "core": true,
+   "note": "trees and wood"
+  },
+  {
+   "id": "fetch_water",
+   "cat": "work",
+   "args": "place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "craft",
+   "cat": "work",
+   "args": "recipe:C",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "build",
+   "cat": "work",
+   "args": "blueprint:C,place:P?",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "repair",
+   "cat": "work",
+   "args": "target:C",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "tend_crop",
+   "cat": "work",
+   "args": "place:P?",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "hunt",
+   "cat": "work",
+   "args": "target:C",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "pick_up",
+   "cat": "inventory",
+   "args": "item:I",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "drop",
+   "cat": "inventory",
+   "args": "item:I",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "store",
+   "cat": "inventory",
+   "args": "item:I,place:P",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "take_from",
+   "cat": "inventory",
+   "args": "place:P,item:I",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "give",
+   "cat": "inventory",
+   "args": "entity:E,item:I",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "steal",
+   "cat": "inventory",
+   "args": "entity:E?,place:P?,item:I",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "destroy",
+   "cat": "inventory",
+   "args": "target:C",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "claim",
+   "cat": "inventory",
+   "args": "item:I?,place:P?",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "greet",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "chat",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "inform",
+   "cat": "speech",
+   "args": "entity:E,memory:M?,fact:F?",
+   "core": true,
+   "note": "share a memory (maybe distorted) or a claim"
+  },
+  {
+   "id": "deceive",
+   "cat": "speech",
+   "args": "entity:E,fact:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "ask",
+   "cat": "speech",
+   "args": "entity:E,topic:C?,fact:F?,attr:X?,subject:E?",
+   "core": true,
+   "note": "attr in {home_of, where_is, wealth_of, job_of, partner_of, title_holder}"
+  },
+  {
+   "id": "propose",
+   "cat": "speech",
+   "args": "entity:E,proposal:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "request",
+   "cat": "speech",
+   "args": "entity:E,proposal:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "order",
+   "cat": "speech",
+   "args": "entity:E,proposal:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "accept",
+   "cat": "speech",
+   "args": "proposal:O",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "refuse",
+   "cat": "speech",
+   "args": "proposal:O",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "promise",
+   "cat": "speech",
+   "args": "entity:E,proposal:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "threaten",
+   "cat": "speech",
+   "args": "entity:E,fact:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "accuse",
+   "cat": "speech",
+   "args": "entity:E,fact:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "apologize",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "thank",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "compliment",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "insult",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "warn",
+   "cat": "speech",
+   "args": "entity:E,fact:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "call_for_help",
+   "cat": "speech",
+   "args": "",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "comfort",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "forgive",
+   "cat": "speech",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "teach",
+   "cat": "speech",
+   "args": "entity:E,skill:C",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "interrogate",
+   "cat": "diplomacy",
+   "args": "entity:E,topic:C",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "bribe",
+   "cat": "diplomacy",
+   "args": "entity:E,offer:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "answer",
+   "cat": "diplomacy",
+   "args": "entity:E,query:O,mode:X",
+   "core": true,
+   "note": "mode in {truth, vague, lie, refuse, unknown, redirect}; the engine builds the content from the real belief"
+  },
+  {
+   "id": "blackmail",
+   "cat": "diplomacy",
+   "args": "entity:E,memory:M",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "negotiate",
+   "cat": "diplomacy",
+   "args": "entity:E,move:X,sweetener:I?",
+   "core": true,
+   "note": "move in {concede_small, concede_big, hold, raise, sweeten, bluff_walk, walk}; the engine computes the figures"
+  },
+  {
+   "id": "lobby",
+   "cat": "diplomacy",
+   "args": "entity:E,topic:C",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "read",
+   "cat": "politics",
+   "args": "doc:O",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "post_notice",
+   "cat": "politics",
+   "args": "content:F,board:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "tear_down_notice",
+   "cat": "politics",
+   "args": "doc:O",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "publish",
+   "cat": "politics",
+   "args": "content:F",
+   "core": false,
+   "note": "newspaper issue"
+  },
+  {
+   "id": "write_letter",
+   "cat": "politics",
+   "args": "entity:E,content:F",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "call_vote",
+   "cat": "politics",
+   "args": "question:F,options:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "vote",
+   "cat": "politics",
+   "args": "poll:O,option:X",
+   "core": true,
+   "note": "option = candidate id or blank"
+  },
+  {
+   "id": "campaign",
+   "cat": "politics",
+   "args": "entity:E,audience:E?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "claim_title",
+   "cat": "politics",
+   "args": "title:C",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "contest_claim",
+   "cat": "politics",
+   "args": "entity:E,title:C",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "endorse",
+   "cat": "politics",
+   "args": "entity:E,title:C",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "appoint",
+   "cat": "politics",
+   "args": "entity:E,title:C",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "dismiss",
+   "cat": "politics",
+   "args": "entity:E,title:C",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "create_title",
+   "cat": "politics",
+   "args": "name:C,duties:F?",
+   "core": true,
+   "note": "a title is only a name plus what people attach to it"
+  },
+  {
+   "id": "decree",
+   "cat": "politics",
+   "args": "rule:F",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "enforce",
+   "cat": "politics",
+   "args": "rule:F,entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "summon",
+   "cat": "politics",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "delegate",
+   "cat": "politics",
+   "args": "task:F,entity:E",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "flirt",
+   "cat": "intimacy",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "kiss",
+   "cat": "intimacy",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "embrace",
+   "cat": "intimacy",
+   "args": "entity:E",
+   "core": true,
+   "note": "non-romantic hug allowed for any age"
+  },
+  {
+   "id": "be_intimate",
+   "cat": "intimacy",
+   "args": "entity:E",
+   "core": true,
+   "note": "adults, mutual, private place only"
+  },
+  {
+   "id": "conceal",
+   "cat": "inventory",
+   "args": "item:I,place:P",
+   "core": false,
+   "note": "hide an item on purpose"
+  },
+  {
+   "id": "found_group",
+   "cat": "politics",
+   "args": "name:C,purpose:F?",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "join_group",
+   "cat": "politics",
+   "args": "group:C",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "leave_group",
+   "cat": "politics",
+   "args": "group:C",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "post_job",
+   "cat": "politics",
+   "args": "task:F,pay:F",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "hire",
+   "cat": "politics",
+   "args": "entity:E,task:F,pay:F",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "start_build",
+   "cat": "work",
+   "args": "blueprint:C,place:P",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "contribute",
+   "cat": "work",
+   "args": "site:O",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "supply",
+   "cat": "work",
+   "args": "site:O,item:I",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "attack",
+   "cat": "conflict",
+   "args": "entity:E,mode:X",
+   "core": true,
+   "note": "mode in {shove, strike, armed, lethal}"
+  },
+  {
+   "id": "defend",
+   "cat": "conflict",
+   "args": "entity:E?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "chase",
+   "cat": "conflict",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "restrain",
+   "cat": "conflict",
+   "args": "entity:E",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "expel",
+   "cat": "conflict",
+   "args": "entity:E,place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "heal",
+   "cat": "care",
+   "args": "entity:E",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "assist",
+   "cat": "care",
+   "args": "entity:E,task:C?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "observe",
+   "cat": "attention",
+   "args": "entity:E?,place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "search",
+   "cat": "attention",
+   "args": "entity:E?,item:I?,place:P?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "eavesdrop",
+   "cat": "attention",
+   "args": "entity:E",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "investigate",
+   "cat": "attention",
+   "args": "place:P",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "leisure",
+   "cat": "leisure",
+   "args": "activity:C,entity:E?",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "pray",
+   "cat": "leisure",
+   "args": "",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "mourn",
+   "cat": "leisure",
+   "args": "",
+   "core": false,
+   "note": ""
+  },
+  {
+   "id": "accompany",
+   "cat": "commit",
+   "args": "entity:E",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "break_commitment",
+   "cat": "commit",
+   "args": "commitment:O",
+   "core": true,
+   "note": ""
+  },
+  {
+   "id": "continue",
+   "cat": "commit",
+   "args": "",
+   "core": true,
+   "note": ""
+  }
+ ]
+}

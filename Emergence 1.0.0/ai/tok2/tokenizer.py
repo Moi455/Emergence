@@ -230,6 +230,8 @@ class EncodeState:
         self.vocab, self.props, self.enc, self.known, self.layout = vocab, props, enc, known, layout
         self.slots = {r.key: i + 1 for i, r in enumerate(recs)}
         self.rtypes = {r.key: r.type for r in recs}
+        self.pointer_kinds = {r.key: r.fields["kind"] for r in recs        # what a thing or a place IS, to type its pointers
+                              if r.type in ("THING", "INV", "LOCUS") and isinstance(r.fields.get("kind"), str) and r.fields["kind"]}
         self._kinds: dict[str, list[str]] = {}
         self.aliases: dict[str, int] = {}
         self.pending: list[tuple[int, int, int, str]] = []        # (row, block order, column, ghost key)
@@ -294,6 +296,8 @@ class EncodeState:
                 raise TokenError(f"{where}: {short(value, 40)} is not one of {listing(spec['values'])}")
         elif is_name(value):
             return self.name_id(value)
+        elif spec.get("words") and value not in spec["words"]:      # a declared, closed set of percept words (19a)
+            raise TokenError(f"{where}: {short(value, 40)} is not one of {listing(spec['words'])}")
         if not self.vocab.is_word(value):
             raise TokenError(f"{where}: unknown word {short(value, 40)}")
         return self.vocab.ids[value]

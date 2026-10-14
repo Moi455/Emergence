@@ -13,7 +13,8 @@ Le moteur social et l'IA des PNJ d'Emergence : 500 villageois pilotés par un se
 | `ai/teacher/` | Le professeur (Gemini) : rendu des situations, schéma JSON, validation des réponses | fait ; générateur continu du quota gratuit écrit (`ai/teacher/README.md`) |
 | `ai/student2/` | L'élève : le Transformer, ses têtes de sortie, l'entraînement en float16 | fait, pas encore entraîné |
 | `ai/research/` | Mesures sur la Quadro : coût, sondes de raisonnement (coalition, fausse croyance) | fait |
-| `docs/` | Décisions, architecture, conception de l'IA, catalogue expliqué | à jour au 13 oct. 2026 |
+| `docs/` | Décisions, architecture, conception de l'IA, catalogue expliqué, tempérament, `13_fusion_1.0.0.md` (carte du dépôt) | à jour au 14 oct. 2026 |
+| `engine/core`, `worldgen/`, `game/`, `prototypes/`, `characters/`, `tools/`, `engine/em_water/`, `sim/`, `archive/` | Monde voxel, rendu, villageois 3D, eau (Rust), ancienne simulation : repris de l'ancien dépôt à la fusion du 14 oct. | présents, hors du chantier en cours (`.claudeignore`) |
 
 ## Les grands choix
 

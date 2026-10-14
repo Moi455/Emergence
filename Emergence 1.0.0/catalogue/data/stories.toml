@@ -297,12 +297,12 @@ text_fr = "Blessé dans la mine, un homme appelle à l'aide ; ceux qui l'entende
 
 [[story]]
 id = "joke_falls_flat"
-status = "gap"
+status = "expressible"
 actions = ["speak"]
-variables = ["ep_expression", "m_importance", "r_resentment", "shame"]
+variables = ["ep_expression", "m_importance", "r_resentment", "shame", "ep_marks"]
 interpretations = ["mockery", "insult"]
-utterances = ["(laugh (assert (quality @E1 w_ugly high)))"]
-note = "la calvitie ne se dit pas : les descripteurs sont une liste courte, sans lien avec ce que perçoit ep_build / ep_marks"
+utterances = ["(laugh (assert (appears @E1 bald)))"]
+note = "la calvitie est le mot `bald` de la liste ep_marks (percept_words.toml) : ce qui se perçoit et ce qui se dit sont les mêmes mots, (appears @E1 bald) ; la plaisanterie est un énoncé, le jugement `mockery` celui des témoins"
 charter = ["§27"]
 text_fr = "Un PNJ maladroit fait une plaisanterie sur la calvitie du chef pendant une assemblée ; personne ne rit, le chef s'en souvient."
 
@@ -353,12 +353,12 @@ text_fr = "Quelqu'un cloue sur la porte du temple un billet anonyme accusant le 
 
 [[story]]
 id = "secret_kept_loyal"
-status = "gap"
+status = "expressible"
 actions = ["speak"]
 variables = ["b_secret", "r_trust", "fear"]
 interpretations = ["loyalty", "lie"]
-utterances = ["(ask (at @E9 where))", "(no)"]
-note = "« je ne sais pas où il est » ne se dit pas : trou WH refusé hors de ask"
+utterances = ["(ask (at @E9 where))", "(assert (not (knows me (at @E9 where))))", "(no)"]
+note = "« je ne sais pas où il est » = (not (knows me (at @E9 where))) : un trou de question permis sous knows ; le mensonge n'a pas de mot, c'est affirmer ce qu'on croit faux"
 charter = ["§5", "§12"]
 text_fr = "Interrogée par le juge, une amie refuse de dire où se cache son ami, et prétend ne rien savoir."
 
@@ -503,7 +503,7 @@ variables = ["smoke", "fire_extent", "sleepiness", "fear", "consciousness"]
 properties = ["burning"]
 interpretations = ["rescue"]
 utterances = ["(watch_out (assert (state @T5 burning high)))"]
-note = "manque : sentir une chose hors de vue (odeur de fumée) et la loi de réveil par l'odeur ; ensuite touch(enfant, hand, shoulder, firm, brief : liste blanche D10), take(by_arm), go(away, run)"
+note = "RESTE UN TROU DU MOTEUR, pas de la langue : sentir une chose hors de vue (odorat) et la loi de réveil par l'odeur ; la parole (watch_out (assert (state @T5 burning high))) est exprimable ; ensuite touch(enfant, hand, shoulder, firm, brief : liste blanche D10), take(by_arm), go(away, run)"
 charter = ["§8", "§16"]
 text_fr = "La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle."
 
@@ -675,12 +675,12 @@ text_fr = "Trois familles de potiers s'installent au bourg ; le prix des pots ch
 
 [[story]]
 id = "economy_to_politics"
-status = "gap"
+status = "expressible"
 actions = ["speak", "sign"]
-variables = ["b_proposition", "role_holder_support"]
+variables = ["b_proposition", "role_holder_support", "ev_count", "ev_among"]
 interpretations = ["nothing_special"]
-utterances = ["(assert (wants me (holds @E27 chief)))", "(offer (if (holds me chief) (owes everyone @G3 (did everyone give copper_coin:1 (to @G3)))))"]
-note = "manque : percevoir et dire un décompte collectif (mains levées, voix) ; « devoir au rôle » refusé par le validateur"
+utterances = ["(assert (wants me (holds @E27 chief)))", "(offer (if (holds me chief) (owes everyone @G3 (did everyone give copper_coin:1 (to @G3)))))", "(assert (past (did (of most everyone) sign (at @E27) (how raise_hand))))"]
+note = "le décompte collectif : un percept collectif (EVENT.actor = un groupe, EVENT.count sur EVENT.among présents) et un sujet quantifié (of most everyone), jamais un compte du moteur"
 charter = ["§10", "§11"]
 text_fr = "Les marchands enrichis par le sel soutiennent un candidat qui baissera la taxe du marché ; il est élu."
 
@@ -723,7 +723,7 @@ actions = ["go", "speak"]
 variables = ["illnesses", "symptoms", "ep_health", "fear", "r_trust", "need_company"]
 interpretations = ["nothing_special"]
 utterances = ["(no)", "(assert (if (did me touch @E28) (future (state me sickness_felt high))))"]
-note = "manque : la loi de contagion et le cours d'une maladie (aucun processus déclaré)"
+note = "RESTE UN TROU DU MOTEUR : la loi de contagion et le cours d'une maladie (aucun processus déclaré) ; la parole et la peur sont exprimables"
 charter = ["§10"]
 text_fr = "Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole."
 
@@ -783,23 +783,23 @@ text_fr = "Trois exilés se retrouvent dans la forêt, partagent ce qu'ils volen
 
 [[story]]
 id = "election_campaign"
-status = "gap"
+status = "expressible"
 actions = ["go", "speak", "sign"]
-variables = ["b_proposition", "role_holder_support", "r_trust"]
+variables = ["b_proposition", "role_holder_support", "r_trust", "ev_count", "ev_among"]
 interpretations = ["nothing_special"]
-utterances = ["(request (holds me chief))", "(assert (past (did @E32 take silver_coin:40)))"]
-note = "manque : le décompte collectif (qui l'emporte) ne se perçoit ni ne se dit"
+utterances = ["(request (holds me chief))", "(assert (past (did @E32 take silver_coin:40)))", "(assert (past (did (of 12 everyone) sign (at @E32) (how raise_hand))))"]
+note = "qui l'emporte se perçoit (EVENT.count, EVENT.among) et se dit ((of 12 everyone), (of most everyone)) ; le décompte officiel n'existe pas : chacun compte ce qu'il voit"
 charter = ["§11", "§24"]
 text_fr = "Avant l'élection, deux candidats vont de maison en maison, promettent, rappellent les fautes de l'autre ; le moins riche gagne."
 
 [[story]]
 id = "decree_ignored"
-status = "gap"
+status = "expressible"
 actions = ["speak", "go", "grab"]
 variables = ["b_proposition", "b_weight", "v_authority"]
 interpretations = ["rebellion"]
-utterances = ["(assert (norm forbidden (did anyone go @L10)))"]
-note = "manque : « la nuit » (couvre-feu) : aucun mot de moment du jour"
+utterances = ["(assert (norm forbidden (at_time night (did anyone go @L10))))"]
+note = "« la nuit » est un moment du jour (daypart) combiné par at_time : aucune notion propre au couvre-feu"
 charter = ["§11"]
 text_fr = "Le chef décrète un couvre-feu ; la moitié du village l'ignore, et il n'a pas assez de gardes pour le faire respecter."
 
@@ -848,12 +848,12 @@ text_fr = "On découvre que le trésorier a fondu des pièces avec du plomb ; le
 
 [[story]]
 id = "custom_shifts_slowly"
-status = "gap"
+status = "expressible"
 actions = ["speak"]
 variables = ["b_weight", "custom_aggregate"]
 interpretations = ["nothing_special"]
-utterances = ["(assert (norm shameful (link @E33 spouse @E34)))"]
-note = "manque : dire « épouser quelqu'un d'un autre village » (description par appartenance)"
+utterances = ["(assert (norm shameful (link @E33 spouse (described (member the_one @G7)))))"]
+note = "« épouser quelqu'un d'un autre village » : une description par appartenance, une proposition relative dont le trou est the_one ; D10 la refuse si l'inconnu(e) peut être mineur(e)"
 charter = ["§11", "§10"]
 text_fr = "En une génération, le mariage entre villages, mal vu autrefois, devient courant après que plusieurs couples heureux l'ont montré."
 
@@ -946,7 +946,7 @@ actions = ["speak", "go"]
 variables = ["a_kind_label", "r_affection", "pregnancy"]
 interpretations = ["nothing_special"]
 utterances = ["(offer (future (link me spouse you)))", "(assert (link @E37 spouse @E38))"]
-note = "adultes ; manque : les lois du moteur qui commencent une grossesse et font naître un enfant"
+note = "adultes ; RESTE UN TROU DU MOTEUR : les lois qui commencent une grossesse et font naître un enfant (conception, naissance entre adultes) ; le mariage et la parole sont exprimables"
 charter = ["§13", "§25"]
 text_fr = "Deux adultes se marient au temple, ont un enfant l'année suivante ; les deux familles se rapprochent."
 
@@ -1006,12 +1006,12 @@ text_fr = "Un voisin martèle chaque nuit ; l'autre se plaint, puis finit par bo
 # ─── Liberté, langage du joueur, limites ─────────────────────────────────────────────────────────
 [[story]]
 id = "impossible_request"
-status = "gap"
+status = "expressible"
 actions = ["speak", "look"]
-variables = ["confusion", "surprise"]
+variables = ["confusion", "surprise", "b_unintelligible"]
 interpretations = ["nothing_special"]
-utterances = ["(request (did you jump up))", "(ask (state you intoxication high))"]
-note = "manque : une marque « parole incompréhensible ou absurde » quand l'interface ne peut pas traduire ; ni lune ni ciel dans le vocabulaire"
+utterances = ["(request (did you go moon))", "(ask (state you intoxication high))"]
+note = "la lune est une sorte (sky) : la demande se compose ; une parole que l'interface ne peut pas traduire porte la marque BELIEF/HEARD.unintelligible, sa proposition reste inconnue"
 charter = ["§14", "§15"]
 text_fr = "Le joueur demande à un PNJ de voler jusqu'à la lune ; le PNJ le regarde bizarrement et lui demande s'il a bu."
 
@@ -1061,12 +1061,12 @@ text_fr = "Un mineur creuse trop près d'une maison ; le mur se fend puis s'effo
 
 [[story]]
 id = "pay_artisan_build"
-status = "gap"
+status = "expressible"
 actions = ["speak", "give", "take", "put", "channel"]
 variables = ["k_mastery", "commitments_seen"]
 interpretations = ["nothing_special"]
-utterances = ["(offer (if (did you channel @L18) (did me give silver_coin:40 (to you))))"]
-note = "manque : aucune sorte de construction (grange, maison, mur, pont) : ni la demande ni la recette (channel into) ne peuvent la nommer"
+utterances = ["(offer (if (did you channel @T1 (into barn)) (did me give silver_coin:40 (to you))))"]
+note = "une grange est une sorte de construction (site, built) : (channel … (into barn)) est la demande et la recette"
 charter = ["§17", "§13"]
 text_fr = "Le joueur paie une bâtisseuse pour construire une grange ; elle rassemble pierre et bois et la bâtit avec sa baguette."
 
@@ -1198,12 +1198,12 @@ text_fr = "Après un vol dans le quartier, une famille pose un verrou ; le voisi
 # ─── Fantasy mystérieuse, exploration ─────────────────────────────────────────────────────────────
 [[story]]
 id = "strange_zone_legend"
-status = "gap"
+status = "expressible"
 actions = ["sleep", "speak"]
 variables = ["phenomenon_effects", "pp_signs", "m_vividness", "b_hops"]
 interpretations = ["sorcery"]
-utterances = ["(assert (heard_said (habitual (if (did anyone sleep @L24) (state anyone e_confusion high)))))"]
-note = "manque : l'évidentiel « j'ai rêvé » (la source dreamt existe pour les croyances, pas dans la parole) ; aucun mot pour dire « les oiseaux se taisent »"
+utterances = ["(assert (heard_said (habitual (if (did anyone sleep @L24) (dreamt_it (state anyone e_confusion high))))))"]
+note = "l'évidentiel « j'ai rêvé » est dreamt_it, aligné sur la source dreamt ; « les oiseaux se taisent » est le mot silent_birds de pp_signs"
 charter = ["§18", "§19"]
 text_fr = "Une clairière où les oiseaux se taisent : ceux qui y dorment rêvent de choses étranges ; une légende naît, chacun la raconte à sa façon."
 
@@ -1250,12 +1250,12 @@ text_fr = "Le joueur trouve une famille dans une ferme éloignée, qui ne sait r
 
 [[story]]
 id = "belief_in_beyond"
-status = "gap"
+status = "expressible"
 actions = ["speak", "go"]
 variables = ["b_certainty", "g_desired", "need_novelty"]
 interpretations = ["nothing_special"]
-utterances = ["(assert (sure (exists gold @L26)))", "(laugh)"]
-note = "manque : « une cité » (sorte de lieu) et « au-delà de »"
+utterances = ["(assert (sure (and (exists city @L27) (located @L27 beyond @L26))))", "(laugh)"]
+note = "« une cité » est une sorte de lieu (settlement) et « au-delà de » un mot spatial"
 charter = ["§18"]
 text_fr = "Un conteur jure qu'au-delà du désert il existe une cité d'or ; certains le croient, d'autres rient, un jeune part la chercher."
 
@@ -1267,7 +1267,7 @@ actions = ["speak", "push"]
 variables = ["anger", "self_regard", "modesty", "illnesses"]
 interpretations = ["injustice"]
 utterances = ["(no (assert (think (not (that b:2)))))", "(request (not (lives_at you here)))"]
-note = "l'expulsion est exprimable ; l'épidémie demande la loi de contagion"
+note = "l'expulsion est exprimable ; RESTE UN TROU DU MOTEUR : l'épidémie du mois suivant demande la loi de contagion"
 charter = ["§27", "§7"]
 text_fr = "Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant."
 
@@ -1284,11 +1284,12 @@ text_fr = "Un maladroit renverse un tonneau qui roule jusqu'au marché, effraie 
 
 [[story]]
 id = "eccentric_collector"
-status = "gap"
+status = "expressible"
+utterances = ["(assert (appears @T3 blue))"]
 actions = ["take", "put"]
-variables = ["tastes", "r_affection"]
+variables = ["tastes", "r_affection", "pc_color_seen"]
 interpretations = ["nothing_special"]
-note = "manque : la couleur (propriété perceptible) et les mots de couleur pour tastes"
+note = "la couleur est une propriété perceptible (color) et un mot (blue) : un goût (TASTE.concept = blue), une collection de choses vues bleues"
 charter = ["§7"]
 text_fr = "Une vieille ramasse toutes les pierres bleues qu'elle trouve et en remplit sa maison ; les enfants l'adorent, les voisins s'agacent."
 
@@ -1399,7 +1400,7 @@ variables = ["illnesses", "sickness_felt", "r_affection"]
 properties = ["potency"]
 interpretations = ["kindness"]
 utterances = ["(request (did you give herbal_remedy (to me)))"]
-note = "manque : le cours d'une maladie et l'effet d'un remède sur elle (heal_tissue ne vaut que pour les plaies)"
+note = "RESTE UN TROU DU MOTEUR : le cours d'une maladie et l'effet d'un remède sur elle (heal_tissue ne vaut que pour les plaies) ; les gestes et les paroles sont exprimables"
 charter = ["§25", "§12"]
 text_fr = "Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement."
 
@@ -1408,7 +1409,7 @@ id = "pregnancy_birth"
 status = "gap"
 actions = ["work", "take"]
 variables = ["pregnancy", "mobility"]
-note = "grossesse et ralentissement exprimables ; manque : la loi de naissance (un nouvel agent, parents biologiques)"
+note = "grossesse et ralentissement exprimables ; RESTE UN TROU DU MOTEUR : la loi de naissance (un nouvel agent, parents biologiques)"
 charter = ["§25"]
 text_fr = "Une femme mariée attend un enfant, ralentit son travail ; la sage-femme l'aide à accoucher."
 
@@ -1445,11 +1446,11 @@ text_fr = "Le joueur vole, se fait connaître des malfrats, gagne leur confiance
 
 [[story]]
 id = "player_runs_for_chief"
-status = "gap"
+status = "expressible"
 actions = ["speak", "go"]
-variables = ["b_proposition", "role_holder_support"]
-utterances = ["(request (holds me chief))"]
-note = "manque : le décompte collectif"
+variables = ["b_proposition", "role_holder_support", "ev_count", "ev_among"]
+utterances = ["(request (holds me chief))", "(assert (past (did (of most everyone) sign (at me) (how raise_hand))))"]
+note = "le décompte collectif se perçoit et se dit : (of most everyone) ; promettre est une offre, les rumeurs une parole rapportée"
 charter = ["§23", "§24"]
 text_fr = "Le joueur se présente comme chef ; il doit convaincre, faire des promesses et affronter les rumeurs."
 
@@ -1571,3 +1572,115 @@ interpretations = ["accident"]
 note = "strike(silex) sans amadou sec : pas de feu ; mort de froid (moteur)"
 charter = ["§19", "§25"]
 text_fr = "Un voyageur surpris par la tempête de neige dans la montagne s'abrite dans une grotte ; sans feu, il meurt de froid."
+
+# ─── Étape 19a : comportements complexes et collectifs (Monsieur, 12 oct. 2026) ───
+# Deux sondes décomposées pas à pas (champ `trace`, vérifié par tools/probes.py) : un complot à trois et une expédition.
+# Aucune entrée du catalogue n'est propre à ces histoires ; elles n'utilisent que les primitives générales.
+
+[[story]]
+id = "revenge_plot_three"
+status = "expressible"
+actions = ["speak", "go", "wait", "strike", "touch"]
+variables = ["b_proposition", "b_source", "b_secret", "m_interpretation", "anger", "r_resentment", "g_desired", "g_mode", "g_when", "i_steps", "i_step_targets", "i_speech", "think_more", "w_think_budget", "r_group_members", "r_group_leader", "r_group_goal", "r_group_size", "village_temperament", "ev_count", "ev_among"]
+interpretations = ["adultery", "revenge", "murder", "betrayal", "loyalty"]
+utterances = [
+  "(ask (knows you (past (did @E4 go @L6 (how discreet)))))",
+  "(assert (and (past (did @E4 go @L5 (how discreet))) (past (did @E4 go @L6 (how discreet)))))",
+  "(assert (qualifies m:1 adultery))",
+  "(offer (future (caused us (dead @E4))))",
+  "(offer (at_time night (at us @L9)))",
+  "(request (not (future (did you speak (to anyone) (says (that b:1))))))",
+  "(yes h:2 (offer (future (did me go @L9))))",
+  "(assert (past (did @G1 strike @E4 (how full))))",
+]
+trace = [
+  "percept | memory | (past (did @E4 go @L5 (how discreet)))",
+  "percept | heard | (assert (past (did @E4 touch @E5 (how romantic))))",
+  "belief | belief | (past (did @E4 touch @E5 (how romantic)))",
+  "judgement | write | m_interpretation m:1 adultery",
+  "judgement | write | r_resentment @E4 7",
+  "belief | belief | (believes @E2 (past (did @E4 go @L6 (how discreet))))",
+  "goal | goal | (dead @E4)",
+  "goal | write | g_mode g:1 achieve",
+  "utterance | utterance | (ask (knows you (past (did @E4 go @L6 (how discreet)))))",
+  "utterance | heard | (assert (sure (past (did @E4 go @L6 (how discreet)))))",
+  "belief | belief | (believes @E2 (qualifies m:1 adultery))",
+  "belief | belief | (wants @E2 (dead @E4))",
+  "utterance | utterance | (assert (and (past (did @E4 go @L5 (how discreet))) (past (did @E4 go @L6 (how discreet)))))",
+  "utterance | utterance | (assert (qualifies m:1 adultery))",
+  "utterance | utterance | (offer (future (caused us (dead @E4))))",
+  "utterance | heard | (yes h:2)",
+  "commitment | commit | @G1 (caused us (dead @E4))",
+  "belief | belief | (member @E2 @G1)",
+  "belief | belief | (leads me @G1)",
+  "belief | belief | (intends @G1 (caused @G1 (dead @E4)))",
+  "belief | belief | (count @G1 3)",
+  "utterance | utterance | (request (not (future (did you speak (to anyone) (says (that b:1))))))",
+  "utterance | utterance | (offer (at_time night (at us @L9)))",
+  "commitment | commit | @G1 (at_time night (at us @L9))",
+  "plan | gesture | speak to=@E3",
+  "plan | plan_says | (request (and (future (caused us (dead @E4))) (at_time night (at us @L9))))",
+  "plan | gesture | go target=@L9 pace=brisk",
+  "plan | gesture | wait",
+  "plan | condition | c_sees_ref @G1",
+  "plan | gesture | strike target=@E4 intensity=full",
+  "meeting | belief | (at_time night (at @G1 @L9))",
+  "meeting | event | (past (did @G1 go @L9))",
+  "act | event | (past (did @G1 strike @E4 (how full)))",
+  "act | write | m_interpretation m:7 revenge",
+]
+note = "Complot de vengeance à trois ADULTES (Monsieur, 12 oct.) : Pierre, Jacques et Jean tuent ensemble George, qui a trompé leurs femmes. Aucune action « comploter » ni « se venger » : un souvenir (George est venu en cachette), une confession entendue, un jugement (adultery) écrit par le modèle, une rancune, un but (dead @E4), une question pour sonder Jacques, des paroles (faits, jugement, offre de le tuer ensemble, discrétion demandée, rendez-vous la nuit), un groupe « nous trois » (@G1 : membres, chef, but, taille), des engagements envers le groupe, un plan lisible (speak, go, wait jusqu'à ce que tous soient là, strike) avec la parole prévue pour Jean, puis l'événement collectif et le jugement des témoins. Le modèle y pense en plusieurs pas (think_more, w_think_budget). D10 : tous adultes ; le gouverneur refuse la même histoire si l'un des protagonistes peut être mineur (testé). village_temperament règle la démesure, jamais les règles."
+charter = ["§5", "§9", "§11", "§20"]
+text_fr = "Pierre, Jacques et Jean partent dans la forêt pour tuer ensemble George, car il a trompé leurs femmes (adultes, Monsieur 12 oct.)."
+
+[[story]]
+id = "mayor_gold_expedition"
+status = "expressible"
+actions = ["speak", "go", "wait", "search", "sign"]
+variables = ["b_proposition", "b_source", "b_certainty", "g_desired", "g_mode", "g_when", "g_deadline", "i_steps", "i_step_targets", "i_speech", "think_more", "w_think_budget", "r_group_members", "r_group_leader", "r_group_goal", "r_group_role", "r_group_size", "ev_count", "ev_among", "need_novelty", "village_temperament"]
+interpretations = ["generosity", "loyalty"]
+utterances = [
+  "(ask (exists gold where))",
+  "(request (at_time (span 3 day) (at (of 5 @G1) @L1)))",
+  "(offer (if (has us gold:100) (share gold:100 us equal)))",
+  "(offer (for (span 10 day) (has @G2 bread:30)))",
+  "(offer (at_time dawn (did us go @L26)))",
+  "(yes h:3)",
+  "(no h:3 (assert (not (knows me (at @L26 where)))))",
+  "(assert (past (did @G2 go @L26 (with me))))",
+]
+trace = [
+  "percept | heard | (assert (heard_said (exists gold @L26)))",
+  "belief | belief | (exists gold @L26)",
+  "percept | memory | (past (did @E8 go @L26))",
+  "belief | belief | (knows @E8 (exists gold where))",
+  "goal | goal | (owns @G1 gold:100)",
+  "goal | write | g_mode g:1 achieve",
+  "goal | write | g_priority g:1 7",
+  "belief | belief | (leads me @G1)",
+  "utterance | utterance | (ask (exists gold where))",
+  "utterance | heard | (assert (exists gold @L26))",
+  "belief | belief | (believes @E8 (exists gold @L26))",
+  "utterance | utterance | (request (at_time (span 3 day) (at (of 5 @G1) @L1)))",
+  "utterance | utterance | (offer (if (has us gold:100) (share gold:100 us equal)))",
+  "utterance | utterance | (offer (for (span 10 day) (has @G2 bread:30)))",
+  "utterance | heard | (yes h:3)",
+  "belief | belief | (member @E9 @G2)",
+  "belief | belief | (count @G2 6)",
+  "belief | belief | (leads me @G2)",
+  "commitment | commit | @G1 (future (share gold:100 @G1 equal))",
+  "commitment | commit | @G2 (at_time dawn (did us go @L26))",
+  "plan | gesture | speak to=@G1",
+  "plan | plan_says | (request (at_time (span 3 day) (at (of 5 @G1) @L1)))",
+  "plan | gesture | wait",
+  "plan | condition | c_sees_ref @G2",
+  "plan | gesture | go target=@L26",
+  "plan | gesture | search target=@L26",
+  "meeting | belief | (at_time (span 3 day) (at @G2 @L1))",
+  "meeting | event | (past (did (of 5 @G1) sign (at me) (how raise_hand)))",
+  "act | event | (past (did @G2 go @L26 (with me)))",
+  "act | belief | (has @G2 gold:20)",
+]
+note = "L'expédition du maire (Monsieur, 12 oct.), décomposée pas à pas : une légende entendue puis une croyance, le souvenir d'un marchand qui y est allé, un but du chef (le village possède 100 d'or), une question pour savoir où, une réponse, le recrutement public (cinq volontaires au rendez-vous dans trois jours, quantifié par (of 5 @G1)), le partage promis à parts égales, les vivres pour dix jours, l'acceptation d'une offre précise (yes h:3), un groupe d'expédition (@G2) dont le maire croit être le chef, deux engagements (envers le village, envers l'équipe), un plan lisible dont la parole de recrutement est prévue, l'attente de TOUS les membres (c_sees_ref sur le groupe), le départ à l'aube, puis le percept collectif. Aucune entrée n'est propre à cette histoire : temps, groupe, accord, quantité, lieu (montagne, ville) sont les primitives générales de l'étape 19a. Tous adultes."
+charter = ["§9", "§11", "§20"]
+text_fr = "Le maire organise une expédition pour aller trouver de l'or (Monsieur, 12 oct.)."

@@ -37,7 +37,7 @@ def ctx() -> DecisionContext:
                               "held": [{"edge": 2}, {"mass": 1.0, "edge": 0}]}),
         Record("ENTITY", "@E1", {"name": "n:17", "known_by": "seen", "present": True, "dist": 3.0,
                                  "rel.trust": -4.5, "rel.familiarity": 8, "look.held": {"capacity": 10.0},
-                                 "look.attire": ["w_poor"], "look.gaze": "@T1", "rep": {"honesty": -0.6}}),
+                                 "look.attire": ["tattered"], "look.gaze": "@T1", "rep": {"honesty": -0.6}}),
         Record("BELIEF", "b:1", {"prop": "(owns me @T1)", "certainty": 9, "source": "seen", "polarity": True,
                                  "informant": "", "shared": ["@E1", "@E9"], "age": 200.0}),
         Record("BELIEF", "b:2", {"prop": "(owns @E1 silver_coin:3)", "certainty": 4, "source": "heard", "hops": 2}),
@@ -364,14 +364,14 @@ class TestPropositions(unittest.TestCase):
         utterances = [u for s in stories for u in s.get("utterances", [])]
         self.assertGreater(len(utterances), 150)
         dec = PropositionDecoder(TOK.vocab)
-        ptr = re.compile(r"(?<![\w])(@[ETGLV]\d+|[bmg]:\d+)")
+        ptr = re.compile(r"(?<![\w])(@[ETGLV]\d+|[bmghqc]:\d+)")
         for u in utterances:
             keys = list(dict.fromkeys(ptr.findall(u)))
             enc = TOK.encode(base(Record("REQUEST", "q:1", {"prop": u}), known=["me", "@PLACE", "q:1", *keys]))
             want = u
             ghosts = [k for k in keys if k not in ("@PLACE", "me")]
             for k, key in enumerate(ghosts):
-                kind = re.match(r"@[ETGLV]|[bmg]:", key).group(0)
+                kind = re.match(r"@[ETGLV]|[bmghqc]:", key).group(0)
                 want = re.sub(rf"(?<![\w]){re.escape(key)}(?!\d)", f"{kind}~{k}", want)
             self.assertEqual(dec.decode(enc, enc.keys.index("q:1")), want, u)
 
@@ -431,7 +431,7 @@ class TestRefusals(unittest.TestCase):
         self.refuses(Record("BELIEF", "b:1", {"informant": "Bob"}))
 
     def test_caps(self):
-        self.refuses(Record("ENTITY", "@E1", {"look.attire": ["w_poor"] * 7}))
+        self.refuses(Record("ENTITY", "@E1", {"look.attire": ["tattered"] * 7}))
         self.refuses(Record("BELIEF", "b:1", {"shared": [f"@E{i}" for i in range(5)]}))
         long = "(and " * 18 + "(at me @PLACE)" + ")" * 18          # 21 symbols
         self.refuses(Record("BELIEF", "b:1", {"prop": long}))

@@ -404,7 +404,7 @@ def comparable(decision: dict) -> dict:
     out["params"] = {k: " ".join(v.split()) if isinstance(v, str) else v for k, v in out["params"].items()}
     for w in decision.get("writes") or []:
         val = w["value"]
-        if isinstance(val, str) and (val.strip().startswith("(") or val[:2] in ("b:", "m:", "g:")):
+        if isinstance(val, str) and (val.strip().startswith("(") or val[:2] in ("b:", "m:", "g:", "h:", "q:", "c:")):
             val = canonical(val)                                  # a proposition; a key such as b:7 is its own canonical text
         out["writes"].append({"target": "me" if w["target"] == "self" else w["target"], "variable": w["variable"], "value": val})
     out["writes"].sort(key=lambda w: (w["variable"], w["target"]))

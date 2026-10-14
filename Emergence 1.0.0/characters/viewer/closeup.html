@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#efe3cf}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import * as THREE from 'three';
+import { generateVillager, composeOutfit, meshOutfit } from '../gen/villager.js';
+import { villagerObject } from './build3d.js';
+const qs = new URLSearchParams(location.search);
+const cat = await (await fetch('../data/catalog.json')).json();
+// Close-ups of heads (or busts with ?bust) for checking faces and hair: ?ids=5,120,513&cols=4
+const all = (await (await fetch('../data/villagers.json')).json()).villagers;
+const pop = (qs.get('ids') || '5,120,240,372,513,72,490,176').split(',').map(i => all[+i]);
+const cols = +(qs.get('cols') || 4), TW = +(qs.get('tw') || 340), TH = +(qs.get('th') || 340), occ = qs.get('occ') || 'everyday';
+const bust = qs.has('bust'), full = qs.has('full'), turn = +(qs.get('turn') ?? 0.42);
+const rows = Math.ceil(pop.length / cols);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(TW * cols, TH * rows); renderer.setPixelRatio(1);
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.setScissorTest(true);
+renderer.setClearColor('#efe3cf');
+document.body.appendChild(renderer.domElement);
+const log = [];
+for (let k = 0; k < pop.length; k++) {
+  const p = pop[k];
+  const v = generateVillager(p.seed, cat, { village: p.village, voxel: +(qs.get('vox') || 0.0125) });
+  const mesh = meshOutfit(v.base, composeOutfit(v, occ, cat), +(qs.get('lod') || 0), { strict: qs.has('strict'), bevel: qs.has('bevel') ? +qs.get('bevel') : undefined });
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight('#c8d6ff', '#7a5a40', 0.85));
+  const sun = new THREE.DirectionalLight('#ffcf94', 3.1); sun.position.set(-3, 2.8, 2.6); sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -1.5, right: 1.5, top: 2.5, bottom: -0.5 }); sun.shadow.normalBias = 0.01;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight('#ffd7a0', 1.5); fill.position.set(2.6, 2.4, -3); scene.add(fill); // warm rim light, low sun as in the reference images
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.2 }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  const o = villagerObject(v.base, { [occ]: mesh });
+  o.group.rotation.y = turn;
+  const hy = v.bp.height * (full ? 0.5 : bust ? 0.8 : 0.9);
+  const cam = new THREE.PerspectiveCamera(17, TW / TH, 0.1, 50);
+  cam.position.set(0, hy + (full ? 0.9 : 0.05), full ? 7.2 : bust ? 2.4 : 1.6); cam.lookAt(0, hy, 0);
+  scene.add(o.group);
+  const mixer = new THREE.AnimationMixer(o.group);
+  mixer.clipAction(o.clips.find(c => c.name === 'idle')).play(); mixer.update(0.0001);
+  const cx = (k % cols) * TW, cy = (rows - 1 - Math.floor(k / cols)) * TH;
+  renderer.setViewport(cx, cy, TW, TH); renderer.setScissor(cx, cy, TW, TH);
+  renderer.render(scene, cam);
+  log.push({ id: p.id, job: v.wardrobe.job, tris: mesh.indices.length / 3 });
+  renderer.dispose();
+}
+window.RESULT = { url: renderer.domElement.toDataURL('image/webp', 0.88), log };
+document.title = 'done';
+</script></body></html>

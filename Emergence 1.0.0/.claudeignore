@@ -1,7 +1,51 @@
-# Emergence 1.0.0 - what Claude never reads (token economy, Monsieur 13 oct.)
+# .claudeignore - Emergence 1.0.0 : ce que Claude ne lit pas (économie de tokens).
+#
+# Session : MOTEUR SOCIAL DES PNJ (catalogue, engine/social C++, tok-2, situations, professeur, élève).
+# Critère de tri = date de dernière modification (fusion du 14 oct. 2026, voir docs/13_fusion_1.0.0.md) :
+# tout ce qui n'a pas bougé depuis le 8-9 oct. (avant le pivot vers le moteur social) est mis de côté.
+#
+# Claude Code n'applique pas ce fichier seul : `python3 scripts/sync_claudeignore.py` le recopie dans
+# .claude/settings.json (permissions.deny). Modifier ce fichier, puis relancer le script.
+# « Ignoré » ne veut pas dire « supprimé » : les scripts restent exécutables, seule la LECTURE est bloquée.
+# [RÉINTÉGRER QUAND ...] = condition pour retirer la ligne.
+
+# ---------------------------------------------------------------------------
+# A. Toujours ignorés : binaires, données lourdes, sorties générées, caches
+# ---------------------------------------------------------------------------
+archive/
+assets/
 build/
+out/
 **/__pycache__/
-# generated or bulky: read only through their tools
+**/.venv/
+**/node_modules/
+**/target/
+**/*.jsonl
+**/*.glb
+**/*.gltf
+**/*.bin
+**/*.u8
+**/*.u16
+**/*.vxb
+**/*.vxb3
+**/*.vxi
+**/*.vxp
+**/*.gz
+**/*.zip
+**/*.pt
+**/*.onnx
+**/*.so
+**/*.dll
+**/*.dylib
+**/*.png
+**/*.jpg
+**/*.b64.txt
+**/captures/
+**/runs/
+docs/npc/audit/
+characters/data/
+
+# Générés ou volumineux : à lire par leurs outils seulement (1.0.0)
 catalogue/generated/
 catalogue/CATALOGUE.md
 engine/social/generated/
@@ -11,3 +55,47 @@ ai/tok2/registry.json
 ai/student2/output_registry.json
 ai/research/results/
 ai/research/arch/results/
+
+# ---------------------------------------------------------------------------
+# B. Monde, rendu, voxels, personnages 3D, eau - dernière modif. 8-9 oct. (em_water : 14 oct., hors sujet PNJ)
+# [RÉINTÉGRER QUAND] on attaque la mesure GPU du rendu, le bus d'opérations M6 (perception spatiale,
+# conséquences persistantes), le rendu de docs/style/, l'eau, le feu ou les frontières.
+# Exception déjà prévue : engine/core/testing/ et engine/cmake/ restent lisibles (le moteur social s'en sert).
+# ---------------------------------------------------------------------------
+engine/core/base/
+engine/core/mesh/
+engine/core/world/
+engine/gdext/
+engine/sim/
+engine/terrain/
+engine/scripts/
+engine/em_water/
+worldgen/
+game/
+prototypes/
+characters/
+tools/voxelizer/
+docs/style/
+docs/reference/
+
+# ---------------------------------------------------------------------------
+# C. Documents dépassés ou historiques (dernière modif. 8-9 oct., remplacés par charte, 06, 08-12, catalogue)
+# [RÉINTÉGRER QUAND] on réécrit l'un d'eux, ou si l'origine d'une décision est en doute.
+# ---------------------------------------------------------------------------
+docs/03_confrontation.md
+docs/04_feuille_de_route.md
+docs/05_idees.md
+docs/npc/
+
+# ---------------------------------------------------------------------------
+# D. Ancienne IA (8-9 oct.) : remplacée par catalogue/, ai/tok2, ai/situations, ai/teacher, ai/student2
+# [RÉINTÉGRER QUAND] un oracle de l'ancien pipeline doit être consulté pour un portage (ex. encode.py -> tok-2).
+# ---------------------------------------------------------------------------
+ai/npc_pipeline/
+ai/student/
+ai/CATALOGUE_modele.md
+ai/CONTRAT_PNJ.md
+ai/ETAT.md
+
+# Ancienne simulation à règles (9 oct.) : à remplacer par la boucle Transformer
+sim/

@@ -1,0 +1,4 @@
+.godot/
+bin/*.so
+bin/*.dll
+bin/*.dylib

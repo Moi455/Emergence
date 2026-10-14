@@ -1,0 +1,119 @@
+# speech_shapes.toml - étape 19a : des FORMES de parole, motifs de décomposition à la ELIZA (Weizenbaum 1966).
+#
+# ELIZA reconnaît ce qu'on lui dit en cherchant des mots-clés classés par priorité, puis en découpant la phrase par un motif
+# de décomposition (« 0 YOU 0 ME »). Ici, la parole est déjà un arbre (mode + proposition) : le motif est un arbre à trous.
+#   _        n'importe quel sous-arbre ou symbole        ?x     un trou nommé (même valeur partout où il revient)
+#   <cat>    un mot d'une catégorie (<interpretation>, <deontic>, <link>…) : les classes de synonymes d'ELIZA = nos catégories
+#   <cite>   une citation de dossier (b: m: g: h: q: c: @V)            ...    tout le reste des arguments (zéro ou plus)
+# Une forme NOMME un agencement de mots après coup (une promesse, une menace, un recrutement, un rendez-vous) pour l'analyse,
+# les tests et l'audit du professeur. Ce n'est PAS un mot de la langue, PAS un geste, PAS une option du Transformer, et
+# elle ne décide de rien (D28 : « promettre » n'est pas une action ; c'est une combinaison que l'on reconnaît).
+# `rank` : la priorité quand plusieurs formes conviennent (la plus haute gagne, comme le rang d'un mot-clé).
+
+[[shape]]
+id = "promise"
+pattern = "(offer (future (did me ...)))"
+rank = 4
+label_fr = "promesse : je m'engage à faire (offre au futur dont je suis l'agent)"
+
+[[shape]]
+id = "conditional_commitment"
+pattern = "(offer (if _ (did me ...)))"
+rank = 5
+label_fr = "engagement conditionnel : je ferai si…"
+
+[[shape]]
+id = "threat"
+pattern = "(assert (if _ (future (did me ...))))"
+rank = 7
+label_fr = "menace : si…, je ferai (affirmation conditionnelle d'un geste futur de moi)"
+
+[[shape]]
+id = "pressure"
+pattern = "(offer (if (not (did you ...)) (did me speak ...)))"
+rank = 9
+label_fr = "pression : si tu ne fais pas…, je dirai (un geste de parole conditionné par le refus)"
+
+[[shape]]
+id = "joint_commitment"
+pattern = "(offer (future (caused us _)))"
+rank = 8
+label_fr = "engagement à plusieurs : nous ferons arriver…"
+
+[[shape]]
+id = "recruitment"
+pattern = "(request (intends us _))"
+rank = 8
+label_fr = "recrutement : je demande que nous ayons l'intention de…"
+
+[[shape]]
+id = "rendezvous"
+pattern = "(<mood> (at_time _ (at _ _)))"
+rank = 6
+label_fr = "rendez-vous : être à tel lieu à tel moment (at_time, pas before)"
+
+[[shape]]
+id = "deadline"
+pattern = "(<mood> (before _ _))"
+rank = 5
+label_fr = "échéance : avant tel moment"
+
+[[shape]]
+id = "secrecy_request"
+pattern = "(request (not (future (did you speak ...))))"
+rank = 7
+label_fr = "demande de discrétion : que tu ne parles pas"
+
+[[shape]]
+id = "accusation"
+pattern = "(assert (qualifies _ <interpretation>))"
+rank = 7
+label_fr = "jugement dit : tel événement était un vol, une trahison, un adultère…"
+
+[[shape]]
+id = "rumour"
+pattern = "(assert (<evidential> _))"
+rank = 3
+label_fr = "ouï-dire ou certitude : une affirmation qui annonce sa source"
+
+[[shape]]
+id = "acceptance"
+pattern = "(yes <cite> ...)"
+rank = 6
+label_fr = "accord donné à UNE offre ou demande précise"
+
+[[shape]]
+id = "refusal"
+pattern = "(no <cite> ...)"
+rank = 6
+label_fr = "refus d'UNE offre ou demande précise"
+
+[[shape]]
+id = "ignorance"
+pattern = "(assert (not (knows me _)))"
+rank = 4
+label_fr = "« je ne sais pas… » (si un trou de question y figure : « je ne sais pas où… »)"
+
+[[shape]]
+id = "sounding"
+pattern = "(ask (knows you _))"
+rank = 4
+label_fr = "sonder : sais-tu… ? (savoir de l'autre)"
+
+[[shape]]
+id = "sharing"
+pattern = "(share ...)"
+rank = 4
+label_fr = "partage : une part est dite (cherchée n'importe où dans la parole : dans une offre, une condition, une demande)"
+
+[[shape]]
+id = "norm_statement"
+pattern = "(assert (norm <deontic> _))"
+rank = 6
+label_fr = "règle énoncée : il est interdit, obligatoire, honteux… que…"
+
+[[shape]]
+id = "order"
+pattern = "(request (did you ...))"
+rank = 3
+label_fr = "demande d'agir : que tu fasses…"

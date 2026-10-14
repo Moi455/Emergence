@@ -300,7 +300,7 @@ class PointerListCodec(FieldCodec):
 class PropositionCodec(FieldCodec):
     block = "prop"
     width = 1                                     # one proposition per record (its own block)
-    UTTERANCE_FIELDS = frozenset({"REQUEST.prop"})  # what was said or asked: a full utterance; the others are bare
+    UTTERANCE_FIELDS = frozenset({"REQUEST.prop", "PLAN.says"})  # what was said or asked: a full utterance; the others are bare
 
     def write(self, value, row, col, state):
         state.encode_proposition(value, row, self.where, utterance=self.where in self.UTTERANCE_FIELDS)

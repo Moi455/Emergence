@@ -86,7 +86,7 @@ note = "Les lieux s'emboîtent (pièce dans maison dans village dans région). L
 id = "world"
 label_fr = "le monde (une seule instance : horloge, climat, graine)"
 driven_by = "engine"
-components = ["identity", "clock", "climate", "chronicle"]
+components = ["identity", "clock", "climate", "chronicle", "setting"]
 
 [[entity]]
 id = "trace"
@@ -214,6 +214,14 @@ holder = "place"
 id = "clock"
 label_fr = "horloge : temps de jeu, jour, saison, année ; horloge de vie (charte § 25)"
 holder = "world"
+
+[[component]]
+id = "setting"
+channel = "setting"
+engine_only = true
+label_fr = "réglages de la partie : tempérament des villages (choisi par le joueur), budget de réflexion accordé par l'ordonnanceur"
+holder = "world"
+note = "Ce ne sont ni des croyances ni des perceptions : un paramètre du jeu, le même pour tous les PNJ d'un village, lu par le modèle dans WAKE. Le Transformer ne l'écrit jamais, et les règles dures (D10…) ne le lisent jamais : le gouverneur est identique quel que soit le tempérament."
 
 [[component]]
 id = "climate"

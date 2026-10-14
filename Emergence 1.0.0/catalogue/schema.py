@@ -35,14 +35,15 @@ SCALES = ("bipolar10", "unipolar10", "qty", "ratio", "enum", "id", "mref", "word
 CLOCKS = ("real", "day", "life", "none")
 # own_mind: its own feelings and dispositions; interoception: what its body feels (SELF only);
 # perception: what it sees/hears/smells now (apparent values); belief: what it holds true, remembers, wants.
-CHANNELS = ("own_mind", "interoception", "perception", "belief")
+CHANNELS = ("own_mind", "interoception", "perception", "belief", "setting")
 TOKEN_PART = re.compile(r"^([A-Z][A-Z_]*)(?:\.[a-z_][a-z0-9_.]*)?(?: \(.*\))?(?: [/a-zA-Z_.]+)*$")
 TOKEN_CHANNELS = {"SELF": ("own_mind", "interoception", "belief", "perception"), "SELF_MIND": ("own_mind",),
                   "SELF_STATE": ("own_mind",), "TASTE": ("own_mind",), "SKILL": ("belief",),
                   "ENTITY": ("perception", "belief"), "GROUP": ("belief",), "THING": ("perception", "belief"),
                   "PLACE": ("perception",), "EVENT": ("perception",), "BELIEF": ("belief",), "HEARD": ("belief",),
                   "MEMORY": ("belief",), "GOAL": ("belief",), "PLAN": ("belief",), "REQUEST": ("belief",),
-                  "COMMIT": ("belief",), "INV": ("belief", "perception"), "LOCUS": ("belief",)}   # real seconds | calendar (day 1 h 30, year 7 h, D30) | life clock
+                  "COMMIT": ("belief",), "INV": ("belief", "perception"), "LOCUS": ("belief",),
+                  "WAKE": ("setting",)}   # real seconds | calendar (day 1 h 30, year 7 h, D30) | life clock
 WRITERS = ("engine", "T_jump", "T_step", "T_slow", "birth", "action", "derived")
 VISIBILITY = ("private", "observable", "public", "engine")
 STATUS = ("N", "E", "R")                 # core, extension, postponed
@@ -100,6 +101,7 @@ class Variable(Entry):
     slow_rate: float = 0.0               # T_slow bound: at most this much per LIVED YEAR (robust to clock compression)
     rate: float = 0.0                    # T_step bound: at most this much per GAME DAY (decisions come several times a second)
     values_from: str = ""                # enum whose values are the concepts of this category (single source)
+    words_from: str = ""                 # list of words: the category of [[percept_word]] it may hold (a closed, declared set)
     clock: str = ""                      # which clock its dynamics follow (CLOCKS); required when dynamics are given
     list_of: str = ""                    # element type of a list that reaches a token (mref, word, enum, qty, proposition)
     components: list[str] = field(default_factory=list)   # named axes of a vector value as it reaches a token
@@ -183,6 +185,24 @@ class Species(Entry):
     behavior: str = ""                   # the engine law (fauna is not driven by a Transformer)
     lookalike: str = ""                  # perceptual class shared with look-alikes (death cap ~ edible mushroom);
                                          # perception shows the true species only to a skilled eye
+    mountable: bool = False              # an animal one can ride (mount) : read from the species, a flag, not a rule
+
+
+@dataclass
+class Site(Entry):
+    """A KIND OF PLACE OR CONSTRUCTION (house, barn, wall, bridge, well, field, mine, temple, market, village, city, forest,
+    river, cave, road, sky...), perceived through lc_kind / pc_kind_seen, usable in recipe, exists and channel.
+    Part of the kinds table (vocabulary `sortes`, factored): not a grammar word."""
+    category: str = ""                   # building | work | land | settlement | wild | water | route | sky
+    built: bool = False                  # made by hands: one can channel INTO it (a form), it is also a structure
+
+
+@dataclass
+class PerceptWord(Entry):
+    """A word for what can be PERCEIVED (a build, a mark, a sign of health, a state, the weather, a colour, a wound):
+    the closed set a list variable declares with `words_from`. In the kinds table, so it is also speakable:
+    (appears @E1 bald). One table: what is seen and what is said are the same words."""
+    category: str = ""                   # build | mark | sign | health | attire | state | weather | strange | color | wound
 
 
 @dataclass
@@ -223,11 +243,29 @@ class Concept(Entry):
     refers: str = ""                     # id of a catalogue entry this word names, if any
     intimate: bool | None = None         # D10: refused in any goal, belief write, utterance or agreement involving a
                                          # minor; MUST be declared on link words
+    answers: bool | None = None          # a formula that may answer ONE precise item: (yes h:2), (no q:1)
+    wh_ok: bool | None = None            # a predicate whose proposition may hold a question hole: (not (knows me (at @E9 where)))
+    arg_classes: list = field(default_factory=list)   # per argument, the classes it may be (agent, animal, item, structure, plant,
+                                         # land, place, group…); [] = free. Checked when the class of the argument is KNOWN
+                                         # (a person word, or a pointer whose record kind the caller gives): (dead @T1) with
+                                         # @T1 a knife, (owns me @L1) with @L1 a forest are refused
 
 
 @dataclass
 class Grammar(Entry):
     rule: str = ""
+    ranks: dict = field(default_factory=dict)            # keyword ranks by word category (ELIZA's precedence number): which
+                                                         # words decide what an utterance is ABOUT (tools/shapes.py Keyworder)
+
+
+@dataclass
+class Shape(Entry):
+    """A SHAPE of speech: a decomposition pattern over the S-expression of an utterance (ELIZA's decomposition rule).
+    It RECOGNISES « this is a promise, a threat, a recruitment, a rendezvous » for analysis, tests and the teacher's audit.
+    It is never a word of the language, never an action, never an option offered to the model, and decides nothing
+    (D28: social acts stay combinations of words; this only names the combination after the fact)."""
+    pattern: str = ""                    # (offer (future (did me ...))) ; _ any ; ?x binds ; <category> a word of a category ; ... the rest
+    rank: int = 1                        # precedence when several shapes match (the highest wins), like a keyword rank
 
 
 @dataclass
@@ -268,12 +306,14 @@ class Story(Entry):
     properties: list[str] = field(default_factory=list)
     interpretations: list[str] = field(default_factory=list)
     utterances: list[str] = field(default_factory=list)  # expressions in the inner language
+    trace: list[str] = field(default_factory=list)       # the story decomposed STEP BY STEP, as the written thought would write it:
+                                                         # "phase | kind | content" (checked by tools/probes.py)
 
 
 KINDS: dict[str, type[Entry]] = {
     "entity": EntityKind, "component": Component, "variable": Variable, "property": Property,
     "action": Action, "concept": Concept, "grammar": Grammar, "interpretation": Interpretation,
-    "hard_rule": HardRule, "story": Story, "material": Material, "process": Process, "form": Form, "item_type": ItemType, "species": Species, "migration": Migration,
+    "hard_rule": HardRule, "shape": Shape, "story": Story, "site": Site, "percept_word": PerceptWord, "material": Material, "process": Process, "form": Form, "item_type": ItemType, "species": Species, "migration": Migration,
 }
 ENGINE_MATERIALS = Path(__file__).resolve().parents[1] / "engine" / "data" / "materials.csv"
 PROPERTY_CATEGORIES = ("intrinsic", "affordance", "state")
@@ -382,6 +422,14 @@ class Catalogue:
         return [p for p in self.perceptible_properties()
                 if props[p].category in ("affordance", "state") or props[p].in_vector]
 
+    def words_of(self, category: str) -> list[str]:
+        """The closed set of words a list variable may hold (`words_from`): the percept words of the category, and for
+        `state` also the perceptible STATE properties (burning, locked, lit, wet…): one word, one meaning."""
+        out = [w.id for w in self["percept_word"].values() if w.category == category]
+        if category == "state":
+            out += [p.id for p in self["property"].values() if p.category == "state" and p.perceptible]
+        return sorted(out)
+
     def citations(self) -> dict[str, dict[str, list[str]]]:
         """kind -> id -> ids of the stories that cite it."""
         out: dict[str, dict[str, list[str]]] = {k: {} for k in STORY_REFS.values()}
@@ -458,6 +506,11 @@ class Catalogue:
                 p.append(f"variable {v.id}: status '{v.status}'")
             if v.scale == "enum" and not v.values and not v.values_from:
                 p.append(f"variable {v.id}: enum without values")
+            if v.words_from:
+                if v.scale not in ("list", "word") or (v.scale == "list" and v.list_of != "word"):
+                    p.append(f"variable {v.id}: words_from only on a word or a list of words")
+                if not self.words_of(v.words_from):
+                    p.append(f"variable {v.id}: words_from '{v.words_from}' names no percept words")
             if v.values_from:
                 cat_ids = [c.id for c in self["concept"].values() if c.category == v.values_from]
                 if not cat_ids:
@@ -529,6 +582,7 @@ class Catalogue:
                     p.append(f"action {a.id}: minor_whitelist allows an intimate value of '{pn}' (D10)")
             if any(prm.intimate_values for prm in a.params) and not a.contact:
                 p.append(f"action {a.id}: has intimate values but is not declared contact")
+        p += self._check_kind_tables()
         for s in self["story"].values():
             if s.status not in STORY_STATUS:
                 p.append(f"story {s.id}: status '{s.status}'")
@@ -548,6 +602,36 @@ class Catalogue:
         for e in self["entity"].values():
             if e.driven_by not in ("transformer", "engine"):
                 p.append(f"entity {e.id}: driven_by '{e.driven_by}'")
+        return p
+
+    SITE_CATEGORIES = ("building", "work", "land", "settlement", "wild", "water", "route", "sky")
+    PERCEPT_CATEGORIES = ("build", "mark", "sign", "health", "attire", "state", "weather", "strange", "color", "wound")
+
+    def _check_kind_tables(self) -> list[str]:
+        """The kinds table (sortes of the language): sites and percept words have their own ids, found nowhere else
+        (a word, one meaning), and a declared category; every percept category is used by a list variable."""
+        p = []
+        taken: dict[str, str] = {}
+        for kind in ("item_type", "material", "species", "form", "concept", "action"):
+            for i in self[kind]:
+                taken.setdefault(i, kind)
+        for kind, cats in (("site", self.SITE_CATEGORIES), ("percept_word", self.PERCEPT_CATEGORIES)):
+            for e in self[kind].values():
+                if e.category not in cats:
+                    p.append(f"{kind} {e.id}: category '{e.category}' not in {cats}")
+                if e.id in taken:
+                    p.append(f"{kind} {e.id}: the id is already a {taken[e.id]} (one word, one meaning)")
+                taken.setdefault(e.id, kind)
+        for s in self["site"].values():
+            if s.built and s.category not in ("building", "work"):
+                p.append(f"site {s.id}: only a building or a work can be built")
+        used = {v.words_from for v in self["variable"].values() if v.words_from}
+        for cat in self.PERCEPT_CATEGORIES:
+            if cat not in used:
+                p.append(f"percept words of category '{cat}': no list variable declares words_from = '{cat}'")
+        for sp in self["species"].values():
+            if sp.mountable and sp.kingdom != "animal":
+                p.append(f"species {sp.id}: mountable only for an animal")
         return p
 
     def _channel(self, comp_id: str) -> str:
@@ -678,4 +762,10 @@ class Catalogue:
 
     def _check_coverage(self) -> list[str]:
         """Probes only: an entry never needs a story; a story that cannot be expressed is a gap."""
-        return [f"story {s.id}: {s.status}" for s in self["story"].values() if s.status != "expressible"]
+        out = []
+        for s in self["story"].values():
+            if s.status == "gap" and s.note.strip():
+                continue                                  # a documented gap (what is missing is said in `note`) is allowed
+            if s.status != "expressible":
+                out.append(f"story {s.id}: {s.status}" + (" (a gap needs a note saying what is missing)" if s.status == "gap" else ""))
+        return out

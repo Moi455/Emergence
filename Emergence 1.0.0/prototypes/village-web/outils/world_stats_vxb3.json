@@ -1,0 +1,672 @@
+{
+ "format": "VXB3",
+ "raw": 33724227,
+ "gz": 7483974,
+ "tags": [
+  357850,
+  645,
+  83790,
+  0
+ ],
+ "bricks_over_15_colours": 38697,
+ "modules": [
+  {
+   "name": "Balcony_Simple_Straight",
+   "voxels": 14036,
+   "dims": [
+    101,
+    63,
+    16
+   ],
+   "origin": [
+    -50,
+    -6,
+    -60
+   ]
+  },
+  {
+   "name": "Corner_Exterior_Brick",
+   "voxels": 55923,
+   "dims": [
+    27,
+    152,
+    32
+   ],
+   "origin": [
+    -18,
+    -1,
+    -22
+   ]
+  },
+  {
+   "name": "Corner_Exterior_Wood",
+   "voxels": 18000,
+   "dims": [
+    10,
+    150,
+    16
+   ],
+   "origin": [
+    -5,
+    0,
+    -10
+   ]
+  },
+  {
+   "name": "Door_1_Round",
+   "voxels": 22392,
+   "dims": [
+    56,
+    116,
+    8
+   ],
+   "origin": [
+    -2,
+    2,
+    -5
+   ]
+  },
+  {
+   "name": "Door_2_Flat",
+   "voxels": 24098,
+   "dims": [
+    56,
+    105,
+    16
+   ],
+   "origin": [
+    -2,
+    2,
+    -9
+   ]
+  },
+  {
+   "name": "Door_4_Round",
+   "voxels": 29977,
+   "dims": [
+    57,
+    117,
+    16
+   ],
+   "origin": [
+    -3,
+    1,
+    -10
+   ]
+  },
+  {
+   "name": "Floor_Brick",
+   "voxels": 20402,
+   "dims": [
+    101,
+    2,
+    104
+   ],
+   "origin": [
+    -50,
+    -1,
+    -54
+   ]
+  },
+  {
+   "name": "Floor_UnevenBrick",
+   "voxels": 20402,
+   "dims": [
+    101,
+    2,
+    104
+   ],
+   "origin": [
+    -50,
+    -1,
+    -54
+   ]
+  },
+  {
+   "name": "Floor_WoodDark",
+   "voxels": 20402,
+   "dims": [
+    101,
+    2,
+    104
+   ],
+   "origin": [
+    -50,
+    -1,
+    -54
+   ]
+  },
+  {
+   "name": "Prop_Brick1",
+   "voxels": 1967,
+   "dims": [
+    17,
+    11,
+    16
+   ],
+   "origin": [
+    -8,
+    -6,
+    -9
+   ]
+  },
+  {
+   "name": "Prop_Brick2",
+   "voxels": 2193,
+   "dims": [
+    21,
+    13,
+    16
+   ],
+   "origin": [
+    -10,
+    -6,
+    -10
+   ]
+  },
+  {
+   "name": "Prop_Chimney",
+   "voxels": 38742,
+   "dims": [
+    48,
+    159,
+    56
+   ],
+   "origin": [
+    -25,
+    0,
+    -31
+   ]
+  },
+  {
+   "name": "Prop_Crate",
+   "voxels": 135251,
+   "dims": [
+    56,
+    54,
+    56
+   ],
+   "origin": [
+    -28,
+    0,
+    -28
+   ]
+  },
+  {
+   "name": "Prop_ExteriorBorder_Straight1",
+   "voxels": 24400,
+   "dims": [
+    100,
+    7,
+    40
+   ],
+   "origin": [
+    -50,
+    0,
+    -40
+   ]
+  },
+  {
+   "name": "Prop_MetalFence_Ornament",
+   "voxels": 24233,
+   "dims": [
+    98,
+    143,
+    8
+   ],
+   "origin": [
+    -49,
+    0,
+    -4
+   ]
+  },
+  {
+   "name": "Prop_Vine1",
+   "voxels": 6127,
+   "dims": [
+    71,
+    127,
+    16
+   ],
+   "origin": [
+    -33,
+    -105,
+    -14
+   ]
+  },
+  {
+   "name": "Prop_Vine6",
+   "voxels": 12361,
+   "dims": [
+    199,
+    121,
+    72
+   ],
+   "origin": [
+    -95,
+    -53,
+    -5
+   ]
+  },
+  {
+   "name": "Prop_Vine9",
+   "voxels": 9815,
+   "dims": [
+    199,
+    68,
+    72
+   ],
+   "origin": [
+    -95,
+    -28,
+    -36
+   ]
+  },
+  {
+   "name": "Prop_Wagon",
+   "voxels": 97978,
+   "dims": [
+    98,
+    77,
+    208
+   ],
+   "origin": [
+    -49,
+    0,
+    -51
+   ]
+  },
+  {
+   "name": "Prop_WoodenFence_Extension1",
+   "voxels": 5414,
+   "dims": [
+    103,
+    41,
+    8
+   ],
+   "origin": [
+    -51,
+    -1,
+    -5
+   ]
+  },
+  {
+   "name": "Prop_WoodenFence_Single",
+   "voxels": 6114,
+   "dims": [
+    104,
+    41,
+    8
+   ],
+   "origin": [
+    -52,
+    -1,
+    -5
+   ]
+  },
+  {
+   "name": "Roof_Front_Brick4",
+   "voxels": 87332,
+   "dims": [
+    221,
+    154,
+    64
+   ],
+   "origin": [
+    -110,
+    -7,
+    -47
+   ]
+  },
+  {
+   "name": "Roof_Front_Brick6",
+   "voxels": 240869,
+   "dims": [
+    334,
+    226,
+    64
+   ],
+   "origin": [
+    -167,
+    -7,
+    -47
+   ]
+  },
+  {
+   "name": "Roof_RoundTiles_4x4",
+   "voxels": 758199,
+   "dims": [
+    276,
+    213,
+    280
+   ],
+   "origin": [
+    -138,
+    -26,
+    -143
+   ]
+  },
+  {
+   "name": "Roof_RoundTiles_4x6",
+   "voxels": 967061,
+   "dims": [
+    276,
+    212,
+    384
+   ],
+   "origin": [
+    -138,
+    -26,
+    -194
+   ]
+  },
+  {
+   "name": "Roof_RoundTiles_4x8",
+   "voxels": 1154629,
+   "dims": [
+    276,
+    212,
+    488
+   ],
+   "origin": [
+    -138,
+    -26,
+    -246
+   ]
+  },
+  {
+   "name": "Roof_RoundTiles_6x6",
+   "voxels": 1333687,
+   "dims": [
+    414,
+    285,
+    408
+   ],
+   "origin": [
+    -207,
+    -40,
+    -211
+   ]
+  },
+  {
+   "name": "Roof_RoundTiles_6x8",
+   "voxels": 1582927,
+   "dims": [
+    414,
+    285,
+    488
+   ],
+   "origin": [
+    -207,
+    -40,
+    -246
+   ]
+  },
+  {
+   "name": "Roof_Tower_RoundTiles",
+   "voxels": 924606,
+   "dims": [
+    284,
+    369,
+    272
+   ],
+   "origin": [
+    -142,
+    -29,
+    -136
+   ]
+  },
+  {
+   "name": "Stairs_Exterior_Straight",
+   "voxels": 88766,
+   "dims": [
+    101,
+    62,
+    112
+   ],
+   "origin": [
+    -50,
+    -11,
+    -58
+   ]
+  },
+  {
+   "name": "Wall_BottomCover",
+   "voxels": 4661,
+   "dims": [
+    101,
+    13,
+    24
+   ],
+   "origin": [
+    -50,
+    -6,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_Plaster_Door_Round",
+   "voxels": 103928,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_Plaster_Straight",
+   "voxels": 196393,
+   "dims": [
+    101,
+    158,
+    24
+   ],
+   "origin": [
+    -50,
+    -1,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_Plaster_Window_Thin_Round",
+   "voxels": 167222,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_Plaster_Window_Wide_Flat",
+   "voxels": 150580,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_Plaster_Window_Wide_Round",
+   "voxels": 141987,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_Plaster_WoodGrid",
+   "voxels": 120814,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_UnevenBrick_Door_Flat",
+   "voxels": 110238,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_UnevenBrick_Door_Round",
+   "voxels": 102377,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_UnevenBrick_Straight",
+   "voxels": 185566,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_UnevenBrick_Window_Thin_Round",
+   "voxels": 161939,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "Wall_UnevenBrick_Window_Wide_Round",
+   "voxels": 136847,
+   "dims": [
+    101,
+    157,
+    24
+   ],
+   "origin": [
+    -50,
+    0,
+    -8
+   ]
+  },
+  {
+   "name": "WindowShutters_Thin_Round_Open",
+   "voxels": 13175,
+   "dims": [
+    81,
+    77,
+    24
+   ],
+   "origin": [
+    -41,
+    54,
+    -26
+   ]
+  },
+  {
+   "name": "WindowShutters_Wide_Round_Open",
+   "voxels": 21295,
+   "dims": [
+    116,
+    84,
+    32
+   ],
+   "origin": [
+    -60,
+    54,
+    -36
+   ]
+  },
+  {
+   "name": "Window_Thin_Round1",
+   "voxels": 24884,
+   "dims": [
+    46,
+    81,
+    24
+   ],
+   "origin": [
+    -23,
+    51,
+    -11
+   ]
+  },
+  {
+   "name": "Window_Wide_Flat1",
+   "voxels": 49123,
+   "dims": [
+    80,
+    79,
+    40
+   ],
+   "origin": [
+    -40,
+    47,
+    -27
+   ]
+  },
+  {
+   "name": "Window_Wide_Round1",
+   "voxels": 39936,
+   "dims": [
+    70,
+    87,
+    32
+   ],
+   "origin": [
+    -35,
+    51,
+    -19
+   ]
+  }
+ ]
+}

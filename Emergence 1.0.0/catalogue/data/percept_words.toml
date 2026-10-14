@@ -1,0 +1,527 @@
+# percept_words.toml - étape 19a : les MOTS de ce qui se perçoit (carrure, marques, signes, santé, tenue, état, temps,
+# signes étranges, couleur, blessure). Chaque variable de liste de perception déclare la catégorie qu'elle peut porter
+# (`words_from`) : un ensemble FERMÉ, au lieu d'une liste de mots libres. Ce qu'on voit et ce qu'on peut dire sont les
+# mêmes mots : (appears @E1 bald), (described bald), un goût pour le bleu (TASTE.concept). La calvitie ne se perçoit pas
+# d'un côté et ne se dit pas de l'autre (étape 19a).
+# Table des sortes (≤ 1 024 avec les types d'objets, matières, espèces, formes et sortes de lieux), pas des mots de grammaire.
+
+
+# ─── build ───
+[[percept_word]]
+id = "tall"
+category = "build"
+label_fr = "grand"
+
+[[percept_word]]
+id = "short_stature"
+category = "build"
+label_fr = "petit de taille"
+
+[[percept_word]]
+id = "stocky"
+category = "build"
+label_fr = "trapu"
+
+[[percept_word]]
+id = "slight"
+category = "build"
+label_fr = "menu"
+
+[[percept_word]]
+id = "broad"
+category = "build"
+label_fr = "large d'épaules"
+
+[[percept_word]]
+id = "bent"
+category = "build"
+label_fr = "voûté"
+
+[[percept_word]]
+id = "muscular"
+category = "build"
+label_fr = "musclé"
+
+[[percept_word]]
+id = "frail"
+category = "build"
+label_fr = "frêle"
+
+[[percept_word]]
+id = "round"
+category = "build"
+label_fr = "rond, corpulent"
+
+
+# ─── mark ───
+[[percept_word]]
+id = "scar"
+category = "mark"
+label_fr = "cicatrice"
+
+[[percept_word]]
+id = "burn_scar"
+category = "mark"
+label_fr = "cicatrice de brûlure"
+
+[[percept_word]]
+id = "missing_eye"
+category = "mark"
+label_fr = "œil perdu"
+
+[[percept_word]]
+id = "missing_limb"
+category = "mark"
+label_fr = "membre perdu"
+
+[[percept_word]]
+id = "limp"
+category = "mark"
+label_fr = "boiterie"
+
+[[percept_word]]
+id = "bald"
+category = "mark"
+label_fr = "chauve"
+
+[[percept_word]]
+id = "tattoo"
+category = "mark"
+label_fr = "tatouage"
+
+[[percept_word]]
+id = "brand"
+category = "mark"
+label_fr = "marque au fer"
+
+[[percept_word]]
+id = "pocked"
+category = "mark"
+label_fr = "visage grêlé"
+
+[[percept_word]]
+id = "birthmark"
+category = "mark"
+label_fr = "tache de naissance"
+
+[[percept_word]]
+id = "missing_teeth"
+category = "mark"
+label_fr = "dents manquantes"
+
+[[percept_word]]
+id = "crooked_nose"
+category = "mark"
+label_fr = "nez cassé"
+
+
+# ─── sign ───
+[[percept_word]]
+id = "blush"
+category = "sign"
+label_fr = "rougit"
+
+[[percept_word]]
+id = "trembling"
+category = "sign"
+label_fr = "tremble"
+
+[[percept_word]]
+id = "sweating"
+category = "sign"
+label_fr = "transpire"
+
+[[percept_word]]
+id = "tearful"
+category = "sign"
+label_fr = "larmes"
+
+[[percept_word]]
+id = "staggering"
+category = "sign"
+label_fr = "titube"
+
+[[percept_word]]
+id = "fidgeting"
+category = "sign"
+label_fr = "s'agite"
+
+[[percept_word]]
+id = "avoiding_gaze"
+category = "sign"
+label_fr = "évite le regard"
+
+[[percept_word]]
+id = "panting"
+category = "sign"
+label_fr = "halète"
+
+[[percept_word]]
+id = "yawning"
+category = "sign"
+label_fr = "bâille"
+
+
+# ─── health ───
+[[percept_word]]
+id = "pale"
+category = "health"
+label_fr = "pâle"
+
+[[percept_word]]
+id = "feverish"
+category = "health"
+label_fr = "fiévreux"
+
+[[percept_word]]
+id = "coughing"
+category = "health"
+label_fr = "tousse"
+
+[[percept_word]]
+id = "emaciated"
+category = "health"
+label_fr = "décharné"
+
+[[percept_word]]
+id = "flushed"
+category = "health"
+label_fr = "congestionné"
+
+[[percept_word]]
+id = "sallow"
+category = "health"
+label_fr = "jaunâtre"
+
+[[percept_word]]
+id = "swollen"
+category = "health"
+label_fr = "enflé"
+
+[[percept_word]]
+id = "shivering"
+category = "health"
+label_fr = "frissonne"
+
+
+# ─── attire ───
+[[percept_word]]
+id = "plain_dress"
+category = "attire"
+label_fr = "tenue sobre"
+
+[[percept_word]]
+id = "fine_dress"
+category = "attire"
+label_fr = "belle tenue"
+
+[[percept_word]]
+id = "festive_dress"
+category = "attire"
+label_fr = "tenue de fête"
+
+[[percept_word]]
+id = "mourning_dress"
+category = "attire"
+label_fr = "tenue de deuil"
+
+[[percept_word]]
+id = "work_dress"
+category = "attire"
+label_fr = "tenue de travail"
+
+[[percept_word]]
+id = "armor_worn"
+category = "attire"
+label_fr = "armure"
+
+[[percept_word]]
+id = "tattered"
+category = "attire"
+label_fr = "en lambeaux"
+
+[[percept_word]]
+id = "spotless"
+category = "attire"
+label_fr = "impeccable"
+
+[[percept_word]]
+id = "filthy"
+category = "attire"
+label_fr = "sale"
+
+[[percept_word]]
+id = "hooded"
+category = "attire"
+label_fr = "encapuchonné"
+
+
+# ─── state ───
+# (les états qui sont déjà des propriétés d'état perceptibles du catalogue, burning, locked, lit, wet…, valent aussi : Catalogue.words_of)
+[[percept_word]]
+id = "intact"
+category = "state"
+label_fr = "intact"
+
+[[percept_word]]
+id = "damaged"
+category = "state"
+label_fr = "abîmé"
+
+[[percept_word]]
+id = "cracked"
+category = "state"
+label_fr = "fissuré"
+
+[[percept_word]]
+id = "shattered"
+category = "state"
+label_fr = "brisé"
+
+[[percept_word]]
+id = "smoldering"
+category = "state"
+label_fr = "qui couve"
+
+[[percept_word]]
+id = "wet"
+category = "state"
+label_fr = "mouillé"
+
+[[percept_word]]
+id = "rotten"
+category = "state"
+label_fr = "pourri"
+
+[[percept_word]]
+id = "hollow"
+category = "state"
+label_fr = "vide"
+
+[[percept_word]]
+id = "filled"
+category = "state"
+label_fr = "plein"
+
+[[percept_word]]
+id = "ripe"
+category = "state"
+label_fr = "mûr"
+
+[[percept_word]]
+id = "rusty"
+category = "state"
+label_fr = "rouillé"
+
+[[percept_word]]
+id = "collapsed"
+category = "state"
+label_fr = "effondré"
+
+[[percept_word]]
+id = "frozen"
+category = "state"
+label_fr = "gelé"
+
+
+# ─── weather ───
+[[percept_word]]
+id = "rain"
+category = "weather"
+label_fr = "pluie"
+
+[[percept_word]]
+id = "drizzle"
+category = "weather"
+label_fr = "bruine"
+
+[[percept_word]]
+id = "storm_weather"
+category = "weather"
+label_fr = "orage"
+
+[[percept_word]]
+id = "thunder"
+category = "weather"
+label_fr = "tonnerre"
+
+[[percept_word]]
+id = "snowfall"
+category = "weather"
+label_fr = "neige qui tombe"
+
+[[percept_word]]
+id = "hail"
+category = "weather"
+label_fr = "grêle"
+
+[[percept_word]]
+id = "foggy"
+category = "weather"
+label_fr = "brouillard"
+
+[[percept_word]]
+id = "mist"
+category = "weather"
+label_fr = "brume"
+
+[[percept_word]]
+id = "strong_wind"
+category = "weather"
+label_fr = "vent fort"
+
+[[percept_word]]
+id = "clear_sky"
+category = "weather"
+label_fr = "ciel dégagé"
+
+[[percept_word]]
+id = "overcast"
+category = "weather"
+label_fr = "couvert"
+
+[[percept_word]]
+id = "heat_wave"
+category = "weather"
+label_fr = "grosse chaleur"
+
+[[percept_word]]
+id = "frost"
+category = "weather"
+label_fr = "gel"
+
+
+# ─── strange ───
+[[percept_word]]
+id = "wandering_lights"
+category = "strange"
+label_fr = "lumières errantes"
+
+[[percept_word]]
+id = "sudden_silence"
+category = "strange"
+label_fr = "silence soudain"
+
+[[percept_word]]
+id = "sudden_cold"
+category = "strange"
+label_fr = "froid brutal"
+
+[[percept_word]]
+id = "silent_birds"
+category = "strange"
+label_fr = "oiseaux muets"
+
+[[percept_word]]
+id = "whispers"
+category = "strange"
+label_fr = "murmures"
+
+[[percept_word]]
+id = "humming"
+category = "strange"
+label_fr = "bourdonnement"
+
+[[percept_word]]
+id = "shimmer"
+category = "strange"
+label_fr = "miroitement"
+
+[[percept_word]]
+id = "unnatural_calm"
+category = "strange"
+label_fr = "calme anormal"
+
+
+# ─── color ───
+[[percept_word]]
+id = "red"
+category = "color"
+label_fr = "rouge"
+
+[[percept_word]]
+id = "orange"
+category = "color"
+label_fr = "orange"
+
+[[percept_word]]
+id = "yellow"
+category = "color"
+label_fr = "jaune"
+
+[[percept_word]]
+id = "green"
+category = "color"
+label_fr = "vert"
+
+[[percept_word]]
+id = "blue"
+category = "color"
+label_fr = "bleu"
+
+[[percept_word]]
+id = "purple"
+category = "color"
+label_fr = "violet"
+
+[[percept_word]]
+id = "pink"
+category = "color"
+label_fr = "rose"
+
+[[percept_word]]
+id = "brown"
+category = "color"
+label_fr = "brun"
+
+[[percept_word]]
+id = "black"
+category = "color"
+label_fr = "noir"
+
+[[percept_word]]
+id = "white"
+category = "color"
+label_fr = "blanc"
+
+[[percept_word]]
+id = "grey"
+category = "color"
+label_fr = "gris"
+
+
+# ─── wound ───
+[[percept_word]]
+id = "bruise"
+category = "wound"
+label_fr = "contusion"
+
+[[percept_word]]
+id = "cut_wound"
+category = "wound"
+label_fr = "coupure"
+
+[[percept_word]]
+id = "puncture"
+category = "wound"
+label_fr = "perforation"
+
+[[percept_word]]
+id = "burn_wound"
+category = "wound"
+label_fr = "brûlure"
+
+[[percept_word]]
+id = "fracture"
+category = "wound"
+label_fr = "fracture"
+
+[[percept_word]]
+id = "frostbite"
+category = "wound"
+label_fr = "gelure"
+
+[[percept_word]]
+id = "bite_wound"
+category = "wound"
+label_fr = "morsure"

@@ -171,7 +171,7 @@ class HandCases:
                                   "place": "@PLACE", "time": {"sin": 0.5, "cos": -0.86, "certainty": 0.9},
                                   "held": [{"edge": 2}, {"mass": 1.0, "edge": 0}]}),
             Record("ENTITY", "@E1", {"name": "n:17", "known_by": "seen", "present": True, "dist": 3.0, "rel.trust": -4.5,
-                                     "rel.familiarity": 8, "look.held": {"capacity": 10.0}, "look.attire": ["w_poor"],
+                                     "rel.familiarity": 8, "look.held": {"capacity": 10.0}, "look.attire": ["tattered"],
                                      "look.gaze": "@T1", "rep": {"honesty": -0.6}}),
             Record("BELIEF", "b:1", {"prop": "(owns me @T1)", "certainty": 9, "source": "seen", "polarity": True,
                                      "informant": "", "shared": ["@E1", "@E9"], "age": 200.0}),

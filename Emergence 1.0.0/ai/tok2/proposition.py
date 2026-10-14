@@ -33,7 +33,7 @@ MAX_TEXT = 1000                                   # characters of a proposition 
 
 
 _CLEAN = re.compile(r"[\t\n\r\x20-\x7e]*")
-_CITATION = re.compile(r"[bmg]:(?:0|[1-9][0-9]{0,11})", re.ASCII)
+_CITATION = re.compile(r"[bmghqc]:(?:0|[1-9][0-9]{0,11})", re.ASCII)
 
 
 def unparse(node) -> str:
@@ -87,7 +87,7 @@ class PropositionEncoder:
         self.vocab, self.max_symbols, self.grammar = vocab, max_symbols, grammar
 
     def encode(self, value, row, state, where: str, utterance: bool = False) -> None:
-        root = self._validated(value, where, utterance)
+        root = self._validated(value, where, utterance, state.pointer_kinds)
         seq: list[tuple] = []
         self._walk(root, 0, seq, state, where)
         if len(seq) > self.max_symbols:
@@ -98,7 +98,7 @@ class PropositionEncoder:
             if key is not None:
                 state.pointer(key, where, row, "prop", i)
 
-    def _validated(self, value, where: str, utterance: bool) -> Node:
+    def _validated(self, value, where: str, utterance: bool, pointer_kinds: dict | None = None) -> Node:
         """Parse and type-check with the grammar of the catalogue; the tree comes from the validator's own parse."""
         try:
             text = unparse(value) if isinstance(value, Node) else value
@@ -112,7 +112,7 @@ class PropositionEncoder:
             raise TokenError(f"{where}: only printable ASCII, space, tab and newline are allowed in a proposition "
                              "(no non-ASCII space, no control character)")
         try:
-            e = Expression(text, self.grammar.vocab, bare=not utterance)
+            e = Expression(text, self.grammar.vocab, bare=not utterance, pointer_kinds=pointer_kinds)
         except RecursionError:
             raise TokenError(f"{where}: nested too deeply") from None
         if not e.ok:

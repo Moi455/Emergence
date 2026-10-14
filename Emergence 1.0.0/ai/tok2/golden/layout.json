@@ -44,7 +44,10 @@
    "@PLACE",
    "b:",
    "m:",
-   "g:"
+   "g:",
+   "h:",
+   "q:",
+   "c:"
   ],
   "name": "n:<num>",
   "name_digits_max": 12,
@@ -99,6 +102,18 @@
   {
    "symbol": "g:",
    "id": 11
+  },
+  {
+   "symbol": "h:",
+   "id": 1469
+  },
+  {
+   "symbol": "q:",
+   "id": 1470
+  },
+  {
+   "symbol": "c:",
+   "id": 1471
   },
   {
    "symbol": "<name0>",
@@ -407,7 +422,7 @@
    "dtype": "uint8",
    "shape": [
     128,
-    5
+    6
    ]
   },
   {
@@ -415,7 +430,7 @@
    "dtype": "uint8",
    "shape": [
     128,
-    5
+    6
    ]
   },
   {
@@ -462,7 +477,7 @@
  "widths": {
   "num": 65,
   "cat": 38,
-  "ptr": 5
+  "ptr": 6
  },
  "types": {
   "BELIEF": {
@@ -593,6 +608,15 @@
      "codec": "ScalarCodec",
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
+    },
+    {
+     "name": "unintelligible",
+     "block": "num",
+     "col": 8,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
     }
    ]
   },
@@ -610,7 +634,8 @@
      "scale": "mref",
      "normalisation": "",
      "ref_types": [
-      "ENTITY"
+      "ENTITY",
+      "GROUP"
      ]
     },
     {
@@ -666,6 +691,15 @@
      "ref_types": [
       "ENTITY"
      ]
+    },
+    {
+     "name": "when",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "time_until",
+     "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 game hours until (negative: overdue)"
     }
    ]
   },
@@ -1520,7 +1554,8 @@
      "normalisation": "",
      "ref_types": [
       "ENTITY",
-      "SELF"
+      "SELF",
+      "GROUP"
      ]
     },
     {
@@ -1612,6 +1647,24 @@
       "THING",
       "INV"
      ]
+    },
+    {
+     "name": "among",
+     "block": "num",
+     "col": 1,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "count",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
     }
    ]
   },
@@ -1728,12 +1781,21 @@
       "failed",
       "abandoned"
      ]
+    },
+    {
+     "name": "when",
+     "block": "num",
+     "col": 4,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "time_until",
+     "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 game hours until (negative: overdue)"
     }
    ]
   },
   "GROUP": {
    "id": 6,
-   "count": 2,
+   "count": 4,
    "key": "@G",
    "columns": [
     {
@@ -1794,6 +1856,68 @@
      "codec": "ScalarCodec",
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
+    },
+    {
+     "name": "goal",
+     "block": "prop",
+     "col": 0,
+     "width": 1,
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "normalisation": ""
+    },
+    {
+     "name": "kind",
+     "block": "cat",
+     "col": 1,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
+    },
+    {
+     "name": "leader",
+     "block": "ptr",
+     "col": 0,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "SELF"
+     ]
+    },
+    {
+     "name": "members",
+     "block": "ptr",
+     "col": 1,
+     "width": 4,
+     "codec": "PointerListCodec",
+     "scale": "list",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "SELF"
+     ]
+    },
+    {
+     "name": "role",
+     "block": "cat",
+     "col": 2,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
+    },
+    {
+     "name": "size",
+     "block": "num",
+     "col": 5,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
     }
    ]
   },
@@ -1925,6 +2049,15 @@
      "codec": "ScalarCodec",
      "scale": "bipolar10",
      "normalisation": "x / 10, x in [-10, 10]"
+    },
+    {
+     "name": "unintelligible",
+     "block": "num",
+     "col": 8,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
     }
    ]
   },
@@ -2491,6 +2624,15 @@
      "codec": "BagCodec",
      "scale": "list",
      "normalisation": ""
+    },
+    {
+     "name": "color",
+     "block": "cat",
+     "col": 11,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
     }
    ]
   },
@@ -2867,6 +3009,42 @@
       "GROUP",
       "SELF"
      ]
+    },
+    {
+     "name": "says",
+     "block": "prop",
+     "col": 0,
+     "width": 1,
+     "codec": "PropositionCodec",
+     "scale": "proposition",
+     "normalisation": ""
+    },
+    {
+     "name": "step_targets",
+     "block": "ptr",
+     "col": 2,
+     "width": 4,
+     "codec": "PointerListCodec",
+     "scale": "list",
+     "normalisation": "",
+     "ref_types": [
+      "ENTITY",
+      "THING",
+      "INV",
+      "LOCUS",
+      "PLACE",
+      "GROUP",
+      "SELF"
+     ]
+    },
+    {
+     "name": "steps",
+     "block": "cat",
+     "col": 2,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
+     "normalisation": ""
     }
    ]
   },
@@ -3536,9 +3714,9 @@
      "scale": "enum",
      "normalisation": "",
      "values": [
+      "autumn",
       "spring",
       "summer",
-      "autumn",
       "winter"
      ]
     },
@@ -4863,6 +5041,15 @@
      "codec": "BagCodec",
      "scale": "list",
      "normalisation": ""
+    },
+    {
+     "name": "color",
+     "block": "cat",
+     "col": 11,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
     }
    ]
   },
@@ -4923,6 +5110,24 @@
      "name": "urgency",
      "block": "num",
      "col": 0,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "unipolar10",
+     "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "budget",
+     "block": "num",
+     "col": 1,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "temperament",
+     "block": "num",
+     "col": 2,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "unipolar10",
@@ -6383,9 +6588,218 @@
   "yew",
   "yew_wood",
   "yoke",
-  "you"
+  "you",
+  "after",
+  "afternoon",
+  "at_time",
+  "before",
+  "dawn",
+  "day",
+  "evening",
+  "for",
+  "hour",
+  "morning",
+  "night",
+  "noon",
+  "season",
+  "span",
+  "until",
+  "year",
+  "yesterday",
+  "h:",
+  "q:",
+  "c:",
+  "equal",
+  "half",
+  "quarter",
+  "r_group_goal",
+  "r_group_kind",
+  "r_group_leader",
+  "r_group_members",
+  "r_group_role",
+  "r_group_size",
+  "share",
+  "third",
+  "deduced",
+  "dreamt_it",
+  "knows",
+  "most",
+  "nothing",
+  "nowhere",
+  "of",
+  "overheard",
+  "read_it",
+  "something",
+  "sometime",
+  "somewhere",
+  "the_one",
+  "they_say",
+  "against",
+  "appears",
+  "armor_worn",
+  "avoiding_gaze",
+  "bald",
+  "barn",
+  "bent",
+  "beyond",
+  "birthmark",
+  "bite_wound",
+  "black",
+  "blue",
+  "blush",
+  "brand",
+  "bridge",
+  "broad",
+  "brown",
+  "bruise",
+  "burn_scar",
+  "burn_wound",
+  "camp",
+  "cave",
+  "city",
+  "clear_sky",
+  "clearing",
+  "cloud",
+  "coast",
+  "collapsed",
+  "color",
+  "coughing",
+  "cracked",
+  "crooked_nose",
+  "cut_wound",
+  "dam",
+  "damaged",
+  "desert",
+  "drizzle",
+  "emaciated",
+  "fence",
+  "festive_dress",
+  "feverish",
+  "fidgeting",
+  "field",
+  "filled",
+  "filthy",
+  "fine_dress",
+  "flushed",
+  "foggy",
+  "ford",
+  "forest",
+  "fracture",
+  "frail",
+  "from",
+  "frost",
+  "frostbite",
+  "frozen",
+  "garden",
+  "gate",
+  "granary",
+  "graveyard",
+  "green",
+  "grey",
+  "hail",
+  "hall",
+  "hamlet",
+  "heat_wave",
+  "hill",
+  "hollow",
+  "hooded",
+  "house",
+  "humming",
+  "hut",
+  "inn",
+  "intact",
+  "lake",
+  "limp",
+  "market",
+  "meadow",
+  "mill",
+  "mine",
+  "missing_eye",
+  "missing_limb",
+  "missing_teeth",
+  "mist",
+  "moon",
+  "mountain",
+  "mourning_dress",
+  "muscular",
+  "orange",
+  "orchard",
+  "overcast",
+  "pale",
+  "panting",
+  "pass",
+  "pasture",
+  "path",
+  "pink",
+  "plain_dress",
+  "pocked",
+  "pond",
+  "puncture",
+  "purple",
+  "quarry",
+  "rain",
+  "red",
+  "ripe",
+  "river",
+  "road",
+  "rotten",
+  "round",
+  "ruins",
+  "rusty",
+  "sallow",
+  "scar",
+  "sea",
+  "shattered",
+  "shimmer",
+  "shivering",
+  "short_stature",
+  "silent_birds",
+  "sky",
+  "slight",
+  "smoldering",
+  "snowfall",
+  "source",
+  "spotless",
+  "square",
+  "stable",
+  "staggering",
+  "stairs",
+  "star",
+  "stocky",
+  "storm_weather",
+  "strong_wind",
+  "sudden_cold",
+  "sudden_silence",
+  "sun",
+  "swamp",
+  "sweating",
+  "swollen",
+  "tall",
+  "tattered",
+  "tattoo",
+  "tearful",
+  "temple",
+  "thunder",
+  "tower",
+  "trembling",
+  "unnatural_calm",
+  "valley",
+  "village",
+  "wall",
+  "wandering_lights",
+  "well",
+  "wet",
+  "whispers",
+  "white",
+  "work_dress",
+  "workshop",
+  "yawning",
+  "yellow"
  ],
- "retired_symbols": [],
+ "retired_symbols": [
+  "at_festival",
+  "before_winter"
+ ],
  "speech_to_input": {
   "a_while": 77,
   "able": 79,
@@ -6444,11 +6858,11 @@
   "assumed": 142,
   "assurance": 143,
   "at": 144,
-  "at_festival": 145,
   "attitude": 146,
   "attracted_to": 147,
   "auger": 148,
   "aunt_uncle": 149,
+  "autumn": 150,
   "avoid": 151,
   "away": 152,
   "awl": 153,
@@ -6481,7 +6895,6 @@
   "bee": 181,
   "beech": 182,
   "beehive_skep": 183,
-  "before_winter": 184,
   "behind": 185,
   "behind_left": 186,
   "behind_right": 187,
@@ -7440,6 +7853,7 @@
   "spoon": 1192,
   "spouse": 1193,
   "spout": 1194,
+  "spring": 1195,
   "squeeze": 1196,
   "stand": 1198,
   "stare": 1200,
@@ -7462,6 +7876,7 @@
   "strength": 1218,
   "stress": 1219,
   "strike": 1220,
+  "summer": 1221,
   "supports_body": 1222,
   "sure": 1223,
   "surface_writable": 1224,
@@ -7650,6 +8065,7 @@
   "window_frame": 1417,
   "wine_bottle": 1418,
   "winnowing_basket": 1419,
+  "winter": 1420,
   "wipes": 1421,
   "with": 1422,
   "wolf": 1424,
@@ -7679,13 +8095,216 @@
   "yew": 1448,
   "yew_wood": 1449,
   "yoke": 1450,
-  "you": 1451
+  "you": 1451,
+  "after": 1452,
+  "afternoon": 1453,
+  "at_time": 1454,
+  "before": 1455,
+  "dawn": 1456,
+  "day": 1457,
+  "evening": 1458,
+  "for": 1459,
+  "hour": 1460,
+  "morning": 1461,
+  "night": 1462,
+  "noon": 1463,
+  "season": 1464,
+  "span": 1465,
+  "until": 1466,
+  "year": 1467,
+  "yesterday": 1468,
+  "equal": 1472,
+  "half": 1473,
+  "quarter": 1474,
+  "r_group_goal": 1475,
+  "r_group_kind": 1476,
+  "r_group_leader": 1477,
+  "r_group_members": 1478,
+  "r_group_role": 1479,
+  "r_group_size": 1480,
+  "share": 1481,
+  "third": 1482,
+  "deduced": 1483,
+  "dreamt_it": 1484,
+  "knows": 1485,
+  "most": 1486,
+  "nothing": 1487,
+  "nowhere": 1488,
+  "of": 1489,
+  "overheard": 1490,
+  "read_it": 1491,
+  "something": 1492,
+  "sometime": 1493,
+  "somewhere": 1494,
+  "the_one": 1495,
+  "they_say": 1496,
+  "against": 1497,
+  "appears": 1498,
+  "armor_worn": 1499,
+  "avoiding_gaze": 1500,
+  "bald": 1501,
+  "barn": 1502,
+  "bent": 1503,
+  "beyond": 1504,
+  "birthmark": 1505,
+  "bite_wound": 1506,
+  "black": 1507,
+  "blue": 1508,
+  "blush": 1509,
+  "brand": 1510,
+  "bridge": 1511,
+  "broad": 1512,
+  "brown": 1513,
+  "bruise": 1514,
+  "burn_scar": 1515,
+  "burn_wound": 1516,
+  "camp": 1517,
+  "cave": 1518,
+  "city": 1519,
+  "clear_sky": 1520,
+  "clearing": 1521,
+  "cloud": 1522,
+  "coast": 1523,
+  "collapsed": 1524,
+  "color": 1525,
+  "coughing": 1526,
+  "cracked": 1527,
+  "crooked_nose": 1528,
+  "cut_wound": 1529,
+  "dam": 1530,
+  "damaged": 1531,
+  "desert": 1532,
+  "drizzle": 1533,
+  "emaciated": 1534,
+  "fence": 1535,
+  "festive_dress": 1536,
+  "feverish": 1537,
+  "fidgeting": 1538,
+  "field": 1539,
+  "filled": 1540,
+  "filthy": 1541,
+  "fine_dress": 1542,
+  "flushed": 1543,
+  "foggy": 1544,
+  "ford": 1545,
+  "forest": 1546,
+  "fracture": 1547,
+  "frail": 1548,
+  "from": 1549,
+  "frost": 1550,
+  "frostbite": 1551,
+  "frozen": 1552,
+  "garden": 1553,
+  "gate": 1554,
+  "granary": 1555,
+  "graveyard": 1556,
+  "green": 1557,
+  "grey": 1558,
+  "hail": 1559,
+  "hall": 1560,
+  "hamlet": 1561,
+  "heat_wave": 1562,
+  "hill": 1563,
+  "hollow": 1564,
+  "hooded": 1565,
+  "house": 1566,
+  "humming": 1567,
+  "hut": 1568,
+  "inn": 1569,
+  "intact": 1570,
+  "lake": 1571,
+  "limp": 1572,
+  "market": 1573,
+  "meadow": 1574,
+  "mill": 1575,
+  "mine": 1576,
+  "missing_eye": 1577,
+  "missing_limb": 1578,
+  "missing_teeth": 1579,
+  "mist": 1580,
+  "moon": 1581,
+  "mountain": 1582,
+  "mourning_dress": 1583,
+  "muscular": 1584,
+  "orange": 1585,
+  "orchard": 1586,
+  "overcast": 1587,
+  "pale": 1588,
+  "panting": 1589,
+  "pass": 1590,
+  "pasture": 1591,
+  "path": 1592,
+  "pink": 1593,
+  "plain_dress": 1594,
+  "pocked": 1595,
+  "pond": 1596,
+  "puncture": 1597,
+  "purple": 1598,
+  "quarry": 1599,
+  "rain": 1600,
+  "red": 1601,
+  "ripe": 1602,
+  "river": 1603,
+  "road": 1604,
+  "rotten": 1605,
+  "round": 1606,
+  "ruins": 1607,
+  "rusty": 1608,
+  "sallow": 1609,
+  "scar": 1610,
+  "sea": 1611,
+  "shattered": 1612,
+  "shimmer": 1613,
+  "shivering": 1614,
+  "short_stature": 1615,
+  "silent_birds": 1616,
+  "sky": 1617,
+  "slight": 1618,
+  "smoldering": 1619,
+  "snowfall": 1620,
+  "source": 1621,
+  "spotless": 1622,
+  "square": 1623,
+  "stable": 1624,
+  "staggering": 1625,
+  "stairs": 1626,
+  "star": 1627,
+  "stocky": 1628,
+  "storm_weather": 1629,
+  "strong_wind": 1630,
+  "sudden_cold": 1631,
+  "sudden_silence": 1632,
+  "sun": 1633,
+  "swamp": 1634,
+  "sweating": 1635,
+  "swollen": 1636,
+  "tall": 1637,
+  "tattered": 1638,
+  "tattoo": 1639,
+  "tearful": 1640,
+  "temple": 1641,
+  "thunder": 1642,
+  "tower": 1643,
+  "trembling": 1644,
+  "unnatural_calm": 1645,
+  "valley": 1646,
+  "village": 1647,
+  "wall": 1648,
+  "wandering_lights": 1649,
+  "well": 1650,
+  "wet": 1651,
+  "whispers": 1652,
+  "white": 1653,
+  "work_dress": 1654,
+  "workshop": 1655,
+  "yawning": 1656,
+  "yellow": 1657
  },
  "fingerprints": {
   "schema": "tok2-context-1",
-  "interface": "bde2f783022b9792",
-  "layout": "ab8a4a1bfc9b94e6",
-  "vocabulary": "55e0b2ce110fa1c7"
+  "interface": "2f9e945e6199d90b",
+  "layout": "261bb04518ef3a2e",
+  "vocabulary": "6e26f29527c3b287"
  },
  "grammar": {
   "source": "catalogue/tools/language.py (Expression, Vocabulary.types, ref_targets): port those functions with these tables",
@@ -7695,11 +8314,12 @@
    "max_pointers": 3,
    "max_roles": 3
   },
-  "pointer_regex": "^(@E\\d+|@T\\d+|@G\\d+|@L\\d+|@V\\d+|@PLACE|[bmg]:\\d+|n:\\d+)\\Z (ASCII digits; tok-2 additionally requires canonical numbers)",
+  "pointer_regex": "^(@E\\d+|@T\\d+|@G\\d+|@L\\d+|@V\\d+|@PLACE|[bmghqc]:\\d+|n:\\d+)\\Z (ASCII digits; tok-2 additionally requires canonical numbers)",
   "nesting_heads": [
    "believes",
    "custom",
    "intends",
+   "knows",
    "may",
    "norm",
    "owes",
@@ -7737,9 +8357,30 @@
     "agent",
     "entity"
    ],
+   "nothing": [
+    "entity",
+    "item"
+   ],
+   "nowhere": [
+    "place"
+   ],
    "someone": [
     "agent",
     "entity"
+   ],
+   "something": [
+    "entity",
+    "item"
+   ],
+   "somewhere": [
+    "place"
+   ],
+   "the_one": [
+    "agent",
+    "entity",
+    "group",
+    "item",
+    "place"
    ],
    "this": [
     "entity",
@@ -7756,6 +8397,9 @@
    ]
   },
   "category_types": {
+   "daypart": [
+    "time"
+   ],
    "degree": [
     "quantity"
    ],
@@ -7771,6 +8415,9 @@
    "emotion": [
     "emotion",
     "variable"
+   ],
+   "fraction": [
+    "quantity"
    ],
    "gesture": [
     "gesture"
@@ -7825,6 +8472,9 @@
     "concept",
     "role"
    ],
+   "season": [
+    "time"
+   ],
    "source": [
     "concept"
    ],
@@ -7836,6 +8486,9 @@
     "technique"
    ],
    "time": [
+    "time"
+   ],
+   "time_mark": [
     "time"
    ],
    "variable": [
@@ -7947,6 +8600,15 @@
    "affront": [
     "interpretation"
    ],
+   "after": [
+    "time_op"
+   ],
+   "afternoon": [
+    "daypart"
+   ],
+   "against": [
+    "event_role"
+   ],
    "age_years": [
     "variable"
    ],
@@ -7987,6 +8649,9 @@
    "anyone": [
     "quantifier"
    ],
+   "appears": [
+    "predicate"
+   ],
    "applaud": [
     "manner"
    ],
@@ -8026,8 +8691,8 @@
    "at": [
     "predicate"
    ],
-   "at_festival": [
-    "time"
+   "at_time": [
+    "time_op"
    ],
    "attitude": [
     "predicate"
@@ -8037,6 +8702,9 @@
    ],
    "aunt_uncle": [
     "link"
+   ],
+   "autumn": [
+    "season"
    ],
    "avoid": [
     "goal_mode"
@@ -8056,8 +8724,8 @@
    "beckon": [
     "manner"
    ],
-   "before_winter": [
-    "time"
+   "before": [
+    "time_op"
    ],
    "behind": [
     "direction",
@@ -8080,6 +8748,9 @@
    ],
    "betrothed": [
     "link"
+   ],
+   "beyond": [
+    "spatial"
    ],
    "bind": [
     "manner"
@@ -8234,6 +8905,9 @@
    "colleague": [
     "link"
    ],
+   "color": [
+    "property"
+   ],
    "conceals": [
     "property"
    ],
@@ -8321,8 +8995,17 @@
    "dark_berries": [
     "lookalike"
    ],
+   "dawn": [
+    "daypart"
+   ],
+   "day": [
+    "time_unit"
+   ],
    "dead": [
     "predicate"
+   ],
+   "deduced": [
+    "evidential"
    ],
    "deputy": [
     "role_word"
@@ -8363,6 +9046,9 @@
    ],
    "dreamt": [
     "source"
+   ],
+   "dreamt_it": [
+    "evidential"
    ],
    "drink": [
     "gesture"
@@ -8463,6 +9149,12 @@
    "enemy": [
     "link"
    ],
+   "equal": [
+    "fraction"
+   ],
+   "evening": [
+    "daypart"
+   ],
    "everyone": [
     "quantifier"
    ],
@@ -8514,6 +9206,9 @@
    "foot": [
     "manner"
    ],
+   "for": [
+    "time_op"
+   ],
    "forbidden": [
     "deontic"
    ],
@@ -8534,6 +9229,9 @@
    ],
    "friend": [
     "link"
+   ],
+   "from": [
+    "event_role"
    ],
    "fuel": [
     "property"
@@ -8629,6 +9327,9 @@
    "hair": [
     "manner"
    ],
+   "half": [
+    "fraction"
+   ],
    "hand": [
     "manner"
    ],
@@ -8685,6 +9386,9 @@
    ],
    "hospitality": [
     "interpretation"
+   ],
+   "hour": [
+    "time_unit"
    ],
    "how": [
     "event_role"
@@ -8788,6 +9492,9 @@
    ],
    "knot": [
     "manner"
+   ],
+   "knows": [
+    "predicate"
    ],
    "knows_how": [
     "predicate"
@@ -8944,6 +9651,12 @@
    "more": [
     "quantity"
    ],
+   "morning": [
+    "daypart"
+   ],
+   "most": [
+    "quantity"
+   ],
    "mount": [
     "gesture"
    ],
@@ -8975,6 +9688,9 @@
    "niece_nephew": [
     "link"
    ],
+   "night": [
+    "daypart"
+   ],
    "no": [
     "formula"
    ],
@@ -8990,6 +9706,9 @@
    "none": [
     "quantity"
    ],
+   "noon": [
+    "daypart"
+   ],
    "norm": [
     "predicate"
    ],
@@ -8999,11 +9718,17 @@
    "not": [
     "logic"
    ],
+   "nothing": [
+    "quantifier"
+   ],
    "nothing_special": [
     "interpretation"
    ],
    "now": [
     "time"
+   ],
+   "nowhere": [
+    "quantifier"
    ],
    "nutrition": [
     "property"
@@ -9074,6 +9799,9 @@
    "odor": [
     "property"
    ],
+   "of": [
+    "ref_node"
+   ],
    "offer": [
     "manner",
     "mood"
@@ -9108,6 +9836,9 @@
    ],
    "ouch": [
     "formula"
+   ],
+   "overheard": [
+    "evidential"
    ],
    "owes": [
     "predicate"
@@ -9204,6 +9935,9 @@
     "predicate",
     "property"
    ],
+   "quarter": [
+    "fraction"
+   ],
    "r_affection": [
     "variable"
    ],
@@ -9214,6 +9948,24 @@
     "variable"
    ],
    "r_fear": [
+    "variable"
+   ],
+   "r_group_goal": [
+    "variable"
+   ],
+   "r_group_kind": [
+    "variable"
+   ],
+   "r_group_leader": [
+    "variable"
+   ],
+   "r_group_members": [
+    "variable"
+   ],
+   "r_group_role": [
+    "variable"
+   ],
+   "r_group_size": [
     "variable"
    ],
    "r_id_certainty": [
@@ -9261,6 +10013,9 @@
    "read": [
     "gesture",
     "source"
+   ],
+   "read_it": [
+    "evidential"
    ],
    "rebellion": [
     "interpretation"
@@ -9334,6 +10089,9 @@
    "search": [
     "gesture"
    ],
+   "season": [
+    "time_unit"
+   ],
    "seed_of": [
     "property"
    ],
@@ -9373,6 +10131,9 @@
    ],
    "shapes_matter": [
     "property"
+   ],
+   "share": [
+    "predicate"
    ],
    "sharpens": [
     "property"
@@ -9446,6 +10207,15 @@
    "someone": [
     "quantifier"
    ],
+   "something": [
+    "quantifier"
+   ],
+   "sometime": [
+    "time_mark"
+   ],
+   "somewhere": [
+    "quantifier"
+   ],
    "soon": [
     "time"
    ],
@@ -9455,6 +10225,9 @@
    "sorry": [
     "formula"
    ],
+   "span": [
+    "time_form"
+   ],
    "speak": [
     "gesture"
    ],
@@ -9463,6 +10236,9 @@
    ],
    "spouse": [
     "link"
+   ],
+   "spring": [
+    "season"
    ],
    "squeeze": [
     "manner"
@@ -9493,6 +10269,9 @@
    ],
    "strike": [
     "gesture"
+   ],
+   "summer": [
+    "season"
    ],
    "supports_body": [
     "property"
@@ -9617,11 +10396,20 @@
    "that": [
     "logic"
    ],
+   "the_one": [
+    "deictic"
+   ],
    "theft": [
     "interpretation"
    ],
+   "they_say": [
+    "evidential"
+   ],
    "think": [
     "evidential"
+   ],
+   "third": [
+    "fraction"
    ],
    "thirst": [
     "variable"
@@ -9667,6 +10455,7 @@
     "property"
    ],
    "toward": [
+    "event_role",
     "manner"
    ],
    "toxicity": [
@@ -9695,6 +10484,9 @@
    ],
    "unlocks": [
     "property"
+   ],
+   "until": [
+    "time_op"
    ],
    "up": [
     "direction"
@@ -9858,6 +10650,9 @@
    "why": [
     "wh"
    ],
+   "winter": [
+    "season"
+   ],
    "wipes": [
     "property"
    ],
@@ -9885,8 +10680,14 @@
    "write": [
     "gesture"
    ],
+   "year": [
+    "time_unit"
+   ],
    "yes": [
     "formula"
+   ],
+   "yesterday": [
+    "time"
    ],
    "you": [
     "deictic"
@@ -9908,6 +10709,10 @@
    "able": [
     "agent",
     "gesture"
+   ],
+   "appears": [
+    "entity",
+    "concept"
    ],
    "at": [
     "entity",
@@ -9962,6 +10767,10 @@
    "is_a": [
     "entity",
     "kind"
+   ],
+   "knows": [
+    "agent",
+    "proposition"
    ],
    "knows_how": [
     "agent",
@@ -10035,6 +10844,11 @@
     "place",
     "place"
    ],
+   "share": [
+    "entity",
+    "entity",
+    "quantity"
+   ],
    "state": [
     "entity",
     "variable",
@@ -10054,10 +10868,13 @@
    ]
   },
   "event_roles": [
+   "against",
+   "from",
    "how",
    "into",
    "says",
    "to",
+   "toward",
    "with"
   ],
   "gestures": {
@@ -10247,6 +11064,7 @@
      "name": "item",
      "type": "ref",
      "accepts": [
+      "animal",
       "item"
      ]
     },
@@ -10581,6 +11399,7 @@
       "agent",
       "animal",
       "item",
+      "plant",
       "structure",
       "voxel"
      ]
@@ -10984,7 +11803,8 @@
      "accepts": [
       "agent",
       "animal",
-      "item"
+      "item",
+      "plant"
      ]
     },
     {
@@ -11494,9 +12314,11 @@
    "arcane_bloom",
    "arcane_crystal",
    "armor_plate",
+   "armor_worn",
    "arrows",
    "ash",
    "auger",
+   "avoiding_gaze",
    "awl",
    "axe",
    "back_basket",
@@ -11504,12 +12326,14 @@
    "bag",
    "bagpipe",
    "balance_scale",
+   "bald",
    "ball",
    "bandage",
    "bark",
    "bark_strip",
    "barley",
    "barley_sack",
+   "barn",
    "barrel",
    "basalt",
    "basket",
@@ -11527,16 +12351,22 @@
    "belt",
    "belt_pouch",
    "bench",
+   "bent",
    "berries",
    "berry_bush",
    "billhook",
    "birch",
+   "birthmark",
+   "bite_wound",
+   "black",
    "black_bread",
    "blade",
    "blanket",
    "block",
    "blowpipe",
+   "blue",
    "blunt_head",
+   "blush",
    "boar",
    "boat",
    "bolts",
@@ -11550,18 +12380,25 @@
    "braies",
    "bramble",
    "branch",
+   "brand",
    "brazier",
    "bread",
    "bread_loaf",
    "bread_peel",
    "brick",
+   "bridge",
    "bridle",
+   "broad",
    "bronze",
    "bronze_ingot",
    "brooch",
    "broom",
+   "brown",
+   "bruise",
    "bucket",
    "buckler",
+   "burn_scar",
+   "burn_wound",
    "butter",
    "butter_churn",
    "butter_pat",
@@ -11569,6 +12406,7 @@
    "cactus",
    "cage",
    "camel",
+   "camp",
    "candle_tallow",
    "candle_wax",
    "candlestick",
@@ -11578,6 +12416,7 @@
    "casting_mold",
    "cat",
    "cauldron",
+   "cave",
    "ceramic",
    "ceramic_bowl",
    "chain",
@@ -11597,20 +12436,26 @@
    "chicken",
    "chief_circlet",
    "cider_jug",
+   "city",
    "clay",
    "clay_lump",
    "clay_pot",
+   "clear_sky",
+   "clearing",
    "cloak",
    "clogs",
    "cloth",
    "cloth_bolt_linen",
    "cloth_bolt_wool",
+   "cloud",
    "club",
+   "coast",
    "coating",
    "cobblestone",
    "coffin",
    "coif",
    "coin_purse_full",
+   "collapsed",
    "comb",
    "cooking_pot",
    "copper",
@@ -11618,10 +12463,13 @@
    "copper_ingot",
    "copper_ring",
    "cord",
+   "coughing",
    "court_robe",
    "cow",
+   "cracked",
    "cradle",
    "crate",
+   "crooked_nose",
    "crossbow",
    "crow",
    "crowbar",
@@ -11634,13 +12482,17 @@
    "curved_blade",
    "cut_gem",
    "cut_stone",
+   "cut_wound",
    "cutting_board",
    "dagger",
+   "dam",
+   "damaged",
    "date_palm",
    "death_cap",
    "debased_coin",
    "decoy_whistle",
    "deer",
+   "desert",
    "dice",
    "dirt",
    "distaff",
@@ -11651,6 +12503,7 @@
    "dress",
    "dried_meat",
    "drinking_horn",
+   "drizzle",
    "drum",
    "dye",
    "dye_pot",
@@ -11662,16 +12515,25 @@
    "egg",
    "egg_item",
    "elastic_limb",
+   "emaciated",
    "fastener",
    "feather",
    "feathers",
    "felling_axe",
+   "fence",
    "fence_panel",
    "festival_banner",
    "festival_mask",
+   "festive_dress",
    "festive_gown",
+   "feverish",
    "fiber_bundle",
+   "fidgeting",
+   "field",
    "file",
+   "filled",
+   "filthy",
+   "fine_dress",
    "firewood_bundle",
    "fish_grilled",
    "fish_trap",
@@ -11688,13 +12550,22 @@
    "flour",
    "flour_sack",
    "flower_crown",
+   "flushed",
    "flute",
+   "foggy",
    "food_body",
+   "ford",
+   "forest",
    "forest_floor",
    "fox",
    "foxglove",
+   "fracture",
+   "frail",
    "frame",
    "frog",
+   "frost",
+   "frostbite",
+   "frozen",
    "frying_pan",
    "fur",
    "fur_blanket",
@@ -11703,7 +12574,9 @@
    "fur_pelt",
    "gambeson",
    "game_board",
+   "garden",
    "garment",
+   "gate",
    "gem",
    "glass",
    "glass_bottle",
@@ -11717,14 +12590,21 @@
    "gold_ingot",
    "goose",
    "grain",
+   "granary",
    "granite",
    "granules",
    "grapes",
    "grapevine",
    "grave_marker",
    "gravel",
+   "graveyard",
+   "green",
+   "grey",
    "grip",
+   "hail",
+   "hall",
    "ham",
+   "hamlet",
    "hammer",
    "hand_plane",
    "handcart",
@@ -11735,6 +12615,7 @@
    "hatchet",
    "headwrap",
    "healer_bag",
+   "heat_wave",
    "heather",
    "helmet",
    "hemp",
@@ -11742,14 +12623,17 @@
    "herbal_remedy",
    "herbs_bundle",
    "hide",
+   "hill",
    "hinge",
    "hod",
    "hoe",
+   "hollow",
    "holy_symbol",
    "honey",
    "honey_cake",
    "honey_pot",
    "hood",
+   "hooded",
    "hooded_cloak",
    "hook",
    "horn",
@@ -11758,16 +12642,21 @@
    "horseshoe",
    "hose",
    "hourglass",
+   "house",
    "hull",
+   "humming",
    "hunting_horn",
    "hunting_knife",
    "hurdy_gurdy",
+   "hut",
    "ibex",
    "icon",
    "improvised_spear",
    "incense",
    "ink",
    "ink_pot",
+   "inn",
+   "intact",
    "iron",
    "iron_ingot",
    "iron_ore",
@@ -11781,6 +12670,7 @@
    "knife",
    "ladder",
    "ladle",
+   "lake",
    "lancet",
    "lantern",
    "lead",
@@ -11799,6 +12689,7 @@
    "lime_mortar",
    "lime_sack",
    "limestone",
+   "limp",
    "linen",
    "linen_dress",
    "liquid",
@@ -11815,9 +12706,11 @@
    "mallet",
    "mandrake",
    "marbles",
+   "market",
    "marmot",
    "mattock",
    "mead_jug",
+   "meadow",
    "meadow_grass",
    "measuring_cup",
    "measuring_rod",
@@ -11827,14 +12720,24 @@
    "milk",
    "milk_jug",
    "milking_pail",
+   "mill",
+   "mine",
    "miner_basket",
    "mirror",
+   "missing_eye",
+   "missing_limb",
+   "missing_teeth",
+   "mist",
    "mittens",
+   "moon",
    "mortar_batch",
    "mortar_pestle",
    "mortar_tub",
    "moss",
+   "mountain",
+   "mourning_dress",
    "mourning_robe",
+   "muscular",
    "mushrooms",
    "nails",
    "necklace",
@@ -11859,16 +12762,24 @@
    "olive_tree",
    "onion",
    "onions",
+   "orange",
+   "orchard",
    "ore_chunk",
    "ornament",
+   "overcast",
    "owl",
    "ox",
    "pack_frame",
    "padding",
    "paddle",
    "padlock",
+   "pale",
+   "panting",
    "paper",
    "parchment",
+   "pass",
+   "pasture",
+   "path",
    "pear_tree",
    "pears",
    "pendant",
@@ -11880,18 +12791,22 @@
    "pike",
    "pillow",
    "pine",
+   "pink",
    "pitch",
    "pitch_pot",
    "pitchfork",
+   "plain_dress",
    "plank",
    "plaster",
    "platform",
    "plough",
    "plumb_line",
+   "pocked",
    "point",
    "poison_vial",
    "poker",
    "polished_face",
+   "pond",
    "poppy",
    "porridge",
    "post",
@@ -11901,7 +12816,10 @@
    "preparation",
    "priest_vestment",
    "pulley",
+   "puncture",
+   "purple",
    "purse",
+   "quarry",
    "quarterstaff",
    "quern",
    "quill",
@@ -11909,6 +12827,7 @@
    "raft",
    "rag",
    "rag_doll",
+   "rain",
    "rake",
    "rat",
    "raw_fish",
@@ -11916,6 +12835,7 @@
    "raw_hide",
    "raw_meat",
    "razor",
+   "red",
    "red_brick",
    "reed",
    "reed_bundle",
@@ -11924,7 +12844,10 @@
    "resonator",
    "ring",
    "ring_band",
+   "ripe",
+   "river",
    "river_fish",
+   "road",
    "roast_meat",
    "rock_trim",
    "rod",
@@ -11932,10 +12855,14 @@
    "roots",
    "rope",
    "rope_fiber",
+   "rotten",
+   "round",
    "rubble",
    "rubble_masonry",
    "rug",
+   "ruins",
    "rush_mat",
+   "rusty",
    "rye",
    "rye_sack",
    "sack",
@@ -11943,6 +12870,7 @@
    "saddlebag",
    "sage",
    "sail",
+   "sallow",
    "salt",
    "salt_bag",
    "salt_block",
@@ -11956,11 +12884,13 @@
    "sausage",
    "saw",
    "scale_marks",
+   "scar",
    "scarecrow",
    "scarf",
    "scissors",
    "scorpion",
    "scythe",
+   "sea",
    "sea_fish",
    "seal",
    "seal_stamp",
@@ -11970,6 +12900,7 @@
    "seed_bag",
    "seed_drill_bag",
    "shaft",
+   "shattered",
    "sheep",
    "sheep_shears",
    "sheet_flexible",
@@ -11979,14 +12910,18 @@
    "shellfish_bed",
    "shepherd_crook",
    "shepherd_mantle",
+   "shimmer",
    "shirt",
+   "shivering",
    "shoes",
+   "short_stature",
    "short_sword",
    "shovel",
    "shroud",
    "shutter",
    "sickle",
    "sieve",
+   "silent_birds",
    "silk",
    "silk_bolt",
    "silk_gown",
@@ -11994,23 +12929,28 @@
    "silver_coin",
    "silver_ingot",
    "skirt",
+   "sky",
    "slate",
    "slate_tile",
    "sled",
    "sledgehammer",
    "sleeping_draught",
+   "slight",
    "sling",
    "small_box",
    "smith_gauntlets",
    "smith_hammer",
    "smoked_fish",
+   "smoldering",
    "snake",
    "snare",
    "snow",
+   "snowfall",
    "soap",
    "soap_bar",
    "softwood",
    "soup",
+   "source",
    "spade",
    "spade_head",
    "spear",
@@ -12021,40 +12961,63 @@
    "splint",
    "splitting_wedge",
    "spoon",
+   "spotless",
    "spout",
+   "square",
+   "stable",
+   "staggering",
+   "stairs",
+   "star",
    "stew",
+   "stocky",
    "stone_block",
    "stone_chisel",
    "stone_loose",
    "stool",
    "storage_jar",
+   "storm_weather",
    "strange_relic",
    "strap",
    "straw",
    "straw_bale",
    "straw_hat",
    "straw_mattress",
+   "strong_wind",
+   "sudden_cold",
+   "sudden_silence",
+   "sun",
+   "swamp",
+   "sweating",
+   "swollen",
    "sword",
    "table",
    "table_knife",
+   "tall",
    "tallow",
    "tallow_block",
    "tally_stick",
    "tanning_vat",
    "tapestry",
+   "tattered",
+   "tattoo",
+   "tearful",
    "teeth",
+   "temple",
    "temple_bell",
    "tension_string",
    "thatch",
    "thatch_bundle",
    "thimble",
    "throwing_stones",
+   "thunder",
    "tin",
    "tin_ingot",
    "tinderbox",
    "tines",
    "tongs",
    "torch",
+   "tower",
+   "trembling",
    "trencher",
    "trestle_table",
    "trigger_mechanism",
@@ -12066,17 +13029,22 @@
    "turnips",
    "two_man_saw",
    "undershirt",
+   "unnatural_calm",
+   "valley",
    "vegetable",
    "veil",
    "vessel",
    "vest",
+   "village",
    "vine",
    "vulture",
    "wagon",
+   "wall",
    "walnut_tree",
    "wand_cracked",
    "wand_strong",
    "wand_weak",
+   "wandering_lights",
    "washtub",
    "water",
    "water_jug",
@@ -12088,11 +13056,15 @@
    "wedding_ring",
    "wedge",
    "weights_set",
+   "well",
+   "wet",
    "wheat",
    "wheat_sack",
    "wheel",
    "wheelbarrow",
    "whetstone",
+   "whispers",
+   "white",
    "wick",
    "wicker",
    "wicker_bundle",
@@ -12113,10 +13085,14 @@
    "wool_cap",
    "wool_fleece",
    "wool_tunic",
+   "work_dress",
    "work_smock",
+   "workshop",
    "wreath",
    "yarn",
    "yarrow",
+   "yawning",
+   "yellow",
    "yew",
    "yew_wood",
    "yoke"

@@ -371,6 +371,8 @@ class ModelTests(unittest.TestCase):
         bad = [n for n, p in m.named_parameters() if p.grad is not None and not torch.isfinite(p.grad).all()]
         self.assertEqual(bad, [])
         unused = [h for h in ("w_qty", "cond_num", "w_enum", "w_ptr", "cond_ref", "cond_word") if not bool((b.targets[h] != NO_LABEL).any())]
+        if not bool((b.targets["w_target"] == RT.space.pointers.NEW).any()):         # no write creates a record in this draw
+            unused.append("new_vec")
         dead = [n for n, p in m.named_parameters() if (p.grad is None or float(p.grad.abs().sum()) == 0.0)
                 and not any(n.startswith(h) for h in unused)]
         self.assertEqual(dead, [], "parameters that no head ever uses")

@@ -1,0 +1,15 @@
+[package]
+name = "em_water"
+version = "0.1.0"
+edition = "2021"
+description = "Emergence : eau en colonnes (formulation inertielle locale), cellules 5 cm / 25 cm, volumes entiers, sans dépendance"
+
+[lib]
+crate-type = ["rlib", "staticlib"]
+
+[profile.release]
+opt-level = 3
+debug = false
+
+[profile.test]
+opt-level = 3

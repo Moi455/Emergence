@@ -514,7 +514,7 @@ class TestGiantIntegers(Base):
 
     def test_error_messages_are_bounded(self):
         with self.assertRaises(TokenError) as cm:
-            TOK.encode(base(Record("ENTITY", "@E1", {"look.attire": ["w_poor"] * 7, **{f"zz{i}": 1 for i in range(300)}})))
+            TOK.encode(base(Record("ENTITY", "@E1", {"look.attire": ["tattered"] * 7, **{f"zz{i}": 1 for i in range(300)}})))
         self.assertLess(len(str(cm.exception)), 400)
         with self.assertRaises(TokenError) as cm:
             TOK.encode(base(Record("ENTITY", "@E1", {"link": "x" * 5000})))
