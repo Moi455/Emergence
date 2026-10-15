@@ -959,6 +959,156 @@ class WorldGenerator:
         return "\n".join(L)
 
 
+# ───────────────────────────────────────────────────────────────────────────────────────────────────
+# T23: the PERCEPT RULES (engine/act/perception). Which variable of the world a percept variable is drawn from, through
+# which sense, from which clarity on. Written here (an addition, no existing identifier moves) and checked against the
+# catalogue: a rule whose source is `engine`-only is a refusal (the NPC never sees the truth).
+# ───────────────────────────────────────────────────────────────────────────────────────────────────
+PERCEPT_OUT = ROOT.parent / "engine" / "act" / "generated" / "emergence" / "act" / "perception_gen.h"
+PERCEPT_HOLDERS = ("entity_percept", "percept", "place_percept", "event_seen")
+PERCEPT_SENSES = ("Sight", "Hearing", "Smell", "Touch")
+PERCEPT_TRANSFORMS = ("Copy", "Blur", "Quantize", "Compose", "Computed")
+# (target percept variable, sources: world variables (comma-separated) or "~name" for a value the perception computes itself,
+#  sense, minimum clarity in per-mille, transform). Coarse things are seen from far (low clarity), fine ones from close.
+PERCEPT_RULES = [
+    ("ep_condition", "condition", "Sight", 100, "Copy"),
+    ("ep_posture", "posture", "Sight", 120, "Copy"),
+    ("ep_motion", "velocity", "Sight", 150, "Quantize"),
+    ("ep_build", "look_build_seen", "Sight", 200, "Copy"),
+    ("ep_attire", "attire_seen", "Sight", 300, "Copy"),
+    ("ep_wounds", "visible_injury", "Sight", 300, "Blur"),
+    ("ep_age", "look_age_seen", "Sight", 300, "Blur"),
+    ("ep_sex", "look_sex_seen", "Sight", 350, "Copy"),
+    ("ep_held", "held_seen", "Sight", 400, "Copy"),
+    ("ep_health", "symptoms", "Sight", 450, "Copy"),
+    ("ep_marks", "look_marks_seen", "Sight", 550, "Copy"),
+    ("ep_expression", "expression", "Sight", 600, "Copy"),
+    ("ep_signs", "involuntary_signs", "Sight", 600, "Copy"),
+    ("ep_gaze", "gaze", "Sight", 700, "Copy"),
+    ("ep_dist", "~geometry", "Sight", 50, "Computed"),
+    ("ep_dir", "~geometry", "Sight", 50, "Computed"),
+    ("pc_kind_seen", "~sort", "Sight", 150, "Computed"),
+    ("pc_color_seen", "~sort", "Sight", 150, "Computed"),
+    ("pc_props_seen", "~sort", "Sight", 300, "Compose"),
+    ("pc_state_seen", "visible_damage", "Sight", 250, "Quantize"),
+    ("pc_amount_seen", "plant_yield,water_volume", "Sight", 250, "Quantize"),
+    ("pc_display", "expression,seen_motion,posture", "Sight", 300, "Computed"),
+    ("pc_motion", "velocity", "Sight", 150, "Quantize"),
+    ("pc_depth_seen", "water_level", "Sight", 300, "Quantize"),
+    ("pc_dist", "~geometry", "Sight", 50, "Computed"),
+    ("pc_dir", "~geometry", "Sight", 50, "Computed"),
+    ("pc_file", "~known_files", "Sight", 500, "Computed"),
+    ("pc_file_certainty", "~clarity", "Sight", 50, "Computed"),
+    ("pp_indoors", "indoors", "Sight", 0, "Copy"),
+    ("pp_light", "light_level", "Sight", 0, "Quantize"),
+    ("pp_noise", "ambient_noise", "Hearing", 0, "Quantize"),
+    ("pp_crowd_seen", "~sight_count", "Sight", 100, "Computed"),
+    ("pp_air_felt", "air_temperature", "Touch", 0, "Quantize"),
+    ("ev_actor", "~known_files", "Sight", 500, "Computed"),
+    ("ev_gesture", "~act", "Sight", 100, "Computed"),
+    ("ev_target", "~known_files", "Sight", 500, "Computed"),
+    ("ev_sense", "~act", "Sight", 0, "Computed"),
+    ("ev_age", "~clock", "Sight", 0, "Computed"),
+]
+# World variables the rules read although they are not plain scalars of the entity: handled as lists by a ListSource.
+CATEGORY_CODE = {"intrinsic": "Intrinsic", "state": "State", "affordance": "Affordance"}
+PALETTE = {"red": (192, 48, 48), "orange": (224, 128, 48), "yellow": (224, 208, 64), "green": (64, 160, 64),
+           "blue": (48, 80, 192), "purple": (128, 64, 160), "pink": (224, 144, 176), "brown": (128, 80, 48),
+           "black": (32, 32, 32), "white": (240, 240, 240), "grey": (144, 144, 144)}
+
+
+class PerceptionGenerator:
+    """gen::kProperties, gen::kItemTypes, gen::kSpecies, gen::kRules, gen::kEngineVars (perception_gen.h)."""
+
+    def __init__(self, cat: Catalogue):
+        self.cat = cat
+        self.props = sorted(cat["property"])
+        self.pidx = {p: i for i, p in enumerate(self.props)}
+
+    def problems(self) -> list:
+        out = []
+        V = self.cat["variable"]
+        seen = set()
+        for tgt, src, sense, clarity, tr in PERCEPT_RULES:
+            if tgt in seen:
+                out.append(f"percept rule {tgt}: twice")
+            seen.add(tgt)
+            if tgt not in V or V[tgt].holder not in PERCEPT_HOLDERS:
+                out.append(f"percept rule {tgt}: not a variable of {PERCEPT_HOLDERS}")
+            if sense not in PERCEPT_SENSES or tr not in PERCEPT_TRANSFORMS or not 0 <= clarity <= 1000:
+                out.append(f"percept rule {tgt}: bad sense, transform or clarity")
+            for one in src.split(","):
+                name = one[1:] if one.startswith("~") else one
+                if name in V and V[name].visibility == "engine":   # a "~x" computed value may not hide an engine variable either
+                    out.append(f"percept rule {tgt}: source {one} is engine-only (the truth never enters a percept)")
+                elif not one.startswith("~") and name not in V:
+                    out.append(f"percept rule {tgt}: unknown source {one}")
+        return out
+
+    def color_of(self, parts) -> str:
+        M = self.cat["material"]
+        for part in parts:
+            m = M.get(part.partition(":")[2])
+            if m is not None and len(m.color) == 6:
+                rgb = tuple(int(m.color[i:i + 2], 16) for i in (0, 2, 4))
+                return min(PALETTE, key=lambda k: (sum((a - b) ** 2 for a, b in zip(PALETTE[k], rgb)), k))
+        return ""
+
+    def generate(self) -> str:
+        cat = self.cat
+        P = cat["property"]
+        L = ["// GENERATED by catalogue/tools/gen_cpp.py from catalogue/ - do not edit (T23, docs/14 section 6.1).",
+             "// What can be perceived: the properties (perceptible or not), the item types and species with their properties, the",
+             "// percept rules (target variable <- source variable, sense, clarity) and the engine-only variables (never a source).",
+             "#pragma once", "#include <array>", "#include <cstdint>", "#include <string_view>", "",
+             "namespace em::act::gen {", "",
+             "enum class PropCat : std::uint8_t { Intrinsic, State, Affordance };",
+             "struct PropertyInfo { std::string_view id; PropCat cat; bool perceptible; bool in_vector; };",
+             f"inline constexpr std::array<PropertyInfo, {len(self.props)}> kProperties = {{{{"]
+        ok = set(cat.perceptible_properties())
+        vec = set(cat.object_vector())
+        for p in self.props:
+            pr = P[p]
+            L.append(f'  {{"{p}", PropCat::{CATEGORY_CODE[pr.category]}, {"true" if p in ok else "false"}, {"true" if p in vec else "false"}}},')
+        L += ["}};", "",
+              "// An item type: its properties as a bit set over kProperties (EVERY property, perceptible or not: the filter is the",
+              "// perception's), its apparent colour word and its look-alike class. `sort` of an entity = index of the id in kKinds.",
+              "struct ThingInfo { std::string_view id; std::string_view lookalike; std::string_view color; std::uint32_t mass_g;",
+              "                   std::array<std::uint64_t, 2> props; };"]
+        items = sorted(cat["item_type"].values(), key=lambda t: t.id)
+        L.append(f"inline constexpr std::array<ThingInfo, {len(items)}> kItemTypes = {{{{")
+        for t in items:
+            bits = [0, 0]
+            for pid in cat.item_properties(t.parts, t.properties):
+                if pid in self.pidx:
+                    bits[self.pidx[pid] // 64] |= 1 << (self.pidx[pid] % 64)
+            L.append(f'  {{{cpp_str(t.id)}, {cpp_str(t.lookalike)}, {cpp_str(self.color_of(t.parts))}, {int(round(t.mass_kg * 1000))}u, '
+                     f'{{0x{bits[0]:016x}ull, 0x{bits[1]:016x}ull}}}},')
+        L += ["}};", "", "struct SpeciesInfo { std::string_view id; std::string_view lookalike; bool animal; };"]
+        sp = sorted(cat["species"].values(), key=lambda s: s.id)
+        L.append(f"inline constexpr std::array<SpeciesInfo, {len(sp)}> kSpecies = {{{{")
+        for s in sp:
+            L.append(f'  {{{cpp_str(s.id)}, {cpp_str(s.lookalike)}, {"true" if s.kingdom == "animal" else "false"}}},')
+        L += ["}};", "",
+              "enum class Sense : std::uint8_t { Sight, Hearing, Smell, Touch };",
+              "enum class Transform : std::uint8_t { Copy, Blur, Quantize, Compose, Computed };",
+              "// source: a catalogue variable of the world, or \"~name\" for a value the perception computes itself.",
+              "struct PerceptRule { std::string_view target; std::string_view source; Sense sense; std::uint16_t min_clarity;",
+              "                     Transform transform; bool source_engine; };",
+              f"inline constexpr std::array<PerceptRule, {len(PERCEPT_RULES)}> kRules = {{{{"]
+        V = cat["variable"]
+        for tgt, src, sense, clarity, tr in PERCEPT_RULES:
+            eng = any((o[1:] if o.startswith("~") else o) in V and V[(o[1:] if o.startswith("~") else o)].visibility == "engine" for o in src.split(","))
+            L.append(f'  {{"{tgt}", "{src}", Sense::{sense}, {clarity}, Transform::{tr}, {"true" if eng else "false"}}},')
+        L += ["}};", ""]
+        eng = sorted(v.id for v in V.values() if v.visibility == "engine")
+        L.append(f"// Every variable with visibility = engine: none is the source of a rule, none is copied into a dossier.")
+        L.append(f"inline constexpr std::array<std::string_view, {len(eng)}> kEngineVars = {{")
+        L += ["  " + ", ".join(cpp_str(w) for w in eng[i:i + 6]) + "," for i in range(0, len(eng), 6)]
+        L += ["};", "", "}  // namespace em::act::gen", ""]
+        return "\n".join(L)
+
+
 def build(cat: Catalogue, orders: "Orders | None" = None) -> dict:
     """{path: text} of every generated file (nothing written)."""
     orders = orders or Orders(cat)
@@ -966,7 +1116,7 @@ def build(cat: Catalogue, orders: "Orders | None" = None) -> dict:
     fg = ForgettingGenerator(cat)
     return {OUT: CppGenerator(cat, orders).generate(), STATE_OUT: sg.generate_state(), FIELDS_OUT: sg.generate_fields(), VOCAB_OUT: sg.generate_vocab(),
             FORGETTING_OUT: fg.generate(), LAWS_OUT: LawGenerator(cat).generate(), PARITY_OUT: fg.generate_parity(),
-            WORLD_OUT: WorldGenerator(cat, orders).generate(),
+            WORLD_OUT: WorldGenerator(cat, orders).generate(), PERCEPT_OUT: PerceptionGenerator(cat).generate(),
             VAR_REGISTRY: orders.var_registry.text(), VOCAB_REGISTRY: orders.vocab_registry.text(),
             WORLD_REGISTRY: orders.world_registry.text()}
 
@@ -974,7 +1124,7 @@ def build(cat: Catalogue, orders: "Orders | None" = None) -> dict:
 def main(argv=None) -> int:
     check = "--check" in (sys.argv[1:] if argv is None else argv)
     cat = Catalogue.load()
-    problems = cat.validate() + forgetting.ForgettingChecker(cat).problems() + laws.LawChecker(cat).problems()
+    problems = cat.validate() + forgetting.ForgettingChecker(cat).problems() + laws.LawChecker(cat).problems() + PerceptionGenerator(cat).problems()
     if problems:
         sys.stderr.write("catalogue does not validate, nothing generated:\n" + "\n".join("  " + p for p in problems) + "\n")
         return 1

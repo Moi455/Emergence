@@ -1,0 +1,1853 @@
+{
+ "schema": "matter-registry-1",
+ "materials": [
+  {
+   "name": "flint"
+  },
+  {
+   "name": "tin"
+  },
+  {
+   "name": "bronze"
+  },
+  {
+   "name": "wax"
+  },
+  {
+   "name": "tallow"
+  },
+  {
+   "name": "horn"
+  },
+  {
+   "name": "feather"
+  },
+  {
+   "name": "straw"
+  },
+  {
+   "name": "reed"
+  },
+  {
+   "name": "wicker"
+  },
+  {
+   "name": "linen"
+  },
+  {
+   "name": "silk"
+  },
+  {
+   "name": "fur"
+  },
+  {
+   "name": "hide"
+  },
+  {
+   "name": "honey"
+  },
+  {
+   "name": "cheese"
+  },
+  {
+   "name": "butter"
+  },
+  {
+   "name": "egg"
+  },
+  {
+   "name": "pitch"
+  },
+  {
+   "name": "lime_mortar"
+  },
+  {
+   "name": "chalk"
+  },
+  {
+   "name": "soap"
+  },
+  {
+   "name": "ink"
+  },
+  {
+   "name": "softwood"
+  },
+  {
+   "name": "yew_wood"
+  },
+  {
+   "name": "ceramic"
+  },
+  {
+   "name": "charcoal"
+  },
+  {
+   "name": "ash"
+  },
+  {
+   "name": "copper"
+  },
+  {
+   "name": "silver"
+  },
+  {
+   "name": "gold"
+  },
+  {
+   "name": "lead"
+  },
+  {
+   "name": "leather"
+  },
+  {
+   "name": "wool"
+  },
+  {
+   "name": "bone"
+  },
+  {
+   "name": "flesh"
+  },
+  {
+   "name": "grain"
+  },
+  {
+   "name": "flour"
+  },
+  {
+   "name": "bread"
+  },
+  {
+   "name": "vegetable"
+  },
+  {
+   "name": "herb"
+  },
+  {
+   "name": "water"
+  },
+  {
+   "name": "ale"
+  },
+  {
+   "name": "milk"
+  },
+  {
+   "name": "oil"
+  },
+  {
+   "name": "dye"
+  },
+  {
+   "name": "paper"
+  },
+  {
+   "name": "rope_fiber"
+  },
+  {
+   "name": "gem"
+  },
+  {
+   "name": "arcane_crystal"
+  },
+  {
+   "name": "air"
+  },
+  {
+   "name": "turf"
+  },
+  {
+   "name": "dirt"
+  },
+  {
+   "name": "clay"
+  },
+  {
+   "name": "sand"
+  },
+  {
+   "name": "gravel"
+  },
+  {
+   "name": "forest_floor"
+  },
+  {
+   "name": "snow"
+  },
+  {
+   "name": "limestone"
+  },
+  {
+   "name": "sandstone"
+  },
+  {
+   "name": "granite"
+  },
+  {
+   "name": "slate"
+  },
+  {
+   "name": "basalt"
+  },
+  {
+   "name": "salt"
+  },
+  {
+   "name": "iron_ore"
+  },
+  {
+   "name": "oak_raw"
+  },
+  {
+   "name": "oak_planks"
+  },
+  {
+   "name": "plaster"
+  },
+  {
+   "name": "roof_tile"
+  },
+  {
+   "name": "thatch"
+  },
+  {
+   "name": "cut_stone"
+  },
+  {
+   "name": "wood_trim"
+  },
+  {
+   "name": "wood_trim_worn"
+  },
+  {
+   "name": "rock_trim"
+  },
+  {
+   "name": "brick"
+  },
+  {
+   "name": "red_brick"
+  },
+  {
+   "name": "rubble_masonry"
+  },
+  {
+   "name": "iron"
+  },
+  {
+   "name": "glass"
+  },
+  {
+   "name": "vine"
+  },
+  {
+   "name": "leaves"
+  },
+  {
+   "name": "bark"
+  },
+  {
+   "name": "cobblestone"
+  },
+  {
+   "name": "cloth"
+  }
+ ],
+ "forms": [
+  {
+   "name": "blade"
+  },
+  {
+   "name": "curved_blade"
+  },
+  {
+   "name": "point"
+  },
+  {
+   "name": "needle"
+  },
+  {
+   "name": "hook"
+  },
+  {
+   "name": "teeth"
+  },
+  {
+   "name": "tines"
+  },
+  {
+   "name": "wedge"
+  },
+  {
+   "name": "pick_head"
+  },
+  {
+   "name": "spade_head"
+  },
+  {
+   "name": "blunt_head"
+  },
+  {
+   "name": "abrasive_face"
+  },
+  {
+   "name": "grip"
+  },
+  {
+   "name": "shaft"
+  },
+  {
+   "name": "rod"
+  },
+  {
+   "name": "vessel"
+  },
+  {
+   "name": "bag"
+  },
+  {
+   "name": "box"
+  },
+  {
+   "name": "basket_weave"
+  },
+  {
+   "name": "lid"
+  },
+  {
+   "name": "spout"
+  },
+  {
+   "name": "sheet_flexible"
+  },
+  {
+   "name": "sheet_rigid"
+  },
+  {
+   "name": "garment"
+  },
+  {
+   "name": "strap"
+  },
+  {
+   "name": "armor_plate"
+  },
+  {
+   "name": "mail"
+  },
+  {
+   "name": "padding"
+  },
+  {
+   "name": "ornament"
+  },
+  {
+   "name": "ring_band"
+  },
+  {
+   "name": "cord"
+  },
+  {
+   "name": "mesh"
+  },
+  {
+   "name": "fastener"
+  },
+  {
+   "name": "hinge"
+  },
+  {
+   "name": "lock_mechanism"
+  },
+  {
+   "name": "key_bit"
+  },
+  {
+   "name": "wheel"
+  },
+  {
+   "name": "hull"
+  },
+  {
+   "name": "paddle"
+  },
+  {
+   "name": "sail"
+  },
+  {
+   "name": "frame"
+  },
+  {
+   "name": "platform"
+  },
+  {
+   "name": "leg"
+  },
+  {
+   "name": "elastic_limb"
+  },
+  {
+   "name": "tension_string"
+  },
+  {
+   "name": "trigger_mechanism"
+  },
+  {
+   "name": "resonator"
+  },
+  {
+   "name": "membrane"
+  },
+  {
+   "name": "wick"
+  },
+  {
+   "name": "polished_face"
+  },
+  {
+   "name": "scale_marks"
+  },
+  {
+   "name": "absorbent_pad"
+  },
+  {
+   "name": "coating"
+  },
+  {
+   "name": "magic_core"
+  },
+  {
+   "name": "block"
+  },
+  {
+   "name": "lump"
+  },
+  {
+   "name": "powder"
+  },
+  {
+   "name": "granules"
+  },
+  {
+   "name": "liquid"
+  },
+  {
+   "name": "fiber_bundle"
+  },
+  {
+   "name": "seed"
+  },
+  {
+   "name": "food_body"
+  },
+  {
+   "name": "preparation"
+  }
+ ],
+ "processes": [
+  {
+   "name": "smell_spread"
+  },
+  {
+   "name": "contagion"
+  },
+  {
+   "name": "illness_course"
+  },
+  {
+   "name": "conceive"
+  },
+  {
+   "name": "gestate_birth"
+  },
+  {
+   "name": "cut"
+  },
+  {
+   "name": "split"
+  },
+  {
+   "name": "fracture"
+  },
+  {
+   "name": "crush"
+  },
+  {
+   "name": "extract"
+  },
+  {
+   "name": "till"
+  },
+  {
+   "name": "assemble"
+  },
+  {
+   "name": "bind"
+  },
+  {
+   "name": "mix"
+  },
+  {
+   "name": "spin_weave"
+  },
+  {
+   "name": "carve"
+  },
+  {
+   "name": "forge"
+  },
+  {
+   "name": "mold_cast"
+  },
+  {
+   "name": "magic_shape"
+  },
+  {
+   "name": "heat"
+  },
+  {
+   "name": "combust"
+  },
+  {
+   "name": "melt"
+  },
+  {
+   "name": "smelt"
+  },
+  {
+   "name": "fire_clay"
+  },
+  {
+   "name": "cook"
+  },
+  {
+   "name": "cool_freeze"
+  },
+  {
+   "name": "ferment"
+  },
+  {
+   "name": "rot"
+  },
+  {
+   "name": "dry_preserve"
+  },
+  {
+   "name": "tan"
+  },
+  {
+   "name": "dye_process"
+  },
+  {
+   "name": "heal_tissue"
+  },
+  {
+   "name": "wear"
+  },
+  {
+   "name": "grow"
+  },
+  {
+   "name": "flow"
+  },
+  {
+   "name": "absorb_evaporate"
+  },
+  {
+   "name": "collapse"
+  },
+  {
+   "name": "disassemble"
+  },
+  {
+   "name": "germinate"
+  },
+  {
+   "name": "separate"
+  },
+  {
+   "name": "press_extract"
+  },
+  {
+   "name": "wash"
+  },
+  {
+   "name": "abrade"
+  },
+  {
+   "name": "char"
+  },
+  {
+   "name": "trap_catch"
+  },
+  {
+   "name": "calcine"
+  }
+ ],
+ "items": [
+  {
+   "name": "wheat_sack"
+  },
+  {
+   "name": "barley_sack"
+  },
+  {
+   "name": "oats_sack"
+  },
+  {
+   "name": "rye_sack"
+  },
+  {
+   "name": "flour_sack"
+  },
+  {
+   "name": "bread_loaf"
+  },
+  {
+   "name": "flatbread"
+  },
+  {
+   "name": "black_bread"
+  },
+  {
+   "name": "honey_cake"
+  },
+  {
+   "name": "pie"
+  },
+  {
+   "name": "porridge"
+  },
+  {
+   "name": "stew"
+  },
+  {
+   "name": "soup"
+  },
+  {
+   "name": "roast_meat"
+  },
+  {
+   "name": "fish_grilled"
+  },
+  {
+   "name": "raw_meat"
+  },
+  {
+   "name": "raw_fish"
+  },
+  {
+   "name": "shellfish"
+  },
+  {
+   "name": "salted_fish"
+  },
+  {
+   "name": "smoked_fish"
+  },
+  {
+   "name": "dried_meat"
+  },
+  {
+   "name": "sausage"
+  },
+  {
+   "name": "ham"
+  },
+  {
+   "name": "egg_item"
+  },
+  {
+   "name": "milk_jug"
+  },
+  {
+   "name": "cheese_wheel"
+  },
+  {
+   "name": "butter_pat"
+  },
+  {
+   "name": "honey_pot"
+  },
+  {
+   "name": "oil_jar"
+  },
+  {
+   "name": "salt_bag"
+  },
+  {
+   "name": "apples"
+  },
+  {
+   "name": "pears"
+  },
+  {
+   "name": "berries"
+  },
+  {
+   "name": "grapes"
+  },
+  {
+   "name": "nuts"
+  },
+  {
+   "name": "cabbage"
+  },
+  {
+   "name": "turnips"
+  },
+  {
+   "name": "onions"
+  },
+  {
+   "name": "beans"
+  },
+  {
+   "name": "roots"
+  },
+  {
+   "name": "mushrooms"
+  },
+  {
+   "name": "herbs_bundle"
+  },
+  {
+   "name": "seed_bag"
+  },
+  {
+   "name": "water_jug"
+  },
+  {
+   "name": "waterskin"
+  },
+  {
+   "name": "ale_mug"
+  },
+  {
+   "name": "wine_bottle"
+  },
+  {
+   "name": "mead_jug"
+  },
+  {
+   "name": "cider_jug"
+  },
+  {
+   "name": "spirit_flask"
+  },
+  {
+   "name": "ale_barrel"
+  },
+  {
+   "name": "herbal_remedy"
+  },
+  {
+   "name": "salve"
+  },
+  {
+   "name": "sleeping_draught"
+  },
+  {
+   "name": "poison_vial"
+  },
+  {
+   "name": "cooking_pot"
+  },
+  {
+   "name": "cauldron"
+  },
+  {
+   "name": "frying_pan"
+  },
+  {
+   "name": "clay_pot"
+  },
+  {
+   "name": "storage_jar"
+  },
+  {
+   "name": "jug"
+  },
+  {
+   "name": "wooden_bowl"
+  },
+  {
+   "name": "ceramic_bowl"
+  },
+  {
+   "name": "trencher"
+  },
+  {
+   "name": "pewter_plate"
+  },
+  {
+   "name": "cup_wood"
+  },
+  {
+   "name": "glass_goblet"
+  },
+  {
+   "name": "drinking_horn"
+  },
+  {
+   "name": "spoon"
+  },
+  {
+   "name": "ladle"
+  },
+  {
+   "name": "table_knife"
+  },
+  {
+   "name": "cutting_board"
+  },
+  {
+   "name": "mortar_pestle"
+  },
+  {
+   "name": "quern"
+  },
+  {
+   "name": "kneading_trough"
+  },
+  {
+   "name": "bread_peel"
+  },
+  {
+   "name": "butter_churn"
+  },
+  {
+   "name": "sieve"
+  },
+  {
+   "name": "spit"
+  },
+  {
+   "name": "bucket"
+  },
+  {
+   "name": "washtub"
+  },
+  {
+   "name": "basket"
+  },
+  {
+   "name": "sack"
+  },
+  {
+   "name": "purse"
+  },
+  {
+   "name": "barrel"
+  },
+  {
+   "name": "crate"
+  },
+  {
+   "name": "chest"
+  },
+  {
+   "name": "locked_chest"
+  },
+  {
+   "name": "small_box"
+  },
+  {
+   "name": "table"
+  },
+  {
+   "name": "trestle_table"
+  },
+  {
+   "name": "chair"
+  },
+  {
+   "name": "stool"
+  },
+  {
+   "name": "bench"
+  },
+  {
+   "name": "bed"
+  },
+  {
+   "name": "straw_mattress"
+  },
+  {
+   "name": "cradle"
+  },
+  {
+   "name": "cupboard"
+  },
+  {
+   "name": "shelf"
+  },
+  {
+   "name": "blanket"
+  },
+  {
+   "name": "fur_blanket"
+  },
+  {
+   "name": "pillow"
+  },
+  {
+   "name": "rug"
+  },
+  {
+   "name": "rush_mat"
+  },
+  {
+   "name": "curtain"
+  },
+  {
+   "name": "tapestry"
+  },
+  {
+   "name": "candle_wax"
+  },
+  {
+   "name": "candle_tallow"
+  },
+  {
+   "name": "candlestick"
+  },
+  {
+   "name": "oil_lamp"
+  },
+  {
+   "name": "lantern"
+  },
+  {
+   "name": "torch"
+  },
+  {
+   "name": "tinderbox"
+  },
+  {
+   "name": "firewood_bundle"
+  },
+  {
+   "name": "kindling"
+  },
+  {
+   "name": "charcoal_sack"
+  },
+  {
+   "name": "bellows"
+  },
+  {
+   "name": "poker"
+  },
+  {
+   "name": "brazier"
+  },
+  {
+   "name": "soap_bar"
+  },
+  {
+   "name": "comb"
+  },
+  {
+   "name": "razor"
+  },
+  {
+   "name": "mirror"
+  },
+  {
+   "name": "rag"
+  },
+  {
+   "name": "chamber_pot"
+  },
+  {
+   "name": "broom"
+  },
+  {
+   "name": "rag_doll"
+  },
+  {
+   "name": "wooden_toy"
+  },
+  {
+   "name": "ball"
+  },
+  {
+   "name": "marbles"
+  },
+  {
+   "name": "plough"
+  },
+  {
+   "name": "harrow"
+  },
+  {
+   "name": "hoe"
+  },
+  {
+   "name": "spade"
+  },
+  {
+   "name": "shovel"
+  },
+  {
+   "name": "wooden_shovel"
+  },
+  {
+   "name": "rake"
+  },
+  {
+   "name": "pitchfork"
+  },
+  {
+   "name": "sickle"
+  },
+  {
+   "name": "scythe"
+  },
+  {
+   "name": "flail"
+  },
+  {
+   "name": "winnowing_basket"
+  },
+  {
+   "name": "seed_drill_bag"
+  },
+  {
+   "name": "watering_pot"
+  },
+  {
+   "name": "scarecrow"
+  },
+  {
+   "name": "sheep_shears"
+  },
+  {
+   "name": "milking_pail"
+  },
+  {
+   "name": "yoke"
+  },
+  {
+   "name": "harness"
+  },
+  {
+   "name": "saddle"
+  },
+  {
+   "name": "bridle"
+  },
+  {
+   "name": "leash"
+  },
+  {
+   "name": "animal_bell"
+  },
+  {
+   "name": "shepherd_crook"
+  },
+  {
+   "name": "horseshoe"
+  },
+  {
+   "name": "beehive_skep"
+  },
+  {
+   "name": "animal_trough"
+  },
+  {
+   "name": "cage"
+  },
+  {
+   "name": "felling_axe"
+  },
+  {
+   "name": "axe"
+  },
+  {
+   "name": "hatchet"
+  },
+  {
+   "name": "billhook"
+  },
+  {
+   "name": "saw"
+  },
+  {
+   "name": "two_man_saw"
+  },
+  {
+   "name": "splitting_wedge"
+  },
+  {
+   "name": "adze"
+  },
+  {
+   "name": "pickaxe"
+  },
+  {
+   "name": "mattock"
+  },
+  {
+   "name": "sledgehammer"
+  },
+  {
+   "name": "crowbar"
+  },
+  {
+   "name": "stone_chisel"
+  },
+  {
+   "name": "mallet"
+  },
+  {
+   "name": "trowel"
+  },
+  {
+   "name": "plumb_line"
+  },
+  {
+   "name": "mortar_tub"
+  },
+  {
+   "name": "hod"
+  },
+  {
+   "name": "wheelbarrow"
+  },
+  {
+   "name": "ladder"
+  },
+  {
+   "name": "pulley"
+  },
+  {
+   "name": "miner_basket"
+  },
+  {
+   "name": "hammer"
+  },
+  {
+   "name": "nails"
+  },
+  {
+   "name": "hand_plane"
+  },
+  {
+   "name": "auger"
+  },
+  {
+   "name": "wood_chisel"
+  },
+  {
+   "name": "measuring_rod"
+  },
+  {
+   "name": "glue_pot"
+  },
+  {
+   "name": "anvil"
+  },
+  {
+   "name": "tongs"
+  },
+  {
+   "name": "smith_hammer"
+  },
+  {
+   "name": "file"
+  },
+  {
+   "name": "whetstone"
+  },
+  {
+   "name": "crucible"
+  },
+  {
+   "name": "casting_mold"
+  },
+  {
+   "name": "iron_ingot"
+  },
+  {
+   "name": "copper_ingot"
+  },
+  {
+   "name": "tin_ingot"
+  },
+  {
+   "name": "bronze_ingot"
+  },
+  {
+   "name": "silver_ingot"
+  },
+  {
+   "name": "gold_ingot"
+  },
+  {
+   "name": "lead_ingot"
+  },
+  {
+   "name": "chain"
+  },
+  {
+   "name": "padlock"
+  },
+  {
+   "name": "door_lock"
+  },
+  {
+   "name": "key"
+  },
+  {
+   "name": "lockpick"
+  },
+  {
+   "name": "spindle"
+  },
+  {
+   "name": "distaff"
+  },
+  {
+   "name": "spinning_wheel"
+  },
+  {
+   "name": "loom"
+  },
+  {
+   "name": "carding_comb"
+  },
+  {
+   "name": "needle_thread"
+  },
+  {
+   "name": "scissors"
+  },
+  {
+   "name": "thimble"
+  },
+  {
+   "name": "wool_fleece"
+  },
+  {
+   "name": "yarn"
+  },
+  {
+   "name": "cloth_bolt_wool"
+  },
+  {
+   "name": "cloth_bolt_linen"
+  },
+  {
+   "name": "silk_bolt"
+  },
+  {
+   "name": "dye_pot"
+  },
+  {
+   "name": "dye_vat"
+  },
+  {
+   "name": "raw_hide"
+  },
+  {
+   "name": "leather_piece"
+  },
+  {
+   "name": "fur_pelt"
+  },
+  {
+   "name": "fleshing_knife"
+  },
+  {
+   "name": "awl"
+  },
+  {
+   "name": "tanning_vat"
+  },
+  {
+   "name": "potter_wheel"
+  },
+  {
+   "name": "clay_lump"
+  },
+  {
+   "name": "blowpipe"
+  },
+  {
+   "name": "glass_pane"
+  },
+  {
+   "name": "glass_bottle"
+  },
+  {
+   "name": "fishing_rod"
+  },
+  {
+   "name": "fishing_net"
+  },
+  {
+   "name": "fish_trap"
+  },
+  {
+   "name": "harpoon"
+  },
+  {
+   "name": "oar"
+  },
+  {
+   "name": "anchor"
+  },
+  {
+   "name": "salt_rake"
+  },
+  {
+   "name": "snare"
+  },
+  {
+   "name": "jaw_trap"
+  },
+  {
+   "name": "hunting_knife"
+  },
+  {
+   "name": "hunting_horn"
+  },
+  {
+   "name": "decoy_whistle"
+  },
+  {
+   "name": "bandage"
+  },
+  {
+   "name": "splint"
+  },
+  {
+   "name": "crutch"
+  },
+  {
+   "name": "healer_bag"
+  },
+  {
+   "name": "lancet"
+  },
+  {
+   "name": "quill"
+  },
+  {
+   "name": "ink_pot"
+  },
+  {
+   "name": "parchment"
+  },
+  {
+   "name": "letter"
+  },
+  {
+   "name": "book"
+  },
+  {
+   "name": "wax_tablet"
+  },
+  {
+   "name": "chalk_stick"
+  },
+  {
+   "name": "seal_stamp"
+  },
+  {
+   "name": "sealing_wax"
+  },
+  {
+   "name": "notice_board"
+  },
+  {
+   "name": "balance_scale"
+  },
+  {
+   "name": "weights_set"
+  },
+  {
+   "name": "measuring_cup"
+  },
+  {
+   "name": "tally_stick"
+  },
+  {
+   "name": "hourglass"
+  },
+  {
+   "name": "wand_weak"
+  },
+  {
+   "name": "wand_strong"
+  },
+  {
+   "name": "wand_cracked"
+  },
+  {
+   "name": "crystal_shard"
+  },
+  {
+   "name": "charm"
+  },
+  {
+   "name": "strange_relic"
+  },
+  {
+   "name": "undershirt"
+  },
+  {
+   "name": "braies"
+  },
+  {
+   "name": "hose"
+  },
+  {
+   "name": "trousers"
+  },
+  {
+   "name": "skirt"
+  },
+  {
+   "name": "leather_leggings"
+  },
+  {
+   "name": "shirt"
+  },
+  {
+   "name": "tunic"
+  },
+  {
+   "name": "wool_tunic"
+  },
+  {
+   "name": "dress"
+  },
+  {
+   "name": "linen_dress"
+  },
+  {
+   "name": "festive_gown"
+  },
+  {
+   "name": "silk_gown"
+  },
+  {
+   "name": "mourning_robe"
+  },
+  {
+   "name": "night_shirt"
+  },
+  {
+   "name": "court_robe"
+  },
+  {
+   "name": "priest_vestment"
+  },
+  {
+   "name": "vest"
+  },
+  {
+   "name": "apron"
+  },
+  {
+   "name": "leather_apron"
+  },
+  {
+   "name": "work_smock"
+  },
+  {
+   "name": "cloak"
+  },
+  {
+   "name": "hooded_cloak"
+  },
+  {
+   "name": "fur_coat"
+  },
+  {
+   "name": "oilskin_coat"
+  },
+  {
+   "name": "shepherd_mantle"
+  },
+  {
+   "name": "boots"
+  },
+  {
+   "name": "shoes"
+  },
+  {
+   "name": "clogs"
+  },
+  {
+   "name": "sandals"
+  },
+  {
+   "name": "fur_boots"
+  },
+  {
+   "name": "gloves"
+  },
+  {
+   "name": "mittens"
+  },
+  {
+   "name": "smith_gauntlets"
+  },
+  {
+   "name": "hood"
+  },
+  {
+   "name": "wool_cap"
+  },
+  {
+   "name": "straw_hat"
+  },
+  {
+   "name": "coif"
+  },
+  {
+   "name": "veil"
+  },
+  {
+   "name": "headwrap"
+  },
+  {
+   "name": "flower_crown"
+  },
+  {
+   "name": "chief_circlet"
+  },
+  {
+   "name": "scarf"
+  },
+  {
+   "name": "belt"
+  },
+  {
+   "name": "belt_pouch"
+  },
+  {
+   "name": "backpack"
+  },
+  {
+   "name": "back_basket"
+  },
+  {
+   "name": "quiver"
+  },
+  {
+   "name": "ring"
+  },
+  {
+   "name": "wedding_ring"
+  },
+  {
+   "name": "copper_ring"
+  },
+  {
+   "name": "necklace"
+  },
+  {
+   "name": "bead_necklace"
+  },
+  {
+   "name": "bracelet"
+  },
+  {
+   "name": "brooch"
+  },
+  {
+   "name": "earrings"
+  },
+  {
+   "name": "pendant"
+  },
+  {
+   "name": "raw_gem"
+  },
+  {
+   "name": "cut_gem"
+  },
+  {
+   "name": "knife"
+  },
+  {
+   "name": "dagger"
+  },
+  {
+   "name": "sword"
+  },
+  {
+   "name": "short_sword"
+  },
+  {
+   "name": "battle_axe"
+  },
+  {
+   "name": "mace"
+  },
+  {
+   "name": "club"
+  },
+  {
+   "name": "quarterstaff"
+  },
+  {
+   "name": "spear"
+  },
+  {
+   "name": "pike"
+  },
+  {
+   "name": "improvised_spear"
+  },
+  {
+   "name": "bow"
+  },
+  {
+   "name": "crossbow"
+  },
+  {
+   "name": "arrows"
+  },
+  {
+   "name": "bolts"
+  },
+  {
+   "name": "sling"
+  },
+  {
+   "name": "throwing_stones"
+  },
+  {
+   "name": "wooden_shield"
+  },
+  {
+   "name": "buckler"
+  },
+  {
+   "name": "helmet"
+  },
+  {
+   "name": "leather_cap"
+  },
+  {
+   "name": "gambeson"
+  },
+  {
+   "name": "leather_armor"
+  },
+  {
+   "name": "chainmail"
+  },
+  {
+   "name": "log"
+  },
+  {
+   "name": "beam"
+  },
+  {
+   "name": "plank"
+  },
+  {
+   "name": "branch"
+  },
+  {
+   "name": "bark_strip"
+  },
+  {
+   "name": "stone_loose"
+  },
+  {
+   "name": "rubble"
+  },
+  {
+   "name": "stone_block"
+  },
+  {
+   "name": "slate_tile"
+  },
+  {
+   "name": "roof_tile"
+  },
+  {
+   "name": "brick"
+  },
+  {
+   "name": "thatch_bundle"
+  },
+  {
+   "name": "straw_bale"
+  },
+  {
+   "name": "reed_bundle"
+  },
+  {
+   "name": "wicker_bundle"
+  },
+  {
+   "name": "lime_sack"
+  },
+  {
+   "name": "mortar_batch"
+  },
+  {
+   "name": "sand_sack"
+  },
+  {
+   "name": "pitch_pot"
+  },
+  {
+   "name": "door"
+  },
+  {
+   "name": "shutter"
+  },
+  {
+   "name": "window_frame"
+  },
+  {
+   "name": "post"
+  },
+  {
+   "name": "fence_panel"
+  },
+  {
+   "name": "ore_chunk"
+  },
+  {
+   "name": "salt_block"
+  },
+  {
+   "name": "flint_nodule"
+  },
+  {
+   "name": "bone_item"
+  },
+  {
+   "name": "horn_item"
+  },
+  {
+   "name": "feathers"
+  },
+  {
+   "name": "tallow_block"
+  },
+  {
+   "name": "wax_cake"
+  },
+  {
+   "name": "rope"
+  },
+  {
+   "name": "cart"
+  },
+  {
+   "name": "wagon"
+  },
+  {
+   "name": "handcart"
+  },
+  {
+   "name": "sled"
+  },
+  {
+   "name": "boat"
+  },
+  {
+   "name": "fishing_boat"
+  },
+  {
+   "name": "raft"
+  },
+  {
+   "name": "saddlebag"
+  },
+  {
+   "name": "pack_frame"
+  },
+  {
+   "name": "copper_coin"
+  },
+  {
+   "name": "silver_coin"
+  },
+  {
+   "name": "gold_coin"
+  },
+  {
+   "name": "debased_coin"
+  },
+  {
+   "name": "coin_purse_full"
+  },
+  {
+   "name": "dice"
+  },
+  {
+   "name": "game_board"
+  },
+  {
+   "name": "flute"
+  },
+  {
+   "name": "lute"
+  },
+  {
+   "name": "drum"
+  },
+  {
+   "name": "bagpipe"
+  },
+  {
+   "name": "hurdy_gurdy"
+  },
+  {
+   "name": "festival_banner"
+  },
+  {
+   "name": "festival_mask"
+  },
+  {
+   "name": "wreath"
+  },
+  {
+   "name": "holy_symbol"
+  },
+  {
+   "name": "prayer_beads"
+  },
+  {
+   "name": "incense"
+  },
+  {
+   "name": "offering_bowl"
+  },
+  {
+   "name": "temple_bell"
+  },
+  {
+   "name": "icon"
+  },
+  {
+   "name": "relic"
+  },
+  {
+   "name": "coffin"
+  },
+  {
+   "name": "shroud"
+  },
+  {
+   "name": "grave_marker"
+  },
+  {
+   "name": "memento"
+  }
+ ]
+}

@@ -46,6 +46,37 @@ toughness = 60
 cohesion = "natural"
 conductivity = 10
 
+# T18 : ténacité et cohésion des matières de construction (lues par les lois de la matière, engine/act/laws/).
+[[material]]
+id = "oak_planks"
+toughness = 40
+cohesion = "built"
+
+[[material]]
+id = "brick"
+toughness = 20
+cohesion = "built"
+
+[[material]]
+id = "cut_stone"
+toughness = 35
+cohesion = "built"
+
+[[material]]
+id = "rubble_masonry"
+toughness = 15
+cohesion = "natural"
+
+[[material]]
+id = "slate"
+toughness = 12
+cohesion = "natural"
+
+[[material]]
+id = "granite"
+toughness = 70
+cohesion = "natural"
+
 # ─── Matières proposées (à ajouter en fin de materials.csv) ─────────────────────────────────────
 [[material]]
 id = "ceramic"
