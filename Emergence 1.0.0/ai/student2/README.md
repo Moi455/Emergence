@@ -1,6 +1,6 @@
 # student2 : le Transformer des PNJ (élève) pour tok-2
 
-Lit les dossiers tok-2 d'un PNJ, rend un geste, ses pointeurs, ses manières, sa condition d'arrêt, jusqu'à 4 écritures et des phrases du langage intérieur. Entraînement en Python/PyTorch (float16 : la Quadro est Turing, pas de bfloat16).
+Lit les dossiers tok-2 d'un PNJ, rend un geste, ses pointeurs, ses manières, sa condition d'arrêt, jusqu'à 4 écritures, des phrases du langage intérieur, **un plan (au plus 6 étapes) et une condition d'arrêt de décision** (T11). Entraînement en Python/PyTorch (float16 : la Quadro est Turing, pas de bfloat16).
 
 **Pas encore entraîné sur de vrais exemples.** Tout ce qui est mesuré ici l'est sur des réponses **aléatoires** que le validateur accepte (`smoke.py`) : elles servent à tester la chaîne et la vitesse, jamais à apprendre un comportement. Le jeu d'entraînement refuse ces lignes (`synthetic: true`) sauf `--smoke-test`. Aucun appel réseau.
 
@@ -14,7 +14,7 @@ dataset.jsonl (teacher/dataset.py) ─► data.py : contrôle des lignes, cache 
 | Fichier | Rôle |
 |---|---|
 | `teacher/dataset.py` | Format des étiquettes. Une ligne commence par un en-tête court (`hdr` = interface:disposition, `id` = graine:indice, `teacher`, `synthetic`), puis `verdict`, `source`, `decision` (pointeurs par **clé de dossier**, jamais par emplacement) et `context` (JSON canonique de `DecisionContext`, avec ses empreintes). `teacher.pilot` l'écrit pour chaque réponse valide. |
-| `output_registry.py` + `.json` | Registre **ajout seul** des indices de sortie (gestes, variables, conditions, valeurs de manière, formes, valeurs d'énumération), avec une capacité fixe et une réserve masquée : un catalogue qui grandit ne change pas les formes, un ancien point de reprise se charge encore. |
+| `output_registry.py` + `.json` | Registre **ajout seul** des indices de sortie (gestes, variables, conditions, valeurs de manière, formes, valeurs d'énumération), avec une capacité fixe et une réserve masquée : un catalogue qui grandit ne change pas les formes. **Schéma 2 (T11)** : capacité `plan_steps` = 8 et liste `lists.plan_steps` (`i_steps`, `i_step_targets`), 6 étapes utilisables. Un registre de schéma 1 se lit et se met à niveau en mémoire. |
 | `spec.py` | Tailles de têtes, grilles de nombres (exact jusqu'à 256), masques de types acceptés par paramètre, tables d'arité des symboles (tirées des tables du langage). |
 | `labels.py`, `sequences.py` | Décision ↔ cibles ; texte S-expression ↔ pas (symbole, arité, emplacement, compte). Un exemple que les masques interdiraient est refusé. |
 | `data.py` | `LabelDataset` (contrôle à l'ouverture, cache), `Collator` (indices compacts de capacité fixe). |
@@ -38,6 +38,8 @@ dataset.jsonl (teacher/dataset.py) ─► data.py : contrôle des lignes, cache 
 - **Condition d'arrêt** : `ctx` + le geste ; ses arguments dépendent en plus de la condition (types d'argument masqués).
 - **Écritures** : une chaîne de 4 pas. L'écriture *i* dépend de `ctx` + le geste + le plongement de l'écriture *i−1* (sa cible et sa variable). Cible, puis variable (masquée par le genre de la cible), puis valeur. Ordre imposé : cibles non décroissantes, variables croissantes sur une même cible ; une écriture sans variable légale restante n'est pas faite. Les écritures au-delà de leur nombre sont inertes.
 - **Phrases** (parole, propositions d'écriture) : décodeur causal, parti du geste (parole) ou de la (cible, variable) de l'écriture. Masques : fin seulement arbre fermé ; arités permises par symbole ; un symbole pointeur ne vise qu'un dossier de son genre ; en génération, l'arbre doit pouvoir se fermer dans les 20 symboles. **L'automate de grammaire (types des arguments) n'est pas appliqué.**
+- **Plan** (`PlanHead`, T11) : une chaîne de 8 positions (6 utilisables). L'étape *k* lit `ctx` + le geste de la décision + sa position + le plongement de l'étape *k−1* ; elle choisit un geste du registre **ou FIN** (après FIN, tout est FIN), puis **un** pointeur parmi les dossiers des types de `PLAN.step_targets` (le premier pointeur du geste ; « personne » seulement si le geste n'a pas de pointeur obligatoire). Puis `i_repeat` (valeurs d'énumération du registre), `i_repeat_period` (grille de quantités, lu seulement si `every`) et `g_parent` (un GOAL ou personne). Étiquettes présentes seulement si la décision porte la clé `plan` (`null` = « pas de plan », explicite) ; sinon `NO_LABEL`.
+- **Arrêt de décision** (`StopHead`, T11) : la table de conditions existante, pour un geste **sans** `until` ; une classe de plus, « aucune » (= la capacité des conditions). Étiquette seulement si la décision porte la clé `stop`.
 - En entraînement, chaque tête est conditionnée par la vraie valeur précédente ; en inférence par l'argmax. Mêmes modules, mêmes masques.
 
 ## Formes fixes, déterminisme
@@ -57,11 +59,15 @@ Quadro RTX 3000, PyTorch 2.14, float16, GPU préchauffé, médiane de 3 séries,
 Avant / après ce tour (`small`, même machine) : parole 8 phrases 102 ms → 115 ms en eager (le cache KV ne change rien tant que le lancement des noyaux domine) mais **14,1 ms en graphe** (objectif < 15 ms atteint en `small`, manqué en `base` : 17,7 ms) ; politique lot 32 : 12,9 ms eager → 20,2 ms eager (chaîne d'écritures, masques) mais 11,2 ms en graphe ; entraînement lot 32 : 530/s → 403/s, lot 128 : 1 047/s → 939/s (plus de noyaux, plus de mémoire : 1,35 → 1,58 Go) ; le chargement n'est plus le goulot (bout en bout = entraînement seul, 3 processus de chargement, mémoire épinglée).
 Une passe de 1 M de décisions : environ 18 min en `small` (lot 128), 33 min en `base` [Estimé : 1 M / débit mesuré].
 
+## Point de contrôle versionné et chargeur partiel (T11)
+
+Version 3 : le point de contrôle porte `registry_schema` et la forme de chaque tenseur (`shapes`). **Un point de contrôle d'avant T11 (version 2) ne se charge PAS tel quel** : les formes ont changé (tables de symboles 1658 → 1694 depuis T09, décodeur 1660 → 1696, têtes de plan et d'arrêt nouvelles). Seul `Checkpoint.load(chemin, rt, partial=True)` (CLI : `train --init-from`) le lit, via `partial.py` : mêmes nom et forme → copié ; `embed.cat.emb`, `embed.prop.sym`, `decoder.sym` → les anciennes lignes gardent leur place (registre tok-2 en ajout seul), les lignes des nouveaux symboles gardent leurs poids initiaux, et les deux lignes de fin du décodeur (fin de séquence, début) **sont déplacées** à la fin de la table agrandie ; tenseur nouveau → poids initiaux ; autre forme sans règle → réinitialisé ; tenseur disparu → ignoré. `payload["load_report"]` liste tout (`new`, `reset`, `remapped`, `dropped`) et `payload["fingerprint_diff"]` les empreintes qui diffèrent. L'ordre des index de sortie du registre doit rester un préfixe du courant. Hypothèse non vérifiable sans l'ancien registre tok-2 : que ses symboles sont un préfixe du nouveau (la promesse « en ajout seul »). L'optimiseur repart à zéro.
+
 ## Limites
 
 - Pas d'automate de grammaire dans le décodeur ; une phrase prédite peut être invalide (le gouverneur la refuserait). Les arbres plus profonds que 10 sont refusés à l'étiquetage.
 - L'entraînement reste plus lent qu'avant en eager (formes fixes et masques coûtent des noyaux) ; seul le graphe CUDA donne les chiffres d'inférence ci-dessus.
-- Condition d'arrêt avec un argument nom (`n:12`), mot avec compte ou degré (`all`) : non représentable, exemple écarté et compté. Les listes (`i_steps`, `tastes`) ne sont pas écrites.
+- Condition d'arrêt avec un argument nom (`n:12`), mot avec compte ou degré (`all`) : non représentable, exemple écarté et compté. `i_steps` et `i_step_targets` s'écrivent par la tête de plan, pas par la chaîne d'écritures ; `tastes` n'est pas écrit.
 - Quantification : 21 niveaux pour un nombre borné (échelle absolue ou dixièmes du pas) ; quantités et comptes exacts jusqu'à 256 (305 classes), puis échelle ×1,25 (≤ 11 % d'erreur, comptée par `audit()`).
 - Mémoire par PNJ : un crochet seulement. La poignée stable par dossier que docs/09 demande à tok-2 n'existe pas.
 - Une capacité dépassée (64 gestes, 128 variables, 128 formes...) est un changement de schéma, pas un ajout.
@@ -70,9 +76,9 @@ Une passe de 1 M de décisions : environ 18 min en `small` (lot 128), 33 min en 
 
 ```
 cd ai
-python3 -m unittest discover -s student2/tests -t .          # 42 tests, ~40 s
+python3 -m unittest discover -s student2/tests -t .          # 79 tests, ~2 min
 python3 -m student2.output_registry --check                  # le registre de sortie couvre le catalogue ?
-python3 -m student2.smoke --n 256 --seed 0 --out /tmp/smoke.jsonl          # réponses ALÉATOIRES valides (test seulement)
+python3 -m student2.smoke --n 256 --seed 0 --out /tmp/smoke.jsonl          # réponses ALÉATOIRES valides (test seulement) ; --plans : avec plans et arrêts aléatoires
 python3 -m student2.train --data /tmp/smoke.jsonl --smoke-test --size tiny --epochs 2 --batch 32 --out /tmp/run
 python3 -m student2.train --data run/dataset.jsonl --size small --epochs 6 --out runs/a   # puis --resume runs/a/last.pt
 python3 -m student2.bench --data /tmp/smoke.jsonl --smoke-test --sizes small base --batch 32 128 --end-to-end

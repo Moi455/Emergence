@@ -13,6 +13,14 @@ Order of the checks (the first failure is the code returned):
   truth_error         the engine-side map from keys to real ages is inconsistent with the records (a bug upstream)
   governor:<code>     the governor refused (bounds, engine-owned variable, hard rule D10...)
 
+An optional `plan` (T11) is checked after the writes; its own codes, in this order: bad_shape (not the expected object),
+too_many_steps (more than 6), bad_plan (no step, a step with no target where one is needed, a repeat that is not an
+i_repeat value, a period without `every`, a parent that is not a goal), unknown_gesture (a step), bad_pointer (a step
+target that is not among the records, of a type PLAN.step_targets refuses, or that the gesture's first pointer cannot take),
+governor:<code> (each step goes through check_gesture: D10). An optional `stop` (the decision's stop condition, for a
+gesture without `until`) is a condition checked like `until` (bad_param / bad_pointer). Both are absent from the answer
+unless the schema asks (DecisionSchema(plans=True)): an answer without them is exactly what it always was.
+
 The governor runs on the ENGINE's view: the real ages come from the true scene (the governor lives engine-side and
 knows the truth), the apparent and believed ages from the NPC's own records. Unresolved or unknown people count
 as possible minors (deny by default).
@@ -47,8 +55,11 @@ class Codes:
     BAD_WRITE = "bad_write"
     UNKNOWN_OLD = "unknown_old"
     TRUTH_ERROR = "truth_error"
+    TOO_MANY_STEPS = "too_many_steps"
+    BAD_PLAN = "bad_plan"
     GOVERNOR = "governor:"
-    ALL = (INVALID_JSON, BAD_SHAPE, UNKNOWN_GESTURE, TOO_MANY_WRITES, BAD_PARAM, BAD_POINTER, BAD_SPEECH, BAD_WRITE, UNKNOWN_OLD, TRUTH_ERROR)
+    ALL = (INVALID_JSON, BAD_SHAPE, UNKNOWN_GESTURE, TOO_MANY_WRITES, BAD_PARAM, BAD_POINTER, BAD_SPEECH, BAD_WRITE, UNKNOWN_OLD,
+           TRUTH_ERROR, TOO_MANY_STEPS, BAD_PLAN)
 
 
 class Refusal(Exception):
@@ -73,11 +84,20 @@ class Decision:
     writes: list = field(default_factory=list)
     notes: list = field(default_factory=list)
     family: str = ""
+    plan: dict | None = None           # {"steps": [{"gesture", "target"}], "repeat", "repeat_period", "parent"}; None: no plan
+    plan_given: bool = False           # the answer carried a `plan` field (None then means "no plan", explicitly)
+    stop: str | None = None            # the decision's stop condition (a gesture without `until`)
+    stop_given: bool = False
 
     def to_dict(self) -> dict:
-        return {"gesture": self.gesture, "params": self.params, "speech": self.speech,
-                "writes": [{"target": w.target, "variable": w.variable, "value": w.value, "verdict": w.verdict}
-                           for w in self.writes], "notes": self.notes}
+        d = {"gesture": self.gesture, "params": self.params, "speech": self.speech,
+             "writes": [{"target": w.target, "variable": w.variable, "value": w.value, "verdict": w.verdict}
+                        for w in self.writes], "notes": self.notes}
+        if self.plan_given:                                   # absent for every answer that did not carry them (older data)
+            d["plan"] = self.plan
+        if self.stop_given:
+            d["stop"] = self.stop
+        return d
 
 
 @dataclass
@@ -486,6 +506,79 @@ class WriteChecker:
         return Write(target, wv.id, " ".join(value.split()), v.code)
 
 
+# ---------------------------------------------------------------------------------------------------- plans
+class PlanChecker:
+    """A plan the teacher writes (the model's `i_steps`, `i_step_targets`, `i_repeat`, `i_repeat_period`, `g_parent`):
+    {"steps": [{"gesture", "target"}], "repeat", "repeat_period", "parent"}. Every step is a known gesture on ONE record
+    of a type PLAN.step_targets accepts, and passes `check_gesture` like a gesture of its own (D10: a possible minor with
+    an intimate or contact gesture is refused; a step that leaves out a manner is judged without it, i.e. strictly)."""
+
+    def __init__(self, tk: Toolkit, mind: Mind, params: ParamChecker, writes: "WriteChecker"):
+        self.tk, self.mind, self.params, self.writes = tk, mind, params, writes
+        field = tk.interface.token_types["PLAN"]["fields"]["step_targets"]
+        self.step_types = tuple(field["ref_types"])
+
+    def check(self, raw: dict, actor: Party) -> dict | None:
+        steps = raw.get("steps") or []
+        if not steps:
+            return None                                       # an explicit "no plan"
+        spec = self.tk.spec
+        if len(steps) > spec.max_plan_steps:
+            raise Refusal(Codes.TOO_MANY_STEPS, f"{len(steps)} > {spec.max_plan_steps}")
+        out = [self._step(i, st, actor) for i, st in enumerate(steps)]
+        repeat = raw.get("repeat") or "once"
+        if repeat not in spec.writes["i_repeat"].values:
+            raise Refusal(Codes.BAD_PLAN, f"repeat={repeat!r} is not one of {list(spec.writes['i_repeat'].values)}")
+        period = raw.get("repeat_period")
+        if period in (None, ""):
+            period = None
+        else:
+            text = str(period)
+            if repeat != "every":
+                raise Refusal(Codes.BAD_PLAN, "repeat_period only goes with repeat=every")
+            if not text.isascii() or not text.isdigit() or not 0 < int(text) <= MAX_HOURS:
+                raise Refusal(Codes.BAD_PLAN, f"repeat_period={period!r} is not a whole number of hours > 0")
+            period = int(text)
+        return {"steps": out, "repeat": repeat, "repeat_period": period, "parent": self._parent(raw.get("parent"))}
+
+    def _parent(self, key):
+        if key in (None, ""):
+            return None
+        if not self.mind.has(key):
+            raise Refusal(Codes.BAD_POINTER, f"plan parent {key!r} is not among your records")
+        allowed = self.writes.ref_types(self.tk.spec.writes["g_parent"])
+        if allowed and self.mind.by_key[key].type not in allowed:
+            raise Refusal(Codes.BAD_PLAN, f"plan parent {key!r} is a {self.mind.by_key[key].type}, accepted: {list(allowed)}")
+        return key
+
+    def _step(self, i: int, st: dict, actor: Party) -> dict:
+        g = self.tk.spec.gestures.get(st["gesture"])
+        if g is None:
+            raise Refusal(Codes.UNKNOWN_GESTURE, f"plan step {i + 1}: {st['gesture']!r}")
+        refs = [p for p in g.params if p.kind == "ref"]
+        target = st.get("target") or None
+        if target is None:
+            if any(not p.optional for p in refs):
+                raise Refusal(Codes.BAD_PLAN, f"plan step {i + 1}: {g.id} needs a target")
+            call, parties = {}, {}
+        else:
+            if not self.mind.has(target):
+                raise Refusal(Codes.BAD_POINTER, f"plan step {i + 1}: {target!r} is not among your records")
+            actual = self.mind.by_key[target].type
+            if actual not in self.step_types:
+                raise Refusal(Codes.BAD_POINTER, f"plan step {i + 1}: {target!r} is a {actual}, accepted: {list(self.step_types)}")
+            kinds = self.params._targets(target)
+            prm = refs[0] if refs and kinds & set(refs[0].accepts) else None          # a step points at the gesture's FIRST pointer
+            if prm is None:
+                raise Refusal(Codes.BAD_POINTER, f"plan step {i + 1}: {g.id} cannot act on {target!r}")
+            call, parties = {prm.name: target}, {prm.name: self.mind.party(target)}
+        v = self.tk.governor.check_gesture(g.id, call, actor, parties, executed=False, content_parties=self.mind.content_parties(),
+                                           expand=self.mind.expand)
+        if not v.allowed:
+            raise Refusal(Codes.GOVERNOR + v.code, f"plan step {i + 1}: {v.reason}")
+        return {"gesture": g.id, "target": target}
+
+
 # ---------------------------------------------------------------------------------------------------- the validator
 class AnswerValidator:
     """validate(raw JSON text, situation) -> Outcome."""
@@ -527,6 +620,20 @@ class AnswerValidator:
             raise Refusal(Codes.BAD_SHAPE, "gesture must be a string")
         if not isinstance(data.get("speech", ""), str):
             raise Refusal(Codes.BAD_SHAPE, "speech must be a string")
+        if "stop" in data and not isinstance(data["stop"], (str, type(None))):
+            raise Refusal(Codes.BAD_SHAPE, "stop must be a string")
+        plan = data.get("plan")
+        if plan is not None:
+            steps = plan.get("steps", []) if isinstance(plan, dict) else None
+            if not isinstance(steps, list) or not all(
+                    isinstance(st, dict) and isinstance(st.get("gesture"), str) and isinstance(st.get("target", ""), (str, type(None)))
+                    for st in steps):
+                raise Refusal(Codes.BAD_SHAPE, "plan must be {steps: [{gesture, target}], repeat, repeat_period, parent}")
+            for k in ("repeat", "parent"):
+                if not isinstance(plan.get(k, ""), (str, type(None))):
+                    raise Refusal(Codes.BAD_SHAPE, f"plan.{k} must be a string")
+            if not isinstance(plan.get("repeat_period", ""), (str, int, type(None))) or isinstance(plan.get("repeat_period"), bool):
+                raise Refusal(Codes.BAD_SHAPE, "plan.repeat_period must be a string or a whole number")
         for name, keys in (("params", ("name", "value")), ("writes", ("target", "variable", "value"))):
             lst = data.get(name, [])
             if not isinstance(lst, list):
@@ -565,6 +672,16 @@ class AnswerValidator:
                                       content_parties=mind.content_parties(you), expand=mind.expand)
         if not v.allowed:
             raise Refusal(Codes.GOVERNOR + v.code, v.reason)
-        writes, notes = WriteChecker(tk, mind, speech_checker).check(raw_writes, actor)
+        write_checker = WriteChecker(tk, mind, speech_checker)
+        writes, notes = write_checker.check(raw_writes, actor)
+        stop = None
+        if "stop" in data:
+            text = (data["stop"] or "").strip()
+            if text and gesture.params and any(p.kind == "condition" for p in gesture.params):
+                raise Refusal(Codes.BAD_PARAM, f"{gesture.id} has its own stop parameter: no separate decision stop")
+            stop = ParamChecker(tk, mind).conditions.check(text) if text else None
+        plan = None
+        if data.get("plan") is not None:
+            plan = PlanChecker(tk, mind, ParamChecker(tk, mind), write_checker).check(data["plan"], actor)
         return Decision(gesture.id, params, " ".join(speech_text.split()) if expression is not None else None, writes,
-                        notes, gesture.family)
+                        notes, gesture.family, plan, "plan" in data, stop, "stop" in data)

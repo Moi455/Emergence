@@ -82,8 +82,10 @@ class RegistriesAreAppendOnly(unittest.TestCase):
 
     def test_output_registry(self):
         old, new = head_json("ai/student2/output_registry.json"), now_json("ai/student2/output_registry.json")
-        for k in ("schema", "capacity", "manner_reserve"):
-            self.assertEqual(old[k], new[k], k)
+        # T11 : le schéma 1 -> 2 n'ajoute que la capacité `plan_steps` et la liste `lists` ; rien d'ancien ne bouge
+        self.assertIn((old["schema"], new["schema"]), {(new["schema"], new["schema"]), ("student2-output-registry-1", "student2-output-registry-2")})
+        self.assertEqual(old["manner_reserve"], new["manner_reserve"])
+        self.assertEqual(old["capacity"], {k: v for k, v in new["capacity"].items() if k in old["capacity"]}, "capacity")
         for k in ("gestures", "conditions", "write_vars"):
             self.assertGreaterEqual(len(new[k]), len(old[k]), k)
             for i, (a, b) in enumerate(zip(old[k], new[k])):

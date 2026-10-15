@@ -32,10 +32,16 @@ from pathlib import Path
 
 from tok2.interface import canonical_json, fnv1a64
 
-SCHEMA = "student2-output-registry-1"
+SCHEMA = "student2-output-registry-2"
+OLD_SCHEMAS = ("student2-output-registry-1",)      # read and upgraded in memory (T11: the plan list was added)
 REGISTRY_PATH = Path(__file__).with_name("output_registry.json")
 CAPACITY = {"gestures": 64, "conditions": 32, "write_vars": 128, "forms": 128, "enum_values": 128, "directions": 16,
-            "manner_heads": 64}
+            "manner_heads": 64, "plan_steps": 8}
+# schema 2 : writable LISTS the heads write as a whole. `plan_steps` holds up to 8 steps (capacity, the shape of the
+# plan head) of which the interface lets the model write PLAN_STEPS_USED (docs/14: 1 to 6 steps).
+LISTS = {"plan_steps": ("i_steps", "i_step_targets")}
+PLAN_STEPS_USED = 6
+SHAPE_KEYS_NEW_IN_2 = ("plan_steps",)
 MANNER_RESERVE = 4          # spare value slots given to a manner head when it is first registered
 MANNER_MAX = 31             # values per head (+ the "none" level = 32 logits per head)
 MANNER_FLAT = 640           # logits of the shared manner layer (sum of (capacity + 1) over the heads, plus room to grow)
@@ -72,6 +78,7 @@ class Needs:
                 if x not in self.enum_values:
                     self.enum_values.append(x)
         self.manner = {h: list(spec.manner_heads[h]["values"]) for h in sorted(spec.manner_heads)}
+        self.known_vars = set(spec.writes) | set(spec.unsupported_writes)       # the lists of schema 2 must exist
 
 
 def widens(old: str, new: str) -> bool:
@@ -94,7 +101,13 @@ class OutputRegistry:
     def __init__(self, data: dict | None = None):
         self.d = data or {"schema": SCHEMA, "capacity": dict(CAPACITY), "manner_reserve": MANNER_RESERVE,
                           "gestures": [], "conditions": [], "write_vars": [], "forms": [], "enum_values": [],
-                          "directions": [], "manner": []}
+                          "directions": [], "manner": [], "lists": {k: list(v) for k, v in LISTS.items()},
+                          "plan_steps_used": PLAN_STEPS_USED}
+        if self.d.get("schema") in OLD_SCHEMAS:                  # schema 1 -> 2: only additions (capacity, the list)
+            self.d["schema"] = SCHEMA
+            self.d["capacity"] = {**CAPACITY, **self.d["capacity"]}
+            self.d.setdefault("lists", {k: list(v) for k, v in LISTS.items()})
+            self.d.setdefault("plan_steps_used", PLAN_STEPS_USED)
         if self.d.get("schema") != SCHEMA:
             raise RegistryError(f"output registry schema {self.d.get('schema')!r}, expected {SCHEMA!r}")
 
@@ -128,11 +141,14 @@ class OutputRegistry:
         """Of what fixes the SHAPES (schema, capacities, the manner reserve): stable while the catalogue grows."""
         return fnv1a64(canonical_json({"schema": SCHEMA, "capacity": self.capacity, "manner_reserve": self.d["manner_reserve"],
                                        "manner_max": MANNER_MAX, "manner_flat": MANNER_FLAT,
+                                       "lists": self.d.get("lists", {}), "plan_steps_used": self.d.get("plan_steps_used"),
                                        "manner_capacity": {h["name"]: h["capacity"] for h in self.d["manner"]}}))
 
     # ---- what is missing / in conflict
     def diff(self, need: Needs) -> tuple[list[str], list[str]]:
         add, bad = [], []
+        for name, vs in self.d.get("lists", {}).items():
+            bad += [f"lists: {name} needs the variable {v}, absent from the catalogue" for v in vs if v not in need.known_vars]
         for kind, want in (("gestures", need.gestures), ("conditions", need.conditions), ("write_vars", need.write_vars)):
             have = {e["name"]: e["sig"] for e in self.d[kind]}
             for n, sig in want.items():
@@ -203,7 +219,8 @@ class OutputRegistry:
         """Why a checkpoint made under `older` (a registry dict) cannot run under this one ([] = compatible):
         every list of the older registry must be a prefix of the current one, with equal signatures and capacities."""
         why = []
-        if older.get("capacity") != self.capacity:
+        theirs = older.get("capacity", {})
+        if any(theirs.get(k) != v for k, v in self.capacity.items() if k in theirs) or set(theirs) - set(self.capacity):
             why.append("capacities differ")
         for kind in ("gestures", "conditions", "write_vars", "forms", "enum_values", "directions"):
             a, b = older.get(kind, []), self.d[kind]

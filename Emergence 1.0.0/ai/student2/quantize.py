@@ -44,6 +44,7 @@ from .runtime import Runtime
 NEVER = ("embed.num.l1", "embed.prop.count")                      # the model reads their .weight.dtype
 LOGIT_LAYERS = re.compile(r"^(gesture|manner|cond|cond_num|cond_word|n_writes|w_var|w_num|w_enum|w_qty|ref_q|cond_q|w_q|w_val_q"
                           r"|ref_ptr\.key|cond_ptr\.key|w_ptr\.key|w_val_ptr\.key"
+                          r"|stop\.(cond|q|num|word|ptr\.key)|plan\.(gesture|q|repeat|period|parent_q|ptr\.key|parent\.key)"
                           r"|decoder\.(to_sym|arity_head|count_head|slot_q|slot_key))$")
 
 

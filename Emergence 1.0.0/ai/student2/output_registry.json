@@ -1,5 +1,5 @@
 {
- "schema": "student2-output-registry-1",
+ "schema": "student2-output-registry-2",
  "capacity": {
   "gestures": 64,
   "conditions": 32,
@@ -7,7 +7,8 @@
   "forms": 128,
   "enum_values": 128,
   "directions": 16,
-  "manner_heads": 64
+  "manner_heads": 64,
+  "plan_steps": 8
  },
  "manner_reserve": 4,
  "gestures": [
@@ -1216,5 +1217,12 @@
    ],
    "capacity": 9
   }
- ]
+ ],
+ "lists": {
+  "plan_steps": [
+   "i_steps",
+   "i_step_targets"
+  ]
+ },
+ "plan_steps_used": 6
 }

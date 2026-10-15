@@ -66,7 +66,7 @@ Chemins critiques : jusqu'à J2, **T08a → T08c → T09 → T26 → T27 → T29
 
 **T03 : Table annexe `SideTable`** : **fait**.
 
-**T04 : Sauvegarde et chargement de `NpcState` (sections NAME et NPCS v1)**
+**T04 : Sauvegarde et chargement de `NpcState` (sections NAME et NPCS v1)** : **fait** (15 oct. 2026). [Mesuré] 500 PNJ saturés (toutes réserves pleines, valeurs aléatoires, 17,2 Mo) : sauvegarde 82 ms + chargement 73 ms = 155 ms (meilleur de 5, après validation des valeurs) (cible ≤ 200 ms [Estimé]), Release, i9-10885H. Un monde réel, moins plein, sera plus rapide. `engine/social/tests/test_codec.cpp`.
 - Dossiers : `engine/social/include/emergence/social/npc_state_codec.h`, `src/npc_state_codec.cpp`, `catalogue/tools/gen_cpp.py` (descripteurs de champs : sorte, nom de variable, `offsetof`, type de stockage), `engine/social/tests/test_codec.cpp`.
 - Dépendances : T03 (T02 fait).
 - Interface : docs/14 § 7.6. Relecture par noms ; refus fermé. La section NPCS contient aussi le `WriteLedger` de chaque PNJ (par son `restore()` existant) et une place pour la carte mentale (remplie par T23b).

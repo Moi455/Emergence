@@ -28,6 +28,10 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sim/CMakeLists.txt")
   add_subdirectory(sim)
 endif()
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ops/CMakeLists.txt")
+  add_subdirectory(ops)   # operation bus and journal (T16)
+endif()
+
 add_subdirectory(social)   # social engine (D31), tables generated from catalogue/
 
 # Fine world generation (worldgen/) and the terrain module built on it, when present.

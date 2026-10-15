@@ -13,6 +13,7 @@ Classes (each one answers one question about the heads):
                  that say which records / extras each pointer parameter accepts
   MannerLayout   the shared manner heads (one block of logits per scale; a "none" level for an optional absent one)
   ConditionTable the stop conditions, the type of their arguments and which records an argument accepts
+  PlanTable      the plan head: <= 6 steps (a gesture or FIN + one pointer), repeat mode, period, parent goal (T11)
   WriteTable     the writable variables, how their value is coded, which record kinds they can be written on
   SequenceSpace  the symbols of the inner-language decoder (the input vocabulary + end of sequence) and its grammar
                  masks: which arities a symbol can have (taken from the catalogue's language tables)
@@ -41,7 +42,7 @@ MAX_REFS = 3                         # pointers per gesture (interface: max_poin
 MAX_COND_ARGS = 2
 STACK = 10                           # deepest tree the decoder tracks (labels deeper than this are refused)
 NO_LABEL = -100                      # ignored by cross-entropy
-SCHEMA = "student2-output-2"
+SCHEMA = "student2-output-3"          # 3 (T11): plan head, decision-stop head
 
 
 class SpaceError(ValueError):
@@ -435,6 +436,43 @@ class WriteTable:
         return self.vars[self.index[name]]
 
 
+# ----------------------------------------------------------------------------------------------- plans
+class PlanTable:
+    """The plan head (T11): at most `used` (6) steps in `cap` (8, registry capacity) positions. A step = a gesture of the
+    registry or FIN (the end of the plan: class `fin` = the gesture capacity) and ONE pointer to a record of the types the
+    catalogue gives to `PLAN.step_targets` (`ref_types`). Also the repeat mode (`i_repeat`, an enum), its period
+    (`i_repeat_period`, a quantity) and the parent goal (`g_parent`, a pointer to a GOAL or nobody).
+    Nothing is typed by hand: the types come from model_interface.json, the values from the writable variables."""
+
+    LIST_VARS = ("i_steps", "i_step_targets")
+    SCALARS = ("i_repeat", "i_repeat_period", "g_parent")
+
+    def __init__(self, tk: Toolkit, reg: OutputRegistry, types: TypeMasks, gestures: GestureTable, writes: WriteTable):
+        spec = tk.spec
+        missing = [v for v in self.SCALARS if v not in spec.writes] + [v for v in self.LIST_VARS if v not in spec.unsupported_writes]
+        if missing:
+            raise SpaceError(f"the plan head needs the variables {missing}")
+        self.cap = reg.capacity["plan_steps"]
+        self.used = reg.d["plan_steps_used"]
+        if self.used > self.cap or self.used != spec.max_plan_steps:
+            raise SpaceError("plan_steps_used: above the capacity, or not the 6 steps of the teacher spec")
+        self.fin = gestures.cap
+        self.n_classes = gestures.cap + 1
+        self.step_types = tuple(tk.interface.token_types["PLAN"]["fields"]["step_targets"]["ref_types"])
+        self.step_type_ok = types.from_names(self.step_types)
+        self.position_ok = np.arange(self.cap) < self.used                      # a position past `used` can only be FIN
+        self.gesture_ok = np.concatenate([gestures.live, [True]])
+        required = np.zeros(self.n_classes, bool)                             # a gesture with a non-optional pointer needs a target
+        for i, sh in enumerate(gestures.shapes):
+            required[i] = bool(sh and any(not r.optional for r in sh.refs))
+        self.none_ok = ~required                                              # FIN has no target (its label is ignored)
+        self.repeat_index = writes.index["i_repeat"]
+        self.repeat_values = tuple(spec.writes["i_repeat"].values)
+        self.repeat_mask = writes.enum_mask[self.repeat_index].copy()
+        self.period_mode = "every"
+        self.parent_type_ok = writes.mref_type_ok[writes.index["g_parent"]].copy()
+
+
 # ----------------------------------------------------------------------------------------------- sequences
 class SequenceSpace:
     """The inner-language decoder writes prefix symbols with their arity, like the tok-2 proposition columns:
@@ -539,6 +577,7 @@ class OutputSpace:
         self.manner = MannerLayout(spec, reg, self.gestures)
         self.conditions = ConditionTable(spec, reg, self.types)
         self.writes = WriteTable(spec, reg, self.types)
+        self.plan = PlanTable(tk, reg, self.types, self.gestures, self.writes)
         self.sequences = SequenceSpace(tokenizer, spec, tk)
         self.max_symbols = spec.max_symbols
         self.n_types = self.types.n_types

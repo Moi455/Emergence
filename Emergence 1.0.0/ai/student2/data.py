@@ -49,7 +49,7 @@ from .labels import LabelError, Targets
 from .runtime import Runtime
 from .spec import MAX_SLOTS, SpaceError, TargetKind
 
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 CHUNK = 1024
 MAX_FOREIGN = 0.05
 MAX_UNUSABLE = 0.25

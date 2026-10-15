@@ -7,6 +7,10 @@
 
 All lists (gestures, parameters, values, variables, bounds, words) are generated from model_interface.json and the
 catalogue: a catalogue change changes the prompt. The answer is ONE gesture; what is said is the `speech` field.
+
+`plans=True` (T11, off by default: the prompt and the schema of every existing caller are unchanged, byte for byte) lets
+the teacher also WRITE a plan (`plan`: up to 6 steps, each a gesture and one target, a repeat mode, a parent goal) and
+a stop condition for the decision (`stop`); both are optional in the answer, and the validator accepts them either way.
 """
 from __future__ import annotations
 
@@ -36,12 +40,15 @@ EXAMPLES = (
 class InstructionBuilder:
     """The system text, section by section. Every list comes from the spec or the catalogue."""
 
-    def __init__(self, tk: Toolkit, vocabulary: str = "full"):
-        self.tk, self.spec, self.vocabulary = tk, tk.spec, vocabulary
+    def __init__(self, tk: Toolkit, vocabulary: str = "full", plans: bool = False):
+        self.tk, self.spec, self.vocabulary, self.plans = tk, tk.spec, vocabulary, plans
 
     def build(self) -> str:
         parts = [self.role(), self.answer_format(), self.gestures(), self.manners(), self.conditions(), self.language(),
-                 self.writes(), self.rules()]
+                 self.writes()]
+        if self.plans:
+            parts.append(self.plan())
+        parts.append(self.rules())
         if self.vocabulary != "none":
             parts.append(self.words())
         parts.append(self.examples())
@@ -194,6 +201,22 @@ class InstructionBuilder:
             return f"{w.id} = " + "|".join(w.values[:12]) + ("|..." if len(w.values) > 12 else "")
         return f"{w.id} = {w.scale}"
 
+    # ---- plans (T11)
+    def plan(self) -> str:
+        spec = self.tk.spec
+        values = "|".join(spec.writes["i_repeat"].values)
+        types = ", ".join(self.tk.interface.token_types["PLAN"]["fields"]["step_targets"]["ref_types"])
+        return ("== PLAN (optional: how you mean to reach a goal) ==\n"
+                f'Add "plan": {{"steps": [{{"gesture", "target"}}, ...], "repeat", "repeat_period", "parent"}} when you act '
+                f"to serve a goal in several steps. At most {spec.max_plan_steps} steps, in order; each step is a gesture id "
+                "from GESTURES and ONE target key (the first pointer of that gesture: where to go, what to take, whom to "
+                f"speak to), a record of type {types}; leave target empty only for a gesture with no pointer to give. "
+                "Your own gesture of this answer is normally the first step. Steps pass the same hard rules as a gesture "
+                f'(rule 1). "repeat" is one of {values} (default once); "repeat_period" a whole number of hours, only with '
+                'repeat every; "parent" the key g:N of the goal this one serves (or empty). An empty "steps" list means '
+                'you make no plan now. Also optional: "stop", a stop condition (see STOP CONDITIONS) for a gesture that has '
+                'no "until" of its own: when the engine should stop it and ask you again (empty: it ends by itself).')
+
     # ---- rules
     def rules(self) -> str:
         return ("== HARD RULES ==\n"
@@ -242,10 +265,11 @@ class DecisionSchema:
 
     FIELDS = ("why", "gesture", "params", "speech", "writes")
 
-    def __init__(self, tk: Toolkit | None = None, vocabulary: str = "full"):
+    def __init__(self, tk: Toolkit | None = None, vocabulary: str = "full", plans: bool = False):
         self.tk = tk or Toolkit()
         self.spec: OutputSpec = self.tk.spec
         self.vocabulary = vocabulary
+        self.plans = plans
 
     @staticmethod
     def example_object(e: dict) -> dict:
@@ -254,7 +278,7 @@ class DecisionSchema:
 
     # ---- text
     def instructions(self) -> str:
-        return InstructionBuilder(self.tk, self.vocabulary).build()
+        return InstructionBuilder(self.tk, self.vocabulary, self.plans).build()
 
     # ---- JSON schema
     def _object(self, props: dict, required: list, gemini: bool) -> dict:
@@ -278,6 +302,12 @@ class DecisionSchema:
             "speech": string,
             "writes": {"type": t("array"), "items": write, "maxItems": self.spec.max_writes},
         }
+        if self.plans:                       # optional: not in `required`, so an answer without them stays valid
+            step = self._object({"gesture": {**string, "enum": self.spec.gesture_ids}, "target": string}, ["gesture", "target"], gemini)
+            props["plan"] = self._object({"steps": {"type": t("array"), "items": step, "maxItems": self.spec.max_plan_steps},
+                                          "repeat": {**string, "enum": list(self.spec.writes["i_repeat"].values)},
+                                          "repeat_period": string, "parent": string}, ["steps"], gemini)
+            props["stop"] = string
         return self._object(props, list(self.FIELDS), gemini)
 
     def response_schema(self) -> dict:

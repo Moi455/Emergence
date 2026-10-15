@@ -95,6 +95,7 @@ class OutputSpec:
     max_symbols: int = 20
     max_depth: int = 2
     max_pointers: int = 3
+    max_plan_steps: int = 6                                 # docs/14: a PLAN has 1 to 6 steps (the student's registry capacity is 8)
     unsupported_writes: tuple = ()                          # writable by the model but not by the teacher (lists)
 
     @classmethod

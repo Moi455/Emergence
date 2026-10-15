@@ -17,6 +17,11 @@ shapes, and a snapshot of the output registry: a checkpoint made for another cat
 (`CheckpointMismatch`); one made for an earlier state of the SAME registry (the catalogue grew inside the capacities)
 loads, the new indices starting from their initial weights.
 
+VERSIONED checkpoints (T11). Version 3 records the schema of the output registry and the shape of every tensor. A
+checkpoint of an earlier version (2: before the plan and stop heads, possibly before the T09 growth of the vocabulary)
+does NOT load as is, because the shapes changed: `Checkpoint.load(path, rt, partial=True)` (CLI: `--init-from`) copies
+what fits, remaps the symbol tables and lists every tensor left at its initial weights (partial.py).
+
 THIS TRAINS ON WHATEVER FILE YOU GIVE. Random test data (smoke) is refused unless `--smoke-test` is given.
 """
 from __future__ import annotations
@@ -38,9 +43,12 @@ from .data import Batch, LabelDataset
 from .labels import Targets, comparable
 from .losses import LossWeights, StudentLoss
 from .model import SIZES, StudentConfig, StudentModel
+from .partial import PartialLoader
 from .runtime import Fingerprints, Runtime
+from .spec import NO_LABEL
 
-CHECKPOINT_VERSION = 2
+CHECKPOINT_VERSION = 3
+LEGACY_VERSIONS = (2,)             # before T11: only the partial loader reads them
 SEED = 0
 
 
@@ -64,18 +72,22 @@ class Checkpoint:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = {"version": CHECKPOINT_VERSION, "config": model.cfg.to_dict(), "fingerprints": asdict(runtime.fingerprints()),
-                   "output_registry": runtime.space.registry.to_dict(), "model": model.state_dict(), **(extra or {})}
+                   "output_registry": runtime.space.registry.to_dict(), "registry_schema": runtime.space.registry.d["schema"],
+                   "shapes": {k: list(v.shape) for k, v in model.state_dict().items()}, "model": model.state_dict(),
+                   **(extra or {})}
         tmp = path.with_suffix(".tmp")
         torch.save(payload, tmp)
         tmp.replace(path)
 
     @staticmethod
-    def check(payload: dict, runtime: Runtime) -> None:
-        if payload.get("version") != CHECKPOINT_VERSION:
-            raise CheckpointMismatch(f"checkpoint version {payload.get('version')!r}, expected {CHECKPOINT_VERSION}")
+    def check(payload: dict, runtime: Runtime, partial: bool = False) -> None:
+        v = payload.get("version")
+        if v != CHECKPOINT_VERSION and not (partial and v in LEGACY_VERSIONS):
+            hint = " (its tensors have other shapes: load it with partial=True / --init-from)" if v in LEGACY_VERSIONS else ""
+            raise CheckpointMismatch(f"checkpoint version {v!r}, expected {CHECKPOINT_VERSION}{hint}")
         theirs = Fingerprints(**payload["fingerprints"])
         diff = runtime.fingerprints().diff(theirs)
-        if diff:
+        if diff and not partial:
             raise CheckpointMismatch("this checkpoint was trained for another catalogue state (current, checkpoint): "
                                      + json.dumps(diff))
         why = runtime.space.registry.compatible(payload.get("output_registry", {}))
@@ -83,11 +95,18 @@ class Checkpoint:
             raise CheckpointMismatch("the output registry is not an extension of the checkpoint's: " + "; ".join(why))
 
     @classmethod
-    def load(cls, path: Path, runtime: Runtime, device="cpu", memory=None) -> tuple[StudentModel, dict]:
+    def load(cls, path: Path, runtime: Runtime, device="cpu", memory=None, partial: bool = False) -> tuple[StudentModel, dict]:
+        """partial=False: the checkpoint must fit exactly. partial=True: copy what fits (partial.py); the report is
+        `payload["load_report"]`, and the fingerprints that differ `payload["fingerprint_diff"]` (the registry of the
+        output indices must still be a prefix of the current one)."""
         payload = torch.load(path, map_location=device, weights_only=False)
-        cls.check(payload, runtime)
+        cls.check(payload, runtime, partial)
         model = StudentModel(StudentConfig(**payload["config"]), runtime.space, memory).to(device)
-        model.load_state_dict(payload["model"])
+        if partial:
+            payload["fingerprint_diff"] = runtime.fingerprints().diff(Fingerprints(**payload["fingerprints"]))
+            payload["load_report"] = PartialLoader(model).load(payload["model"]).to_dict()
+        else:
+            model.load_state_dict(payload["model"])
         return model, payload
 
 
@@ -200,7 +219,13 @@ class Trainer:
         for i, meta in enumerate(batch.meta):
             records, enc = meta["records"], meta["enc"]
             want = Targets(**{n: t[n][i] for n in names})
-            got = Targets(**{n: p[n][i] for n in names})
+            got = Targets(**{n: p[n][i].copy() for n in names})
+            if want.plan_gesture[0] == NO_LABEL:                  # the label says nothing about plans / stops: do not judge them
+                for n in ("plan_gesture", "plan_ref", "plan_repeat", "plan_period", "plan_parent"):
+                    setattr(got, n, np.full_like(getattr(got, n), NO_LABEL))
+            if want.stop == NO_LABEL:
+                for n in ("stop", "stop_ref", "stop_num", "stop_word"):
+                    setattr(got, n, np.full_like(getattr(got, n), NO_LABEL))
             tally["n"] += 1
             tally["gesture"] += int(got.gesture == want.gesture)
             try:
@@ -241,6 +266,8 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=SEED)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--resume", type=Path, default=None)
+    ap.add_argument("--init-from", type=Path, default=None,
+                    help="weights of an older checkpoint, loaded PARTIALLY (new heads start fresh; a new optimiser)")
     ap.add_argument("--log-every", type=int, default=20)
     ap.add_argument("--eval-every", type=int, default=500, help="steps (0: once per epoch)")
     ap.add_argument("--save-every", type=int, default=500)
@@ -259,6 +286,11 @@ def main(argv=None) -> int:
         model, payload = Checkpoint.load(a.resume, rt, a.device)
         start_step, total = payload["step"], payload.get("total_steps", total)
         start_epoch = start_step // per_epoch
+    elif a.init_from:
+        model, loaded = Checkpoint.load(a.init_from, rt, a.device, partial=True)
+        rep_ = loaded["load_report"]
+        print("partial load:", {k: (len(v) if not isinstance(v, dict) else len(v)) for k, v in rep_.items()},
+              "reinitialised:", PartialLoader.reinitialized_of(rep_))
     else:
         model = StudentModel(SIZES[a.size], rt.space)
     trainer = Trainer(model, a.device, a.lr, total, a.warmup, seed=a.seed)

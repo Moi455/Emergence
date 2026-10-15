@@ -331,6 +331,112 @@ class PointerHead(nn.Module):
         return self.score(q, self.keys(enc), slot_ok, extra_ok)
 
 
+# ----------------------------------------------------------------------------------------------- plan and stop heads (T11)
+class PlanHead(nn.Module):
+    """The plan the NPC writes (`i_steps` + `i_step_targets` + `i_repeat` + `i_repeat_period` + `g_parent`): a chain of
+    `cap` steps (the registry capacity, 8; only the first 6 can be anything but FIN). Step k reads the context, its
+    position and the embedding of step k-1 (its gesture and what it points at): a gesture of the registry or FIN, then
+    ONE pointer among the records of the types of `PLAN.step_targets`. After FIN everything is FIN. Then the repeat mode,
+    its period and the parent goal, conditioned on the whole plan. Same masks in training (the true previous step) and
+    in inference (the argmax)."""
+
+    def __init__(self, d: int, space: OutputSpace):
+        super().__init__()
+        P, sp = space.plan, space
+        self.P, self.d = P, d
+        self.pos = nn.Embedding(P.cap, d)
+        self.chain_start = nn.Parameter(torch.zeros(d))
+        self.chain = nn.Linear(d, d)
+        self.gesture = nn.Linear(d, P.n_classes)
+        self.g_emb = nn.Embedding(P.n_classes, d)
+        self.q = nn.Linear(d, d)
+        self.ptr = PointerHead(d, space, sp.pointers.extra_mask(none=True))
+        self.no_target = nn.Parameter(torch.zeros(d))
+        self.summary = nn.Linear(d, d)
+        self.repeat = nn.Linear(d, sp.writes.cap_enum)
+        self.rep_emb = nn.Embedding(sp.writes.cap_enum, d)
+        self.period = nn.Linear(d, len(sp.quantity))
+        self.parent_q = nn.Linear(d, d)
+        self.parent = PointerHead(d, space, sp.pointers.extra_mask(none=True))
+        fin_only = np.full((1, P.n_classes), NEG, np.float32)
+        fin_only[0, P.fin] = 0.0
+        for name, arr in (("only_fin", fin_only), ("gesture_ok", P.gesture_ok), ("none_ok", P.none_ok), ("step_type_ok", P.step_type_ok),
+                          ("repeat_mask", P.repeat_mask), ("parent_type_ok", P.parent_type_ok)):
+            self.register_buffer(name, torch.as_tensor(arr), persistent=False)
+
+    def forward(self, hq, enc, ok, tid, T=None) -> dict:
+        P = self.P
+        B, n, d = enc.shape
+        keys, pkeys = self.ptr.keys(enc), self.parent.keys(enc)
+        slot_ok = self.step_type_ok[tid] & ok
+        prev = self.chain_start.expand(B, d).to(enc.dtype)
+        total = torch.zeros_like(prev)
+        only_fin = self.only_fin
+        fin_prev = torch.zeros(B, dtype=torch.bool, device=enc.device)
+        E = self.ptr.P.n_extra
+        res = {k: [] for k in ("gesture", "ref", "gesture_choice", "ref_choice")}
+        for k in range(P.cap):
+            qk = hq + self.chain(prev) + self.pos.weight[k].to(hq.dtype)
+            gl = self.gesture(qk).float()
+            gl = gl.masked_fill(~self.gesture_ok, NEG) if P.position_ok[k] else only_fin.expand_as(gl)
+            gl = torch.where(fin_prev.unsqueeze(1), only_fin.expand_as(gl), gl)
+            g = self._pick(gl, None if T is None else T["plan_gesture"][:, k])
+            extra_ok = F.pad(self.none_ok[g].view(B, 1, 1), (0, E - 1))
+            rl = self.ptr.score(self.q(qk + self.g_emb(g)).unsqueeze(1), keys, slot_ok, extra_ok)[:, 0]
+            r = self._pick(rl, None if T is None else T["plan_ref"][:, k])
+            is_slot = (r >= 1) & (r <= MAX_SLOTS)
+            picked = torch.gather(enc, 1, (r.clamp(1, n) - 1).view(B, 1, 1).expand(-1, 1, d))[:, 0]
+            prev = self.g_emb(g) + torch.where(is_slot.unsqueeze(-1), picked, self.no_target.to(picked.dtype).expand_as(picked))
+            total = total + prev
+            fin_prev = fin_prev | (g == P.fin)
+            for name, v in (("gesture", gl), ("ref", rl), ("gesture_choice", g), ("ref_choice", r)):
+                res[name].append(v)
+        out = {f"plan_{k}": torch.stack(v, 1) for k, v in res.items()}
+        hp = hq + self.summary(total)
+        rep = self.repeat(hp).float().masked_fill(~self.repeat_mask, NEG)
+        rc = self._pick(rep, None if T is None else T["plan_repeat"])
+        out["plan_repeat"], out["plan_repeat_choice"] = rep, rc
+        out["plan_period"] = self.period(hp + self.rep_emb(rc)).float()
+        out["plan_parent"] = self.parent.score(self.parent_q(hp).unsqueeze(1), pkeys, self.parent_type_ok[tid] & ok)[:, 0]
+        return out
+
+    @staticmethod
+    def _pick(logits, label):
+        return logits.argmax(-1) if label is None else label.clamp(min=0)
+
+
+class StopHead(nn.Module):
+    """The stop condition of the DECISION (docs/14 4.3 (2)): the same condition table as `until`, for a gesture that has
+    no `until`. One extra class, NONE (= the condition capacity): no condition, the gesture ends by itself. Its own
+    weights (the meaning of `until` is tied to a gesture; this one is valid for any gesture that lasts)."""
+
+    def __init__(self, d: int, space: OutputSpace):
+        super().__init__()
+        C = space.conditions.cap
+        self.C, self.d = C, d
+        self.cond = nn.Linear(d, C + 1)
+        self.emb = nn.Embedding(C + 1, d)
+        self.q = nn.Linear(d, 2 * d)
+        self.ptr = PointerHead(d, space, space.pointers.extra_mask(), extras=False)
+        self.num = nn.Linear(d, 2 * len(space.quantity))
+        self.word = nn.Linear(d, 2 * d)
+        self.register_buffer("live", torch.as_tensor(np.concatenate([space.conditions.live, [True]])), persistent=False)
+        self.register_buffer("type_ok", torch.as_tensor(space.conditions.arg_type_ok), persistent=False)
+
+    def forward(self, hq, enc, ok, tid, word_weight, word_ok, label=None) -> dict:
+        B = hq.shape[0]
+        cl = self.cond(hq).float().masked_fill(~self.live, NEG)
+        c = cl.argmax(-1) if label is None else label.clamp(min=0)
+        hc = hq + self.emb(c)
+        t = self.type_ok[c.clamp(max=self.C - 1)]                                    # [B, 2, n_types]
+        by_type = torch.gather(t, 2, tid.unsqueeze(1).expand(-1, t.shape[1], -1))
+        wq = self.word(hc).view(B, 2, -1)
+        return {"stop": cl, "stop_choice": c,
+                "stop_ref": self.ptr(self.q(hc).view(B, 2, -1), enc, by_type & ok.unsqueeze(1)),
+                "stop_num": self.num(hc).float().view(B, 2, -1),
+                "stop_word": ((wq * self.d ** -0.5) @ word_weight.t().to(wq.dtype)).float().masked_fill(~word_ok, NEG)}
+
+
 # ----------------------------------------------------------------------------------------------- the decoder
 class SequenceDecoder(nn.Module):
     """Writes a proposition or an utterance as prefix steps (symbol, arity, slot, count). A causal Transformer with
@@ -540,6 +646,8 @@ class StudentModel(nn.Module):
         self.cond_ptr = PointerHead(d, sp, P.extra_mask(), extras=False)
         self.cond_num = nn.Linear(d, 2 * len(sp.quantity))
         self.cond_word = nn.Linear(d, 2 * d)
+        self.stop = StopHead(d, sp)                                  # T11: the decision's stop condition
+        self.plan = PlanHead(d, sp)                                  # T11: the plan the NPC writes
         # writes
         self.n_writes = nn.Linear(d, MAX_WRITES + 1)
         self.chain_start = nn.Parameter(torch.zeros(d))
@@ -571,9 +679,14 @@ class StudentModel(nn.Module):
                           ("has_cond", sp.gestures.has_condition), ("has_expr", sp.gestures.has_expression),
                           ("g_live", sp.gestures.live), ("ref_type_ok", sp.gestures.ref_type_ok),
                           ("ref_extra_ok", sp.gestures.ref_extra_ok), ("mref_type_ok", sp.writes.mref_type_ok),
-                          ("word_ok", sp.sequences.allowed[:-1]), ("kind_last_var", self._last_var(sp))):
+                          ("word_ok", sp.sequences.allowed[:-1]), ("repeat_every", self._repeat_every(sp)), ("kind_last_var", self._last_var(sp))):
             self.register_buffer(name, torch.as_tensor(arr), persistent=False)
         self.reset_parameters()
+
+    @staticmethod
+    def _repeat_every(sp: OutputSpace) -> np.ndarray:
+        """[enum values] : is this enum value the repeat mode that takes a period ("every")?"""
+        return np.array([v == sp.plan.period_mode for v in sp.writes.enum_values], bool)
 
     @staticmethod
     def _last_var(sp: OutputSpace) -> np.ndarray:
@@ -665,6 +778,8 @@ class StudentModel(nn.Module):
         out["cond_num"] = self.cond_num(hc).float().view(B, 2, -1)
         wq = self.cond_word(hc).view(B, 2, -1)
         out["cond_word"] = ((wq * self.cfg.d ** -0.5) @ self.embed.cat.emb.weight.t().to(wq.dtype)).float().masked_fill(~self.word_ok, NEG)
+        out.update(self.stop(hq, enc, ok, tid, self.embed.cat.emb.weight, self.word_ok, None if T is None else T["stop"]))
+        out.update(self.plan(hq, enc, ok, tid, T))
         # ---- writes: a chain of 4 steps, each conditioned on the (target, variable) of the one before
         nw = self.n_writes(hq).float()
         n_w = T["n_writes"] if T is not None else nw.argmax(-1)
@@ -762,6 +877,17 @@ class StudentModel(nn.Module):
         res["manner"] = torch.where(self.manner_used[res["gesture"]], man, torch.full_like(man, NO_LABEL))
         res["cond"] = torch.where(self.has_cond[res["gesture"]], o["cond_choice"], torch.full_like(o["cond_choice"], NO_LABEL))
         res["cond_ref"], res["cond_num"], res["cond_word"] = (o[k].argmax(-1) for k in ("cond_ref", "cond_num", "cond_word"))
+        has_cond = self.has_cond[res["gesture"]]
+        res["stop"] = torch.where(has_cond, torch.full_like(o["stop_choice"], NO_LABEL), o["stop_choice"])
+        for k in ("stop_ref", "stop_num", "stop_word"):
+            res[k] = o[k].argmax(-1)
+        fin = sp.plan.fin
+        res["plan_gesture"] = o["plan_gesture_choice"]
+        res["plan_ref"] = torch.where(res["plan_gesture"] == fin, torch.full_like(o["plan_ref_choice"], NO_LABEL), o["plan_ref_choice"])
+        res["plan_repeat"] = o["plan_repeat_choice"]
+        every = self.repeat_every[res["plan_repeat"]]
+        res["plan_period"] = torch.where(every, o["plan_period"].argmax(-1), torch.full_like(res["plan_repeat"], NO_LABEL))
+        res["plan_parent"] = o["plan_parent"].argmax(-1)
         res["w_target"], res["w_var"] = o["w_target_choice"], o["w_var_choice"]
         # a write whose target or variable had nothing legal left (the mask left only forbidden logits) is not made
         legal = (o["w_var"].gather(-1, res["w_var"].unsqueeze(-1)).squeeze(-1) > -5000) & \

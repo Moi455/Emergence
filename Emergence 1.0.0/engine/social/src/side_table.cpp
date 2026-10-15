@@ -45,8 +45,11 @@ ListRef SideTable::put(std::span<const std::uint32_t> items, std::size_t max_ite
     return 0;
   }
   // Largest block available (free blocks and the untouched tail), in words.
+  // Without any free block in [0, end_) (live_words_ == end_, the usual case when filling a fresh table) the scans
+  // are skipped: the result is the same, the cost is not quadratic.
+  const bool no_hole = live_words_ == end_;
   std::size_t largest = kWords - end_;
-  for (std::size_t o = 0; o < end_; o += block_words(words_[o]))
+  for (std::size_t o = 0; !no_hole && o < end_; o += block_words(words_[o]))
     if (!(words_[o] & kLive)) largest = std::max(largest, block_words(words_[o]));
   if (largest < 2) {
     ++truncated_;
@@ -59,7 +62,7 @@ ListRef SideTable::put(std::span<const std::uint32_t> items, std::size_t max_ite
   if (cut) ++truncated_;
   // First fit by offset.
   std::size_t at = kWords;
-  for (std::size_t o = 0; o < end_; o += block_words(words_[o])) {
+  for (std::size_t o = 0; !no_hole && o < end_; o += block_words(words_[o])) {
     if (!(words_[o] & kLive) && block_words(words_[o]) >= n + 1) {
       at = o;
       break;

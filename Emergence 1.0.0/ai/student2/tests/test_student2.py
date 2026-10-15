@@ -39,7 +39,7 @@ def setUpModule():
     RT = Runtime.build()
     TMP = tempfile.TemporaryDirectory()
     PATH = Path(TMP.name) / "smoke.jsonl"
-    SmokeSet(3).write(PATH, N)
+    SmokeSet(3, plans=True).write(PATH, N)
     DS = opened(PATH, keep_context=True)
 
 

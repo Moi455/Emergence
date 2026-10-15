@@ -57,6 +57,15 @@ class Targets:
     seq_count: np.ndarray          # [S, steps]
     seq_depth: np.ndarray          # [S, steps]       depth of the step (derived from the arities)
     seq_open: np.ndarray           # [S, steps]       a node still waits for children before this step (derived)
+    plan_gesture: np.ndarray       # [PLAN_CAP]       gesture index, or FIN (= the gesture capacity); NO_LABEL: no plan labelled
+    plan_ref: np.ndarray           # [PLAN_CAP]       candidate index of the step's pointer (NONE allowed when no pointer is required)
+    plan_repeat: np.ndarray        # []               index in the registry's enum values (i_repeat)
+    plan_period: np.ndarray        # []               QuantityGrid bin (i_repeat_period)
+    plan_parent: np.ndarray        # []               candidate index of the parent goal (NONE = no parent)
+    stop: np.ndarray               # []               decision stop condition id, or NONE (= the condition capacity)
+    stop_ref: np.ndarray           # [2]
+    stop_num: np.ndarray           # [2]
+    stop_word: np.ndarray          # [2]
 
     @classmethod
     def empty(cls, space: OutputSpace) -> "Targets":
@@ -66,7 +75,9 @@ class Targets:
                    w_target=_i64(MAX_WRITES), w_var=_i64(MAX_WRITES), w_enum=_i64(MAX_WRITES), w_num=_i64(MAX_WRITES),
                    w_qty=_i64(MAX_WRITES), w_ptr=_i64(MAX_WRITES), seq_len=_i64(S, fill=-1), seq_sym=_i64(S, L),
                    seq_arity=_i64(S, L), seq_slot=_i64(S, L), seq_count=_i64(S, L), seq_depth=_i64(S, L),
-                   seq_open=_i64(S, L, fill=0))
+                   seq_open=_i64(S, L, fill=0), plan_gesture=_i64(space.plan.cap), plan_ref=_i64(space.plan.cap),
+                   plan_repeat=_i64(), plan_period=_i64(), plan_parent=_i64(), stop=_i64(), stop_ref=_i64(2),
+                   stop_num=_i64(2), stop_word=_i64(2))
 
     @classmethod
     def names(cls) -> list[str]:
@@ -142,6 +153,10 @@ class LabelCodec:
         elif speech:
             raise LabelError(f"{gid} takes no speech")
         self._writes(d.get("writes") or [], enc, book, t)
+        if "plan" in d:                                  # labelled only when the teacher wrote (or refused to write) a plan
+            self._plan(d["plan"], enc, t)
+        if "stop" in d:
+            self._stop(shape, d["stop"], enc, t)
         self.rounding = max(self.rounding, self.seq.rounding)
         self._conform(t, enc)
         return t
@@ -169,6 +184,24 @@ class LabelCodec:
             for j in range(2):
                 if int(t.cond_ref[j]) != NO_LABEL and not record_ok(int(t.cond_ref[j]), sp.conditions.arg_type_ok[int(t.cond), j]):
                     raise LabelError(f"condition {sp.conditions.ids[int(t.cond)]}: argument {j} is a record of a type it does not accept")
+        P = sp.plan
+        for k in range(P.cap):
+            gi = int(t.plan_gesture[k])
+            if gi == NO_LABEL or gi == P.fin:
+                continue
+            i = int(t.plan_ref[k])
+            if sp.pointers.is_slot(i) and not record_ok(i, P.step_type_ok):
+                raise LabelError(f"plan step {k}: {enc.keys[i - 1]} is not a record a plan step may point to")
+            if sp.pointers.is_slot(i) and not record_ok(i, sp.gestures.ref_type_ok[gi, 0] & sp.gestures.ref_valid[gi, 0]):
+                raise LabelError(f"plan step {k}: {sp.gestures.names[gi]} cannot act on {enc.keys[i - 1]}")
+            if i == sp.pointers.NONE and not P.none_ok[gi]:
+                raise LabelError(f"plan step {k}: {sp.gestures.names[gi]} needs a target")
+        if int(t.plan_parent) > 0 and not record_ok(int(t.plan_parent), P.parent_type_ok):
+            raise LabelError("plan parent is not a goal")
+        if int(t.stop) != NO_LABEL and int(t.stop) < len(sp.conditions.live):
+            for j in range(2):
+                if int(t.stop_ref[j]) != NO_LABEL and not record_ok(int(t.stop_ref[j]), sp.conditions.arg_type_ok[int(t.stop), j]):
+                    raise LabelError(f"stop {sp.conditions.ids[int(t.stop)]}: argument {j} is a record of a type it does not accept")
         for i in range(int(t.n_writes)):
             v = int(t.w_var[i])
             if int(t.w_ptr[i]) != NO_LABEL and not record_ok(int(t.w_ptr[i]), sp.writes.mref_type_ok[v]):
@@ -195,28 +228,75 @@ class LabelCodec:
         except SpaceError as e:
             raise LabelError(str(e)) from None
 
-    def _condition(self, text: str, enc, t: Targets) -> None:
+    def _condition(self, text: str, enc, t: Targets, names=("cond", "cond_ref", "cond_num", "cond_word")) -> None:
         sp = self.space
+        c_id, c_ref, c_num, c_word = (getattr(t, n) for n in names)
         parts = text.replace("(", " ").replace(")", " ").split()
         if not parts or parts[0] not in sp.conditions.index:
             raise LabelError(f"unknown condition {text!r}")
         head, args = parts[0], parts[1:]
         if len(args) != len(sp.conditions.args[head]):
             raise LabelError(f"condition {text!r}: {len(sp.conditions.args[head])} argument(s) expected")
-        t.cond[...] = sp.conditions.index[head]
+        c_id[...] = sp.conditions.index[head]
         for j, (a, typ) in enumerate(zip(args, sp.conditions.args[head])):
             kind = sp.conditions.kind_of(typ)
             if kind == 1:
-                t.cond_ref[j] = self._slot_of(a, enc, f"{head} argument {j}")
+                c_ref[j] = self._slot_of(a, enc, f"{head} argument {j}")
             elif kind == 2:
                 if not (a.isascii() and a.isdigit()):
                     raise LabelError(f"condition {text!r}: {a!r} is not a whole number")
-                t.cond_num[j] = sp.quantity.bin_of(float(a))
+                c_num[j] = sp.quantity.bin_of(float(a))
                 self.rounding = max(self.rounding, sp.quantity.error(float(a)))
             else:
                 if not self.vocab.is_word(a):
                     raise LabelError(f"condition {text!r}: {a!r} is not a plain word")
-                t.cond_word[j] = self.vocab.ids[a]
+                c_word[j] = self.vocab.ids[a]
+
+    def _stop(self, shape, value, enc, t: Targets) -> None:
+        """The decision's stop condition (T11): for a gesture WITHOUT an `until` parameter. None = the decision has none."""
+        sp = self.space
+        if shape.condition:
+            raise LabelError(f"{shape.id} has its own stop parameter {shape.condition}: no decision stop")
+        if value is None or value == "":
+            t.stop[...] = sp.conditions.cap
+            return
+        self._condition(value, enc, t, ("stop", "stop_ref", "stop_num", "stop_word"))
+
+    def _plan(self, plan, enc, t: Targets) -> None:
+        """plan = None (no plan) or {"steps": [{"gesture", "target"}], "repeat", "repeat_period", "parent"}."""
+        sp = self.space
+        P = sp.plan
+        steps = [] if plan is None else list(plan.get("steps") or [])
+        if plan is not None and not steps:
+            raise LabelError("a plan has at least one step")
+        if len(steps) > P.used:
+            raise LabelError(f"{len(steps)} plan steps > {P.used}")
+        for k in range(P.cap):
+            if k >= len(steps):
+                t.plan_gesture[k] = P.fin
+                continue
+            st = steps[k]
+            gid = st.get("gesture")
+            if gid not in sp.gestures.index:
+                raise LabelError(f"plan step {k}: unknown gesture {gid!r}")
+            t.plan_gesture[k] = sp.gestures.index[gid]
+            target = st.get("target")
+            if target in (None, ""):
+                t.plan_ref[k] = sp.pointers.NONE
+            else:
+                t.plan_ref[k] = self._slot_of(target, enc, f"plan step {k}")
+        if plan is None:
+            return
+        repeat = plan.get("repeat") or "once"
+        if repeat not in P.repeat_values:
+            raise LabelError(f"plan repeat {repeat!r}")
+        t.plan_repeat[...] = sp.writes.enum_values.index(repeat)
+        period = plan.get("repeat_period")
+        if period not in (None, ""):
+            t.plan_period[...] = sp.quantity.bin_of(float(period))
+            self.rounding = max(self.rounding, sp.quantity.error(float(period)))
+        parent = plan.get("parent")
+        t.plan_parent[...] = sp.pointers.NONE if parent in (None, "") else self._slot_of(parent, enc, "plan parent")
 
     def _slot_of(self, key: str, enc, where: str) -> int:
         if key not in enc.keys:
@@ -324,7 +404,45 @@ class LabelCodec:
         if shape.expression:
             speech = self._text(t, 0, enc)
         writes = [self._write(t, i, enc, book) for i in range(int(t.n_writes))]
-        return {"gesture": shape.id, "params": params, "speech": speech, "writes": writes}
+        out = {"gesture": shape.id, "params": params, "speech": speech, "writes": writes}
+        if int(t.plan_gesture[0]) != NO_LABEL:
+            out["plan"] = self._plan_dict(t, enc)
+        if int(t.stop) != NO_LABEL:
+            out["stop"] = self._stop_text(t, enc)
+        return out
+
+    def _plan_dict(self, t: Targets, enc) -> dict | None:
+        sp = self.space
+        P = sp.plan
+        steps = []
+        for k in range(P.cap):
+            g = int(t.plan_gesture[k])
+            if g == P.fin:
+                break
+            if not 0 <= g < sp.gestures.cap or not sp.gestures.live[g]:
+                raise LabelError(f"plan step {k}: gesture index {g} is not registered")
+            i = int(t.plan_ref[k])
+            steps.append({"gesture": sp.gestures.names[g],
+                          "target": None if i == sp.pointers.NONE else self._name_of(i, enc, f"plan step {k}")})
+        if not steps:
+            return None
+        if len(steps) > P.used:
+            raise LabelError(f"{len(steps)} plan steps > {P.used}")
+        r = int(t.plan_repeat)
+        if not 0 <= r < len(sp.writes.enum_values) or not P.repeat_mask[r]:
+            raise LabelError(f"plan repeat index {r}")
+        repeat = sp.writes.enum_values[r]
+        period = int(t.plan_period)
+        parent = int(t.plan_parent)
+        return {"steps": steps, "repeat": repeat,
+                "repeat_period": None if period == NO_LABEL else sp.quantity.value_of(period),
+                "parent": None if parent in (NO_LABEL, sp.pointers.NONE) else self._name_of(parent, enc, "plan parent")}
+
+    def _stop_text(self, t: Targets, enc) -> str | None:
+        c = int(t.stop)
+        if c == self.space.conditions.cap:
+            return None
+        return self._condition_text(t, enc, ("stop", "stop_ref", "stop_num", "stop_word"))
 
     def _name_of(self, i: int, enc, where: str) -> str:
         P = self.space.pointers
@@ -337,9 +455,10 @@ class LabelCodec:
             raise LabelError(f"{where}: candidate {i} is not a reference")
         return name
 
-    def _condition_text(self, t: Targets, enc) -> str:
+    def _condition_text(self, t: Targets, enc, names=("cond", "cond_ref", "cond_num", "cond_word")) -> str:
         sp = self.space
-        c = int(t.cond)
+        c_id, c_ref, c_num, c_word = (getattr(t, n) for n in names)
+        c = int(c_id)
         if not 0 <= c < len(sp.conditions.ids) or not sp.conditions.live[c]:
             raise LabelError(f"condition {c}")
         head = sp.conditions.ids[c]
@@ -347,11 +466,11 @@ class LabelCodec:
         for j, typ in enumerate(sp.conditions.args[head]):
             kind = sp.conditions.kind_of(typ)
             if kind == 1:
-                out.append(self._name_of(int(t.cond_ref[j]), enc, f"{head} argument {j}"))
+                out.append(self._name_of(int(c_ref[j]), enc, f"{head} argument {j}"))
             elif kind == 2:
-                out.append(str(sp.quantity.value_of(int(t.cond_num[j]))))
+                out.append(str(sp.quantity.value_of(int(c_num[j]))))
             else:
-                out.append(self.vocab.symbols[int(t.cond_word[j])])
+                out.append(self.vocab.symbols[int(c_word[j])])
         return f"({' '.join(out)})" if len(out) > 1 else head
 
     def _text(self, t: Targets, s: int, enc) -> str:
@@ -402,6 +521,9 @@ def comparable(decision: dict) -> dict:
     out = {"gesture": decision["gesture"], "params": dict(decision.get("params") or {}),
            "speech": canonical(decision["speech"]) if decision.get("speech") else None, "writes": []}
     out["params"] = {k: " ".join(v.split()) if isinstance(v, str) else v for k, v in out["params"].items()}
+    for k in ("plan", "stop"):                                # only what the decision carries (older data has neither)
+        if k in decision:
+            out[k] = decision[k]
     for w in decision.get("writes") or []:
         val = w["value"]
         if isinstance(val, str) and (val.strip().startswith("(") or val[:2] in ("b:", "m:", "g:", "h:", "q:", "c:")):

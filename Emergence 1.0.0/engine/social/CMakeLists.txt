@@ -1,5 +1,5 @@
 # Social engine (decision D31): tables generated from catalogue/ (python3 catalogue/tools/gen_cpp.py).
-add_library(emergence_social STATIC src/governor.cpp src/side_table.cpp)
+add_library(emergence_social STATIC src/governor.cpp src/side_table.cpp src/npc_state_codec.cpp)
 target_include_directories(emergence_social PUBLIC include generated)
 emergence_strict_target(emergence_social)
 
@@ -32,3 +32,18 @@ target_link_libraries(test_social_forgetting PRIVATE emergence_social)
 target_include_directories(test_social_forgetting PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 emergence_strict_target(test_social_forgetting)
 add_test(NAME test_social_forgetting COMMAND test_social_forgetting)
+
+add_executable(test_social_codec tests/test_codec.cpp)
+target_link_libraries(test_social_codec PRIVATE emergence_social)
+target_include_directories(test_social_codec PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
+emergence_strict_target(test_social_codec)
+add_test(NAME test_social_codec COMMAND test_social_codec)
+
+# T13: the inner language (parser + typed validator), parity with catalogue/tools/language.py on shared vectors.
+target_sources(emergence_social PRIVATE src/language.cpp)
+
+add_executable(test_social_language tests/test_language.cpp)
+target_link_libraries(test_social_language PRIVATE emergence_social)
+target_include_directories(test_social_language PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+emergence_strict_target(test_social_language)
+add_test(NAME test_social_language COMMAND test_social_language)

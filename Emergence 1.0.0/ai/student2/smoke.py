@@ -35,8 +35,9 @@ PROP_RECORDS = ("BELIEF", "MEMORY", "GOAL", "HEARD", "REQUEST")
 class AnswerDrawer:
     """Draws one random JSON answer for a situation (it may be refused: the caller retries)."""
 
-    def __init__(self, tk: Toolkit, rng: random.Random, layout=None):
-        self.tk, self.rng, self.layout = tk, rng, layout
+    def __init__(self, tk: Toolkit, rng: random.Random, layout=None, plans: bool = False):
+        self.tk, self.rng, self.layout, self.plans = tk, rng, layout, plans
+        self.plan_rng = random.Random(str(rng.getstate()[1][:4]))          # its own stream: the rest of the draw is the same with or without plans
         self.spec = tk.spec
         self.forms = sorted(tk.cat["form"])
         iface = tk.interface
@@ -71,8 +72,40 @@ class AnswerDrawer:
                 return json.dumps({"gesture": "stop", "params": [], "speech": "", "writes": []})   # cannot fill: stop
             params.append({"name": p.name, "value": value})
         speech = self._utterance(mind) if g.expression_param else ""
-        return json.dumps({"why": "smoke", "gesture": gid, "params": params, "speech": speech,
-                           "writes": self._writes(mind, sit)})
+        answer = {"why": "smoke", "gesture": gid, "params": params, "speech": speech, "writes": self._writes(mind, sit)}
+        if self.plans:
+            answer |= self._plan_fields(g, mind, checker)
+        return json.dumps(answer)
+
+    # ---------------------------------------------------------------- plans and stops (T11, random like the rest)
+    def _plan_fields(self, g, mind: Mind, checker: ParamChecker) -> dict:
+        """A random `plan` (absent, empty, or 1 to 6 steps) and, for a gesture without `until`, a random `stop`."""
+        keep, self.rng = self.rng, self.plan_rng
+        try:
+            r = self.rng
+            out = {}
+            steps = []
+            if r.random() < 0.8:
+                for _ in range(r.randint(1, self.spec.max_plan_steps)):
+                    gid = r.choice(self.spec.gesture_ids)
+                    refs = [p for p in self.spec.gestures[gid].params if p.kind == "ref"]
+                    pool = [rec.key for rec in mind.records if rec.type in self._step_types()
+                            and refs and checker._targets(rec.key) & set(refs[0].accepts)]
+                    if refs and not pool and not all(p.optional for p in refs):
+                        continue
+                    steps.append({"gesture": gid, "target": r.choice(pool) if (pool and (refs and r.random() < 0.9 or not refs[0].optional)) else ""})
+            repeat = r.choice(self.spec.writes["i_repeat"].values) if steps else ""
+            goals = [rec.key for rec in mind.records if rec.type == "GOAL"]
+            out["plan"] = {"steps": steps, "repeat": repeat, "repeat_period": r.choice(("6", "24", "72")) if repeat == "every" else "",
+                           "parent": r.choice(goals) if goals and r.random() < 0.4 else ""}
+            if not any(p.kind == "condition" for p in g.params):
+                out["stop"] = self._condition(mind) if r.random() < 0.5 else ""
+            return out
+        finally:
+            self.rng = keep
+
+    def _step_types(self) -> tuple:
+        return tuple(self.tk.interface.token_types["PLAN"]["fields"]["step_targets"]["ref_types"])
 
     def _param(self, p, mind: Mind, checker: ParamChecker):
         r = self.rng
@@ -191,8 +224,9 @@ class AnswerDrawer:
 class SmokeSet:
     """Writes `n` records the validator accepted, with statistics on how many draws it took."""
 
-    def __init__(self, seed: int = 0, tk: Toolkit | None = None, max_tries: int = 40):
+    def __init__(self, seed: int = 0, tk: Toolkit | None = None, max_tries: int = 40, plans: bool = False):
         self.tk = tk or Toolkit()
+        self.plans = plans
         self.seed, self.max_tries = seed, max_tries
         self.sampler = SituationSampler(seed)
         self.validator = AnswerValidator(self.tk)
@@ -202,7 +236,7 @@ class SmokeSet:
     def one(self, index: int):
         """-> (situation, Outcome) with the first accepted random answer, or (situation, None)."""
         sit = self.sampler.sample(index)
-        drawer = AnswerDrawer(self.tk, random.Random(f"smoke:{self.seed}:{index}"), self.sampler.tokenizer.layout)
+        drawer = AnswerDrawer(self.tk, random.Random(f"smoke:{self.seed}:{index}"), self.sampler.tokenizer.layout, self.plans)
         for _ in range(self.max_tries):
             self.stats["draws"] += 1
             o = self.validator.validate(drawer.draw(sit), sit)
@@ -230,12 +264,13 @@ def main(argv=None) -> int:
     ap.add_argument("--n", type=int, default=200)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--start", type=int, default=0)
+    ap.add_argument("--plans", action="store_true", help="also draw random plans and stop conditions (T11)")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
     if a.out.exists():
         print(f"{a.out} exists: refusing to append smoke data to a file", file=sys.stderr)
         return 2
-    print(json.dumps(SmokeSet(a.seed).write(a.out, a.n, a.start), indent=1))
+    print(json.dumps(SmokeSet(a.seed, plans=a.plans).write(a.out, a.n, a.start), indent=1))
     return 0
 
 

@@ -1,5 +1,6 @@
 // Basic types of the NPC state (hand-written; the component structs themselves are generated from catalogue/).
 #pragma once
+#include <algorithm>
 #include <array>
 #include <concepts>
 #include <cstdint>
@@ -66,6 +67,7 @@ template <class T, int N>
 class RecordPool {
  public:
   static constexpr int kCapacity = N;
+  using value_type = T;
 
   // The law of the catalogue: found by ADL on the generated record type T (forgetting_kind/score/protected).
   // `now` (game seconds) dates the recencies of the score: it has NO default, a forgotten date would silently make
@@ -125,6 +127,40 @@ class RecordPool {
       if (serial_[i] != 0) f(MRef{serial_[i]}, items_[i]);
   }
   int size() const { return count_; }
+
+  // Persistence (T04): read and rebuild a pool slot by slot, keeping the serials, the slots and the counters.
+  // The save codec uses these; nothing else should.
+  bool slot_used(int slot) const { return slot >= 0 && slot < N && serial_[slot] != 0; }
+  std::uint32_t slot_serial(int slot) const { return serial_[slot]; }
+  const T& slot_record(int slot) const { return items_[slot]; }
+  T& slot_record_mut(int slot) { return items_[slot]; }   // load-time sanitising only
+  std::uint32_t next_serial() const { return next_serial_; }
+  void clear() { *this = RecordPool{}; }
+  // Fills a FREE slot with a record of a given serial (> 0). Uniqueness of the serials is checked once by restore_counters. False = refused (slot busy or out of range).
+  bool restore_slot(int slot, std::uint32_t serial, const T& rec) {
+    if (slot < 0 || slot >= N || serial == 0 || serial_[slot] != 0) return false;
+    items_[slot] = rec;
+    serial_[slot] = serial;
+    ++count_;
+    return true;
+  }
+  // Sets the counters once the slots are restored; next_serial must be at least the highest serial, or a serial would repeat.
+  bool restore_counters(std::uint32_t next_serial, int forgotten, int evicted_protected) {
+    std::array<std::uint32_t, N> used{};
+    int n = 0;
+    for (int i = 0; i < N; ++i) {
+      if (serial_[i] > next_serial) return false;
+      if (serial_[i] != 0) used[n++] = serial_[i];
+    }
+    std::sort(used.begin(), used.begin() + n);
+    for (int i = 1; i < n; ++i)
+      if (used[i] == used[i - 1]) return false;   // a serial twice: a corrupt save
+    if (forgotten < 0 || evicted_protected < 0) return false;
+    next_serial_ = next_serial;
+    forgotten_ = forgotten;
+    evicted_protected_ = evicted_protected;
+    return true;
+  }
 
  private:
   std::array<T, N> items_{};

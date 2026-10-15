@@ -20,7 +20,8 @@ from .spec import NO_LABEL
 
 # heads whose output and target share a name: logits [.., classes] against labels [..]
 FLAT = ("gesture", "ref", "manner", "cond", "cond_ref", "cond_num", "cond_word", "n_writes", "w_target", "w_var", "w_enum",
-        "w_num", "w_qty", "w_ptr")
+        "w_num", "w_qty", "w_ptr", "plan_gesture", "plan_ref", "plan_repeat", "plan_period", "plan_parent", "stop",
+        "stop_ref", "stop_num", "stop_word")
 SPEECH = (("sym", "seq_sym"), ("arity", "seq_arity"), ("count", "seq_count"), ("slot", "seq_slot"))
 ORDINAL = {"w_num"}                    # the 21-level heads: soft targets
 SOFT = (0.2, 0.6, 0.2)
@@ -31,7 +32,8 @@ class LossWeights:
     default: float = 1.0
     per_head: dict = field(default_factory=lambda: {"cond_ref": 0.5, "cond_num": 0.5, "cond_word": 0.5, "cond": 0.5,
                                                    "w_target": 0.5, "w_var": 0.5, "w_enum": 0.5, "w_num": 0.5,
-                                                   "w_qty": 0.5, "w_ptr": 0.5, "n_writes": 0.5})
+                                                   "w_qty": 0.5, "w_ptr": 0.5, "n_writes": 0.5, "stop": 0.5, "stop_ref": 0.5,
+                                                   "stop_num": 0.5, "stop_word": 0.5, "plan_period": 0.5})
 
     def of(self, name: str) -> float:
         return self.per_head.get(name, self.default)
