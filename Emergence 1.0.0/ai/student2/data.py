@@ -451,7 +451,8 @@ class LabelDataset(Dataset):
 
     @staticmethod
     def _split_hash(id_: str, seed: int) -> float:
-        h = hashlib.blake2b(f"{seed}|{id_}".encode(), digest_size=8).digest()
+        base = id_.split("#", 1)[0]                        # T11b: the steps of one replayed mind (`<id>#r0`, `#r1`, `#a`) stay on the same side
+        h = hashlib.blake2b(f"{seed}|{base}".encode(), digest_size=8).digest()
         return int.from_bytes(h, "little") / 2**64
 
     # ---- the cache

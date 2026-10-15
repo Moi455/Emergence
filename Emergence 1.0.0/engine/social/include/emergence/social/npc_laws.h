@@ -22,8 +22,10 @@
 // for r_obligation, r_rivalry, b_importance (they have a T_step rate but the catalogue words no engine drift);
 // illnesses, immunities, pregnancy, fecundity, height, body_mass, wounds, permanent_marks left to T34. Time constants come from
 // WorldClock / LifeClock; the T_step caps (`rate` per game day) are READ from the generated catalogue tables.
-// The numeric parameters of the body laws (rates per hour, half-lives) live in npc_laws.cpp in ONE table, as long as
-// gen_cpp.py generates no `law` table from the catalogue (see the report of T21).
+// T21b: EVERY numeric parameter of the laws (rates per hour, half-lives, fractions, thresholds) is a variable of the
+// catalogue (catalogue/data/laws.toml, generated into laws_gen.h as gen::kLaws) and npc_laws.cpp reads it at compile time;
+// only the physics and the time of the world (WorldClock, LifeClock, ln 2) stay constants of the code. The table
+// "variable -> law" is the catalogue's too: a law that lists the variable, or the variable's `no_law_reason`.
 #pragma once
 #include <array>
 #include <cstdint>

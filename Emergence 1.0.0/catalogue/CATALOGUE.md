@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 52, variable 378, property 90, action 40, concept 365, grammar 9, interpretation 46, hard_rule 4, shape 18, story 172, site 56, percept_word 100, material 84, process 46, form 63, item_type 421, species 79, migration 161, duration_level 3, illness 8, forgetting 12
+Compte : entity 16, component 52, variable 378, property 90, action 40, concept 365, grammar 9, interpretation 46, hard_rule 4, shape 18, story 172, site 56, percept_word 100, material 84, process 46, form 63, item_type 421, species 79, migration 161, duration_level 3, illness 8, forgetting 12, law 56
 
 ## Histoires (tests d'acceptation)
 
@@ -2223,3 +2223,198 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | engine_owns_body | Le Transformer n'écrit jamais une variable d'un composant engine_only (corps, besoins, cycle de vie, apparence, porteur, registre, maîtrise) : il agit par des gestes, la physique en fait les effets. | variable |
 | no_truth_in_tokens | Les jetons pointent vers des dossiers mentaux, des événements remémorés ou décrits, des lieux connus ; jamais vers un identifiant objectif, l'état réel d'un accord, la vraie identité, la vraie santé ou la vérité d'une croyance (charte § 5). | variable, concept |
 | sparse_writes | Au plus 4 écritures (pointeur, variable, valeur) par décision, en plus du geste choisi ; chacune bornée par le pas par décision et le taux par jour de jeu. Le reste suit les lois de retour du moteur. | variable |
+
+## Lois du corps et de l'esprit (appliquées par le moteur, T21b)
+
+Chaque taux, demi-vie, fraction et seuil est une variable d'ici, jamais une constante du moteur. `physique` = la nature ; `design` = le rythme du jeu (D30). Une variable écrite par le moteur a une loi OU une raison de n'en avoir pas.
+
+| id | variables écrites | forme | base | unité | paramètres | par effort | faits objectifs lus | état propre lu | où |
+|---|---|---|---|---|---|---|---|---|---|
+| hunger_rise | hunger | rate | design | millièmes d'unité par heure de jeu | load_divisor=4 | 2000, 3500, 4500, 9000, 14000, 11000 |  |  | docs/14 ; ETAT.md T21 |
+| thirst_rise | thirst | rate | design | millièmes d'unité par heure de jeu | hot_above_milli_c=25000, hot_permille_per_degree=50, hot_max_permille=2000 | 4000, 8000, 9000, 16000, 26000, 20000 | air_temperature |  | docs/14 ; ETAT.md T21 |
+| reserves_fast | reserves | rate | design | millièmes d'unité par heure de jeu ; seuils en unités stockées (dixièmes) | famine_hunger=80, fed_hunger=40, thirst_critical=90, fall_rate=1667, rise_rate=833 |  |  | hunger, thirst | docs/14 ; ETAT.md T21 |
+| exhaustion_relax | exhaustion | relax | design | cible en dixièmes selon l'effort ; constantes de temps en s de jeu ; rapports en millièmes | rise_tau_game_h=1, fall_tau_game_s=1800, load_divisor=20, endurance_base_permille=1400, endurance_per_point_permille=6 | 0, 0, 5, 50, 95, 70 |  | endurance | docs/14 ; ETAT.md T21 |
+| sleep_debt | sleepiness | rate | design | millièmes d'unité par heure de jeu ; rapports en millièmes | awake_rate=4500, night_permille=1300, per_exhaustion_permille=2, during_sleep_rate=-12000, lying_awake_rate=-1500 |  |  | exhaustion | docs/14 ; ETAT.md T21 |
+| body_temperature_follow | body_temperature | relax | physique | milli-degrés Celsius ; effet de l'effort en milli-degrés selon l'effort ; constante de temps en heures de jeu | body_milli_c=37000, comfort_air_milli_c=20000, gain_permille=120, tau_game_h=2, min_milli_c=20000, max_milli_c=45000, cold_danger_milli_c=33000, heat_danger_milli_c=41000 | -200, 0, 100, 300, 1000, 700 | air_temperature |  | docs/14 ; ETAT.md T21 |
+| thermal_comfort_derived | thermal_comfort | derived | design | milli-degrés par dixième d'échelle (3 degrés = toute l'échelle) ; référence = body_temperature_follow.body_milli_c | milli_c_per_tenth=30 |  | body_temperature |  | docs/14 ; ETAT.md T21 |
+| pain_fade | pain | relax | design | constante de temps en secondes réelles | tau_real_s=120 |  |  |  | docs/14 ; ETAT.md T21 |
+| bleeding_clot | bleeding | relax | physique | constante de temps en secondes réelles | tau_real_s=60 |  |  |  | docs/14 ; ETAT.md T21 |
+| blood_balance | blood_volume | rate | physique | milli-pourcents (de 100 000 = plein) ; taux en millièmes de milli-pourcent par heure de jeu | loss_per_bleed_tenth=300000, regen=1000000, full_milli_pct=100000, weak_milli_pct=60000 |  |  | bleeding, reserves | docs/14 ; ETAT.md T21 |
+| breath_balance | breath | rate | physique | millièmes d'unité par heure de jeu ; constante de temps en secondes réelles ; seuil en unités stockées | loss_rate=562500, tau_real_s=4, low_below=30 |  |  |  | docs/14 ; ETAT.md T21 |
+| death_thresholds | alive | threshold | physique | milli-pourcents de sang ; secondes de jeu de souffle à zéro | blood_milli_pct=40000, breath_zero_game_s=180 |  | blood_volume, breath |  | docs/14 ; ETAT.md T21 (body.toml) |
+| consciousness_follow | consciousness | relax | design | constantes de temps en secondes de jeu ; niveau de sommeil en unités stockées ; sang en milli-pourcents | down_tau_game_s=120, up_tau_game_s=600, sleep_level=20, intoxication_divisor=2, pain_onset=80, pain_weight=3, blood_divisor=500, breath_factor=2 |  | blood_volume, breath, intoxication | pain | docs/14 ; ETAT.md T21 |
+| intoxication_wear_off | intoxication | rate | physique | millièmes d'unité par heure de jeu | fall_rate=15000 |  |  |  | docs/14 ; ETAT.md T21 |
+| famine_collapse | strength, robustness | rate | design | millièmes d'unité par heure de jeu | rate=208 |  | reserves |  | docs/14 ; ETAT.md T21 |
+| ageing_decline | strength, endurance, agility, vision | rate | design | millièmes d'unité perdus par dixième d'année d'âge gagné, à pleine sénescence | decline_per_age_tenth_milli=25 |  | senescence |  | docs/14 ; ETAT.md T21 |
+| senescence_derived | senescence | derived | design | âge en dixièmes d'année | from_age_tenths=400, full_age_tenths=750 |  | age_years |  | docs/14 ; ETAT.md T21 |
+| life_clock_advance | life_clock | derived | physique | secondes de jeu vécues |  |  | game_time |  | docs/14 ; ETAT.md T21 (LifeClock) |
+| life_clock_age | age_years | derived | physique | milli-années |  |  | life_clock |  | docs/14 ; ETAT.md T21 (LifeClock) |
+| life_stage_threshold | life_stage | threshold | physique | âge en dixièmes d'année (la fin de l'enfance ; les autres bornes viennent de LifeClock et de la règle D10) | infant_end_tenths=30 |  | age_years |  | docs/14 ; ETAT.md T21 (LifeClock) |
+| mobility_derived | mobility | derived | design | millièmes (1000 = pleine mobilité) ; charge en millièmes de la capacité | base=1000, exhaustion_weight=4, load_over_permille=1000, load_divisor=2, pain_onset=50, pain_weight=4, intoxication_weight=2 |  | exhaustion, intoxication | pain | docs/14 ; ETAT.md T21 |
+| manipulation_derived | manipulation | derived | design | millièmes (1000 = pleine dextérité) ; froid en milli-degrés | base=1000, pain_onset=50, pain_weight=4, intoxication_weight=3, cold_below_milli_c=15000, cold_divisor=100 |  | intoxication, air_temperature | pain | docs/14 ; ETAT.md T21 |
+| emotion_pace |  | derived | design | millièmes : vitesse du retour = base + par_point x résilience (le tempérament) | base_permille=600, per_resilience_permille=8 |  |  | resilience, baseline_mood | docs/14 ; ETAT.md T21 |
+| emotion_fear | fear | halflife | design | demi-vie en secondes réelles ; seuil en unités stockées | half_life_real_s=30, pain_above=60, pain_divisor=2 |  |  | pain | docs/14 ; ETAT.md T21 |
+| emotion_anxiety | anxiety | halflife | design | demi-vie en heures de jeu ; seuils en unités stockées | half_life_game_h=6, pain_above=40, pain_divisor=3, sickness_divisor=4 |  |  | pain, sickness_felt | docs/14 ; ETAT.md T21 |
+| emotion_anger | anger | halflife | design | demi-vie en secondes réelles ; plafond et seuils en unités stockées | half_life_real_s=180, cap=40, pain_above=50, pain_divisor=4, hunger_above=70, hunger_divisor=3, sleepiness_above=70, sleepiness_divisor=3, intoxication_divisor=5 |  | sleepiness, intoxication | pain, hunger | docs/14 ; ETAT.md T21 |
+| emotion_joy | joy | halflife | design | demi-vie en heures de jeu | half_life_game_h=3 |  |  | baseline_mood | docs/14 ; ETAT.md T21 |
+| emotion_sadness | sadness | halflife | design | demi-vie en heures de jeu | half_life_game_h=12 |  |  | baseline_mood | docs/14 ; ETAT.md T21 |
+| emotion_grief | grief | halflife | design | demi-vie en heures de jeu | half_life_game_h=72 |  |  |  | docs/14 ; ETAT.md T21 |
+| emotion_disgust | disgust | halflife | design | demi-vie en secondes réelles | half_life_real_s=60 |  |  |  | docs/14 ; ETAT.md T21 |
+| emotion_surprise | surprise | halflife | design | demi-vie en secondes réelles | half_life_real_s=10 |  |  |  | docs/14 ; ETAT.md T21 |
+| emotion_shame | shame | halflife | design | demi-vie en heures de jeu | half_life_game_h=12 |  |  |  | docs/14 ; ETAT.md T21 |
+| emotion_guilt | guilt | halflife | design | demi-vie en heures de jeu | half_life_game_h=24 |  |  |  | docs/14 ; ETAT.md T21 |
+| emotion_generic | pride, jealousy, envy, tenderness, gratitude, contempt | halflife | design | demi-vie en heures de jeu | half_life_game_h=6 |  |  |  | docs/14 ; ETAT.md T21 |
+| emotion_boredom | boredom | halflife | design | demi-vie en heures de jeu ; cible en unités stockées | half_life_game_h=4, level=60 |  |  |  | docs/14 ; ETAT.md T21 |
+| emotion_confusion | confusion | halflife | design | demi-vie en secondes réelles ; plafond et seuils en unités stockées ; fièvre en milli-degrés | half_life_real_s=180, cap=60, intoxication_divisor=2, fever_above_milli_c=38500, fever_divisor=50, consciousness_divisor=2 |  | intoxication, body_temperature, consciousness |  | docs/14 ; ETAT.md T21 |
+| mood_average | mood_valence | relax | design | constante de temps en heures de jeu ; diviseurs = nombre de termes moyennés | tau_game_h=3, good_divisor=4, bad_divisor=4 |  |  | baseline_mood, joy, tenderness, gratitude, pride, fear, anger, sadness, grief, shame, guilt | docs/14 ; ETAT.md T21 |
+| mood_energy_derived | mood_energy | relax | design | constante de temps en heures de jeu ; diviseurs | tau_game_h=1, base=50, emotion_divisor=3, sleepiness_divisor=2, hunger_divisor=5, intoxication_divisor=2 |  | sleepiness, intoxication | joy, anger, fear, hunger | docs/14 ; ETAT.md T21 |
+| stress_balance | stress | rate | design | millièmes d'unité par heure de jeu et par point au-dessus du seuil | rise_per_point=600, fear_floor=20, emotion_divisor=3, hunger_onset=70, thirst_onset=70, sleepiness_onset=80, drain_sleep=6000, drain_talk=2000, drain_rest=1500 |  | sleepiness | fear, anxiety, anger, hunger, thirst | docs/14 ; ETAT.md T21 |
+| drive_company | need_company | rate | design | cible en unités stockées ; fractions du plafond T_step en millièmes | conversing_target=0, conversing_permille=1000, alone_target=100, alone_base_permille=500, alone_per_sociability=5, alone_cap_permille=1000 |  |  | sociability | docs/14 ; ETAT.md T21 |
+| drive_intimacy | need_intimacy | rate | design | cible en unités stockées ; fraction du plafond T_step en millièmes | target=50, permille=300 |  |  |  | docs/14 ; ETAT.md T21 (D10) |
+| drive_esteem | need_esteem | rate | design | cible en unités stockées ; fraction du plafond T_step en millièmes | target=100, permille=200 |  |  |  | docs/14 ; ETAT.md T21 |
+| drive_autonomy | need_autonomy | rate | design | cibles en unités stockées ; fractions du plafond T_step en millièmes | restrained_target=100, restrained_permille=1000, free_target=0, free_permille=500 |  |  |  | docs/14 ; ETAT.md T21 |
+| drive_achievement | need_achievement | rate | design | cible en unités stockées ; fraction du plafond T_step en millièmes | target=100, permille=400 |  |  |  | docs/14 ; ETAT.md T21 |
+| drive_novelty | need_novelty | rate | design | cibles en unités stockées ; fractions du plafond T_step en millièmes | repetitive_target=100, repetitive_base_permille=400, repetitive_per_inquisitiveness=4, repetitive_cap_permille=1000, calm_target=0, calm_permille=600 |  |  | inquisitiveness | docs/14 ; ETAT.md T21 |
+| drive_security | need_security | rate | design | cibles et seuils en unités stockées ; fractions du plafond T_step en millièmes | need_target=100, need_permille=800, calm_target=0, calm_permille=400, hunger_onset=70, thirst_onset=70, discomfort_onset=60, pain_onset=50 |  | thermal_comfort | hunger, thirst, pain | docs/14 ; ETAT.md T21 |
+| drive_acquisition | need_acquisition | rate | design | plafond de la cible en unités stockées (cible = plafond - goût d'éviter l'avidité) ; fraction du plafond T_step en millièmes | ceiling=100, permille=200 |  |  | greed_avoidance | docs/14 ; ETAT.md T21 |
+| drive_play | need_play | rate | design | cibles en unités stockées ; fractions du plafond T_step en millièmes | working_target=100, working_permille=600, idle_target=0, idle_permille=300 |  |  |  | docs/14 ; ETAT.md T21 |
+| drive_meaning | need_meaning | rate | design | cible en unités stockées ; fraction du plafond T_step en millièmes | target=50, permille=100 |  |  |  | docs/14 ; ETAT.md T21 |
+| drift_to_trait | self_regard | rate | design | fraction du plafond T_step en millièmes | permille=300 |  |  | assurance | docs/14 ; ETAT.md T21 |
+| attitude_fade | r_affection, r_trust, r_respect, r_attraction | fade | design | demi-vie en années calendaires (après un an sans contact) | half_life_years=2 |  |  | r_last_contact | docs/14 ; ETAT.md T21 |
+| resentment_fade | r_resentment | fade | design | demi-vie en années calendaires, multipliée par (base - par_point x pardon) / 1000 | half_life_years=3, forgiveness_base_permille=1500, forgiveness_per_point_permille=10 |  |  | r_last_contact, forgiveness | docs/14 ; ETAT.md T21 |
+| fear_fade | r_fear | fade | design | demi-vie en jours de jeu | half_life_game_days=1 |  |  |  | docs/14 ; ETAT.md T21 |
+| familiarity_balance | r_familiarity | fade | design | demi-vie en années calendaires ; secondes de jeu ensemble pour un dixième | half_life_years=4, seconds_per_tenth=1800, per_exchange=1 |  |  | r_last_contact | docs/14 ; ETAT.md T21 |
+| memory_fade | m_vividness | halflife | design | demi-vie en jours de jeu, multipliée par (base + par_point x capacité de mémoire) / 1000 et par (1000 + répétitions) / 1000 | half_life_game_days=6, capacity_base_permille=500, capacity_per_point_permille=10, rehearsal_cap_permille=3000 |  |  | memory_capacity, m_rehearsals, m_defining | docs/14 ; ETAT.md T21 |
+| mastery_practice | k_mastery | rate | design | millièmes de dixième de maîtrise par heure de jeu de pratique ; délai en jours de jeu | rate=1500, master_watching_permille=2000, ceiling=110, grace_game_days=3, decay_per_day=1 |  | k_last_practice |  | docs/14 ; ETAT.md T21 |
+
+### Variables du moteur sans loi (et pourquoi)
+
+| variable | porté par | raison |
+|---|---|---|
+| b_proposition | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_polarity | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_certainty | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_source | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_unintelligible | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_informant | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_hops | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_acquired | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_confirmed | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_importance | belief | T_step rate but the catalogue words no engine drift (backlog T21) |
+| b_told_to | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_truth | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_origin_fact | belief | written by perception/the executor on events (T05/T22), no slow law |
+| b_contradicted | belief | written by perception/the executor on events (T05/T22), no slow law |
+| heard_unprocessed | beliefs | written by perception/the executor on events (T05/T22), no slow law |
+| place_recognized | beliefs | written by perception/the executor on events (T05/T22), no slow law |
+| wounds | body | reported to T34 (side tables; the illness table is not generated): no law yet |
+| permanent_marks | body | reported to T34 (side tables; the illness table is not generated): no law yet |
+| height | body | reported to T34 (side tables; the illness table is not generated): no law yet |
+| body_mass | body | reported to T34 (side tables; the illness table is not generated): no law yet |
+| hearing | body | slow or list trait: no law in T21 (needs the side tables or the generated parameters) |
+| illnesses | body | reported to T34 (side tables; the illness table is not generated): no law yet |
+| immunities | body | reported to T34 (side tables; the illness table is not generated): no law yet |
+| fecundity | lifecycle | reported to T34 (side tables; the illness table is not generated): no law yet |
+| pregnancy | lifecycle | reported to T34 (side tables; the illness table is not generated): no law yet |
+| hands | carrier | written by the executor of gestures and the navigation (T22/T23) |
+| worn | carrier | written by the executor of gestures and the navigation (T22/T23) |
+| carried | carrier | written by the executor of gestures and the navigation (T22/T23) |
+| position | spatial | written by the executor of gestures and the navigation (T22/T23) |
+| orientation | spatial | written by the executor of gestures and the navigation (T22/T23) |
+| velocity | spatial | written by the executor of gestures and the navigation (T22/T23) |
+| place_in | spatial | written by the executor of gestures and the navigation (T22/T23) |
+| inside_of | spatial | written by the executor of gestures and the navigation (T22/T23) |
+| g_deadline | goal | execution facts written by the executor (T15/T22), no time law |
+| g_when | goal | execution facts written by the executor (T15/T22), no time law |
+| g_origin | goal | execution facts written by the executor (T15/T22), no time law |
+| g_origin_ref | goal | execution facts written by the executor (T15/T22), no time law |
+| g_since | goal | execution facts written by the executor (T15/T22), no time law |
+| i_step_index | intention | execution facts written by the executor (T15/T22), no time law |
+| i_step_progress | intention | execution facts written by the executor (T15/T22), no time law |
+| i_step_started | intention | execution facts written by the executor (T15/T22), no time law |
+| i_status | intention | execution facts written by the executor (T15/T22), no time law |
+| i_attempts | intention | execution facts written by the executor (T15/T22), no time law |
+| q_from | request | execution facts written by the executor (T15/T22), no time law |
+| q_content | request | execution facts written by the executor (T15/T22), no time law |
+| q_since | request | execution facts written by the executor (T15/T22), no time law |
+| a_parties | agreement_terms | execution facts written by the executor (T15/T22), no time law |
+| a_obligations | agreement_terms | execution facts written by the executor (T15/T22), no time law |
+| a_witnesses | agreement_terms | execution facts written by the executor (T15/T22), no time law |
+| a_form | agreement_terms | execution facts written by the executor (T15/T22), no time law |
+| a_status | agreement_terms | execution facts written by the executor (T15/T22), no time law |
+| a_document | agreement_terms | execution facts written by the executor (T15/T22), no time law |
+| process_progress | transformation | world, matter or society variable: law of another task (T18, T23, T34) |
+| process_started_at | transformation | world, matter or society variable: law of another task (T18, T23, T34) |
+| m_content | episode | written when the memory is recorded; only m_vividness has a law |
+| m_fact_ref | episode | written when the memory is recorded; only m_vividness has a law |
+| m_when | episode | written when the memory is recorded; only m_vividness has a law |
+| m_where | episode | written when the memory is recorded; only m_vividness has a law |
+| m_role | episode | written when the memory is recorded; only m_vividness has a law |
+| m_rehearsals | episode | written when the memory is recorded; only m_vividness has a law |
+| intellect | mind_static | slow or list trait: no law in T21 (needs the side tables or the generated parameters) |
+| memory_capacity | mind_static | slow or list trait: no law in T21 (needs the side tables or the generated parameters) |
+| perceptiveness | mind_static | slow or list trait: no law in T21 (needs the side tables or the generated parameters) |
+| coordination | mind_static | slow or list trait: no law in T21 (needs the side tables or the generated parameters) |
+| trace_maker_cue | trace_record | written by the practice or the trace system (T18) |
+| made_at | provenance | world, matter or society variable: law of another task (T18, T23, T34) |
+| made_by | provenance | world, matter or society variable: law of another task (T18, T23, T34) |
+| r_true_entity | relation | written on events (perception, speech); only attitudes, fear and familiarity have a law |
+| r_known_by | relation | written on events (perception, speech); only attitudes, fear and familiarity have a law |
+| r_obligation | relation | T_step rate but the catalogue words no engine drift (backlog T21) |
+| r_rivalry | relation | T_step rate but the catalogue words no engine drift (backlog T21) |
+| r_last_contact | relation | written on events (perception, speech); only attitudes, fear and familiarity have a law |
+| village_temperament | setting | world, matter or society variable: law of another task (T18, T23, T34) |
+| w_think_budget | setting | world, matter or society variable: law of another task (T18, T23, T34) |
+| w_outcome | setting | world, matter or society variable: law of another task (T18, T23, T34) |
+| k_technique | skill | written by the practice or the trace system (T18) |
+| k_last_practice | skill | written by the practice or the trace system (T18) |
+| trace_kind | trace_record | written by the practice or the trace system (T18) |
+| trace_freshness | trace_record | written by the practice or the trace system (T18) |
+| trace_direction | trace_record | written by the practice or the trace system (T18) |
+| trace_fact | trace_record | written by the practice or the trace system (T18) |
+| s_name | social_referent | world, matter or society variable: law of another task (T18, T23, T34) |
+| s_introduced_by | social_referent | world, matter or society variable: law of another task (T18, T23, T34) |
+| s_introduced_at | social_referent | world, matter or society variable: law of another task (T18, T23, T34) |
+| s_scope | social_referent | world, matter or society variable: law of another task (T18, T23, T34) |
+| s_last_believed | social_referent | world, matter or society variable: law of another task (T18, T23, T34) |
+| custody_log | ledger | world, matter or society variable: law of another task (T18, T23, T34) |
+| transactions | chronicle | world, matter or society variable: law of another task (T18, T23, T34) |
+| game_time | clock | world, matter or society variable: law of another task (T18, T23, T34) |
+| calendar_params | clock | world, matter or society variable: law of another task (T18, T23, T34) |
+| air_temperature | climate | world, matter or society variable: law of another task (T18, T23, T34) |
+| wind | climate | world, matter or society variable: law of another task (T18, T23, T34) |
+| cloud_cover | climate | world, matter or society variable: law of another task (T18, T23, T34) |
+| precipitation | climate | world, matter or society variable: law of another task (T18, T23, T34) |
+| fog | climate | world, matter or society variable: law of another task (T18, T23, T34) |
+| storm | climate | world, matter or society variable: law of another task (T18, T23, T34) |
+| snow_cover | climate | world, matter or society variable: law of another task (T18, T23, T34) |
+| place_bounds | area | world, matter or society variable: law of another task (T18, T23, T34) |
+| indoors | area | world, matter or society variable: law of another task (T18, T23, T34) |
+| water_volume | substance | world, matter or society variable: law of another task (T18, T23, T34) |
+| water_level | flow | world, matter or society variable: law of another task (T18, T23, T34) |
+| water_flow | flow | world, matter or society variable: law of another task (T18, T23, T34) |
+| water_quality | substance | world, matter or society variable: law of another task (T18, T23, T34) |
+| ice | flow | world, matter or society variable: law of another task (T18, T23, T34) |
+| fire_extent | combustion | world, matter or society variable: law of another task (T18, T23, T34) |
+| fire_heat | combustion | world, matter or society variable: law of another task (T18, T23, T34) |
+| fire_fuel | combustion | world, matter or society variable: law of another task (T18, T23, T34) |
+| fire_spread | combustion | world, matter or society variable: law of another task (T18, T23, T34) |
+| smoke | combustion | world, matter or society variable: law of another task (T18, T23, T34) |
+| soil_fertility | soil | world, matter or society variable: law of another task (T18, T23, T34) |
+| soil_state | soil | world, matter or society variable: law of another task (T18, T23, T34) |
+| soil_moisture | soil | world, matter or society variable: law of another task (T18, T23, T34) |
+| deposit | soil | world, matter or society variable: law of another task (T18, T23, T34) |
+| load_margin | stability | world, matter or society variable: law of another task (T18, T23, T34) |
+| plant_stage | growth | world, matter or society variable: law of another task (T18, T23, T34) |
+| plant_yield | growth | world, matter or society variable: law of another task (T18, T23, T34) |
+| plant_health | growth | world, matter or society variable: law of another task (T18, T23, T34) |
+| animal_fear_humans | animal_behavior | world, matter or society variable: law of another task (T18, T23, T34) |
+| animal_aggression | animal_behavior | world, matter or society variable: law of another task (T18, T23, T34) |
+| animal_attachment | animal_behavior | world, matter or society variable: law of another task (T18, T23, T34) |
+| animal_group | animal_behavior | world, matter or society variable: law of another task (T18, T23, T34) |
+| animal_tameness | animal_behavior | world, matter or society variable: law of another task (T18, T23, T34) |
+| animal_product_ready | animal_behavior | world, matter or society variable: law of another task (T18, T23, T34) |
+| phenomenon_intensity | phenomenon_field | world, matter or society variable: law of another task (T18, T23, T34) |
+| phenomenon_effects | phenomenon_field | world, matter or society variable: law of another task (T18, T23, T34) |
+| magic_stability | magic | world, matter or society variable: law of another task (T18, T23, T34) |
+| magic_attunement | magic | world, matter or society variable: law of another task (T18, T23, T34) |

@@ -145,7 +145,7 @@ class Trainer:
         self.total_steps = total_steps
         self.schedule = Schedule(lr, warmup, total_steps)
         self.scaler = torch.amp.GradScaler("cuda", enabled=self.amp)
-        self.loss = StudentLoss(weights)
+        self.loss = StudentLoss(weights, model.space.writes.index.get("think_more"))
         self.step = 0
 
     def train_step(self, batch: Batch) -> dict:

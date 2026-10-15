@@ -74,6 +74,10 @@ python3 catalogue/tools/budget.py           # ce que l'IA voit, compté (budget)
 python3 -m unittest discover -s catalogue/tests
 ```
 
+## Les lois du moteur (T21b)
+
+Les taux, demi-vies, fractions et seuils des lois du corps et de l'esprit sont des `[[law]]` de `data/laws.toml` (forme, `basis` physics|design, unité, paramètres entiers, faits objectifs lus). Une variable écrite par `engine` a une loi qui la liste OU un `no_law_reason`. `check.py` (via `tools/laws.py`) refuse une loi sans `basis`, une dépendance sur une variable privée ou sur une vérité interdite aux jetons ; `gen_cpp.py` écrit `laws_gen.h` (`gen::kLaws`) que `npc_laws.cpp` lit.
+
 ## Ajouter une entrée
 
 Une table TOML dans le fichier de son domaine (`data/body.toml`, `data/beliefs.toml`…). Les champs permis sont ceux des classes de `schema.py` ; un champ inconnu est une erreur. Échelles de la charte : `bipolar10` (−10..+10) et `unipolar10` (0..10), stockées en dixièmes par le moteur. Écrivains : `engine`, `T_jump` (le Transformer peut sauter), `T_step` (pas borné par `step`), `T_slow` (au plus `slow_rate` par année vécue : l'ancienne borne de 0,1 par jour de jeu est caduque : avec une vie de 150 h, un jour de jeu dure 1 h 30 réelle (D30)), `birth`, `action`, `derived` (vue calculée, jamais écrite).

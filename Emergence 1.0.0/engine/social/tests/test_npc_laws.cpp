@@ -5,6 +5,7 @@
 #include <string>
 
 #include "emergence/social/catalogue_gen.h"
+#include "emergence/social/laws_gen.h"
 #include "emergence/social/npc_laws.h"
 #include "emergence/social/npc_state_codec.h"
 #include "emergence/testing/check.h"
@@ -12,6 +13,12 @@
 using namespace em::social;
 
 namespace {
+
+int var_index_of(std::string_view id) {
+  for (std::size_t i = 0; i < gen::kVarNames.size(); ++i)
+    if (gen::kVarNames[i] == id) return int(i);
+  return -1;
+}
 
 std::unique_ptr<gen::NpcState> make_adult() {
   auto n = std::make_unique<gen::NpcState>();
@@ -351,7 +358,37 @@ TEST(law_table_covers_every_engine_variable) {
   std::printf("table variable -> law: %d engine variables, %d with a law, %d 'no law'\n", with_law + without, with_law, without);
   CHECK(with_law >= 55);
   CHECK(NpcLaws::law_for("hunger").law == "hunger_rise");
-  CHECK(NpcLaws::law_for("alive").law.empty());
+  CHECK(NpcLaws::law_for("alive").law == "death_thresholds");   // T21b: alive is written by step(), so it has a law
+  CHECK(NpcLaws::law_for("world_without_law_xx").law.empty());
+}
+
+// T21b: the numbers of the laws are the catalogue's (laws.toml -> gen::kLaws), not constants of the code.
+TEST(laws_come_from_the_catalogue) {
+  CHECK(gen::kLaws.size() >= 50);
+  std::set<std::string> engine_ids;
+  for (std::size_t i = 0; i < gen::kVariables.size(); ++i)
+    if (!gen::kVariables[i].retired && (gen::kVariables[i].writers & gen::writer::engine)) engine_ids.insert(std::string(gen::kVariables[i].id));
+  for (const auto& l : gen::kLaws) {
+    CHECK(!l.unit.empty() && !l.doc_ref.empty() && !l.note.empty());
+    CHECK(l.basis == gen::LawBasis::physics || l.basis == gen::LawBasis::design);
+    CHECK(gen::find_law(l.id) == &l);
+    for (auto v : l.variables) {
+      CHECK(var_index_of(v) >= 0);
+      CHECK(!gen::no_law_of(v));   // a variable has a law OR a reason, never both
+    }
+  }
+  for (const auto& id : engine_ids) CHECK(gen::law_of(id) != nullptr || gen::no_law_of(id) != nullptr);   // none left undeclared
+  for (const auto& n : gen::kNoLaw) CHECK(!n.reason.empty() && gen::law_of(n.variable) == nullptr);
+  // One game hour standing still: the hunger rises by the catalogue rate of the effort "standing" (no constant in the engine).
+  const auto* hunger = gen::find_law("hunger_rise");
+  CHECK(hunger != nullptr && hunger->by_exertion.size() == 6);
+  auto n = make_adult();
+  n->needs.hunger = 0; n->needs.reserves = 100;
+  NpcLaws::Residue r;
+  LawEnvironment env; env.now = 1'000'000; env.exertion = Exertion::kStanding;
+  NpcLaws::step(*n, r, env, 3'600);
+  CHECK_EQ(std::int64_t(n->needs.hunger), hunger->by_exertion[2] / 1'000);
+  std::printf("hunger after 1 h standing: %d tenths (catalogue rate %lld per thousand)\n", int(n->needs.hunger), (long long)hunger->by_exertion[2]);
 }
 
 EMERGENCE_TEST_MAIN()

@@ -1,0 +1,694 @@
+# laws.toml - T21b : les LOIS du corps et de l'esprit, appliquées par le moteur à chaque pas (docs/14, ETAT.md T21).
+#
+# Principe de Monsieur : « tout doit être rendu possible par des variables ». Les taux, demi-vies, fractions et seuils
+# des lois ne sont plus dans le code C++ : ils sont ICI, et `gen_cpp.py` les écrit dans `laws_gen.h` (kLaws[]) que
+# `engine/social/src/npc_laws.cpp` lit. Seuls les paramètres de physique et de temps (WorldClock : 1 s réelle = 16 s de jeu,
+# jour, année calendaire ; LifeClock : bornes des âges) restent des constantes de code, documentées.
+#
+# Une loi (`[[law]]`) :
+#   id          nom de la loi (unique) ;
+#   variables   les variables que la loi ÉCRIT (une variable `engine` a une loi OU un `no_law_reason`, jamais les deux) ;
+#   form        rate (taux par heure de jeu) | relax (retour d'ordre 1, constante de temps) | halflife (demi-vie) |
+#               derived (calculée de l'état) | threshold (seuil) | fade (extinction lente vers 0) ;
+#   basis       "physics" (la nature : refroidissement, saignement...) ou "design" (réglage de rythme du jeu, D30) : OBLIGATOIRE ;
+#   unit        l'unité des paramètres ; params : des ENTIERS, le nom dit l'unité quand c'est une durée
+#               (..._real_s, ..._game_s, ..._game_h, ..._game_days, ..._years), les rapports sont en millièmes (_permille) ;
+#   by_exertion les 6 valeurs selon l'effort (sleeping, lying_awake, standing, walking, running, heavy_work) ;
+#   depends_on  les FAITS OBJECTIFS lus (jamais une variable privée, jamais une vérité interdite aux jetons : check.py) ;
+#   reads       l'état propre du PNJ lu (traits, émotions, besoins, douleur) : jamais une vérité interdite aux jetons ;
+#   doc_ref     où c'est décidé. Aucune loi ne réagit à un événement : le modèle fait SAUTER les émotions, le moteur les ramène.
+#
+# Rythme de D30 : environ trois repas et un sommeil de 8 h par jour de jeu (16 h de jour, 8 h de nuit). Les taux sont en
+# millièmes d'unité stockée par heure de jeu (les variables 0..10 sont stockées en dixièmes : 9 000 = 0,9 point par heure).
+
+# ---- le corps : besoins ------------------------------------------------------------------------------------------------
+[[law]]
+id = "hunger_rise"
+variables = ["hunger"]
+form = "rate"
+basis = "design"
+unit = "millièmes d'unité par heure de jeu"
+by_exertion = [2000, 3500, 4500, 9000, 14000, 11000]
+params = { load_divisor = 4 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la faim monte avec le temps, l'effort et la charge"
+note = "rises with time, effort, load (permille of load / load_divisor added when walking or running); falls only by eating (action)"
+
+[[law]]
+id = "thirst_rise"
+variables = ["thirst"]
+form = "rate"
+basis = "design"
+unit = "millièmes d'unité par heure de jeu"
+by_exertion = [4000, 8000, 9000, 16000, 26000, 20000]
+params = { hot_above_milli_c = 25000, hot_permille_per_degree = 50, hot_max_permille = 2000 }
+depends_on = ["air_temperature"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la soif monte plus vite par chaleur et à l'effort"
+note = "rises faster in the heat and with the effort; falls only by drinking (action)"
+
+[[law]]
+id = "reserves_fast"
+variables = ["reserves"]
+form = "rate"
+basis = "design"
+unit = "millièmes d'unité par heure de jeu ; seuils en unités stockées (dixièmes)"
+params = { famine_hunger = 80, fed_hunger = 40, thirst_critical = 90, fall_rate = 1667, rise_rate = 833 }
+reads = ["hunger", "thirst"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "les réserves du corps fondent à jeun, se refont rassasié"
+note = "falls in prolonged fasting (4 points per game day), rises when fed (2 points per game day)"
+
+[[law]]
+id = "exhaustion_relax"
+variables = ["exhaustion"]
+form = "relax"
+basis = "design"
+unit = "cible en dixièmes selon l'effort ; constantes de temps en s de jeu ; rapports en millièmes"
+by_exertion = [0, 0, 5, 50, 95, 70]
+params = { rise_tau_game_h = 1, fall_tau_game_s = 1800, load_divisor = 20, endurance_base_permille = 1400, endurance_per_point_permille = 6 }
+reads = ["endurance"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la fatigue suit l'effort, plus vite vers le bas que vers le haut"
+note = "toward the level of the effort (load and endurance weigh on it); recovers in minutes real"
+
+[[law]]
+id = "sleep_debt"
+variables = ["sleepiness"]
+form = "rate"
+basis = "design"
+unit = "millièmes d'unité par heure de jeu ; rapports en millièmes"
+params = { awake_rate = 4500, night_permille = 1300, per_exhaustion_permille = 2, during_sleep_rate = -12000, lying_awake_rate = -1500 }
+reads = ["exhaustion"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la dette de sommeil monte éveillé, seul le sommeil la rembourse"
+note = "rises awake (more at night, with exhaustion); only sleep repays it"
+
+# ---- le corps : chaleur, douleur, sang, souffle ------------------------------------------------------------------------
+[[law]]
+id = "body_temperature_follow"
+variables = ["body_temperature"]
+form = "relax"
+basis = "physics"
+unit = "milli-degrés Celsius ; effet de l'effort en milli-degrés selon l'effort ; constante de temps en heures de jeu"
+by_exertion = [-200, 0, 100, 300, 1000, 700]
+params = { body_milli_c = 37000, comfort_air_milli_c = 20000, gain_permille = 120, tau_game_h = 2, min_milli_c = 20000, max_milli_c = 45000, cold_danger_milli_c = 33000, heat_danger_milli_c = 41000 }
+depends_on = ["air_temperature"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la température du corps suit l'air à travers les vêtements et l'effort"
+note = "follows air, clothing insulation and effort; fever needs the illness list (no law yet); danger flags below cold_danger and above heat_danger"
+
+[[law]]
+id = "thermal_comfort_derived"
+variables = ["thermal_comfort"]
+form = "derived"
+basis = "design"
+unit = "milli-degrés par dixième d'échelle (3 degrés = toute l'échelle) ; référence = body_temperature_follow.body_milli_c"
+params = { milli_c_per_tenth = 30 }
+depends_on = ["body_temperature"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le confort thermique se déduit de la température du corps"
+note = "derived from the body temperature"
+
+[[law]]
+id = "pain_fade"
+variables = ["pain"]
+form = "relax"
+basis = "design"
+unit = "constante de temps en secondes réelles"
+params = { tau_real_s = 120 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la douleur retombe vers ce que les plaies entretiennent"
+note = "fades toward the ache kept by the open wounds"
+
+[[law]]
+id = "bleeding_clot"
+variables = ["bleeding"]
+form = "relax"
+basis = "physics"
+unit = "constante de temps en secondes réelles"
+params = { tau_real_s = 60 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le saignement se caille vers celui des plaies ouvertes"
+note = "clots toward the bleeding of the open wounds"
+
+[[law]]
+id = "blood_balance"
+variables = ["blood_volume"]
+form = "rate"
+basis = "physics"
+unit = "milli-pourcents (de 100 000 = plein) ; taux en millièmes de milli-pourcent par heure de jeu"
+params = { loss_per_bleed_tenth = 300000, regen = 1000000, full_milli_pct = 100000, weak_milli_pct = 60000 }
+reads = ["bleeding", "reserves"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le sang se perd avec le saignement, se refait lentement"
+note = "falls with the bleeding, regained slowly when nothing bleeds and the reserves allow; below weak_milli_pct the blood-low flag; death in death_thresholds"
+
+[[law]]
+id = "breath_balance"
+variables = ["breath"]
+form = "rate"
+basis = "physics"
+unit = "millièmes d'unité par heure de jeu ; constante de temps en secondes réelles ; seuil en unités stockées"
+params = { loss_rate = 562500, tau_real_s = 4, low_below = 30 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le souffle baisse en asphyxie, revient sinon"
+note = "falls when asphyxiating (the whole scale in 40 s real), returns otherwise; below low_below the no-breath flag"
+
+[[law]]
+id = "death_thresholds"
+variables = ["alive"]
+form = "threshold"
+basis = "physics"
+unit = "milli-pourcents de sang ; secondes de jeu de souffle à zéro"
+params = { blood_milli_pct = 40000, breath_zero_game_s = 180 }
+depends_on = ["blood_volume", "breath"]
+doc_ref = "docs/14 ; ETAT.md T21 (body.toml)"
+label_fr = "la mort : le sang sous 40 %, le souffle à zéro trop longtemps"
+note = "alive is written false by step() when the blood falls below blood_milli_pct or the breath stays at zero for breath_zero_game_s; no other death yet (backlog T34)"
+
+[[law]]
+id = "consciousness_follow"
+variables = ["consciousness"]
+form = "relax"
+basis = "design"
+unit = "constantes de temps en secondes de jeu ; niveau de sommeil en unités stockées ; sang en milli-pourcents"
+params = { down_tau_game_s = 120, up_tau_game_s = 600, sleep_level = 20, intoxication_divisor = 2, pain_onset = 80, pain_weight = 3, blood_divisor = 500, breath_factor = 2 }
+depends_on = ["blood_volume", "breath", "intoxication"]
+reads = ["pain"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la conscience suit ce que le corps permet"
+note = "follows sleep, blood, pain, drug, breath"
+
+[[law]]
+id = "intoxication_wear_off"
+variables = ["intoxication"]
+form = "rate"
+basis = "physics"
+unit = "millièmes d'unité par heure de jeu"
+params = { fall_rate = 15000 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "l'ivresse se dissipe en heures"
+note = "wears off in hours (1.5 points per game hour)"
+
+[[law]]
+id = "famine_collapse"
+variables = ["strength", "robustness"]
+form = "rate"
+basis = "design"
+unit = "millièmes d'unité par heure de jeu"
+params = { rate = 208 }
+depends_on = ["reserves"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "force et robustesse s'effondrent quand les réserves sont vides"
+note = "collapses in famine while the reserves are empty (5 tenths per game day)"
+
+# ---- la vie : âge, vieillissement --------------------------------------------------------------------------------------
+[[law]]
+id = "ageing_decline"
+variables = ["strength", "endurance", "agility", "vision"]
+form = "rate"
+basis = "design"
+unit = "millièmes d'unité perdus par dixième d'année d'âge gagné, à pleine sénescence"
+params = { decline_per_age_tenth_milli = 25 }
+depends_on = ["senescence"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "les capacités déclinent avec la sénescence"
+note = "declines with senescence (the eye wound is in the wound list)"
+
+[[law]]
+id = "senescence_derived"
+variables = ["senescence"]
+form = "derived"
+basis = "design"
+unit = "âge en dixièmes d'année"
+params = { from_age_tenths = 400, full_age_tenths = 750 }
+depends_on = ["age_years"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la sénescence se déduit de l'âge (40 à 75 ans)"
+note = "derived from the age (40 to 75 years)"
+
+[[law]]
+id = "life_clock_advance"
+variables = ["life_clock"]
+form = "derived"
+basis = "physics"
+unit = "secondes de jeu vécues"
+params = {}
+depends_on = ["game_time"]
+doc_ref = "docs/14 ; ETAT.md T21 (LifeClock)"
+label_fr = "l'horloge de vie avance avec le temps de jeu"
+note = "advances with the game time"
+
+[[law]]
+id = "life_clock_age"
+variables = ["age_years"]
+form = "derived"
+basis = "physics"
+unit = "milli-années"
+params = {}
+depends_on = ["life_clock"]
+doc_ref = "docs/14 ; ETAT.md T21 (LifeClock)"
+label_fr = "l'âge se déduit de l'horloge de vie"
+note = "derived from the life clock (LifeClock)"
+
+[[law]]
+id = "life_stage_threshold"
+variables = ["life_stage"]
+form = "threshold"
+basis = "physics"
+unit = "âge en dixièmes d'année (la fin de l'enfance ; les autres bornes viennent de LifeClock et de la règle D10)"
+params = { infant_end_tenths = 30 }
+depends_on = ["age_years"]
+doc_ref = "docs/14 ; ETAT.md T21 (LifeClock)"
+label_fr = "les âges de la vie : nourrisson jusqu'à 3 ans"
+note = "derived from the age: infant < infant_end, child < 14, teen < 18 (D10), adult < 60 (LifeClock)"
+
+# ---- le corps : capacités dérivées ------------------------------------------------------------------------------------
+[[law]]
+id = "mobility_derived"
+variables = ["mobility"]
+form = "derived"
+basis = "design"
+unit = "millièmes (1000 = pleine mobilité) ; charge en millièmes de la capacité"
+params = { base = 1000, exhaustion_weight = 4, load_over_permille = 1000, load_divisor = 2, pain_onset = 50, pain_weight = 4, intoxication_weight = 2 }
+depends_on = ["exhaustion", "intoxication"]
+reads = ["pain"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la mobilité se déduit de la fatigue, de la charge, de la douleur, de l'ivresse"
+note = "derived from exhaustion, load, pain, drug"
+
+[[law]]
+id = "manipulation_derived"
+variables = ["manipulation"]
+form = "derived"
+basis = "design"
+unit = "millièmes (1000 = pleine dextérité) ; froid en milli-degrés"
+params = { base = 1000, pain_onset = 50, pain_weight = 4, intoxication_weight = 3, cold_below_milli_c = 15000, cold_divisor = 100 }
+depends_on = ["intoxication", "air_temperature"]
+reads = ["pain"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la dextérité se déduit de la douleur, de l'ivresse, du froid"
+note = "derived from pain, drug, cold"
+
+# ---- l'esprit : le retour des émotions vers l'humeur de fond ---------------------------------------------------------
+[[law]]
+id = "emotion_pace"
+variables = []
+form = "derived"
+basis = "design"
+unit = "millièmes : vitesse du retour = base + par_point x résilience (le tempérament)"
+params = { base_permille = 600, per_resilience_permille = 8 }
+reads = ["resilience", "baseline_mood"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la vitesse du retour émotionnel suit le tempérament (paramètres partagés)"
+note = "shared parameters of every emotion_* law: the half-life is divided by (base + per_point x resilience) / 1000; writes nothing by itself"
+
+[[law]]
+id = "emotion_fear"
+variables = ["fear"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en secondes réelles ; seuil en unités stockées"
+params = { half_life_real_s = 30, pain_above = 60, pain_divisor = 2 }
+reads = ["pain"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la peur retombe en dizaines de secondes réelles"
+note = "returns toward what the pain keeps up, in tens of seconds real"
+
+[[law]]
+id = "emotion_anxiety"
+variables = ["anxiety"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu ; seuils en unités stockées"
+params = { half_life_game_h = 6, pain_above = 40, pain_divisor = 3, sickness_divisor = 4 }
+reads = ["pain", "sickness_felt"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "l'anxiété retombe lentement"
+note = "returns slowly; pain and felt illness keep it up"
+
+[[law]]
+id = "emotion_anger"
+variables = ["anger"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en secondes réelles ; plafond et seuils en unités stockées"
+params = { half_life_real_s = 180, cap = 40, pain_above = 50, pain_divisor = 4, hunger_above = 70, hunger_divisor = 3, sleepiness_above = 70, sleepiness_divisor = 3, intoxication_divisor = 5 }
+depends_on = ["sleepiness", "intoxication"]
+reads = ["pain", "hunger"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la colère retombe en minutes réelles, le corps l'attise"
+note = "returns in minutes real; pain, hunger, lack of sleep, drug push the target up"
+
+[[law]]
+id = "emotion_joy"
+variables = ["joy"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu"
+params = { half_life_game_h = 3 }
+reads = ["baseline_mood"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la joie revient vers l'humeur de fond"
+note = "returns toward the baseline mood"
+
+[[law]]
+id = "emotion_sadness"
+variables = ["sadness"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu"
+params = { half_life_game_h = 12 }
+reads = ["baseline_mood"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la tristesse revient lentement vers l'humeur de fond"
+note = "returns slowly toward the baseline mood"
+
+[[law]]
+id = "emotion_grief"
+variables = ["grief"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu"
+params = { half_life_game_h = 72 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le deuil retombe très lentement, en jours de jeu"
+note = "returns very slowly, over days of game"
+
+[[law]]
+id = "emotion_disgust"
+variables = ["disgust"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en secondes réelles"
+params = { half_life_real_s = 60 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le dégoût retombe vite"
+note = "returns fast"
+
+[[law]]
+id = "emotion_surprise"
+variables = ["surprise"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en secondes réelles"
+params = { half_life_real_s = 10 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la surprise retombe en une dizaine de secondes réelles"
+note = "returns in about ten seconds real"
+
+[[law]]
+id = "emotion_shame"
+variables = ["shame"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu"
+params = { half_life_game_h = 12 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la honte retombe lentement"
+note = "returns slowly"
+
+[[law]]
+id = "emotion_guilt"
+variables = ["guilt"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu"
+params = { half_life_game_h = 24 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la culpabilité retombe lentement, au rythme du tempérament"
+note = "returns slowly at the pace of the temperament"
+
+[[law]]
+id = "emotion_generic"
+variables = ["pride", "jealousy", "envy", "tenderness", "gratitude", "contempt"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu"
+params = { half_life_game_h = 6 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "les émotions sans rythme décrit retombent à un rythme générique"
+note = "generic pace (the catalogue words none)"
+
+[[law]]
+id = "emotion_boredom"
+variables = ["boredom"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en heures de jeu ; cible en unités stockées"
+params = { half_life_game_h = 4, level = 60 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "l'ennui monte avec la répétition et l'inaction, retombe sinon"
+note = "rises with repetition and inaction (objective facts of the tick), returns otherwise"
+
+[[law]]
+id = "emotion_confusion"
+variables = ["confusion"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en secondes réelles ; plafond et seuils en unités stockées ; fièvre en milli-degrés"
+params = { half_life_real_s = 180, cap = 60, intoxication_divisor = 2, fever_above_milli_c = 38500, fever_divisor = 50, consciousness_divisor = 2 }
+depends_on = ["intoxication", "body_temperature", "consciousness"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la confusion retombe en minutes réelles, le corps l'entretient"
+note = "drug, fever and blows to the head keep it up (the body), returns in minutes real"
+
+# ---- l'esprit : humeur, énergie, tension -----------------------------------------------------------------------------
+[[law]]
+id = "mood_average"
+variables = ["mood_valence"]
+form = "relax"
+basis = "design"
+unit = "constante de temps en heures de jeu ; diviseurs = nombre de termes moyennés"
+params = { tau_game_h = 3, good_divisor = 4, bad_divisor = 4 }
+reads = ["baseline_mood", "joy", "tenderness", "gratitude", "pride", "fear", "anger", "sadness", "grief", "shame", "guilt"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "l'humeur est la moyenne glissante des émotions, tirée vers l'humeur de fond"
+note = "sliding average of the emotions over hours of game, pulled to the baseline"
+
+[[law]]
+id = "mood_energy_derived"
+variables = ["mood_energy"]
+form = "relax"
+basis = "design"
+unit = "constante de temps en heures de jeu ; diviseurs"
+params = { tau_game_h = 1, base = 50, emotion_divisor = 3, sleepiness_divisor = 2, hunger_divisor = 5, intoxication_divisor = 2 }
+depends_on = ["sleepiness", "intoxication"]
+reads = ["joy", "anger", "fear", "hunger"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "l'énergie se déduit du sommeil, de la faim, de l'ivresse et des émotions"
+note = "sleepiness, hunger, drug, emotions"
+
+[[law]]
+id = "stress_balance"
+variables = ["stress"]
+form = "rate"
+basis = "design"
+unit = "millièmes d'unité par heure de jeu et par point au-dessus du seuil"
+params = { rise_per_point = 600, fear_floor = 20, emotion_divisor = 3, hunger_onset = 70, thirst_onset = 70, sleepiness_onset = 80, drain_sleep = 6000, drain_talk = 2000, drain_rest = 1500 }
+depends_on = ["sleepiness"]
+reads = ["fear", "anxiety", "anger", "hunger", "thirst"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la tension s'accumule tant que la peur, l'anxiété, la colère et les besoins durent"
+note = "accumulates while fear, anxiety, anger and unmet needs last; sleep, rest and company drain it"
+
+# ---- l'esprit : les besoins psychologiques (une fraction du plafond T_step `rate` de la variable, par jour de jeu) -------
+[[law]]
+id = "drive_company"
+variables = ["need_company"]
+form = "rate"
+basis = "design"
+unit = "cible en unités stockées ; fractions du plafond T_step en millièmes"
+params = { conversing_target = 0, conversing_permille = 1000, alone_target = 100, alone_base_permille = 500, alone_per_sociability = 5, alone_cap_permille = 1000 }
+reads = ["sociability"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin de compagnie monte seul (plus s'il est sociable), baisse en parlant"
+note = "rises alone (faster if sociable), falls talking; under the T_step cap"
+
+[[law]]
+id = "drive_intimacy"
+variables = ["need_intimacy"]
+form = "rate"
+basis = "design"
+unit = "cible en unités stockées ; fraction du plafond T_step en millièmes"
+params = { target = 50, permille = 300 }
+doc_ref = "docs/14 ; ETAT.md T21 (D10)"
+label_fr = "le besoin d'intimité dérive lentement, nul avant l'âge adulte"
+note = "0 before the adult age (D10); slow drift; under the cap"
+
+[[law]]
+id = "drive_esteem"
+variables = ["need_esteem"]
+form = "rate"
+basis = "design"
+unit = "cible en unités stockées ; fraction du plafond T_step en millièmes"
+params = { target = 100, permille = 200 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin d'estime monte lentement"
+note = "slow rise; under the cap"
+
+[[law]]
+id = "drive_autonomy"
+variables = ["need_autonomy"]
+form = "rate"
+basis = "design"
+unit = "cibles en unités stockées ; fractions du plafond T_step en millièmes"
+params = { restrained_target = 100, restrained_permille = 1000, free_target = 0, free_permille = 500 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin d'autonomie monte quand on est entravé"
+note = "rises when restrained (physical fact); under the cap"
+
+[[law]]
+id = "drive_achievement"
+variables = ["need_achievement"]
+form = "rate"
+basis = "design"
+unit = "cible en unités stockées ; fraction du plafond T_step en millièmes"
+params = { target = 100, permille = 400 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin d'accomplissement monte éveillé sans gros travail"
+note = "rises awake without heavy work; the end of an intention (event) is the model's"
+
+[[law]]
+id = "drive_novelty"
+variables = ["need_novelty"]
+form = "rate"
+basis = "design"
+unit = "cibles en unités stockées ; fractions du plafond T_step en millièmes"
+params = { repetitive_target = 100, repetitive_base_permille = 400, repetitive_per_inquisitiveness = 4, repetitive_cap_permille = 1000, calm_target = 0, calm_permille = 600 }
+reads = ["inquisitiveness"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin de nouveauté monte avec la routine (plus s'il est curieux)"
+note = "rises with the routine (faster if inquisitive); under the cap"
+
+[[law]]
+id = "drive_security"
+variables = ["need_security"]
+form = "rate"
+basis = "design"
+unit = "cibles et seuils en unités stockées ; fractions du plafond T_step en millièmes"
+params = { need_target = 100, need_permille = 800, calm_target = 0, calm_permille = 400, hunger_onset = 70, thirst_onset = 70, discomfort_onset = 60, pain_onset = 50 }
+depends_on = ["thermal_comfort"]
+reads = ["hunger", "thirst", "pain"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin de sécurité suit le corps : faim, soif, froid, douleur, pas d'abri la nuit"
+note = "the body only: hunger, thirst, cold, pain, no shelter at night; under the cap"
+
+[[law]]
+id = "drive_acquisition"
+variables = ["need_acquisition"]
+form = "rate"
+basis = "design"
+unit = "plafond de la cible en unités stockées (cible = plafond - goût d'éviter l'avidité) ; fraction du plafond T_step en millièmes"
+params = { ceiling = 100, permille = 200 }
+reads = ["greed_avoidance"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin d'acquérir dérive vers l'avidité du trait"
+note = "slow drift toward the greed of the trait; under the cap"
+
+[[law]]
+id = "drive_play"
+variables = ["need_play"]
+form = "rate"
+basis = "design"
+unit = "cibles en unités stockées ; fractions du plafond T_step en millièmes"
+params = { working_target = 100, working_permille = 600, idle_target = 0, idle_permille = 300 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin de jeu monte avec le temps de travail"
+note = "rises with the work time; under the cap"
+
+[[law]]
+id = "drive_meaning"
+variables = ["need_meaning"]
+form = "rate"
+basis = "design"
+unit = "cible en unités stockées ; fraction du plafond T_step en millièmes"
+params = { target = 50, permille = 100 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le besoin de sens dérive très lentement"
+note = "very slow drift; under the cap"
+
+[[law]]
+id = "drift_to_trait"
+variables = ["self_regard"]
+form = "rate"
+basis = "design"
+unit = "fraction du plafond T_step en millièmes"
+params = { permille = 300 }
+reads = ["assurance"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "l'estime de soi revient lentement vers le trait d'assurance"
+note = "returns slowly toward the trait `assurance`, under the T_step cap"
+
+# ---- les relations, les souvenirs, les techniques : les lois lentes (une fois par jour de jeu) ---------------------------
+[[law]]
+id = "attitude_fade"
+variables = ["r_affection", "r_trust", "r_respect", "r_attraction"]
+form = "fade"
+basis = "design"
+unit = "demi-vie en années calendaires (après un an sans contact)"
+params = { half_life_years = 2 }
+reads = ["r_last_contact"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "les attitudes s'éteignent lentement après un an sans contact"
+note = "slow fade toward 0 after a year of calendar without contact (D10 is applied by the governor)"
+
+[[law]]
+id = "resentment_fade"
+variables = ["r_resentment"]
+form = "fade"
+basis = "design"
+unit = "demi-vie en années calendaires, multipliée par (base - par_point x pardon) / 1000"
+params = { half_life_years = 3, forgiveness_base_permille = 1500, forgiveness_per_point_permille = 10 }
+reads = ["r_last_contact", "forgiveness"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "le ressentiment s'éteint plus lentement chez qui pardonne peu"
+note = "slower fade the less the person forgives"
+
+[[law]]
+id = "fear_fade"
+variables = ["r_fear"]
+form = "fade"
+basis = "design"
+unit = "demi-vie en jours de jeu"
+params = { half_life_game_days = 1 }
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la crainte d'une personne retombe en un jour de jeu"
+note = "falls slowly (half-life one game day)"
+
+[[law]]
+id = "familiarity_balance"
+variables = ["r_familiarity"]
+form = "fade"
+basis = "design"
+unit = "demi-vie en années calendaires ; secondes de jeu ensemble pour un dixième"
+params = { half_life_years = 4, seconds_per_tenth = 1800, per_exchange = 1 }
+reads = ["r_last_contact"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la familiarité monte avec le temps passé ensemble, baisse sans contact"
+note = "rises with time together (one tenth per seconds_per_tenth) and exchanges; falls slowly without contact"
+
+[[law]]
+id = "memory_fade"
+variables = ["m_vividness"]
+form = "halflife"
+basis = "design"
+unit = "demi-vie en jours de jeu, multipliée par (base + par_point x capacité de mémoire) / 1000 et par (1000 + répétitions) / 1000"
+params = { half_life_game_days = 6, capacity_base_permille = 500, capacity_per_point_permille = 10, rehearsal_cap_permille = 3000 }
+reads = ["memory_capacity", "m_rehearsals", "m_defining"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "les souvenirs pâlissent, la mémoire et les répétitions les retiennent"
+note = "falls with time at the pace of the memory trait; rehearsals slow it; defining memories keep it"
+
+[[law]]
+id = "mastery_practice"
+variables = ["k_mastery"]
+form = "rate"
+basis = "design"
+unit = "millièmes de dixième de maîtrise par heure de jeu de pratique ; délai en jours de jeu"
+params = { rate = 1500, master_watching_permille = 2000, ceiling = 110, grace_game_days = 3, decay_per_day = 1 }
+depends_on = ["k_last_practice"]
+doc_ref = "docs/14 ; ETAT.md T21"
+label_fr = "la maîtrise monte avec la pratique, deux fois plus vite devant un maître, baisse sans pratique"
+note = "rises with practice (diminishing returns near the ceiling), twice as fast in front of a master; falls slowly without practice"

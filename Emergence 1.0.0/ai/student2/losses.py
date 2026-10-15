@@ -3,6 +3,11 @@
 Every target is NO_LABEL (-100) where its head does not apply (a parameter the gesture does not have, a write that was
 not made, a condition argument of another type): those entries are ignored.
 
+Reflect decisions (T11b, the written mind). Two decisions a reflect line asks are diluted in the plain terms, so each has
+its own extra term (no new parameter, the same logits): `plan_first` (is there a plan at all: position 0 of the plan head;
+the 7 other positions are trivially FIN and swamp the mean of `plan_gesture`) and `think_more` (the entries of the enum
+head whose variable is `think_more`: go on thinking or act). Without labels (all older data) both are zero.
+
 Weighting. A term is a SUM over its valid entries divided by max(n, B / 8): a frequent head (n >= B / 8) is a plain mean,
 a rare head (a stop condition on one decision in ten, a speech on one in five) is divided by B / 8 instead of its own
 tiny n, so that a batch with two examples of a rare head does not weigh as much as a batch where every example has
@@ -69,14 +74,20 @@ def masked_ce(logits: torch.Tensor, target: torch.Tensor, batch: int, ordinal: b
 
 
 class StudentLoss:
-    def __init__(self, weights: LossWeights | None = None):
+    def __init__(self, weights: LossWeights | None = None, think_more: int | None = None):
+        """`think_more`: index of the variable `think_more` in the registry (None: no extra term for it)."""
         self.w = weights or LossWeights()
+        self.think_more = think_more
 
     def __call__(self, out: dict, batch) -> tuple[torch.Tensor, dict, dict]:
         T = batch.targets
         B = batch.size
         total, parts, acc = None, {}, {}
         terms = [(name, out[name], T[name]) for name in FLAT]
+        terms.append(("plan_first", out["plan_gesture"][:, 0], T["plan_gesture"][:, 0]))
+        if self.think_more is not None:
+            enum = T["w_enum"].masked_fill(T["w_var"] != self.think_more, NO_LABEL)
+            terms.append(("think_more", out["w_enum"], enum))
         sp = out.get("speech")
         if sp is not None:
             t = sp["targets"]

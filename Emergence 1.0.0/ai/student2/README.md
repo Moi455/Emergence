@@ -63,6 +63,30 @@ Une passe de 1 M de décisions : environ 18 min en `small` (lot 128), 33 min en 
 
 Version 3 : le point de contrôle porte `registry_schema` et la forme de chaque tenseur (`shapes`). **Un point de contrôle d'avant T11 (version 2) ne se charge PAS tel quel** : les formes ont changé (tables de symboles 1658 → 1694 depuis T09, décodeur 1660 → 1696, têtes de plan et d'arrêt nouvelles). Seul `Checkpoint.load(chemin, rt, partial=True)` (CLI : `train --init-from`) le lit, via `partial.py` : mêmes nom et forme → copié ; `embed.cat.emb`, `embed.prop.sym`, `decoder.sym` → les anciennes lignes gardent leur place (registre tok-2 en ajout seul), les lignes des nouveaux symboles gardent leurs poids initiaux, et les deux lignes de fin du décodeur (fin de séquence, début) **sont déplacées** à la fin de la table agrandie ; tenseur nouveau → poids initiaux ; autre forme sans règle → réinitialisé ; tenseur disparu → ignoré. `payload["load_report"]` liste tout (`new`, `reset`, `remapped`, `dropped`) et `payload["fingerprint_diff"]` les empreintes qui diffèrent. L'ordre des index de sortie du registre doit rester un préfixe du courant. Hypothèse non vérifiable sans l'ancien registre tok-2 : que ses symboles sont un préfixe du nouveau (la promesse « en ajout seul »). L'optimiseur repart à zéro.
 
+## L'esprit écrit : apprendre les pas de réflexion (T11b)
+
+`teacher/mind_replay.py` transforme une ligne planner (pensées écrites avant l'acte) en lignes `reflect` puis `act` (voir `teacher/README.md`). **Aucune tête, aucun registre, aucun catalogue, aucune interface tok-2 ne change** : un pas de réflexion est une décision ordinaire que les têtes existantes savent dire.
+
+| Ce qu'une ligne `reflect` demande | Tête qui l'apprend |
+|---|---|
+| le geste est l'espace réservé `stop` (le moteur l'ignore en mode `reflect`) | tête de geste (le mode se lit dans `WAKE.mode`) |
+| continuer ou agir | écriture `think_more` sur `me` (vrai sauf au dernier pas) : chaîne d'écritures, tête d'énumération |
+| écrire UN dossier | croyance / but : écriture de `b_proposition` / `g_desired` sur la cible `new` (ou sur la clé du dossier révisé), phrase par le décodeur de phrases |
+| plan | tête de plan (étapes, répétition, période, **parent = le but servi**, `g:new` devient la clé qu'il a reçue) ; une pensée qui n'est pas un plan porte `plan: null` (« pas de plan », explicite) |
+
+Reconnaître une ligne `reflect` : son étiquette écrit `think_more` **et** porte une étiquette de plan (une ligne d'acte n'en a jamais). Les lignes d'un même esprit (`<id>#r0`, `#r1`, `#a`) restent du même côté du découpage entraînement / validation (le hachage porte sur l'`id` d'avant le `#`).
+**Pertes** : deux termes en plus, sans paramètre neuf. `plan_first` (y a-t-il un plan : la position 0 de la tête de plan ; les 7 autres positions sont FIN presque toujours et noyaient la moyenne de `plan_gesture`) et `think_more` (les entrées de la tête d'énumération dont la variable est `think_more`). Sans étiquette (toutes les données plus anciennes) ils valent zéro.
+**Évaluation** (`reflection.py`, branchée dans `evaluate.py` : section `reflection` du rapport, les lignes `reflect` sont retirées du jugement du validateur d'actes) : exactitude du **type** de pensée (belief, belief_about, goal, plan), de la **variable** écrite, de la **cible** (`new` ou le dossier révisé), de la **proposition** (exacte = même phrase canonique ; **valide** = le vrai `ThoughtChecker` accepte la pensée prédite sur l'esprit de l'état), du **plan** (exact, valide) et du `think_more` ; le tout aussi par type de pensée.
+
+### Mesures [Mesuré] (copie de `serie_planner`, 2 652 lignes, `small`, 12 M, GPU, lot 64, 30 époques, lr 3e-4, validation = 5 % des situations)
+
+- Rejeu : 2 635 lignes avec pensées, **4 094 exemples `reflect`** (croyance 1 497, but 2 035, plan 561, croyance sur autrui 1) + **2 651 `act`** ; **taux de rejeu valide 2 651 / 2 652 = 99,96 %** : une ligne refusée, dont une proposition de croyance (`(did @E1 speak @T7)`) que le `ThoughtChecker` accepte mais que tok-2 refuse (`speak` ne vise pas une chose) : un trou de validation du professeur, relevé. 6 744 des 6 745 lignes sont lisibles par l'élève.
+- **Sur l'ensemble d'entraînement** (sous-échantillon, 1 001 pas, dans la même condition de décision libre) : type 97,6 %, variable 97,5 %, proposition exacte 90,7 % et valide 97,5 %, plan exact 94,8 %, `think_more` 99,2 % : **la chaîne apprend bien** (têtes, masques, phrases).
+- **Sur la validation** (194 pas `reflect`) : type 58,2 % (majorité « but » : 51,0 %) ; variable 59,3 % ; cible 87,6 % ; proposition exacte 22,4 %, **valide 82,4 %** ; plan exact 8,3 % (n = 24), valide 12,5 % ; `think_more` 64,9 % (majorité 61,9 % ; avec le budget seul 67,0 %). Par type du but étiqueté : croyance 60 %, but 69 %, plan 17 %.
+- **Lecture honnête** : sur ~2 600 lignes c'est un test de chaîne. L'écart entre l'entraînement (97 %) et la validation (58 %) est du sur-apprentissage, pas un défaut de câblage ; les chiffres de validation sont à peine au-dessus de la majorité. Ils ne diront quelque chose qu'avec des dizaines de milliers de lignes. Le test `tests/test_reflect.py` (modèle `tiny`, pensées synthétiques déterministes) vérifie que la chaîne apprend quand le signal existe (type, variable et `think_more` > 85 %, plan exact > 70 %).
+
+Limites propres à ce rejeu : le mode, l'échéance, le parent et le début (`mode`, `deadline_h`, `parent`, `when_h`) d'un nouveau but sont écrits dans l'état suivant mais **pas appris** (une écriture sur `new` n'existe que pour les propositions, et la chaîne tient 4 écritures) ; la parole prévue d'un plan (`says`) non plus ; les champs que le moteur remplit à la création d'un dossier (source `inferred`, certitude 5, importance 5, ...) sont des **conventions du rejeu**, à remplacer par ce que le moteur écrira ; la décision de l'élève est apprise sur l'état « vrai » du professeur (guidage), pas encore sur ses propres sorties enchaînées ; `situations.audit` (qui demande la scène) n'est pas rejoué, seules les phrases ajoutées passent par le gouverneur.
+
 ## Limites
 
 - Pas d'automate de grammaire dans le décodeur ; une phrase prédite peut être invalide (le gouverneur la refuserait). Les arbres plus profonds que 10 sont refusés à l'étiquetage.
@@ -76,7 +100,7 @@ Version 3 : le point de contrôle porte `registry_schema` et la forme de chaque 
 
 ```
 cd ai
-python3 -m unittest discover -s student2/tests -t .          # 79 tests, ~2 min
+python3 -m unittest discover -s student2/tests -t .          # 100 tests, ~3,5 min
 python3 -m student2.output_registry --check                  # le registre de sortie couvre le catalogue ?
 python3 -m student2.smoke --n 256 --seed 0 --out /tmp/smoke.jsonl          # réponses ALÉATOIRES valides (test seulement) ; --plans : avec plans et arrêts aléatoires
 python3 -m student2.train --data /tmp/smoke.jsonl --smoke-test --size tiny --epochs 2 --batch 32 --out /tmp/run

@@ -678,6 +678,7 @@ note = "Moteur seul, sans canal : aucune de ses variables n'atteint un jeton. Ce
 
 [[variable]]
 id = "process_progress"
+no_law_reason = "world, matter or society variable: law of another task (T18, T23, T34)"
 label_fr = "avancement du processus en cours (0 à 1)"
 holder = "transformation"
 scale = "ratio"
@@ -688,6 +689,7 @@ clock = "day"
 
 [[variable]]
 id = "process_started_at"
+no_law_reason = "world, matter or society variable: law of another task (T18, T23, T34)"
 label_fr = "instant de jeu où le processus en cours a commencé"
 holder = "transformation"
 scale = "time"

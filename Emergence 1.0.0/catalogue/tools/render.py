@@ -19,7 +19,7 @@ SECTIONS = [("story", "Histoires (tests d'acceptation)"), ("entity", "Types d'en
             ("form", "Formes de parties (la grammaire des objets)"), ("species", "Espèces vivantes (lois du moteur)"), ("item_type", "Types d'objets connus"),
             ("action", "Gestes physiques"), ("concept", "Langue intérieure : concepts"),
             ("grammar", "Langue intérieure : grammaire"), ("interpretation", "Interprétations (jamais des options)"),
-            ("hard_rule", "Règles dures")]
+            ("hard_rule", "Règles dures"), ("law", "Lois du corps et de l'esprit (appliquées par le moteur, T21b)")]
 
 
 def cell(x):
@@ -110,6 +110,16 @@ def render(cat):
             continue
         elif kind == "grammar":
             L += table(["id", "règle", "libellé"], [[g.id, g.rule, g.label_fr] for g in items])
+        elif kind == "law":
+            L += ["Chaque taux, demi-vie, fraction et seuil est une variable d'ici, jamais une constante du moteur. `physique` = la nature ; "
+                  "`design` = le rythme du jeu (D30). Une variable écrite par le moteur a une loi OU une raison de n'en avoir pas.", ""]
+            L += table(["id", "variables écrites", "forme", "base", "unité", "paramètres", "par effort", "faits objectifs lus", "état propre lu", "où"],
+                       [[x.id, x.variables, x.form, {"physics": "physique", "design": "design"}.get(x.basis, x.basis), x.unit,
+                         ", ".join(f"{k}={v}" for k, v in x.params.items()), x.by_exertion, x.depends_on, x.reads, x.doc_ref]
+                        for x in items])
+            L += ["", "### Variables du moteur sans loi (et pourquoi)", ""]
+            L += table(["variable", "porté par", "raison"],
+                       [[v.id, v.holder, v.no_law_reason] for v in cat["variable"].values() if v.no_law_reason])
         elif kind == "hard_rule":
             L += table(["id", "règle", "s'applique à"], [[h.id, h.text_fr, h.applies_to] for h in items])
         L.append("")

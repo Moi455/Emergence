@@ -113,6 +113,7 @@ class Variable(Entry):
     dynamics: str = ""
     token: str = ""
     status: str = "N"
+    no_law_reason: str = ""              # T21b: an `engine` variable has a [[law]] OR says here why it has none (tools/laws.py)
 
 
 @dataclass
@@ -351,16 +352,35 @@ class Forgetting(Entry):
                                          # the lowest score is forgotten first, a tie forgets the oldest
 
 
+@dataclass
+class Law(Entry):
+    """A law of the body or the mind that the ENGINE applies at every tick (data/laws.toml, T21b): its numbers are variables,
+    never constants of the C++. Checked by tools/laws.py, written to laws_gen.h by gen_cpp.py."""
+    variables: list[str] = field(default_factory=list)   # the variables it writes (engine or derived)
+    form: str = ""                       # LAW_FORMS
+    basis: str = ""                      # LAW_BASES: required
+    unit: str = ""
+    params: dict = field(default_factory=dict)           # name -> integer; a duration says its unit in its name (LAW_DURATION_SUFFIXES)
+    by_exertion: list[int] = field(default_factory=list)  # one value per effort (EXERTIONS), when the law depends on it
+    depends_on: list[str] = field(default_factory=list)  # OBJECTIVE facts read: never a private variable nor a truth forbidden to tokens
+    reads: list[str] = field(default_factory=list)       # own state read (traits, emotions, needs, pain): never a forbidden truth
+    doc_ref: str = ""
+
+
 KINDS: dict[str, type[Entry]] = {
     "entity": EntityKind, "component": Component, "variable": Variable, "property": Property,
     "action": Action, "concept": Concept, "grammar": Grammar, "interpretation": Interpretation,
     "hard_rule": HardRule, "shape": Shape, "story": Story, "site": Site, "percept_word": PerceptWord, "material": Material, "process": Process, "form": Form, "item_type": ItemType, "species": Species, "migration": Migration,
-    "duration_level": DurationLevel, "illness": Illness, "forgetting": Forgetting,
+    "duration_level": DurationLevel, "illness": Illness, "forgetting": Forgetting, "law": Law,
 }
 ENGINE_MATERIALS = Path(__file__).resolve().parents[1] / "engine" / "data" / "materials.csv"
 SEASONS = ("spring", "summer", "autumn", "winter")
 PROCESS_CLOCKS = ("real", "calendar", "game", "life")   # docs/14 4.4: engine cycle, slow process, chosen duration; life = life clock (T08d)
 ILLNESS_TRANSMISSIONS = ("contact", "air", "water", "bite", "wound", "birth")
+LAW_FORMS = ("rate", "relax", "halflife", "derived", "threshold", "fade")
+LAW_BASES = ("physics", "design")        # nature (cooling, bleeding...) or game rhythm (D30)
+EXERTIONS = ("sleeping", "lying_awake", "standing", "walking", "running", "heavy_work")   # order of Exertion (npc_laws.h)
+LAW_DURATION_SUFFIXES = ("_real_s", "_game_s", "_game_h", "_game_days", "_years")
 PROPERTY_CATEGORIES = ("intrinsic", "affordance", "state")
 STORY_REFS = {"actions": "action", "concepts": "concept", "variables": "variable", "entities": "entity",
               "properties": "property", "interpretations": "interpretation"}

@@ -38,6 +38,7 @@ from teacher.validate import AnswerValidator
 from .data import Batch, LabelDataset
 from .labels import Targets, comparable
 from .model import StudentConfig, StudentModel
+from .reflection import ReflectionScore
 from .runtime import Runtime
 from .spec import MAX_REFS, MAX_WRITES, NO_LABEL, ValueKind
 from .train import Checkpoint
@@ -87,6 +88,7 @@ class Evaluator:
         col = ds.collator(False)
         self.batches: list[Batch] = [col([ds[i] for i in range(s, min(s + batch, n))]) for s in range(0, n, batch)]
         self.validator = AnswerValidator(rt.tk, truth_factory=lambda s: AgeTruth(s.ages))
+        self.reflection = ReflectionScore(rt)
 
     @torch.no_grad()
     def predict(self, model: StudentModel) -> Predictions:
@@ -124,8 +126,25 @@ class Evaluator:
         rep["writes"] = self._writes(T, P, gok)
         rep["sequences"] = self._sequences(T, P, gok)
         rep["plans"] = self._plans(T, P)
-        rep["validity"] = self._validity(p)
+        reflect = self.reflection.mask(T)
+        if reflect.any():                                  # T11b: the lines of the written mind (teacher/mind_replay.py)
+            decided = self.decisions(p)
+            rep["reflection"] = self.reflection.run(p, decided, self.truth_decisions(p))
+            rep["validity"] = self._validity(p, skip=reflect, decided=decided)
+            rep["validity"]["reflect_rows_judged_in_reflection"] = int(reflect.sum())
+        else:
+            rep["validity"] = self._validity(p)
         return rep
+
+    def truth_decisions(self, p: Predictions) -> list:
+        """The labels decoded to decisions (None when one does not decode)."""
+        out = []
+        for i, m in enumerate(p.meta):
+            try:
+                out.append(self.rt.codec.decode(Targets(**{n: p.truth[n][i] for n in Targets.names()}), m["enc"], m["records"]))
+            except Exception:                                                   # noqa: BLE001
+                out.append(None)
+        return out
 
     def _plans(self, T, P) -> dict:
         """Plan head (only the lines whose label carries a plan or an explicit 'no plan'): is there a plan at all, then the
@@ -258,13 +277,16 @@ class Evaluator:
             return f"validator_crash:{type(e).__name__}"
         return "ok" if o.ok else o.code
 
-    def _validity(self, p: Predictions) -> dict:
+    def _validity(self, p: Predictions, skip: np.ndarray | None = None, decided: list | None = None) -> dict:
+        """`skip`: rows left out (the reflect lines, scored by `reflection`; the validator judges an act)."""
         names = Targets.names()
-        decided = self.decisions(p)
+        decided = decided if decided is not None else self.decisions(p)
         codes, errors = Counter(), Counter()
         speech_ok = speech_n = no_ages = 0
         teacher = Counter()
         for i, ((dec, why), m) in enumerate(zip(decided, p.meta)):
+            if skip is not None and skip[i]:
+                continue
             no_ages += not m["source"].get("ages")
             want = Targets(**{n: p.truth[n][i] for n in names})
             try:
@@ -279,7 +301,7 @@ class Evaluator:
             if dec.get("speech"):
                 speech_n += 1
                 speech_ok += bool(self.rt.tk.expression(dec["speech"]).ok)
-        n = max(1, p.n)
+        n = max(1, p.n - (0 if skip is None else int(skip.sum())))
         return {"decision_valid": codes["ok"] / n, "refusal_codes": dict(codes.most_common()),
                 "undecodable_reasons": dict(errors.most_common(5)),
                 "speech_grammar_valid": {"n": speech_n, "acc": speech_ok / speech_n if speech_n else None},
