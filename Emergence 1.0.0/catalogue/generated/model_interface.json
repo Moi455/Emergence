@@ -1061,6 +1061,16 @@
       "unit": "",
       "values": []
      },
+     "has_plan": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "g_has_plan",
+      "list_of": "",
+      "scale": "bool",
+      "unit": "",
+      "values": []
+     },
      "mode": {
       "component_scales": [],
       "component_units": [],
@@ -1105,6 +1115,19 @@
        "COMMIT",
        "ENTITY",
        "GROUP"
+      ],
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "parent": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "g_parent",
+      "list_of": "",
+      "ref_types": [
+       "GOAL"
       ],
       "scale": "mref",
       "unit": "",
@@ -1235,6 +1258,29 @@
       "unit": "",
       "values": []
      },
+     "my_task": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "r_group_my_task",
+      "list_of": "",
+      "ref_types": [
+       "COMMIT"
+      ],
+      "scale": "mref",
+      "unit": "",
+      "values": []
+     },
+     "present": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "r_group_present",
+      "list_of": "",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
      "rel.affection": {
       "component_scales": [],
       "component_units": [],
@@ -1300,6 +1346,16 @@
       "component_units": [],
       "components": [],
       "from": "r_group_size",
+      "list_of": "",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
+     "tasks_open": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "r_group_tasks_open",
       "list_of": "",
       "scale": "qty",
       "unit": "",
@@ -1466,6 +1522,16 @@
     "alias_of": "THING",
     "count": 8,
     "fields": {
+     "age": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "pc_age_seen",
+      "list_of": "",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
      "amount": {
       "component_scales": [],
       "component_units": [],
@@ -2110,6 +2176,16 @@
        "whispers"
       ]
      },
+     "smell": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "pp_smell_seen",
+      "list_of": "word",
+      "scale": "list",
+      "unit": "",
+      "values": []
+     },
      "sun": {
       "component_scales": [],
       "component_units": [],
@@ -2150,8 +2226,18 @@
     "layout": ""
    },
    "PLAN": {
-    "count": 1,
+    "count": 2,
     "fields": {
+     "attempts": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "i_attempts",
+      "list_of": "",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
      "commitment": {
       "component_scales": [],
       "components": [],
@@ -2187,6 +2273,32 @@
       "unit": "",
       "values": []
      },
+     "repeat": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "i_repeat",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "once",
+       "each_day",
+       "each_season",
+       "each_year",
+       "every"
+      ]
+     },
+     "repeat_period": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "i_repeat_period",
+      "list_of": "",
+      "scale": "qty",
+      "unit": "",
+      "values": []
+     },
      "says": {
       "component_scales": [],
       "component_units": [],
@@ -2196,6 +2308,22 @@
       "scale": "proposition",
       "unit": "",
       "values": []
+     },
+     "status": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "i_status",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "running",
+       "suspended",
+       "blocked",
+       "done",
+       "abandoned"
+      ]
      },
      "step": {
       "component_scales": [],
@@ -2253,7 +2381,7 @@
      }
     },
     "key": "p:",
-    "layout": "step (the current gesture), next (the gesture after it; '' = end of plan), goal (g:), target (mref), progress, commitment"
+    "layout": "step (the current gesture), next (the gesture after it; '' = end of plan), goal (g:), target (mref), progress (of the step), commitment, status, repeat, repeat_period, attempts; up to 2 PLAN tokens (the plan at hand and a suspended one)"
    },
    "REQUEST": {
     "count": 2,
@@ -3512,6 +3640,16 @@
    "THING": {
     "count": 16,
     "fields": {
+     "age": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "pc_age_seen",
+      "list_of": "",
+      "scale": "word",
+      "unit": "",
+      "values": []
+     },
      "amount": {
       "component_scales": [],
       "component_units": [],
@@ -3883,7 +4021,10 @@
        "body",
        "plan",
        "timer",
-       "routine"
+       "routine",
+       "goal_check",
+       "occasion",
+       "idle"
       ]
      },
      "mode": {
@@ -3896,6 +4037,22 @@
        "act",
        "listen",
        "reflect"
+      ]
+     },
+     "outcome": {
+      "component_scales": [],
+      "component_units": [],
+      "components": [],
+      "from": "w_outcome",
+      "list_of": "",
+      "scale": "enum",
+      "unit": "",
+      "values": [
+       "done",
+       "failed",
+       "blocked",
+       "interrupted",
+       "limit_reached"
       ]
      },
      "temperament": {
@@ -3917,7 +4074,10 @@
        "HEARD",
        "REQUEST",
        "GOAL",
-       "PLAN"
+       "PLAN",
+       "COMMIT",
+       "ENTITY",
+       "GROUP"
       ],
       "scale": "mref",
       "unit": "",
@@ -3933,7 +4093,7 @@
      }
     },
     "key": "wake",
-    "layout": "why this decision happens now: mode, cause, trigger (the record that woke him), urgency"
+    "layout": "why this decision happens now: mode, cause (goal_check = a belief-derived value moved: the model rereads and writes g_status), trigger (the record that woke him: event, heard, request, goal, plan, commit, entity or group), urgency, outcome of the step"
    }
   }
  },
@@ -3950,6 +4110,10 @@
     "quantity"
    ],
    "c_hands_full": [],
+   "c_have": [
+    "kind",
+    "quantity"
+   ],
    "c_hears": [
     "concept"
    ],
@@ -3980,6 +4144,9 @@
    "c_target_gone": [
     "entity"
    ],
+   "c_target_near": [
+    "entity"
+   ],
    "c_target_still": [
     "entity"
    ],
@@ -3992,7 +4159,8 @@
    "c_time": [
     "time"
    ],
-   "c_tool_broken": []
+   "c_tool_broken": [],
+   "c_unwatched": []
   },
   "condition_head": [
    "c_addressed",
@@ -4002,6 +4170,7 @@
    "c_elapsed",
    "c_exhausted",
    "c_hands_full",
+   "c_have",
    "c_hears",
    "c_hunger_above",
    "c_pain_above",
@@ -4013,11 +4182,13 @@
    "c_stopped",
    "c_target_down",
    "c_target_gone",
+   "c_target_near",
    "c_target_still",
    "c_target_yields",
    "c_thirst_above",
    "c_time",
-   "c_tool_broken"
+   "c_tool_broken",
+   "c_unwatched"
   ],
   "feasibility_mask": "computed on the NPC's percepts and beliefs, never on the world; a gesture that the world refuses fails physically and that failure is perceived",
   "gesture_head": [
@@ -4790,7 +4961,8 @@
        "structure",
        "terrain",
        "voxel",
-       "water"
+       "water",
+       "animal"
       ],
       "token": [
        "PLACE (here) or LOCUS (a known place, @L)",
@@ -5661,7 +5833,8 @@
      "ground",
      "container",
      "hand_of",
-     "worn_by"
+     "worn_by",
+     "growing"
     ]
    },
    "give.mode": {
@@ -5739,7 +5912,10 @@
      "raise_hand",
      "show",
      "spit",
-     "fist"
+     "fist",
+     "wink",
+     "cover_face",
+     "trace_sign"
     ]
    },
    "look.mode": {
@@ -5823,7 +5999,8 @@
      "touch",
      "weigh",
      "smell",
-     "taste"
+     "taste",
+     "hear"
     ]
    },
    "stance": {
@@ -5909,7 +6086,11 @@
      "calm",
      "cold",
      "angry",
-     "pleading"
+     "pleading",
+     "rising",
+     "trembling",
+     "low_slow",
+     "drawling"
     ]
    },
    "touch.with": {
@@ -5950,7 +6131,8 @@
      "rub",
      "stir",
      "squeeze",
-     "saw"
+     "saw",
+     "twist"
     ]
    },
    "zone": {
@@ -5981,12 +6163,14 @@
   "speech": {
    "grammar_words": [
     "a_while",
+    "abandoned",
     "able",
     "above",
     "abrasiveness",
     "absorbency",
     "accident",
     "achieve",
+    "acrid",
     "activate",
     "adhesion",
     "admirable",
@@ -6013,6 +6197,7 @@
     "apprentice",
     "arm",
     "arms",
+    "aromatic",
     "arson",
     "aside",
     "ask",
@@ -6045,6 +6230,7 @@
     "bind",
     "binds",
     "block",
+    "blocked",
     "blocks_passage",
     "blow",
     "body",
@@ -6063,6 +6249,7 @@
     "c_elapsed",
     "c_exhausted",
     "c_hands_full",
+    "c_have",
     "c_hears",
     "c_hunger_above",
     "c_pain_above",
@@ -6074,11 +6261,13 @@
     "c_stopped",
     "c_target_down",
     "c_target_gone",
+    "c_target_near",
     "c_target_still",
     "c_target_yields",
     "c_thirst_above",
     "c_time",
     "c_tool_broken",
+    "c_unwatched",
     "calm",
     "capacity",
     "carryable",
@@ -6101,6 +6290,7 @@
     "count",
     "cousin",
     "cover",
+    "cover_face",
     "cowardice",
     "creativity",
     "crouch",
@@ -6138,7 +6328,9 @@
     "disrespect_absence",
     "divisible",
     "dodge",
+    "done",
     "down",
+    "drawling",
     "dreamt",
     "dreamt_it",
     "drink",
@@ -6176,6 +6368,7 @@
     "enemy",
     "equal",
     "evening",
+    "every",
     "everyone",
     "examine",
     "exclaim",
@@ -6183,6 +6376,7 @@
     "exists",
     "extortion",
     "face",
+    "failed",
     "faint",
     "fairness",
     "fearfulness",
@@ -6222,6 +6416,7 @@
     "give",
     "glance",
     "go",
+    "goal_check",
     "goodbye",
     "grab",
     "grandchild",
@@ -6229,6 +6424,7 @@
     "graspable",
     "greed_avoidance",
     "ground",
+    "growing",
     "guard",
     "guest",
     "habitual",
@@ -6242,6 +6438,7 @@
     "hardness",
     "has",
     "head",
+    "hear",
     "heard",
     "heard_said",
     "heats",
@@ -6259,6 +6456,7 @@
     "hunger",
     "hydration",
     "hypocrisy",
+    "idle",
     "if",
     "ignites",
     "impacts",
@@ -6275,6 +6473,7 @@
     "integrity",
     "intellect",
     "intends",
+    "interrupted",
     "intimate",
     "into",
     "intoxication",
@@ -6303,6 +6502,7 @@
     "light",
     "light_emission",
     "light_source",
+    "limit_reached",
     "link",
     "lips",
     "listen",
@@ -6320,6 +6520,7 @@
     "loud",
     "lover",
     "low",
+    "low_slow",
     "loyalty",
     "made",
     "magic_power",
@@ -6346,11 +6547,13 @@
     "mountable",
     "mouth",
     "murder",
+    "musty",
     "named",
     "near",
     "neck",
     "negligence",
     "neighbor",
+    "new",
     "niece_nephew",
     "night",
     "no",
@@ -6388,11 +6591,14 @@
     "o_weaver",
     "o_woodcutter",
     "obligatory",
+    "occasion",
     "odor",
     "of",
     "offer",
+    "old",
     "on",
     "on_back",
+    "once",
     "one",
     "opacity",
     "open",
@@ -6431,6 +6637,7 @@
     "push",
     "put",
     "put_on",
+    "putrid",
     "qualifies",
     "quality",
     "quarter",
@@ -6442,8 +6649,11 @@
     "r_group_kind",
     "r_group_leader",
     "r_group_members",
+    "r_group_my_task",
+    "r_group_present",
     "r_group_role",
     "r_group_size",
+    "r_group_tasks_open",
     "r_id_certainty",
     "r_known_by",
     "r_link_believed",
@@ -6457,6 +6667,7 @@
     "r_rivalry",
     "r_trust",
     "raise_hand",
+    "rancid",
     "reach",
     "read",
     "read_it",
@@ -6471,12 +6682,14 @@
     "rest",
     "revenge",
     "right",
+    "rising",
     "rolls",
     "rolls_load",
     "romantic",
     "route",
     "rub",
     "run",
+    "running",
     "sacrilege",
     "sad",
     "saw",
@@ -6519,6 +6732,7 @@
     "slow",
     "small_vial",
     "smell",
+    "smoky",
     "sociability",
     "solemn",
     "some",
@@ -6529,6 +6743,7 @@
     "soon",
     "sorcery",
     "sorry",
+    "sour",
     "span",
     "speak",
     "spit",
@@ -6548,6 +6763,8 @@
     "supports_body",
     "sure",
     "surface_writable",
+    "suspended",
+    "sweet",
     "swim",
     "swing",
     "t_archery",
@@ -6607,10 +6824,13 @@
     "toughness",
     "toward",
     "toxicity",
+    "trace_sign",
     "traps",
     "treasurer",
+    "trembling",
     "trespass",
     "trigger",
+    "twist",
     "unconventionality",
     "under",
     "unlock",
@@ -6670,11 +6890,13 @@
     "white_mushroom",
     "who",
     "why",
+    "wink",
     "winter",
     "wipes",
     "with",
     "work",
     "works_as",
+    "worn",
     "worn_by",
     "worth",
     "wounds",
@@ -7968,6 +8190,20 @@
       "T_jump"
      ]
     },
+    "g_parent": {
+     "holder": "goal",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "mref",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "structured": true,
+     "target": "GOAL pointer or new record",
+     "values": [],
+     "writer": [
+      "T_jump"
+     ]
+    },
     "g_priority": {
      "holder": "goal",
      "intimate": false,
@@ -7999,8 +8235,7 @@
       "abandoned"
      ],
      "writer": [
-      "T_jump",
-      "engine"
+      "T_jump"
      ]
     },
     "g_when": {
@@ -8107,6 +8342,40 @@
       "T_jump"
      ]
     },
+    "i_repeat": {
+     "holder": "intention",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "enum",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "structured": true,
+     "target": "the current PLAN",
+     "values": [
+      "once",
+      "each_day",
+      "each_season",
+      "each_year",
+      "every"
+     ],
+     "writer": [
+      "T_jump"
+     ]
+    },
+    "i_repeat_period": {
+     "holder": "intention",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "qty",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "structured": false,
+     "target": "the current PLAN",
+     "values": [],
+     "writer": [
+      "T_jump"
+     ]
+    },
     "i_serves": {
      "holder": "intention",
      "intimate": false,
@@ -8132,6 +8401,27 @@
      "target": "the current PLAN",
      "values": [],
      "writer": [
+      "T_jump"
+     ]
+    },
+    "i_status": {
+     "holder": "intention",
+     "intimate": false,
+     "rate_per_day": 0.0,
+     "scale": "enum",
+     "slow_per_life_year": 0.0,
+     "step": 0.0,
+     "structured": true,
+     "target": "the current PLAN",
+     "values": [
+      "running",
+      "suspended",
+      "blocked",
+      "done",
+      "abandoned"
+     ],
+     "writer": [
+      "engine",
       "T_jump"
      ]
     },
@@ -9036,5 +9326,5 @@
    }
   }
  },
- "schema_version": "model-interface-2"
+ "schema_version": "model-interface-3"
 }

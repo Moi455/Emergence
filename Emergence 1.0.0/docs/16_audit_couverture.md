@@ -128,7 +128,7 @@ Ces activités sont **OK** : elles ne demandent aucun geste nouveau, et ne doive
 - garder des enfants (listes blanches D10) ; voyager et camper (`go`, `put`, `sleep`, feu).
 
 Manques relevés dans ce groupe :
-- **voix** : `speak.tone` n'a que des qualités tranchées (`warm`, `calm`, `cold`, `angry`, `pleading`), et le clip `talk_joyful` existe sans valeur qui le commande. Ajouts décrits par leur forme : `bright` (voix qui monte, rythme vif), `trembling` (voix qui tremble), `grave` (voix lente et basse), `drawling` (voix traînante, mots étirés) ;
+- **voix** : `speak.tone` n'a que des qualités tranchées (`warm`, `calm`, `cold`, `angry`, `pleading`), et le clip `talk_joyful` existe sans valeur qui le commande. Ajouts décrits par leur forme : `rising` (voix qui monte, rythme vif), `trembling` (voix qui tremble), `low_slow` (voix lente et basse), `drawling` (voix traînante, mots étirés) ;
 - **signes** : ajouts décrits par leur forme seule : `wink` (une paupière se ferme brièvement), `cover_face` (les mains sur le visage), `trace_sign` (la main trace une figure dans l'air). Ce qu'ils veulent dire, ceux qui les voient en jugent ;
 - **sens** : `examine.sense` gagne `hear` (l'oreille contre la chose) ;
 - **routines** : patrouiller, faire sa tournée, se réunir demandent `i_repeat` et sa période, pas un geste ;
@@ -171,7 +171,7 @@ Ces histoires nommées sont des **sondes** : elles disent si le catalogue et le 
 
 | Tête | Ajouts (forme seule) | Valeurs, puis capacité du registre |
 |---|---|---|
-| `speak.tone` | `bright` (voix qui monte, rythme vif), `trembling` (voix qui tremble), `grave` (voix lente et basse), `drawling` (voix traînante, mots étirés) | 5 → 9 / 9 |
+| `speak.tone` | `rising` (voix qui monte, rythme vif), `trembling` (voix qui tremble), `low_slow` (voix lente et basse), `drawling` (voix traînante, mots étirés) | 5 → 9 / 9 |
 | `sign.kind` | `wink` (une paupière se ferme brièvement), `cover_face` (les mains sur le visage), `trace_sign` (la main trace une figure dans l'air) | 12 → 15 / 16 |
 | `take.from` | `growing` (sur la plante qui pousse) | 4 → 5 / 8 |
 | `work.motion` | `twist` (tordre en tournant) | 5 → 6 / 9 |
@@ -219,7 +219,7 @@ Descriptions étendues, sans nouvel id : `cut` (une carcasse rend les produits e
 | `i_repeat` | `goals.toml`, `intention` | enum `once`, `each_day`, `each_season`, `each_year`, `every` | T_jump | `PLAN.repeat` | routines | T08b |
 | `i_repeat_period` | `goals.toml`, `intention` | qty (heures de jeu, 1 à 2 000) | T_jump | `PLAN.repeat_period` | tours de garde toutes les 8 h, réunion tous les 2 jours (une semaine dépasserait l'année de D30) | T08b |
 | `i_attempts` | `goals.toml`, `intention` | qty | engine | `PLAN.attempts` | combien de fois l'étape a échoué | T08b |
-| `w_outcome` | `goals.toml`, `activity` | enum `done`, `failed`, `blocked`, `interrupted`, `timeout` | engine | `WAKE.outcome` | comment l'étape a fini, tel que perçu | T08b |
+| `w_outcome` | `goals.toml`, `activity` | enum `done`, `failed`, `blocked`, `interrupted`, `limit_reached` | engine | `WAKE.outcome` | comment l'étape a fini, tel que perçu | T08b |
 | `i_step_started` | `goals.toml`, `intention` | time | engine | — | **temps** : début de l'étape (sauvegardé) | T08b |
 | `i_step_progress` | `goals.toml`, `intention` | ratio | engine | `PLAN.progress` (précisé) | **temps** : où en est l'étape | T08b |
 | `made_at` | `properties.toml`, `provenance` (nouveau composant) | time | engine | — (vu par `pc_age_seen`) | **temps** : âge d'un objet, d'un aliment, d'un bâtiment | T08a |

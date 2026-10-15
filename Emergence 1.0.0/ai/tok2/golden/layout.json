@@ -1790,6 +1790,27 @@
      "codec": "ScalarCodec",
      "scale": "time_until",
      "normalisation": "copysign(log1p(|x|), x), |x| <= 1e7 game hours until (negative: overdue)"
+    },
+    {
+     "name": "has_plan",
+     "block": "num",
+     "col": 5,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "normalisation": "1 if x else 0 (a real bool)"
+    },
+    {
+     "name": "parent",
+     "block": "ptr",
+     "col": 1,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "GOAL"
+     ]
     }
    ]
   },
@@ -1914,6 +1935,36 @@
      "name": "size",
      "block": "num",
      "col": 5,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "my_task",
+     "block": "ptr",
+     "col": 5,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "normalisation": "",
+     "ref_types": [
+      "COMMIT"
+     ]
+    },
+    {
+     "name": "present",
+     "block": "num",
+     "col": 6,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "tasks_open",
+     "block": "num",
+     "col": 7,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "qty",
@@ -2633,6 +2684,15 @@
      "codec": "SymbolCodec",
      "scale": "word",
      "normalisation": ""
+    },
+    {
+     "name": "age",
+     "block": "cat",
+     "col": 12,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
     }
    ]
   },
@@ -2936,12 +2996,21 @@
      "codec": "BagCodec",
      "scale": "list",
      "normalisation": ""
+    },
+    {
+     "name": "smell",
+     "block": "cat",
+     "col": 13,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
+     "normalisation": ""
     }
    ]
   },
   "PLAN": {
    "id": 12,
-   "count": 1,
+   "count": 2,
    "key": "p:",
    "columns": [
     {
@@ -3045,6 +3114,56 @@
      "codec": "BagCodec",
      "scale": "list",
      "normalisation": ""
+    },
+    {
+     "name": "attempts",
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "repeat",
+     "block": "cat",
+     "col": 8,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "normalisation": "",
+     "values": [
+      "once",
+      "each_day",
+      "each_season",
+      "each_year",
+      "every"
+     ]
+    },
+    {
+     "name": "repeat_period",
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "normalisation": "log1p(x), x in [0, 1e7]"
+    },
+    {
+     "name": "status",
+     "block": "cat",
+     "col": 9,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "normalisation": "",
+     "values": [
+      "running",
+      "suspended",
+      "blocked",
+      "done",
+      "abandoned"
+     ]
     }
    ]
   },
@@ -5050,6 +5169,15 @@
      "codec": "SymbolCodec",
      "scale": "word",
      "normalisation": ""
+    },
+    {
+     "name": "age",
+     "block": "cat",
+     "col": 12,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "normalisation": ""
     }
    ]
   },
@@ -5073,7 +5201,10 @@
       "body",
       "plan",
       "timer",
-      "routine"
+      "routine",
+      "goal_check",
+      "occasion",
+      "idle"
      ]
     },
     {
@@ -5103,7 +5234,10 @@
       "HEARD",
       "REQUEST",
       "GOAL",
-      "PLAN"
+      "PLAN",
+      "COMMIT",
+      "ENTITY",
+      "GROUP"
      ]
     },
     {
@@ -5132,6 +5266,22 @@
      "codec": "ScalarCodec",
      "scale": "unipolar10",
      "normalisation": "x / 10, x in [0, 10]"
+    },
+    {
+     "name": "outcome",
+     "block": "cat",
+     "col": 2,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "normalisation": "",
+     "values": [
+      "done",
+      "failed",
+      "blocked",
+      "interrupted",
+      "limit_reached"
+     ]
     }
    ]
   }
@@ -6794,7 +6944,43 @@
   "work_dress",
   "workshop",
   "yawning",
-  "yellow"
+  "yellow",
+  "acrid",
+  "aromatic",
+  "blocked",
+  "c_have",
+  "c_target_near",
+  "c_unwatched",
+  "cover_face",
+  "done",
+  "drawling",
+  "every",
+  "goal_check",
+  "growing",
+  "hear",
+  "idle",
+  "interrupted",
+  "limit_reached",
+  "low_slow",
+  "musty",
+  "new",
+  "occasion",
+  "old",
+  "once",
+  "putrid",
+  "r_group_my_task",
+  "r_group_present",
+  "r_group_tasks_open",
+  "rancid",
+  "rising",
+  "smoky",
+  "sour",
+  "suspended",
+  "sweet",
+  "trace_sign",
+  "twist",
+  "wink",
+  "worn"
  ],
  "retired_symbols": [
   "at_festival",
@@ -6802,6 +6988,7 @@
  ],
  "speech_to_input": {
   "a_while": 77,
+  "abandoned": 78,
   "able": 79,
   "above": 80,
   "abrasive_face": 81,
@@ -7173,6 +7360,7 @@
   "exists": 472,
   "extortion": 473,
   "face": 474,
+  "failed": 475,
   "faint": 476,
   "fairness": 477,
   "fastener": 479,
@@ -7718,6 +7906,7 @@
   "rubble_masonry": 1050,
   "rug": 1051,
   "run": 1052,
+  "running": 1053,
   "rush_mat": 1054,
   "rye": 1055,
   "rye_sack": 1056,
@@ -8298,13 +8487,49 @@
   "work_dress": 1654,
   "workshop": 1655,
   "yawning": 1656,
-  "yellow": 1657
+  "yellow": 1657,
+  "acrid": 1658,
+  "aromatic": 1659,
+  "blocked": 1660,
+  "c_have": 1661,
+  "c_target_near": 1662,
+  "c_unwatched": 1663,
+  "cover_face": 1664,
+  "done": 1665,
+  "drawling": 1666,
+  "every": 1667,
+  "goal_check": 1668,
+  "growing": 1669,
+  "hear": 1670,
+  "idle": 1671,
+  "interrupted": 1672,
+  "limit_reached": 1673,
+  "low_slow": 1674,
+  "musty": 1675,
+  "new": 1676,
+  "occasion": 1677,
+  "old": 1678,
+  "once": 1679,
+  "putrid": 1680,
+  "r_group_my_task": 1681,
+  "r_group_present": 1682,
+  "r_group_tasks_open": 1683,
+  "rancid": 1684,
+  "rising": 1685,
+  "smoky": 1686,
+  "sour": 1687,
+  "suspended": 1688,
+  "sweet": 1689,
+  "trace_sign": 1690,
+  "twist": 1691,
+  "wink": 1692,
+  "worn": 1693
  },
  "fingerprints": {
   "schema": "tok2-context-1",
-  "interface": "2f9e945e6199d90b",
-  "layout": "261bb04518ef3a2e",
-  "vocabulary": "6e26f29527c3b287"
+  "interface": "009376fdb3dbadf2",
+  "layout": "e84a8804b90f5bd1",
+  "vocabulary": "472bedbfa0f83e9b"
  },
  "grammar": {
   "source": "catalogue/tools/language.py (Expression, Vocabulary.types, ref_targets): port those functions with these tables",
@@ -8397,6 +8622,9 @@
    ]
   },
   "category_types": {
+   "age": [
+    "concept"
+   ],
    "daypart": [
     "time"
    ],
@@ -8459,6 +8687,15 @@
    "occupation": [
     "concept"
    ],
+   "odor": [
+    "concept"
+   ],
+   "plan_repeat": [
+    "concept"
+   ],
+   "plan_state": [
+    "concept"
+   ],
    "property": [
     "variable"
    ],
@@ -8493,6 +8730,9 @@
    ],
    "variable": [
     "variable"
+   ],
+   "wake_cause": [
+    "concept"
    ]
   },
   "accepts": {
@@ -8567,6 +8807,9 @@
    "a_while": [
     "manner"
    ],
+   "abandoned": [
+    "plan_state"
+   ],
    "able": [
     "predicate"
    ],
@@ -8584,6 +8827,9 @@
    ],
    "achieve": [
     "goal_mode"
+   ],
+   "acrid": [
+    "odor"
    ],
    "activate": [
     "manner"
@@ -8663,6 +8909,9 @@
    ],
    "arms": [
     "manner"
+   ],
+   "aromatic": [
+    "odor"
    ],
    "arson": [
     "interpretation"
@@ -8761,6 +9010,9 @@
    "block": [
     "manner"
    ],
+   "blocked": [
+    "plan_state"
+   ],
    "blocks_passage": [
     "property"
    ],
@@ -8815,6 +9067,9 @@
    "c_hands_full": [
     "condition"
    ],
+   "c_have": [
+    "condition"
+   ],
    "c_hears": [
     "condition"
    ],
@@ -8848,6 +9103,9 @@
    "c_target_gone": [
     "condition"
    ],
+   "c_target_near": [
+    "condition"
+   ],
    "c_target_still": [
     "condition"
    ],
@@ -8861,6 +9119,9 @@
     "condition"
    ],
    "c_tool_broken": [
+    "condition"
+   ],
+   "c_unwatched": [
     "condition"
    ],
    "calm": [
@@ -8927,6 +9188,9 @@
     "link"
    ],
    "cover": [
+    "manner"
+   ],
+   "cover_face": [
     "manner"
    ],
    "cowardice": [
@@ -9040,8 +9304,14 @@
    "dodge": [
     "manner"
    ],
+   "done": [
+    "plan_state"
+   ],
    "down": [
     "direction",
+    "manner"
+   ],
+   "drawling": [
     "manner"
    ],
    "dreamt": [
@@ -9155,6 +9425,9 @@
    "evening": [
     "daypart"
    ],
+   "every": [
+    "plan_repeat"
+   ],
    "everyone": [
     "quantifier"
    ],
@@ -9175,6 +9448,9 @@
    ],
    "face": [
     "manner"
+   ],
+   "failed": [
+    "plan_state"
    ],
    "faint": [
     "manner"
@@ -9293,6 +9569,9 @@
    "go": [
     "gesture"
    ],
+   "goal_check": [
+    "wake_cause"
+   ],
    "goodbye": [
     "formula"
    ],
@@ -9312,6 +9591,9 @@
     "variable"
    ],
    "ground": [
+    "manner"
+   ],
+   "growing": [
     "manner"
    ],
    "guard": [
@@ -9352,6 +9634,9 @@
     "predicate"
    ],
    "head": [
+    "manner"
+   ],
+   "hear": [
     "manner"
    ],
    "heard": [
@@ -9405,6 +9690,9 @@
    "hypocrisy": [
     "interpretation"
    ],
+   "idle": [
+    "wake_cause"
+   ],
    "if": [
     "logic"
    ],
@@ -9452,6 +9740,9 @@
    ],
    "intends": [
     "predicate"
+   ],
+   "interrupted": [
+    "plan_state"
    ],
    "intimate": [
     "manner"
@@ -9538,6 +9829,9 @@
    "light_source": [
     "property"
    ],
+   "limit_reached": [
+    "plan_state"
+   ],
    "link": [
     "predicate"
    ],
@@ -9589,6 +9883,9 @@
    ],
    "low": [
     "degree",
+    "manner"
+   ],
+   "low_slow": [
     "manner"
    ],
    "loyalty": [
@@ -9669,6 +9966,9 @@
    "murder": [
     "interpretation"
    ],
+   "musty": [
+    "odor"
+   ],
    "named": [
     "predicate"
    ],
@@ -9684,6 +9984,9 @@
    ],
    "neighbor": [
     "link"
+   ],
+   "new": [
+    "age"
    ],
    "niece_nephew": [
     "link"
@@ -9796,6 +10099,9 @@
    "obligatory": [
     "deontic"
    ],
+   "occasion": [
+    "wake_cause"
+   ],
    "odor": [
     "property"
    ],
@@ -9806,11 +10112,17 @@
     "manner",
     "mood"
    ],
+   "old": [
+    "age"
+   ],
    "on": [
     "spatial"
    ],
    "on_back": [
     "manner"
+   ],
+   "once": [
+    "plan_repeat"
    ],
    "one": [
     "quantity"
@@ -9928,6 +10240,9 @@
    "put_on": [
     "manner"
    ],
+   "putrid": [
+    "odor"
+   ],
    "qualifies": [
     "predicate"
    ],
@@ -9962,10 +10277,19 @@
    "r_group_members": [
     "variable"
    ],
+   "r_group_my_task": [
+    "variable"
+   ],
+   "r_group_present": [
+    "variable"
+   ],
    "r_group_role": [
     "variable"
    ],
    "r_group_size": [
+    "variable"
+   ],
+   "r_group_tasks_open": [
     "variable"
    ],
    "r_id_certainty": [
@@ -10006,6 +10330,9 @@
    ],
    "raise_hand": [
     "manner"
+   ],
+   "rancid": [
+    "odor"
    ],
    "reach": [
     "property"
@@ -10050,6 +10377,9 @@
    "right": [
     "direction"
    ],
+   "rising": [
+    "manner"
+   ],
    "rolls": [
     "property"
    ],
@@ -10067,6 +10397,9 @@
    ],
    "run": [
     "manner"
+   ],
+   "running": [
+    "plan_state"
    ],
    "sacrilege": [
     "interpretation"
@@ -10195,6 +10528,9 @@
    "smell": [
     "manner"
    ],
+   "smoky": [
+    "odor"
+   ],
    "sociability": [
     "variable"
    ],
@@ -10224,6 +10560,9 @@
    ],
    "sorry": [
     "formula"
+   ],
+   "sour": [
+    "odor"
    ],
    "span": [
     "time_form"
@@ -10281,6 +10620,12 @@
    ],
    "surface_writable": [
     "property"
+   ],
+   "suspended": [
+    "plan_state"
+   ],
+   "sweet": [
+    "odor"
    ],
    "swim": [
     "gesture"
@@ -10461,17 +10806,26 @@
    "toxicity": [
     "property"
    ],
+   "trace_sign": [
+    "manner"
+   ],
    "traps": [
     "property"
    ],
    "treasurer": [
     "role_word"
    ],
+   "trembling": [
+    "manner"
+   ],
    "trespass": [
     "interpretation"
    ],
    "trigger": [
     "property"
+   ],
+   "twist": [
+    "manner"
    ],
    "unconventionality": [
     "variable"
@@ -10650,6 +11004,9 @@
    "why": [
     "wh"
    ],
+   "wink": [
+    "manner"
+   ],
    "winter": [
     "season"
    ],
@@ -10664,6 +11021,9 @@
    ],
    "works_as": [
     "predicate"
+   ],
+   "worn": [
+    "age"
    ],
    "worn_by": [
     "manner"
@@ -11040,7 +11400,8 @@
       "touch",
       "weigh",
       "smell",
-      "taste"
+      "taste",
+      "hear"
      ]
     },
     {
@@ -11471,6 +11832,7 @@
      "name": "where",
      "type": "ref",
      "accepts": [
+      "animal",
       "item",
       "place",
       "structure",
@@ -11643,7 +12005,10 @@
       "raise_hand",
       "show",
       "spit",
-      "fist"
+      "fist",
+      "wink",
+      "cover_face",
+      "trace_sign"
      ]
     },
     {
@@ -11704,7 +12069,11 @@
       "calm",
       "cold",
       "angry",
-      "pleading"
+      "pleading",
+      "rising",
+      "trembling",
+      "low_slow",
+      "drawling"
      ]
     },
     {
@@ -11814,7 +12183,8 @@
       "ground",
       "container",
       "hand_of",
-      "worn_by"
+      "worn_by",
+      "growing"
      ]
     },
     {
@@ -12096,7 +12466,8 @@
       "rub",
       "stir",
       "squeeze",
-      "saw"
+      "saw",
+      "twist"
      ]
     },
     {

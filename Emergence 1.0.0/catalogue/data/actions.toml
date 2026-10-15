@@ -38,6 +38,8 @@ contact = false
 effects = "déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible"
 perceptibility = "vu ; pas entendus selon l'allure, le sol, la discrétion"
 duration = "jusqu'à l'arrivée, la distance voulue ou l'interruption"
+natural_end = true
+cadence_ms = 800
 animation = ["walk", "run", "sneak", "turn_l", "turn_r", "+ride", "+row"]
 
 [[action]]
@@ -53,6 +55,8 @@ uses = ["t_climbing"]
 effects = "chute possible selon la maîtrise, l'allure, la charge, la prise mouillée"
 perceptibility = "vu"
 duration = "selon la hauteur"
+natural_end = true
+cadence_ms = 900
 animation = ["climb_ladder", "+climb_wall"]
 
 [[action]]
@@ -67,6 +71,8 @@ uses = ["t_swimming"]
 effects = "épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade"
 perceptibility = "vu, entendu"
 duration = "selon la distance"
+natural_end = true
+cadence_ms = 1000
 animation = ["swim"]
 
 [[action]]
@@ -80,6 +86,8 @@ params = [
 effects = "franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes"
 perceptibility = "vu"
 duration = "un instant"
+natural_end = true
+cadence_ms = 600
 animation = ["jump"]
 
 [[action]]
@@ -94,6 +102,8 @@ uses = ["t_riding"]
 effects = "une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit"
 perceptibility = "vu"
 duration = "quelques secondes"
+natural_end = true
+cadence_ms = 1200
 animation = ["+mount"]
 
 # ─── Posture ────────────────────────────────────────────────────────────────────────────────────
@@ -105,6 +115,8 @@ params = [{ name = "posture", type = "enum", values = ["stand", "sit", "kneel", 
 effects = "accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient"
 perceptibility = "vu"
 duration = "un instant"
+natural_end = true
+cadence_ms = 800
 animation = ["sit_down", "stand_up", "lie_down", "get_up", "kneel_work"]
 
 # ─── Saisir, poser, donner, porter ──────────────────────────────────────────────────────────────
@@ -114,7 +126,7 @@ family = "grasp"
 label_fr = "prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un)"
 params = [
   { name = "target", type = "ref", accepts = ["item", "agent", "animal", "plant"] },
-  { name = "from", type = "enum", values = ["ground", "container", "hand_of", "worn_by"], note = "worn_by : à la ceinture, dans la bourse, sur le corps" },
+  { name = "from", type = "enum", values = ["ground", "container", "hand_of", "worn_by", "growing"], note = "worn_by : à la ceinture, dans la bourse, sur le corps ; growing : sur la plante qui pousse" },
   { name = "hold", type = "enum", values = ["in_hand", "in_arms", "on_back", "by_arm"], note = "by_arm : soutenir quelqu'un qui marche" },
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
   { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
@@ -128,6 +140,8 @@ minor_whitelist = { contact_zone = ["arms", "hands", "back"] }
 effects = "la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force"
 perceptibility = "vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise"
 duration = "un instant"
+natural_end = true
+cadence_ms = 600
 animation = ["pick_up", "store_crouch", "carry_idle", "carry_walk", "support_walk"]
 
 [[action]]
@@ -136,7 +150,7 @@ family = "grasp"
 label_fr = "poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre)"
 params = [
   { name = "item", type = "ref", accepts = ["item", "agent", "animal"], note = "un objet ; un corps qu'on porte (le coucher, l'ensevelir)" },
-  { name = "where", type = "ref", accepts = ["place", "item", "structure", "terrain", "voxel", "water"] },
+  { name = "where", type = "ref", accepts = ["place", "item", "structure", "terrain", "voxel", "water", "animal"], note = "sur une bête (bât, selle, collier) : T08c" },
   { name = "stealth", type = "enum", values = ["open", "discreet"] },
   { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
@@ -148,6 +162,8 @@ minor_whitelist = { contact_zone = ["arms", "back"] }
 effects = "une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher"
 perceptibility = "vu selon la discrétion"
 duration = "un instant à quelques secondes"
+natural_end = true
+cadence_ms = 600
 animation = ["put_down", "trowel_place", "store_crouch"]
 
 [[action]]
@@ -163,6 +179,8 @@ contact = false
 effects = "la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste"
 perceptibility = "vu"
 duration = "un instant"
+natural_end = true
+cadence_ms = 700
 animation = ["give"]
 
 [[action]]
@@ -182,6 +200,8 @@ contact = false
 effects = "projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson"
 perceptibility = "vu ; entendu (claquement, impact)"
 duration = "un instant à quelques secondes (viser)"
+natural_end = true
+cadence_ms = 700
 animation = ["+throw", "+shoot_bow", "fish"]
 
 [[action]]
@@ -199,6 +219,8 @@ contact = false
 effects = "le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange"
 perceptibility = "vu selon la discrétion et la lumière ; entendu"
 duration = "quelques secondes"
+natural_end = true
+cadence_ms = 1000
 animation = ["+pour", "draw_water"]
 
 [[action]]
@@ -219,6 +241,8 @@ minor_whitelist = { mode = ["put_on"], contact_zone = ["head", "shoulder", "arms
 effects = "change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification)"
 perceptibility = "vu"
 duration = "quelques secondes à une minute de jeu"
+natural_end = true
+cadence_ms = 1500
 animation = ["+change_clothes"]
 
 [[action]]
@@ -235,6 +259,9 @@ uses = ["t_stealth", "t_textile"]
 effects = "déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme"
 perceptibility = "vu ; entendu (grincements, cloche)"
 duration = "un instant à longtemps (tisser)"
+natural_end = false
+cadence_ms = 900
+productive = true
 animation = ["kneel_work", "+use_mechanism"]
 
 # ─── Force ──────────────────────────────────────────────────────────────────────────────────────
@@ -258,6 +285,8 @@ minor_whitelist = { zone = ["head", "arms", "legs"], with = ["held", "open_hand"
 effects = "énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles"
 perceptibility = "vu, entendu (bruit selon l'impact)"
 duration = "un coup ≈ une seconde ; répété jusqu'à la condition"
+natural_end = false
+cadence_ms = 900
 animation = ["punch", "+slap", "+kick", "swing_axe", "swing_pickaxe", "hammer", "hoe"]
 note = "Une gifle = (head, open_hand, swing, light, c_done) ; un coup de poing = (head, fist, swing, firm, c_done) ; un passage à tabac = (any, fist, swing, hard, c_target_yields) ; des coups jusqu'à la mort = (head, foot, swing, full, c_target_still). Un seul geste (D28). D10 ne porte que sur l'intime ; la violence suit les lois du monde."
 
@@ -276,6 +305,8 @@ minor_person_ok = true
 effects = "déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade"
 perceptibility = "vu"
 duration = "un instant"
+natural_end = true
+cadence_ms = 800
 animation = ["shove"]
 
 [[action]]
@@ -293,6 +324,8 @@ minor_person_ok = true
 effects = "déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte"
 perceptibility = "vu"
 duration = "selon la charge"
+natural_end = true
+cadence_ms = 900
 animation = ["+pull"]
 
 [[action]]
@@ -313,6 +346,8 @@ minor_whitelist = { hold_zone = ["arm", "collar", "hair"] }
 effects = "retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle"
 perceptibility = "vu"
 duration = "jusqu'à la condition"
+natural_end = false
+cadence_ms = 500
 animation = ["grab_restrain"]
 
 [[action]]
@@ -328,6 +363,8 @@ contact = false
 effects = "réduit ou évite le prochain coup ; avec ce qui protège, absorbe"
 perceptibility = "vu"
 duration = "tant qu'on garde"
+natural_end = false
+cadence_ms = 1000
 animation = ["block"]
 
 # ─── Outils et matière ──────────────────────────────────────────────────────────────────────────
@@ -345,6 +382,9 @@ uses = ["t_digging", "t_farming"]
 effects = "retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité"
 perceptibility = "vu, entendu"
 duration = "quelques secondes par charge"
+natural_end = true
+cadence_ms = 900
+productive = true
 animation = ["dig_shovel", "draw_water"]
 
 [[action]]
@@ -354,7 +394,7 @@ label_fr = "travailler une chose au contact (presser un bandage, appliquer un on
 params = [
   { name = "target", type = "ref", accepts = ["item", "agent", "animal", "structure", "terrain", "voxel"] },
   { name = "with", type = "ref", accepts = ["item"], optional = true },
-  { name = "motion", type = "enum", values = ["press", "rub", "stir", "squeeze", "saw"] },
+  { name = "motion", type = "enum", values = ["press", "rub", "stir", "squeeze", "saw", "twist"], note = "twist : tordre en tournant" },
   { name = "intensity", type = "enum", values = ["faint", "light", "firm", "hard", "full"], ordinal = true },
   { name = "duration", type = "enum", values = ["brief", "a_while", "long"], ordinal = true },
   { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
@@ -367,6 +407,9 @@ minor_whitelist = { motion = ["press"], intensity = ["faint", "light", "firm"], 
 effects = "le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase"
 perceptibility = "vu, entendu"
 duration = "selon la tâche"
+natural_end = false
+cadence_ms = 900
+productive = true
 animation = ["kneel_tend", "kneel_work", "saw", "+stir"]
 
 [[action]]
@@ -390,6 +433,9 @@ minor_whitelist = { mode = ["knot"], tightness = ["light", "firm"], contact_zone
 effects = "processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang"
 perceptibility = "vu"
 duration = "quelques secondes à quelques minutes de jeu"
+natural_end = true
+cadence_ms = 1000
+productive = true
 animation = ["kneel_work", "grab_restrain"]
 
 [[action]]
@@ -404,6 +450,8 @@ uses = ["t_glass", "t_music"]
 effects = "attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent"
 perceptibility = "entendu, vu"
 duration = "quelques secondes"
+natural_end = true
+cadence_ms = 800
 animation = ["+blow"]
 
 # ─── Transformer ────────────────────────────────────────────────────────────────────────────────
@@ -420,6 +468,9 @@ uses = ["t_pottery", "t_cooking"]
 effects = "la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud)"
 perceptibility = "vu"
 duration = "minutes à heures de jeu"
+natural_end = false
+cadence_ms = 900
+productive = true
 animation = ["kneel_work"]
 
 [[action]]
@@ -437,6 +488,9 @@ uses = ["t_magic"]
 effects = "processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability)"
 perceptibility = "vu (lueur), entendu"
 duration = "secondes à minutes de jeu"
+natural_end = false
+cadence_ms = 1000
+productive = true
 animation = ["+channel_wand"]
 
 # ─── Le corps ───────────────────────────────────────────────────────────────────────────────────
@@ -453,6 +507,8 @@ contact = false
 effects = "faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté"
 perceptibility = "vu"
 duration = "selon la quantité"
+natural_end = true
+cadence_ms = 1200
 animation = ["eat"]
 
 [[action]]
@@ -469,6 +525,8 @@ contact = false
 effects = "soif ; ivresse ou poison selon ce qu'il y a dedans"
 perceptibility = "vu"
 duration = "quelques secondes"
+natural_end = true
+cadence_ms = 900
 animation = ["drink"]
 
 [[action]]
@@ -482,6 +540,8 @@ params = [
 effects = "rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille)"
 perceptibility = "vu"
 duration = "selon la dette de sommeil"
+natural_end = false
+cadence_ms = 2000
 animation = ["lie_down", "sleep", "get_up"]
 
 [[action]]
@@ -492,6 +552,8 @@ params = [{ name = "duration", type = "enum", values = ["brief", "a_while", "lon
 effects = "l'épuisement baisse"
 perceptibility = "vu"
 duration = "selon le choix"
+natural_end = false
+cadence_ms = 2000
 animation = ["sit_idle"]
 
 [[action]]
@@ -512,6 +574,8 @@ minor_whitelist = { with = ["hand", "arms"], contact_zone = ["head", "shoulder",
 effects = "aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10)"
 perceptibility = "vu"
 duration = "selon le choix"
+natural_end = true
+cadence_ms = 700
 animation = ["hold_hands", "embrace", "kiss", "lean_in"]
 note = "Avec un mineur, seules les valeurs de minor_whitelist passent : tenir la main, serrer dans ses bras, toucher l'épaule ou la tête, doucement ou en jouant."
 
@@ -529,6 +593,8 @@ contact = false
 effects = "met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit"
 perceptibility = "vu (le regard)"
 duration = "selon le choix"
+natural_end = false
+cadence_ms = 600
 animation = ["look_around", "idle"]
 
 [[action]]
@@ -544,6 +610,8 @@ contact = false
 effects = "entend plus loin et plus bas ; discret derrière ce qui cache : épier"
 perceptibility = "vu si l'on n'est pas caché"
 duration = "selon le choix"
+natural_end = false
+cadence_ms = 1000
 animation = ["listen"]
 
 [[action]]
@@ -561,6 +629,8 @@ minor_person_ok = false
 effects = "révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille"
 perceptibility = "vu, entendu"
 duration = "selon le soin"
+natural_end = false
+cadence_ms = 900
 animation = ["search_bend"]
 
 [[action]]
@@ -569,7 +639,7 @@ family = "perceive"
 label_fr = "examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces)"
 params = [
   { name = "target", type = "ref", accepts = ["agent", "animal", "item", "structure", "terrain", "voxel", "water", "trace", "plant"] },
-  { name = "sense", type = "enum", values = ["look", "touch", "weigh", "smell", "taste"] },
+  { name = "sense", type = "enum", values = ["look", "touch", "weigh", "smell", "taste", "hear"], note = "hear : l'oreille contre la chose ; hors liste blanche D10 (contact avec une personne)" },
   { name = "contact_zone", type = "enum", values = ["head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"], note = "où l'on touche le corps (D10 : avec un mineur, seulement tête, épaule, bras, mains, dos, jambes)" },
 ]
 uses = ["t_healing", "t_foraging", "t_hunting", "t_reckoning", "t_smithing"]
@@ -580,6 +650,8 @@ minor_whitelist = { sense = ["look", "touch", "smell"], contact_zone = ["head", 
 effects = "le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature"
 perceptibility = "vu"
 duration = "quelques secondes"
+natural_end = true
+cadence_ms = 800
 animation = ["kneel_tend", "search_bend"]
 
 [[action]]
@@ -591,6 +663,8 @@ uses = ["t_literacy"]
 effects = "perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes"
 perceptibility = "vu"
 duration = "selon la longueur"
+natural_end = true
+cadence_ms = 1500
 animation = ["read_paper"]
 
 # ─── Communiquer ────────────────────────────────────────────────────────────────────────────────
@@ -601,28 +675,32 @@ label_fr = "parler (à quelqu'un, à un groupe, à une bête, à la cantonade, �
 params = [
   { name = "to", type = "ref", accepts = ["agent", "group", "animal"], optional = true },
   { name = "volume", type = "enum", values = ["whisper", "low", "normal", "loud", "shout"], ordinal = true },
-  { name = "tone", type = "enum", values = ["warm", "calm", "cold", "angry", "pleading"] },
+  { name = "tone", type = "enum", values = ["warm", "calm", "cold", "angry", "pleading", "rising", "trembling", "low_slow", "drawling"], note = "forme de la voix seule : rising = la voix monte, rythme vif ; trembling = la voix tremble ; low_slow = voix lente et basse ; drawling = voix traînante, mots étirés" },
   { name = "content", type = "expression", note = "une expression de la langue intérieure (≤ 20 symboles), composée par le Transformer" },
 ]
 contact = false
 effects = "les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide"
 perceptibility = "entendu ; vu (lèvres, gestes)"
 duration = "selon la longueur"
+natural_end = true
+cadence_ms = 1200
 animation = ["talk_calm", "talk_angry", "talk_pleading", "talk_joyful", "address_crowd", "pray"]
 note = "Promettre, menacer, mentir, faire chanter, demander en mariage, insulter, flatter, prier : tout est dans le contenu et à qui l'on parle, rien dans le geste (D28)."
 
 [[action]]
 id = "sign"
 family = "communicate"
-label_fr = "faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing)"
+label_fr = "faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing, cligner d'un œil, couvrir son visage des mains, tracer une figure dans l'air)"
 params = [
-  { name = "kind", type = "enum", values = ["point", "nod", "shake_head", "wave", "beckon", "shrug", "bow", "applaud", "raise_hand", "show", "spit", "fist"] },
+  { name = "kind", type = "enum", values = ["point", "nod", "shake_head", "wave", "beckon", "shrug", "bow", "applaud", "raise_hand", "show", "spit", "fist", "wink", "cover_face", "trace_sign"], note = "forme seule : wink = une paupière se ferme brièvement ; cover_face = les mains couvrent le visage ; trace_sign = la main trace une figure dans l'air" },
   { name = "at", type = "ref", accepts = ["agent", "animal", "item", "place", "direction", "group"], optional = true },
 ]
 contact = false
 effects = "aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages"
 perceptibility = "vu"
 duration = "un instant"
+natural_end = true
+cadence_ms = 800
 animation = ["point", "nod", "shake_head", "wave", "raise_hand"]
 
 [[action]]
@@ -638,6 +716,8 @@ uses = ["t_literacy"]
 effects = "crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non)"
 perceptibility = "vu"
 duration = "selon la longueur"
+natural_end = true
+cadence_ms = 1000
 animation = ["write"]
 
 [[action]]
@@ -653,6 +733,8 @@ uses = ["t_music"]
 effects = "s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent"
 perceptibility = "entendu, vu"
 duration = "selon le choix"
+natural_end = false
+cadence_ms = 1000
 animation = ["dance", "tell_story", "+play_instrument", "mourn"]
 
 # ─── Méta ───────────────────────────────────────────────────────────────────────────────────────
@@ -664,6 +746,8 @@ params = [{ name = "until", type = "condition" }]
 effects = "rien ; ne rien faire est aussi un comportement observable (charte § 20)"
 perceptibility = "vu"
 duration = "jusqu'à la condition"
+natural_end = false
+cadence_ms = 1000
 animation = ["idle", "sit_idle"]
 
 [[action]]
@@ -674,4 +758,22 @@ params = []
 effects = "interrompt l'intention en cours ; le PNJ repasse au Transformer"
 perceptibility = "vu"
 duration = "un instant"
+natural_end = true
+cadence_ms = 250
 animation = ["idle"]
+
+# ─── Durées choisies, en secondes de JEU (T08a, docs/14 4.4 : brief 7,5 s, a_while 1 min 52 s, long 7 min 30 s réelles) ───
+[[duration_level]]
+id = "brief"
+label_fr = "bref"
+game_s = 120
+
+[[duration_level]]
+id = "a_while"
+label_fr = "un moment"
+game_s = 1800
+
+[[duration_level]]
+id = "long"
+label_fr = "longtemps"
+game_s = 7200

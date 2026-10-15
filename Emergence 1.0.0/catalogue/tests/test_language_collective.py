@@ -424,8 +424,7 @@ class TestProbes(Base):
     COVERED = ("joke_falls_flat", "secret_kept_loyal", "economy_to_politics", "election_campaign", "decree_ignored",
                "custom_shifts_slowly", "impossible_request", "pay_artisan_build", "strange_zone_legend", "belief_in_beyond",
                "eccentric_collector", "player_runs_for_chief")
-    ENGINE_GAPS = ("smell_smoke_wake", "epidemic_fear_exclusion", "marriage_and_children", "touchy_mayor_disaster",
-                   "illness_and_care", "pregnancy_birth")
+    ENGINE_GAPS = ("marriage_and_children", "pregnancy_birth")     # T08a closed smell, contagion, illness; these wait for O39
 
     def test_the_gaps_that_are_language_are_closed(self):
         for sid in self.COVERED:

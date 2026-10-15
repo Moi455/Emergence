@@ -254,9 +254,11 @@ struct EventSeen {
 struct Goal {
   GameTime g_deadline{};  // game seconds
   Proposition g_desired{};
+  bool g_has_plan{};
   std::uint8_t g_mode{};  // value index
   std::uint8_t g_origin{};  // value index
   MRef g_origin_ref{};  // persistent id of one of the NPC's own records
+  MRef g_parent{};  // persistent id of one of the NPC's own records
   std::int16_t g_priority{};  // tenths of the charter scale
   std::int16_t g_progress{};  // per-mille
   GameTime g_since{};  // game seconds
@@ -264,12 +266,18 @@ struct Goal {
   GameTime g_when{};  // game seconds
 };
 
-// intention: l'intention en cours : la suite de gestes choisie pour un objectif (records, 1 per NPC)
+// intention: une intention : le plan (la suite de gestes) choisi pour un objectif ; une réserve de 4, un plan par objectif actif (records, 4 per NPC)
 struct Intention {
+  std::int32_t i_attempts{};  // milli-units of its unit
   std::int16_t i_commitment{};  // tenths of the charter scale
+  std::uint8_t i_repeat{};  // value index
+  std::int32_t i_repeat_period{};  // milli-units of its unit
   MRef i_serves{};  // persistent id of one of the NPC's own records
   Proposition i_speech{};
+  std::uint8_t i_status{};  // value index
   std::int32_t i_step_index{};  // milli-units of its unit
+  std::int16_t i_step_progress{};  // per-mille
+  GameTime i_step_started{};  // game seconds
   ListRef i_step_targets{};  // handle into a side table (variable-size data)
   ListRef i_steps{};  // handle into a side table (variable-size data)
 };
@@ -285,6 +293,7 @@ struct Locus {
 
 // percept: une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité (records, 16 per NPC)
 struct Percept {
+  std::uint16_t pc_age_seen{};  // vocabulary id
   std::uint8_t pc_amount_seen{};  // value index
   std::uint16_t pc_color_seen{};  // vocabulary id
   std::uint8_t pc_depth_seen{};  // value index
@@ -308,6 +317,7 @@ struct PlacePercept {
   std::int16_t pp_light{};  // tenths of the charter scale
   std::int16_t pp_noise{};  // tenths of the charter scale
   ListRef pp_signs{};  // handle into a side table (variable-size data)
+  ListRef pp_smell_seen{};  // handle into a side table (variable-size data)
   std::int32_t pp_sun{};  // milli-units of its unit
   ListRef pp_weather_seen{};  // handle into a side table (variable-size data)
 };
@@ -322,8 +332,11 @@ struct Relation {
   std::uint16_t r_group_kind{};  // vocabulary id
   MRef r_group_leader{};  // persistent id of one of the NPC's own records
   ListRef r_group_members{};  // handle into a side table (variable-size data)
+  MRef r_group_my_task{};  // persistent id of one of the NPC's own records
+  std::int32_t r_group_present{};  // milli-units of its unit
   std::uint16_t r_group_role{};  // vocabulary id
   std::int32_t r_group_size{};  // milli-units of its unit
+  std::int32_t r_group_tasks_open{};  // milli-units of its unit
   std::int16_t r_id_certainty{};  // tenths of the charter scale
   std::uint8_t r_known_by{};  // value index
   GameTime r_last_contact{};  // game seconds
@@ -374,7 +387,7 @@ struct NpcState {
   RecordPool<Episode, 128> episode_records;
   RecordPool<EventSeen, 6> event_seen_records;
   RecordPool<Goal, 8> goal_records;
-  RecordPool<Intention, 1> intention_records;
+  RecordPool<Intention, 4> intention_records;
   RecordPool<Locus, 3> locus_records;
   RecordPool<Percept, 16> percept_records;
   RecordPool<PlacePercept, 1> place_percept_records;
@@ -384,3 +397,6 @@ struct NpcState {
 };
 
 }  // namespace em::social::gen
+
+// RecordPool::add asks the law of forgetting (found by ADL on the record type).
+#include "emergence/social/forgetting_gen.h"

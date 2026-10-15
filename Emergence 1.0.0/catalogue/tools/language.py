@@ -43,6 +43,7 @@ CATEGORY_TYPES = {
     "interpretation": {"interpretation"}, "technique": {"technique", "concept"},
     "link": {"concept"}, "spatial": {"concept"}, "deontic": {"concept"}, "quality": {"concept"},
     "group_kind": {"kind", "concept"}, "lookalike": {"kind", "concept"}, "goal_mode": {"concept"},
+    "plan_state": {"concept"}, "plan_repeat": {"concept"}, "wake_cause": {"concept"}, "odor": {"concept"}, "age": {"concept"},   # T08c
     "source": {"concept"}, "descriptor": {"concept"}, "role_word": {"concept", "role"},
     "occupation": {"concept"}, "manner": {"manner"}, "direction": {"place"}, "time": {"time"}, "fraction": {"quantity"},
     "daypart": {"time"}, "season": {"time"}, "time_mark": {"time"},                       # moments and seasons are time marks (step 19a)

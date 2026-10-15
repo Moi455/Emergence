@@ -32,20 +32,20 @@ note = "Comportement simple du moteur (décision de Monsieur, 9 oct.) : une loi 
 id = "plant"
 label_fr = "plante (arbre, culture, buisson, herbe)"
 driven_by = "engine"
-components = ["identity", "spatial", "physical", "growth", "lifecycle", "ledger"]
+components = ["identity", "spatial", "physical", "growth", "transformation", "lifecycle", "ledger"]
 
 [[entity]]
 id = "item"
 label_fr = "objet (tout ce qui se déplace sans être un être : outil, nourriture, pièce, coffre, bateau, document)"
 driven_by = "engine"
-components = ["identity", "spatial", "physical", "provenance", "container", "inscription", "access", "magic", "substance", "ledger"]
+components = ["identity", "spatial", "physical", "provenance", "transformation", "container", "inscription", "access", "magic", "substance", "ledger"]
 note = "Les composants container, inscription, access, magic et substance sont facultatifs : présents seulement si l'objet en a l'usage."
 
 [[entity]]
 id = "structure"
 label_fr = "construction (mur, maison, pont, puits, porte, meuble fixe, étai)"
 driven_by = "engine"
-components = ["identity", "spatial", "physical", "provenance", "stability", "container", "access", "inscription", "ledger"]
+components = ["identity", "spatial", "physical", "provenance", "transformation", "stability", "container", "access", "inscription", "ledger"]
 note = "Faite de voxels ou de modules ; sa destruction est une suite d'Operation."
 
 [[entity]]
@@ -240,7 +240,7 @@ holder = "group, role, agreement"
 
 [[component]]
 id = "agreement_terms"
-label_fr = "termes : parties, ce qui est dû par qui (expression), échéance, témoins ; statut objectif (en cours, échu, rempli, rompu)"
+label_fr = "termes : parties, ce qui est dû par qui (expression), échéance, témoins ; état de fait (ouvert, échu, relâché, nul ; tenu ou rompu n'est pas un état, c'est un jugement de chacun)"
 holder = "agreement"
 
 [[component]]
@@ -382,10 +382,11 @@ max_count = 8
 
 [[component]]
 id = "intention"
-label_fr = "l'intention en cours : la suite de gestes choisie pour un objectif"
+label_fr = "une intention : le plan (la suite de gestes) choisi pour un objectif ; une réserve de 4, un plan par objectif actif"
 holder = "agent"
 part_of = "goals"
-max_count = 1
+max_count = 4
+note = "Passée de 1 à 4 (T08b, docs/14 § 9 c). Mesure de saturation prévue (T30, T40) : on l'élargit si la part du temps passée à 4 dépasse 10 % [Hypothèse]."
 
 [[component]]
 id = "request"

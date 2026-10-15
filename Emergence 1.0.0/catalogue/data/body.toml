@@ -93,3 +93,116 @@ variable = [
   { id = "place_in", label_fr = "lieu englobant réel (pièce, maison, place, village, région)", holder = "spatial", scale = "id", writer = ["engine"], visibility = "engine", note = "Le PNJ voit le lieu où il CROIT être (place_recognized, beliefs.toml)." },
   { id = "inside_of", label_fr = "contenu dans (main, sac, coffre, eau)", holder = "spatial", scale = "id", writer = ["engine"], visibility = "observable" },
 ]
+
+# ─── Trois lois du corps (T08a, docs/16 4.4, O30) ───────────────────────────────────────────────
+# Ni conceive ni gestate_birth : en attente de Monsieur (O39, D15).
+# Rien de vrai dans un jeton : la maladie d'un corps reste au moteur (illnesses, visibility = engine) ;
+# les autres n'en voient que les SYMPTÔMES (symptoms, mots de santé) ; l'odeur n'est sentie que si elle arrive au nez.
+[[process]]
+id = "smell_spread"
+label_fr = "l'odeur se répand"
+inputs = "toute source d'odeur : chair qui pourrit, fumée, bête, cuisine, fleur"
+conditions = ["odor"]
+effect = "un champ d'odeur porté par le vent et l'air libre ; une narine à portée sent le type et la force (PLACE.smell) ; une odeur forte réveille (P3), sinon elle s'ajoute à la perception du lieu"
+trigger = "sources d'odeur (odor) ; le vent les porte"
+clock = "real"
+nominal_game_s = 0
+consumes = []
+produces = []
+
+[[process]]
+id = "contagion"
+label_fr = "la maladie passe d'un corps à un autre"
+inputs = "un corps malade (incubation ou symptômes), de l'eau souillée, une plaie, une morsure"
+effect = "chaque maladie de la table illness passe selon sa voie (contact, air, eau, morsure, plaie, naissance) ; le hasard vient de hash3 ; un corps déjà guéri est protégé un temps"
+trigger = "proximité, eau souillée, morsure"
+clock = "calendar"
+nominal_game_s = 0
+consumes = []
+produces = []
+
+[[process]]
+id = "illness_course"
+label_fr = "le cours d'une maladie"
+inputs = "un corps atteint"
+effect = "incubation (rien ne se voit, même du malade), symptômes visibles, puis guérison ou mort ; les soins, le repos, la nourriture et l'âge changent l'issue ; l'immunité suit la guérison"
+trigger = "temps écoulé depuis la contagion"
+clock = "calendar"
+nominal_game_s = 518400
+note = "nominal = 6 jours de jeu = 9 h réelles = la MÉDIANE des course_days de la table illness (3, 4, 5, 6, 6, 7, 8, 20 jours ; moyenne 7,4). Avant : 4 jours, qui ne correspondait à aucune maladie. Les cours sont en heures réelles (1 jour de jeu = 1 h 30, une vie de PNJ = 150 h = 100 jours de jeu) : rhume 3 j = 4,5 h ; fièvre d'hiver 4 j = 6 h ; flux de ventre 5 j = 7,5 h ; fièvre éruptive et fièvre des plaies 6 j = 9 h ; peste noire 7 j = 10,5 h (incubation 2 j = 3 h : assez longue pour que la contagion précède les signes, assez courte pour qu'une épidémie se joue en une séance, létalité 70 % sans soin) ; fièvre des marais 8 j = 12 h ; mal des poumons 20 j = 30 h réelles = 20 % d'une vie : c'est un mal chronique (phtisie), volontairement le seul à dépasser 10 % d'une vie ; il fait un malade de longue durée dont les proches s'occupent, et sa létalité de 40 % s'étale sur ce temps. Test : tests/test_t09_corrections.py (aucun cours au-delà de 10 jours sauf lung_rot)."
+consumes = []
+produces = []
+
+# Maladies : voies, durées en jours de jeu (un jour de jeu = 1 h 30 réelle ; une année de D30 ≈ 4,7 jours),
+# symptômes = mots de la catégorie health (ce qu'on VOIT), létalité sans soin en pourcent.
+[[illness]]
+id = "common_cold"
+label_fr = "rhume"
+transmission = ["air", "contact"]
+incubation_days = 1
+course_days = 3
+symptoms = ["coughing", "flushed"]
+lethality = 0
+
+[[illness]]
+id = "winter_fever"
+label_fr = "fièvre d'hiver"
+transmission = ["air", "contact"]
+incubation_days = 1
+course_days = 4
+symptoms = ["feverish", "shivering", "pale"]
+lethality = 5
+
+[[illness]]
+id = "marsh_fever"
+label_fr = "fièvre des marais"
+transmission = ["water", "bite"]
+incubation_days = 2
+course_days = 8
+symptoms = ["feverish", "sallow", "shivering"]
+lethality = 15
+
+[[illness]]
+id = "red_spots"
+label_fr = "fièvre éruptive (taches rouges)"
+transmission = ["air", "contact"]
+incubation_days = 2
+course_days = 6
+symptoms = ["flushed", "feverish", "swollen"]
+lethality = 10
+
+[[illness]]
+id = "lung_rot"
+label_fr = "mal des poumons"
+transmission = ["air"]
+incubation_days = 3
+course_days = 20
+symptoms = ["coughing", "emaciated", "pale"]
+lethality = 40
+
+[[illness]]
+id = "bloody_flux"
+label_fr = "flux de ventre"
+transmission = ["water", "contact"]
+incubation_days = 1
+course_days = 5
+symptoms = ["pale", "emaciated", "sallow"]
+lethality = 20
+
+[[illness]]
+id = "wound_fever"
+label_fr = "fièvre des plaies"
+transmission = ["wound"]
+incubation_days = 1
+course_days = 6
+symptoms = ["feverish", "swollen", "flushed"]
+lethality = 30
+
+[[illness]]
+id = "black_plague"
+label_fr = "peste noire"
+transmission = ["air", "contact", "bite"]
+incubation_days = 2
+course_days = 7
+symptoms = ["swollen", "feverish", "pale", "coughing"]
+lethality = 70

@@ -1,0 +1,127 @@
+# forgetting.toml - la loi d'oubli (docs/14 § 7.5, P42, T05) : ce que le moteur laisse tomber quand une réserve est pleine.
+#
+# Une entrée par sorte d'enregistrement (entities.toml, part_of + max_count). La capacité est FIXE en v1 : c'est le
+# max_count du composant (une variable de capacité par PNJ n'est pas appliquée ; docs/14 § 7.5). Le score est un entier :
+# le plus bas est oublié en premier, à égalité le plus ancien. `protect` : booléens protégés tant qu'ils sont vrais ;
+# un enregistrement protégé n'est évincé que si TOUTE la réserve l'est (le moins bon part, égalité = le plus ancien :
+# le PNJ ne cesse jamais de former des souvenirs ; l'éviction est comptée, evicted_protected()).
+#
+# NORMALISATION (T09 prépare, correction D28/relecture) : chaque terme est ramené à une échelle commune, 0..1000 pour
+# un poids d'importance de 1 point. Le poids écrit ici = importance (1 à 10 points) x (1000 / étendue de la variable) :
+#   unipolar10 (0..100 stockés) : x10     ratio (0..1000) : x1          bool (0..1) : x1000
+#   récence (0..100) : x10                qty : toujours plafonnée par `cap`, poids = 1000 x points / cap
+#   bipolar10 (-100..100) : x10, signé (le côté négatif retire autant que le côté positif ajoute)
+# Ainsi « 4 » d'importance veut dire la même chose pour une priorité (unipolar10), un avancement (ratio) ou un
+# booléen, et le terme le plus lourd d'une loi ne l'emporte que parce qu'on l'a décidé. tools/forgetting.py refuse un
+# terme dont l'amplitude maximale n'est pas un multiple entier de 1000 compris entre 1000 et 10000, ou une `qty` sans
+# plafond. Une `recency` se compte en saisons (D30 : 1 saison = 1 h 45 réelles = 100 800 s de jeu) et décroît de moitié
+# à chaque demi-vie ; la variable lue est un HORODATAGE (instant de jeu), jamais une durée. Un PNJ qui oublie ne sait
+# pas qu'il oublie : le score ne lit jamais la vérité du monde (b_truth, b_origin_fact, m_fact_ref, r_true_entity sont
+# refusés par tools/forgetting.py).
+
+# Croyance (somme des points positifs : 9 ; contradite : -3). Importance 4, certitude 2, confirmation récente 2,
+# ancienneté de la croyance 1 ; être démentie par ce qu'on voit retire 3 points entiers : une croyance contredite
+# part avant une confirmée de même importance (avant : -3 contre 4 x 100 de l'importance, soit 0,75 % de l'effet).
+[[forgetting]]
+record = "belief"
+score = [
+  { var = "b_importance", weight = 40 },
+  { var = "b_certainty", weight = 20 },
+  { var = "b_confirmed", weight = 20, kind = "recency", half_life_seasons = 4 },
+  { var = "b_acquired", weight = 10, kind = "recency", half_life_seasons = 8 },
+  { var = "b_contradicted", weight = -3000 },
+]
+
+# Relation (points : familiarité 3, affection 2 signée, dette 2 signée, rancune 2, crainte 2, attirance 1, souvenirs
+# partagés 1, dernier contact 3). On n'oublie pas l'ami (affection +) ni le créancier (obligation + : je lui dois)
+# avant l'ennemi (affection - ; mais sa rancune et sa crainte le retiennent) ni l'inconnu (tout à 0).
+[[forgetting]]
+record = "relation"
+score = [
+  { var = "r_familiarity", weight = 30 },
+  { var = "r_affection", weight = 20 },
+  { var = "r_obligation", weight = 20 },
+  { var = "r_resentment", weight = 20 },
+  { var = "r_fear", weight = 20 },
+  { var = "r_attraction", weight = 10 },
+  { var = "r_shared_history", weight = 50, cap = 20 },
+  { var = "r_last_contact", weight = 30, kind = "recency", half_life_seasons = 8 },
+]
+
+# Souvenir (importance 4, netteté 2, répétitions 1 sur 10 au plus, récence 3). Marquant = protégé.
+[[forgetting]]
+record = "episode"
+protect = ["m_defining"]
+score = [
+  { var = "m_importance", weight = 40 },
+  { var = "m_vividness", weight = 20 },
+  { var = "m_rehearsals", weight = 100, cap = 10 },
+  { var = "m_when", weight = 30, kind = "recency", half_life_seasons = 4 },
+]
+
+# But (priorité 5, avancement 2, récence 2). La priorité domine : un but neuf et prioritaire n'est pas oublié avant un
+# but stagnant presque fini ; l'avancement compte (un but presque achevé se garde plus qu'un but à 0) sans écraser.
+[[forgetting]]
+record = "goal"
+score = [
+  { var = "g_priority", weight = 50 },
+  { var = "g_progress", weight = 2 },
+  { var = "g_since", weight = 20, kind = "recency", half_life_seasons = 8 },
+]
+
+# Intention (fermeté 4, étape atteinte 3 sur 6 au plus : un plan avancé se garde mieux qu'un plan à peine commencé).
+[[forgetting]]
+record = "intention"
+score = [
+  { var = "i_commitment", weight = 40 },
+  { var = "i_step_index", weight = 500, cap = 6 },
+]
+
+[[forgetting]]
+record = "request"
+score = [
+  { var = "q_since", weight = 30, kind = "recency", half_life_seasons = 1 },
+]
+
+[[forgetting]]
+record = "skill"
+score = [
+  { var = "k_mastery", weight = 40 },
+  { var = "k_last_practice", weight = 30, kind = "recency", half_life_seasons = 8 },
+]
+
+# Perceptions : plus c'est net et proche, plus c'est gardé (distance : 1 point par 100 m, plafonné).
+[[forgetting]]
+record = "percept"
+score = [
+  { var = "pc_file_certainty", weight = 20 },
+  { var = "pc_dist", weight = -10, cap = 100 },
+]
+
+# Un geste d'autrui vu : sa récence (ev_age est un horodatage) et le nombre de gens qui l'ont fait (5 au plus).
+[[forgetting]]
+record = "event_seen"
+score = [
+  { var = "ev_age", weight = 30, kind = "recency", half_life_seasons = 1 },
+  { var = "ev_count", weight = 200, cap = 5 },
+]
+
+[[forgetting]]
+record = "entity_percept"
+score = [
+  { var = "ep_wounds", weight = 30 },
+  { var = "ep_dist", weight = -10, cap = 100 },
+]
+
+[[forgetting]]
+record = "place_percept"
+score = [
+  { var = "pp_crowd_seen", weight = 50, cap = 20 },
+  { var = "pp_noise", weight = 10 },
+]
+
+[[forgetting]]
+record = "locus"
+score = [
+  { var = "lc_dist", weight = -10, cap = 100 },
+]

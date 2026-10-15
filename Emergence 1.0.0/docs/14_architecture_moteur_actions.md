@@ -172,10 +172,10 @@ Règles du moteur ; aucune ne choisit un geste ni ne tire de conclusion :
 ```
 
 - **On n'échoue que sur place.** Un geste ne peut pas échouer à distance sur ce que l'acteur ne perçoit pas. Si la cible a bougé ou disparu hors de sa vue, il va là où il la croit (dernier lieu vu, `LOCUS`) et l'échec (« ce n'est pas là ») n'existe que quand il perçoit l'absence. Une route coupée hors de vue se découvre quand l'obstacle entre dans son champ de vision. L'exécuteur ne lit que ce que `PerceptionSystem` donne à l'acteur ; il ne consulte jamais la vérité pour décider d'un échec (tests en T22 et T23b).
-- **Condition d'arrêt**, dans cet ordre : (1) le paramètre `until` du geste, quand il en a un (`strike`, `grab`, `sleep`, `wait`) ; (2) sinon, **la condition d'arrêt de la décision**, une tête du modèle valable pour tout geste qui dure (T11 ; elle ne change la signature d'aucun geste) ; (3) sinon, si `natural_end` est vrai, le geste finit seul (une arrivée, un coup, une gorgée) ; (4) sinon, l'exécuteur s'arrête au bout de la durée `a_while` et rend `timeout`. C'est une butée mécanique : elle réveille le modèle, elle ne décide rien.
+- **Condition d'arrêt**, dans cet ordre : (1) le paramètre `until` du geste, quand il en a un (`strike`, `grab`, `sleep`, `wait`) ; (2) sinon, **la condition d'arrêt de la décision**, une tête du modèle valable pour tout geste qui dure (T11 ; elle ne change la signature d'aucun geste) ; (3) sinon, si `natural_end` est vrai, le geste finit seul (une arrivée, un coup, une gorgée) ; (4) sinon, l'exécuteur s'arrête au bout de la durée `a_while` et rend `limit_reached`. C'est une butée mécanique : elle réveille le modèle, elle ne décide rien.
 - **Les conditions se lisent dans la perception de l'acteur**, jamais dans la vérité : « l'arbre paraît tombé ». Ajouts : `c_have` (j'ai au moins N choses de telle sorte, d'après ce que j'ai **vu** dans mes mains, sur moi, dans ce que je porte, ou ce que je **crois** d'un contenant), `c_unwatched` (personne ne paraît me regarder, parmi ceux que je vois), `c_target_near` (la cible paraît à portée).
 - **Interruption** : seul le corps interrompt physiquement un geste (un coup reçu déclenche `hit_react`, une chute, l'inconscience, une prise par autrui). Un réveil P0 n'arrête rien : il appelle le modèle (≤ 0,1 s au p95 en simulation), dont la décision remplace ou non le geste.
-- **Échec perçu** : `WAKE.outcome` (nouveau) vaut `done`, `failed`, `blocked`, `interrupted` ou `timeout`, avec une cause perçue (« la porte ne s'ouvre pas »), jamais une cause invisible (« il faut la clé n° 42 »).
+- **Échec perçu** : `WAKE.outcome` (nouveau) vaut `done`, `failed`, `blocked`, `interrupted` ou `limit_reached`, avec une cause perçue (« la porte ne s'ouvre pas »), jamais une cause invisible (« il faut la clé n° 42 »).
 - **Masque de faisabilité** : calculé sur les percepts et les croyances ; ce que le monde refuse échoue physiquement, sur place.
 
 ### 4.4 Le temps des gestes (P37)
@@ -360,15 +360,20 @@ Gestes et conditions dans l'ordre de `ai/student2/output_registry.json`, mots et
 ```toml
 [[forgetting]]
 record = "episode"                         # une sorte d'enregistrement (entities.toml, max_count)
-capacity_from = "memory_store_capacity"    # sinon max_count
-protect = ["m_defining"]                   # jamais oublié tant que vrai
+protect = ["m_defining"]                   # épargné tant que vrai (voir ci-dessous)
 score = [                                  # score entier ; le plus bas est oublié ; égalité : le plus ancien
-  { var = "m_importance", weight = 4 },
-  { var = "m_vividness",  weight = 2 },
-  { var = "m_rehearsals", weight = 1, cap = 10 },
-  { var = "m_when", weight = 3, kind = "recency", half_life_seasons = 4 },
+  { var = "m_importance", weight = 40 },   # 4 points de 1000 (unipolar10 : x10)
+  { var = "m_vividness",  weight = 20 },
+  { var = "m_rehearsals", weight = 100, cap = 10 },   # une qty est toujours plafonnée : 1 point = 1000 / cap
+  { var = "m_when", weight = 30, kind = "recency", half_life_seasons = 4 },   # m_when est un HORODATAGE
 ]
 ```
+
+Trois règles (corrections du 15 oct. 2026) :
+
+- **Capacité fixe en v1** : c'est le `max_count` du composant. L'ancien champ `capacity_from` est retiré (la variable `memory_store_capacity` est dérivée, en milli-unités, et rien ne la calcule : la rendre effective demande une loi de la mémoire par PNJ, hors v1).
+- **Échelles comparables** : chaque terme pèse 1 à 10 « points » de 1000 au maximum ; le poids écrit est le nombre de points x 1000 / l'étendue de la variable (unipolar10 x10, ratio x1, bool x1000, récence x10, qty : 1000 / cap). Un terme qui n'est pas un nombre entier de points est refusé par `check.py`. Les variables lues par une récence sont des horodatages (`dynamics` le dit) : plus la valeur est petite, plus c'est ancien.
+- **Une réserve dont tous les enregistrements sont protégés ne refuse plus l'ajout** (décision de Monsieur, 15 oct.) : `RecordPool::add` évince le moins bon des enregistrements protégés (même score, égalité = le plus ancien) et le compte (`evicted_protected()`), pour que le PNJ ne cesse jamais de former des souvenirs. `add(rec, now)` n'a pas de valeur par défaut pour `now`.
 
 `check.py` refuse un score qui lit `b_truth`, `b_origin_fact`, `m_fact_ref` ou `r_true_entity`. `gen_cpp` génère `score(kind, record)` en entiers ; un oracle Python (`catalogue/tools/forgetting.py`) sert à la parité.
 

@@ -16,7 +16,7 @@ from .errors import TokenError
 
 ROOT = Path(__file__).resolve().parents[2]
 INTERFACE_PATH = ROOT / "catalogue" / "generated" / "model_interface.json"
-SUPPORTED_SCHEMAS = ("model-interface-2",)
+SUPPORTED_SCHEMAS = ("model-interface-2", "model-interface-3")     # 2 -> 3 (T09) : même forme, lu des deux
 
 
 def fnv1a64(data: bytes) -> int:

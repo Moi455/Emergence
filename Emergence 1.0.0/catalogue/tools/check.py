@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from schema import Catalogue  # noqa: E402
 import probes  # noqa: E402
+import forgetting  # noqa: E402
 
 
 def main(argv=None):
@@ -16,6 +17,7 @@ def main(argv=None):
     cat = Catalogue.load()
     problems = cat.validate(strict="--strict" in argv)
     if not cat.load_errors:
+        problems += forgetting.ForgettingChecker(cat).problems()   # the law of forgetting never reads the truth (T05)
         problems += probes.ProbeChecker(cat).problems()       # every utterance and trace line of every probe is a valid sentence
     counts = ", ".join(f"{k} {n}" for k, n in cat.count().items() if n)
     print(f"catalogue: {counts or 'vide'}")

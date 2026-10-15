@@ -7,7 +7,7 @@
 
 namespace em::social::gen {
 
-inline constexpr std::array<std::string_view, 704> kWords = {
+inline constexpr std::array<std::string_view, 744> kWords = {
   "a_while", "able", "above", "abrasiveness", "absorbency", "accident", "achieve", "activate",
   "adhesion", "admirable", "adultery", "affront", "age_years", "ahead", "ahead_left", "ahead_right",
   "all", "along", "altruism", "and", "angry", "animal_cruelty", "anxiousness", "any",
@@ -96,8 +96,13 @@ inline constexpr std::array<std::string_view, 704> kWords = {
   "r_group_members", "r_group_role", "r_group_size", "share", "third", "deduced", "dreamt_it", "knows",
   "most", "nothing", "nowhere", "of", "overheard", "read_it", "something", "sometime",
   "somewhere", "the_one", "they_say", "against", "appears", "beyond", "color", "from",
+  "abandoned", "failed", "running", "trembling", "acrid", "aromatic", "blocked", "c_have",
+  "c_target_near", "c_unwatched", "cover_face", "done", "drawling", "every", "goal_check", "growing",
+  "hear", "idle", "interrupted", "limit_reached", "low_slow", "musty", "new", "occasion",
+  "old", "once", "putrid", "r_group_my_task", "r_group_present", "r_group_tasks_open", "rancid", "rising",
+  "smoky", "sour", "suspended", "sweet", "trace_sign", "twist", "wink", "worn",
 };
-inline constexpr std::uint64_t kWordsRegistryFingerprint = 0x1920bd81779ed926ull;
+inline constexpr std::uint64_t kWordsRegistryFingerprint = 0xd2a996bbfc9bc9e8ull;
 inline constexpr std::array<std::string_view, 799> kKinds = {
   "abrasive_face", "absorbent_pad", "adze", "air", "ale", "ale_barrel", "ale_mug", "anchor",
   "animal_bell", "animal_trough", "anvil", "apple_tree", "apples", "apron", "arcane_bloom", "arcane_crystal",

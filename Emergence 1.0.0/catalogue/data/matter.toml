@@ -316,7 +316,12 @@ id = "cut"
 label_fr = "couper, trancher"
 inputs = "matière tendre (bois, chair, tissu, plante, corde)"
 conditions = ["cuts"]
-effect = "sépare en morceaux selon la force et l'angle ; l'outil s'use"
+effect = "sépare en morceaux selon la force et l'angle ; l'outil s'use ; une carcasse rend ses produits selon l'espèce et la partie (viande, peau, os, corne, plume, graisse) et la maîtrise"
+trigger = "contact : un outil qui coupe (cuts) sur une matière tendre"
+clock = "game"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 [[process]]
 id = "split"
@@ -324,6 +329,11 @@ label_fr = "fendre (le bois dans le fil, la pierre litée)"
 inputs = "bois, ardoise, calcaire"
 conditions = ["impacts", "edge"]
 effect = "éclats et planches grossières"
+trigger = "contact : outil à tranchant frappé (edge, impacts) dans le fil"
+clock = "game"
+nominal_game_s = 0
+consumes = ["oak_raw", "slate"]
+produces = ["oak_planks"]
 
 [[process]]
 id = "fracture"
@@ -331,6 +341,11 @@ label_fr = "casser, briser"
 inputs = "toute matière"
 conditions = ["impacts"]
 effect = "si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse ; silex contre fer : des étincelles (qui allument l'amadou)"
+trigger = "contact : choc dont l'énergie dépasse la ténacité"
+clock = "real"
+nominal_game_s = 0
+consumes = []
+produces = ["rubble_masonry"]
 
 [[process]]
 id = "crush"
@@ -338,13 +353,23 @@ label_fr = "écraser, moudre, broyer"
 inputs = "grain, minerai, herbe, os"
 conditions = ["impacts"]
 effect = "grain → farine ; minerai → minerai broyé ; herbe → pâte"
+trigger = "contact : choc ou meule sur grain, minerai, herbe, os"
+clock = "game"
+nominal_game_s = 0
+consumes = ["grain", "bone"]
+produces = ["flour"]
 
 [[process]]
 id = "extract"
 label_fr = "extraire (arracher du terrain : creuser, piocher)"
 inputs = "terrain"
 conditions = ["digs"]
-effect = "retire des voxels ; la matière extraite devient objet ; la stabilité voisine change"
+effect = "retire des voxels ; la matière extraite devient objet ; la stabilité voisine change ; arracher une plante enracinée (racine, tubercule, souche) en fait un objet et laisse le sol nu"
+trigger = "contact : un outil qui creuse (digs) sur le terrain"
+clock = "game"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 [[process]]
 id = "till"
@@ -352,6 +377,11 @@ label_fr = "labourer, retourner la terre"
 inputs = "sol (terrain)"
 conditions = ["digs"]
 effect = "le sol passe à « labouré » (soil_state) ; l'humidité et la fertilité s'en ressentent ; une houe, une bêche ou un araire tiré par un bœuf"
+trigger = "contact : un outil qui creuse (digs) sur un sol cultivable"
+clock = "game"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 # Assembler
 [[process]]
@@ -360,6 +390,11 @@ label_fr = "assembler (empiler, emboîter, clouer, maçonner)"
 inputs = "pièces de bois, pierres, briques, mortier"
 conditions = ["graspable"]
 effect = "crée ou agrandit une structure ; la stabilité dépend des appuis"
+trigger = "contact : pièces tenues ou posées l'une sur l'autre"
+clock = "game"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 [[process]]
 id = "bind"
@@ -367,6 +402,11 @@ label_fr = "lier, nouer, coudre"
 inputs = "corde, fil, cuir, tissu"
 conditions = ["binds"]
 effect = "attache deux choses ; tient tant que la ténacité du lien n'est pas dépassée"
+trigger = "contact : un lien (binds) passé autour de deux choses"
+clock = "game"
+nominal_game_s = 0
+consumes = ["rope_fiber", "leather"]
+produces = []
 
 [[process]]
 id = "mix"
@@ -374,12 +414,22 @@ label_fr = "mélanger, pétrir, dissoudre"
 inputs = "farine + eau, argile + eau, teinture + eau, sel + eau"
 conditions = ["contains"]
 effect = "produit un mélange (pâte, mortier, saumure, bain de teinture)"
+trigger = "contact : deux matières versées dans un contenant (contains)"
+clock = "game"
+nominal_game_s = 0
+consumes = ["flour", "clay", "water", "salt"]
+produces = ["lime_mortar"]
 
 [[process]]
 id = "spin_weave"
 label_fr = "filer et tisser (fibre → fil → étoffe)"
 inputs = "laine, lin, chanvre"
 effect = "étoffe, dont la qualité suit la maîtrise"
+trigger = "contact : fibre travaillée à la main ou au métier"
+clock = "game"
+nominal_game_s = 0
+consumes = ["wool", "linen", "rope_fiber"]
+produces = ["cloth"]
 
 # Façonner
 [[process]]
@@ -388,6 +438,11 @@ label_fr = "tailler, sculpter, graver"
 inputs = "bois, pierre, os"
 conditions = ["cuts"]
 effect = "change la forme ; peut produire une inscription"
+trigger = "contact : outil qui coupe (cuts) sur bois, pierre ou os"
+clock = "game"
+nominal_game_s = 0
+consumes = ["oak_raw", "bone"]
+produces = []
 
 [[process]]
 id = "forge"
@@ -395,6 +450,11 @@ label_fr = "forger (déformer le métal chaud par des coups)"
 inputs = "métal chaud"
 conditions = ["impacts", "heats"]
 effect = "outils, lames, clous, serrures ; qualité selon maîtrise, chaleur, outil"
+trigger = "chaleur (heats) et coups (impacts) sur un métal"
+clock = "game"
+nominal_game_s = 0
+consumes = ["iron"]
+produces = ["iron"]
 
 [[process]]
 id = "mold_cast"
@@ -402,6 +462,11 @@ label_fr = "mouler, couler (argile façonnée, métal fondu dans un moule)"
 inputs = "argile humide, métal fondu"
 conditions = ["contains"]
 effect = "forme imposée par le moule ou la main"
+trigger = "matière fluide ou plastique versée ou pressée dans un moule (contains)"
+clock = "game"
+nominal_game_s = 0
+consumes = ["clay"]
+produces = []
 
 [[process]]
 id = "magic_shape"
@@ -409,6 +474,11 @@ label_fr = "façonner par magie (bâtir, assembler ou désassembler la matière)
 inputs = "matières présentes"
 conditions = ["shapes_matter"]
 effect = "transforme des matières disponibles en construction ou objet, sans en créer ; consomme la charge ; échec ou accident si la puissance dépasse la maîtrise"
+trigger = "pouvoir de façonner la matière, chargé"
+clock = "game"
+nominal_game_s = 0
+consumes = []
+produces = []
 note = "Charte § 17 : la baguette ne crée rien gratuitement."
 
 # Thermique
@@ -417,18 +487,33 @@ id = "heat"
 label_fr = "chauffer"
 conditions = ["heats"]
 effect = "la température monte selon la source, la masse, la conduction ; un frottement long et fort (bois sec contre bois) chauffe jusqu'à la braise"
+trigger = "une source de chaleur (heats) proche, ou un frottement long et fort"
+clock = "real"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 [[process]]
 id = "combust"
 label_fr = "brûler"
 conditions = ["fuel", "ignites"]
 effect = "consomme le combustible, crée un feu qui se propage selon l'inflammabilité, l'humidité, le vent ; produit cendre et fumée"
+trigger = "combustible (fuel) touché par ce qui allume (ignites)"
+clock = "real"
+nominal_game_s = 0
+consumes = ["softwood", "oak_raw", "straw"]
+produces = ["ash"]
 
 [[process]]
 id = "melt"
 label_fr = "fondre"
 conditions = ["heats"]
 effect = "au-delà du point de fusion, la matière devient fluide"
+trigger = "température au-delà du point de fusion de la matière"
+clock = "real"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 [[process]]
 id = "smelt"
@@ -436,6 +521,11 @@ label_fr = "réduire le minerai (bas fourneau)"
 inputs = "minerai broyé + charbon"
 conditions = ["heats"]
 effect = "minerai → métal brut, scories"
+trigger = "minerai broyé et charbon dans un bas fourneau, chaleur > 1 200 °C"
+clock = "calendar"
+nominal_game_s = 14400
+consumes = ["iron_ore", "charcoal"]
+produces = ["iron"]
 
 [[process]]
 id = "fire_clay"
@@ -443,6 +533,11 @@ label_fr = "cuire l'argile"
 inputs = "argile façonnée sèche"
 conditions = ["heats"]
 effect = "argile → céramique (pots, tuiles, briques)"
+trigger = "argile sèche portée au-delà de 900 °C"
+clock = "calendar"
+nominal_game_s = 43200
+consumes = ["clay"]
+produces = ["ceramic"]
 
 [[process]]
 id = "cook"
@@ -450,11 +545,21 @@ label_fr = "cuire un aliment"
 inputs = "pâte, chair, légumes, grain"
 conditions = ["heats"]
 effect = "pâte → pain ; chair crue → cuite (plus nourrissante, moins de maladie) ; trop cuit → brûlé"
+trigger = "aliment tenu près d'une source de chaleur (heats)"
+clock = "game"
+nominal_game_s = 1800
+consumes = ["flour", "flesh", "vegetable", "grain"]
+produces = ["bread"]
 
 [[process]]
 id = "cool_freeze"
 label_fr = "refroidir, geler"
 effect = "la température baisse vers celle du lieu ; l'eau gèle sous 0 °C"
+trigger = "température du lieu plus basse que celle de la chose"
+clock = "calendar"
+nominal_game_s = 0
+consumes = ["water"]
+produces = []
 
 # Chimique et vivant
 [[process]]
@@ -463,52 +568,250 @@ label_fr = "fermenter"
 inputs = "grain, fruit, lait + eau, dans un récipient fermé"
 conditions = ["contains"]
 effect = "bière, vin, fromage, après des jours"
+trigger = "grain, fruit ou lait + eau gardés dans un récipient fermé"
+clock = "calendar"
+nominal_game_s = 129600
+consumes = ["grain", "milk", "water"]
+produces = ["ale", "cheese"]
 
 [[process]]
 id = "rot"
 label_fr = "pourrir, se gâter"
 effect = "la fraîcheur baisse ; à zéro, l'aliment devient toxique ; le bois mouillé perd son intégrité"
+trigger = "temps écoulé ; la fraîcheur baisse, plus vite au chaud et à l'humide"
+clock = "calendar"
+nominal_game_s = 259200
+consumes = ["flesh", "vegetable", "bread"]
+produces = []
 
 [[process]]
 id = "dry_preserve"
 label_fr = "sécher, saler, fumer (conserver)"
 inputs = "chair, poisson, herbe, grain"
 effect = "la fraîcheur baisse beaucoup plus lentement"
+trigger = "chair, poisson, herbe ou grain séchés, salés ou fumés"
+clock = "calendar"
+nominal_game_s = 432000
+consumes = ["flesh", "herb", "salt"]
+produces = []
 
 [[process]]
 id = "tan"
 label_fr = "tanner"
 inputs = "peau + écorce + eau"
 effect = "peau → cuir, après des jours"
+trigger = "peau + écorce + eau, laissées dans le bain"
+clock = "calendar"
+nominal_game_s = 172800
+consumes = ["hide", "bark", "water"]
+produces = ["leather"]
 
 [[process]]
 id = "dye_process"
 label_fr = "teindre"
 inputs = "étoffe + bain de teinture"
 effect = "change la teinte"
+trigger = "étoffe plongée dans un bain de teinture"
+clock = "game"
+nominal_game_s = 3600
+consumes = ["cloth", "dye"]
+produces = ["cloth"]
 
 [[process]]
 id = "heal_tissue"
 label_fr = "cicatriser"
 effect = "les blessures se referment avec le temps, plus vite si propres, soignées et au repos ; l'infection les aggrave"
+trigger = "temps écoulé sur une blessure ; plus vite si propre, soignée et au repos"
+clock = "calendar"
+nominal_game_s = 432000
+consumes = []
+produces = []
 
 [[process]]
 id = "wear"
 label_fr = "s'user"
 effect = "l'usage et le temps baissent l'intégrité et la qualité ; le fer rouille à l'humidité"
+trigger = "usage répété, ou temps et humidité"
+clock = "calendar"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 [[process]]
 id = "grow"
 label_fr = "pousser, mûrir, se reproduire (plantes, animaux)"
 effect = "selon saison, eau, sol, lumière ; les graines tombent, les troupeaux s'agrandissent"
+trigger = "temps, saison, eau, sol et lumière"
+clock = "calendar"
+nominal_game_s = 100800
+consumes = ["water"]
+produces = ["vegetable", "grain"]
 
 # Fluides
 [[process]]
 id = "flow"
 label_fr = "couler, s'écouler"
 effect = "un liquide versé ou libéré descend et s'étale ; un seau renversé mouille"
+trigger = "liquide libéré sur une pente"
+clock = "real"
+nominal_game_s = 0
+consumes = []
+produces = []
 
 [[process]]
 id = "absorb_evaporate"
 label_fr = "absorber, s'évaporer"
-effect = "le sol boit l'eau, la chaleur l'évapore ; un puits se remplit par la nappe"
+effect = "le sol boit l'eau, la chaleur l'évapore ; un puits se remplit par la nappe ; l'eau salée qui s'évapore laisse son soluté : le sel"
+trigger = "sol ou étoffe au contact de l'eau ; chaleur ou vent sur l'eau"
+clock = "calendar"
+nominal_game_s = 0
+consumes = ["water"]
+produces = ["salt"]
+
+# ─── Composant : un processus long en cours (T08a, docs/16 4.5) ─────────────────────────────────
+[[component]]
+id = "transformation"
+label_fr = "transformation en cours : où en est un processus lent (bière qui fermente, peau qui tanne, graine qui germe), depuis quand"
+holder = "item, structure, plant, terrain"
+engine_only = true
+note = "Moteur seul, sans canal : aucune de ses variables n'atteint un jeton. Ce qu'on en VOIT passe par l'état apparent (pc_state_seen : trouble, mûr, pourri…)."
+
+[[variable]]
+id = "process_progress"
+label_fr = "avancement du processus en cours (0 à 1)"
+holder = "transformation"
+scale = "ratio"
+writer = ["engine"]
+visibility = "engine"
+dynamics = "monte avec l'horloge du processus (nominal_game_s) quand ses conditions tiennent ; se fige ou recule quand elles cessent"
+clock = "day"
+
+[[variable]]
+id = "process_started_at"
+label_fr = "instant de jeu où le processus en cours a commencé"
+holder = "transformation"
+scale = "time"
+writer = ["engine"]
+visibility = "engine"
+note = "Écrit à la sauvegarde avec process_progress : un processus long survit au rechargement."
+
+# ─── Dix processus de la matière en plus (T08a, docs/16 4.4) ────────────────────────────────────
+# Conditions : uniquement des propriétés PERCEPTIBLES (cuts, impacts, contains, wipes...). Les grandeurs
+# du moteur (load_margin, abrasiveness fine, fraîcheur) déclenchent la loi mais n'entrent dans aucun jeton.
+[[process]]
+id = "collapse"
+label_fr = "s'effondrer, tomber"
+inputs = "construction ou arbre dont plus rien ne porte"
+effect = "ce qui n'est plus porté tombe : suite d'Operation, blessures sous la chute, débris"
+trigger = "load_margin ≤ 0 (marge de charge, moteur seul) ; arbre coupé au-delà de son cœur"
+clock = "real"
+nominal_game_s = 0
+consumes = []
+produces = ["rubble_masonry"]
+
+[[process]]
+id = "disassemble"
+label_fr = "démonter (aux joints)"
+inputs = "matière à cohésion built : planches, briques, moellons liés"
+conditions = ["impacts"]
+effect = "rend des éléments réutilisables au lieu de débris ; une matière naturelle ne fait que se fracturer"
+trigger = "impacts sur une matière à cohésion built, aux joints"
+clock = "game"
+nominal_game_s = 0
+consumes = ["oak_planks", "brick"]
+produces = ["oak_planks", "brick"]
+
+[[process]]
+id = "germinate"
+label_fr = "germer"
+inputs = "graine en sol labouré et humide, ou grain trempé"
+effect = "la graine pousse (plant_stage = sprout) ; le grain trempé donne du malt"
+trigger = "temps ; graine en sol labouré et humide, ou trempée"
+clock = "calendar"
+nominal_game_s = 43200
+note = "D30 : 43 200 s de jeu = 0,5 jour de jeu = 45 min réelles (nominal avant, 4 jours = 6 h réelles, dépassait la maturité de l'orge, de l'avoine, des fèves, du chou, de l'oignon, de la carotte, du lin et du chanvre : 2 jours, du navet : 1 jour). La germination est la première étape d'une culture : elle doit rester bien en dessous de days_to_mature (species.toml, minimum 1 jour) ; 0,5 jour = une demi-journée de jeu."
+consumes = ["grain", "water"]
+produces = ["grain"]
+
+[[process]]
+id = "separate"
+label_fr = "séparer (battre, vanner, tamiser, écrémer, baratter)"
+inputs = "mélange de grain et de paille, farine et son, lait"
+effect = "battage, vannage, tamisage, écrémage, barattage : deux matières mêlées se séparent"
+trigger = "choc, vent, tamis ou mouvement sur un mélange"
+clock = "game"
+nominal_game_s = 0
+consumes = ["grain", "milk"]
+produces = ["grain", "straw", "butter"]
+
+[[process]]
+id = "press_extract"
+label_fr = "presser, traire, essorer"
+inputs = "ce qui contient un fluide : fruit, pis, étoffe mouillée, fromage frais"
+conditions = ["contains"]
+effect = "traite, pressoir, égouttage, essorage ; le lait d'une bête suit animal_product_ready"
+trigger = "work en pressant ou en serrant ce qui contient un fluide"
+clock = "game"
+nominal_game_s = 0
+consumes = ["vegetable"]
+produces = ["oil", "milk"]
+
+[[process]]
+id = "wash"
+label_fr = "laver"
+inputs = "eau (+ savon) et frottement sur une chose, un corps, un lieu"
+conditions = ["wipes"]
+effect = "dirtiness et grooming s'améliorent ; une plaie lavée s'infecte moins"
+trigger = "eau (+ savon) et frottement"
+clock = "game"
+nominal_game_s = 0
+consumes = ["water", "soap"]
+produces = []
+
+[[process]]
+id = "abrade"
+label_fr = "aiguiser, polir, raboter, limer"
+inputs = "tranchant à refaire, surface à lisser"
+conditions = ["sharpens"]
+effect = "refait un tranchant (edge), polit, rabote, lime"
+trigger = "frottement d'une chose qui aiguise (sharpens) sur une autre"
+clock = "game"
+nominal_game_s = 0
+consumes = []
+produces = []
+
+[[process]]
+id = "char"
+label_fr = "carboniser (meule de charbonnier)"
+inputs = "bois en tas couvert de terre"
+conditions = ["fuel", "heats"]
+effect = "bois → charbon de bois"
+trigger = "chaleur sans air, longtemps"
+clock = "calendar"
+nominal_game_s = 172800
+consumes = ["oak_raw", "softwood"]
+produces = ["charcoal"]
+
+[[process]]
+id = "trap_catch"
+label_fr = "prendre au piège, au filet, à l'hameçon"
+inputs = "bête qui passe sur un piège armé, dans un filet, devant un hameçon appâté"
+conditions = ["traps"]
+effect = "la bête est prise selon l'espèce, l'appât, la maîtrise (D29) ; sinon le piège reste armé ou se referme à vide"
+trigger = "piège armé (traps), filet, hameçon appâté, bête qui passe"
+clock = "real"
+nominal_game_s = 0
+consumes = []
+produces = []
+
+[[process]]
+id = "calcine"
+label_fr = "calciner (chaux)"
+inputs = "calcaire"
+conditions = ["heats"]
+effect = "calcaire → chaux vive (matière plaster : chaux, plâtre ; aucune matière nouvelle, pour ne pas élargir la table des sortes) ; priorité basse"
+trigger = "chaleur > 900 °C sur du calcaire"
+clock = "calendar"
+nominal_game_s = 86400
+consumes = ["limestone"]
+produces = ["plaster"]

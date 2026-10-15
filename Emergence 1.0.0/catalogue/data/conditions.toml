@@ -27,4 +27,8 @@ concept = [
   { id = "c_sees_ref", category = "condition", args = ["entity"], label_fr = "je vois cette personne ou cette chose (un dossier connu) ; sur un GROUPE : je vois tous les membres que je crois siens (« attendre que tous soient là »)" },
   { id = "c_state_seen", category = "condition", args = ["entity", "concept"], label_fr = "l'état VU de … est … (le pain paraît cuit, le métal est rouge, le mur est tombé, le seau est plein, le sang ne coule plus) : lu dans pc_state_seen" },
   { id = "c_rested", category = "condition", label_fr = "je me sens reposé" },
+  # Ajoutées après T08b par T08c (docs/16 § 4.3), qui ne les avait pas écrites : lues dans la perception ou les croyances.
+  { id = "c_have", category = "condition", args = ["kind", "quantity"], label_fr = "j'ai au moins N choses de cette sorte apparente, d'après ce que j'ai VU (mains, sur moi, contenant que je porte) ou ce que je CROIS d'un contenant (amount)" },
+  { id = "c_unwatched", category = "condition", label_fr = "personne ne paraît me regarder, parmi ceux que je vois" },
+  { id = "c_target_near", category = "condition", args = ["entity"], label_fr = "la cible paraît à portée de main ou de voix" },
 ]

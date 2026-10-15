@@ -192,11 +192,16 @@ class TestTimeFields(unittest.TestCase):
         mine = f"{kind} {row['id']}:"                     # an empty catalogue has other problems: keep this entry's only
         return [x for x in cat.validate(strict=strict) if x.startswith(mine) or "unknown fields" in x]
 
-    def test_real_catalogue_has_no_such_field_yet(self):
+    def test_real_catalogue_fills_the_time_fields(self):
+        # T08a: the 40 gestures declare how they end and their cadence; the duration words and the diseases exist
         cat = Catalogue.load()
-        self.assertTrue(all(a.natural_end is None and a.cadence_ms == 0 and not a.productive for a in cat["action"].values()))
-        self.assertEqual(cat["duration_level"], {})
-        self.assertEqual(cat["illness"], {})
+        self.assertTrue(all(a.natural_end is not None and a.cadence_ms > 0 for a in cat["action"].values()))
+        self.assertEqual({d.id: d.game_s for d in cat["duration_level"].values()}, {"brief": 120, "a_while": 1800, "long": 7200})
+        self.assertGreaterEqual(len(cat["illness"]), 8)
+        self.assertTrue(all(p.trigger and p.clock for p in cat["process"].values()))
+        self.assertEqual(len(cat["process"]), 44)
+        self.assertNotIn("conceive", cat["process"])
+        self.assertNotIn("gestate_birth", cat["process"])
 
     def test_action_fields_accepted(self):
         row = {"id": "chop", "family": "force", "natural_end": False, "cadence_ms": 900, "productive": True}

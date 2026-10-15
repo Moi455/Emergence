@@ -20,7 +20,7 @@ import budget  # noqa: E402
 import language  # noqa: E402
 
 OUT = ROOT / "generated" / "model_interface.json"
-SCHEMA_VERSION = "model-interface-2"     # 2: time_until, WAKE, ref_types, component_units, vector registry (tok-2)
+SCHEMA_VERSION = "model-interface-3"     # 3 (T09): plan, arrêt de décision, WAKE.outcome, groupes; 2: time_until, WAKE, ref_types, component_units, vector registry (tok-2)
 
 
 class ModelInterface:
@@ -33,9 +33,9 @@ class ModelInterface:
         "INV": "same fields as THING (kind, props = object vector, state, amount, owner, file)",
         "TASTE": "concept (pointer to a word) + attitude (bipolar10)",
         "COMMIT": "counterparty (mref), mine_or_theirs, prop (expression), deadline_felt, status_believed, witnesses_believed",
-        "PLAN": "step (the current gesture), next (the gesture after it; '' = end of plan), goal (g:), target (mref), progress, commitment",
+        "PLAN": "step (the current gesture), next (the gesture after it; '' = end of plan), goal (g:), target (mref), progress (of the step), commitment, status, repeat, repeat_period, attempts; up to 2 PLAN tokens (the plan at hand and a suspended one)",
         "REQUEST": "from (mref), prop (expression), age",
-        "WAKE": "why this decision happens now: mode, cause, trigger (the record that woke him), urgency",
+        "WAKE": "why this decision happens now: mode, cause (goal_check = a belief-derived value moved: the model rereads and writes g_status), trigger (the record that woke him: event, heard, request, goal, plan, commit, entity or group), urgency, outcome of the step",
         "SKILL": "technique (word), self_estimate",
     }
     # Record keys: the speaker's pointers of the inner language (@E3, b:7...), and private prefixes for records the
@@ -64,7 +64,7 @@ class ModelInterface:
                  "target": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                  "next": {"scale": "word", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
         "WAKE": {"mode": {"scale": "enum", "values": ["act", "listen", "reflect"], "unit": "", "list_of": "", "components": [], "component_scales": []},
-                 "cause": {"scale": "enum", "values": ["perception", "speech", "request", "body", "plan", "timer", "routine"], "unit": "", "list_of": "", "components": [], "component_scales": []},
+                 "cause": {"scale": "enum", "values": ["perception", "speech", "request", "body", "plan", "timer", "routine", "goal_check", "occasion", "idle"], "unit": "", "list_of": "", "components": [], "component_scales": []},
                  "trigger": {"scale": "mref", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []},
                  "urgency": {"scale": "unipolar10", "values": [], "unit": "", "list_of": "", "components": [], "component_scales": []}},
     }
@@ -81,7 +81,9 @@ class ModelInterface:
         "EVENT.with": ["THING", "INV"],
         "EVENT.from_to": ["ENTITY", "GROUP", "SELF", "THING", "INV", "LOCUS", "PLACE"],
         "GOAL.origin_ref": ["BELIEF", "HEARD", "MEMORY", "REQUEST", "COMMIT", "ENTITY", "GROUP"],
+        "GOAL.parent": ["GOAL"],
         "GROUP.leader": ["ENTITY", "SELF"],
+        "GROUP.my_task": ["COMMIT"],
         "GROUP.members": ["ENTITY", "SELF"],
         "LOCUS.file": ["LOCUS"],
         "LOCUS.owner": ["ENTITY", "GROUP", "SELF"],
@@ -94,7 +96,7 @@ class ModelInterface:
         "SELF_STATE.attention": ["ENTITY", "THING", "INV", "SELF", "EVENT", "HEARD"],   # a noise, a spoken word
         "THING.file": ["THING", "INV"],
         "THING.owner": ["ENTITY", "GROUP", "SELF"],
-        "WAKE.trigger": ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN"],
+        "WAKE.trigger": ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN", "COMMIT", "ENTITY", "GROUP"],
     }
     # Vectors that hold SEVERAL objects (what is carried, what is seen in hands): a list of vectors, pooled by tok-2
     # (sum of masses, max of the rest); [] is "nothing held", known. The other vectors (props, rep) are one vector.

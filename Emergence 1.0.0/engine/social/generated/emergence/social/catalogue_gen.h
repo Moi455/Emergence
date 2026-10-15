@@ -6,8 +6,8 @@
 
 namespace em::social::gen {
 
-inline constexpr std::uint64_t kCatalogueFingerprint = 0x1d2e6e1ec4347c5eull;  // FNV-1a 64 of model_interface.json text + this file without this line
-inline constexpr std::uint64_t kSymbolRegistryFingerprint = 0x6e26f29527c3b287ull;   // FNV-1a 64 of the tok-2 symbols (words and kinds are positions in that order)
+inline constexpr std::uint64_t kCatalogueFingerprint = 0x1c3f751321ec07f9ull;  // FNV-1a 64 of model_interface.json text + this file without this line
+inline constexpr std::uint64_t kSymbolRegistryFingerprint = 0x472bedbfa0f83e9bull;   // FNV-1a 64 of the tok-2 symbols (words and kinds are positions in that order)
 inline constexpr int kMaxParams = 6;
 inline constexpr int kMaxValues = 16;
 inline constexpr int kAdultAgeYears = 18;   // D10, read from life_stage
@@ -134,7 +134,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
   }, false},
   GestureSpec{"examine", Family::perceive, true, false, true, 3, {
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false, true, 0x0},
-    ParamSpec{"sense", ParamType::enum_, 5, {"look", "touch", "weigh", "smell", "taste"}, 0x0, 0xb, false, false, false, true, false, 0x1f},
+    ParamSpec{"sense", ParamType::enum_, 6, {"look", "touch", "weigh", "smell", "taste", "hear"}, 0x0, 0xb, false, false, false, true, false, 0x3f},
     ParamSpec{"contact_zone", ParamType::enum_, 9, {"head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"}, 0x0, 0xbd, false, false, false, true, false, 0x1ff},
   }, false},
   GestureSpec{"give", Family::grasp, false, false, false, 3, {
@@ -234,7 +234,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
     ParamSpec{"intensity", ParamType::enum_, 5, {"faint", "light", "firm", "hard", "full"}, 0x0, 0x1f, true, false, false, false, false, 0x1f},
   }, false},
   GestureSpec{"sign", Family::communicate, false, false, false, 2, {
-    ParamSpec{"kind", ParamType::enum_, 12, {"point", "nod", "shake_head", "wave", "beckon", "shrug", "bow", "applaud", "raise_hand", "show", "spit", "fist"}, 0x0, 0xfff, false, false, false, false, false, 0xfff},
+    ParamSpec{"kind", ParamType::enum_, 15, {"point", "nod", "shake_head", "wave", "beckon", "shrug", "bow", "applaud", "raise_hand", "show", "spit", "fist", "wink", "cover_face", "trace_sign"}, 0x0, 0x7fff, false, false, false, false, false, 0x7fff},
     ParamSpec{"at", ParamType::ref, 0, {}, 0x0, 0x0, false, true, false, false, true, 0x0},
   }, false},
   GestureSpec{"sleep", Family::consume, false, false, false, 2, {
@@ -244,7 +244,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
   GestureSpec{"speak", Family::communicate, false, false, false, 4, {
     ParamSpec{"to", ParamType::ref, 0, {}, 0x0, 0x0, false, true, false, false, true, 0x0},
     ParamSpec{"volume", ParamType::enum_, 5, {"whisper", "low", "normal", "loud", "shout"}, 0x0, 0x1f, true, false, false, false, false, 0x1f},
-    ParamSpec{"tone", ParamType::enum_, 5, {"warm", "calm", "cold", "angry", "pleading"}, 0x0, 0x1f, false, false, false, false, false, 0x1f},
+    ParamSpec{"tone", ParamType::enum_, 9, {"warm", "calm", "cold", "angry", "pleading", "rising", "trembling", "low_slow", "drawling"}, 0x0, 0x1ff, false, false, false, false, false, 0x1ff},
     ParamSpec{"content", ParamType::expression, 0, {}, 0x0, 0x0, false, false, false, false, false, 0x0},
   }, false},
   GestureSpec{"stop", Family::meta, false, false, false, 0, {
@@ -263,7 +263,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
   }, false},
   GestureSpec{"take", Family::grasp, true, false, true, 5, {
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false, true, 0x0},
-    ParamSpec{"from", ParamType::enum_, 4, {"ground", "container", "hand_of", "worn_by"}, 0x0, 0xf, false, false, false, false, false, 0xf},
+    ParamSpec{"from", ParamType::enum_, 5, {"ground", "container", "hand_of", "worn_by", "growing"}, 0x0, 0x1f, false, false, false, false, false, 0x1f},
     ParamSpec{"hold", ParamType::enum_, 4, {"in_hand", "in_arms", "on_back", "by_arm"}, 0x0, 0xf, false, false, false, false, false, 0xf},
     ParamSpec{"stealth", ParamType::enum_, 2, {"open", "discreet"}, 0x0, 0x3, false, false, false, false, false, 0x3},
     ParamSpec{"contact_zone", ParamType::enum_, 9, {"head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"}, 0x0, 0x38, false, false, false, true, false, 0x1ff},
@@ -302,7 +302,7 @@ inline constexpr std::array<GestureSpec, 40> kGestures = {{
   GestureSpec{"work", Family::tool, true, false, true, 6, {
     ParamSpec{"target", ParamType::ref, 0, {}, 0x0, 0x0, false, false, true, false, true, 0x0},
     ParamSpec{"with", ParamType::ref, 0, {}, 0x0, 0x0, false, true, true, false, false, 0x0},
-    ParamSpec{"motion", ParamType::enum_, 5, {"press", "rub", "stir", "squeeze", "saw"}, 0x0, 0x1, false, false, false, true, false, 0x1f},
+    ParamSpec{"motion", ParamType::enum_, 6, {"press", "rub", "stir", "squeeze", "saw", "twist"}, 0x0, 0x1, false, false, false, true, false, 0x3f},
     ParamSpec{"intensity", ParamType::enum_, 5, {"faint", "light", "firm", "hard", "full"}, 0x0, 0x7, true, false, false, true, false, 0x1f},
     ParamSpec{"duration", ParamType::enum_, 3, {"brief", "a_while", "long"}, 0x0, 0x3, true, false, false, true, false, 0x7},
     ParamSpec{"contact_zone", ParamType::enum_, 9, {"head", "face", "shoulder", "arms", "hands", "back", "torso", "legs", "body"}, 0x0, 0xbd, false, false, false, true, false, 0x1ff},
@@ -337,15 +337,18 @@ enum class Condition : std::uint8_t {
   c_thirst_above,
   c_time,
   c_tool_broken,
+  c_have,
+  c_target_near,
+  c_unwatched,
   kCount
 };
-inline constexpr std::array<std::string_view, 23> kConditionNames = {
-  "c_addressed", "c_attacked", "c_blocked", "c_done", "c_elapsed", "c_exhausted", "c_hands_full", "c_hears", "c_hunger_above", "c_pain_above", "c_reached", "c_rested", "c_sees", "c_sees_ref", "c_state_seen", "c_stopped", "c_target_down", "c_target_gone", "c_target_still", "c_target_yields", "c_thirst_above", "c_time", "c_tool_broken"
+inline constexpr std::array<std::string_view, 26> kConditionNames = {
+  "c_addressed", "c_attacked", "c_blocked", "c_done", "c_elapsed", "c_exhausted", "c_hands_full", "c_hears", "c_hunger_above", "c_pain_above", "c_reached", "c_rested", "c_sees", "c_sees_ref", "c_state_seen", "c_stopped", "c_target_down", "c_target_gone", "c_target_still", "c_target_yields", "c_thirst_above", "c_time", "c_tool_broken", "c_have", "c_target_near", "c_unwatched"
 };
-inline constexpr std::uint64_t kConditionRegistryFingerprint = 0x52caeb1c97370bddull;   // FNV-1a 64 of the registry names, one per line
+inline constexpr std::uint64_t kConditionRegistryFingerprint = 0xb9b3492c7070e732ull;   // FNV-1a 64 of the registry names, one per line
 
-inline constexpr std::array<bool, 23> kConditionLive = {
-  true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true
+inline constexpr std::array<bool, 26> kConditionLive = {
+  true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true
 };   // false = retired slot
 
 enum class Var : std::uint16_t {
@@ -707,14 +710,34 @@ enum class Var : std::uint16_t {
   wounds,
   year,
   zones,
+  animal_product_ready,
+  g_has_plan,
+  g_parent,
+  i_attempts,
+  i_repeat,
+  i_repeat_period,
+  i_status,
+  i_step_progress,
+  i_step_started,
+  made_at,
+  made_by,
+  pc_age_seen,
+  pp_smell_seen,
+  process_progress,
+  process_started_at,
+  r_group_my_task,
+  r_group_present,
+  r_group_tasks_open,
+  s_last_believed,
+  w_outcome,
   kCount
 };
-inline constexpr std::array<std::string_view, 358> kVarNames = {
-  "a_document", "a_form", "a_kind_label", "a_obligations", "a_parties", "a_status", "a_witnesses", "age_years", "agility", "air_temperature", "alive", "altruism", "ambient_noise", "anger", "animal_aggression", "animal_attachment", "animal_fear_humans", "animal_group", "animal_species", "animal_tameness", "anxiety", "anxiousness", "assurance", "attention", "attire_seen", "attracted_to", "b_acquired", "b_certainty", "b_confirmed", "b_contradicted", "b_hops", "b_importance", "b_informant", "b_origin_fact", "b_polarity", "b_proposition", "b_secret", "b_source", "b_told_to", "b_truth", "b_unintelligible", "b_weight", "baseline_mood", "belief_capacity", "biological_parents", "bleeding", "blood_volume", "body_mass", "body_temperature", "boredom", "breath", "calendar_params", "carried", "cloud_cover", "commitments_seen", "condition", "confusion", "consciousness", "contempt", "coordination", "creativity", "crowding", "custody_log", "custom_aggregate", "day_of_year", "deposit", "diligence", "disgust", "endurance", "envy", "ep_age", "ep_attire", "ep_build", "ep_condition", "ep_dir", "ep_dist", "ep_expression", "ep_gaze", "ep_health", "ep_held", "ep_marks", "ep_motion", "ep_posture", "ep_sex", "ep_signs", "ep_wounds", "ev_actor", "ev_age", "ev_among", "ev_count", "ev_from_to", "ev_gesture", "ev_manner_seen", "ev_sense", "ev_target", "ev_with", "exhaustion", "expression", "fairness", "fear", "fearfulness", "fecundity", "fire_extent", "fire_fuel", "fire_heat", "fire_spread", "fog", "forgiveness", "frontier_depth", "g_deadline", "g_desired", "g_mode", "g_origin", "g_origin_ref", "g_priority", "g_progress", "g_since", "g_status", "g_when", "game_time", "gaze", "gentleness", "gratitude", "greed_avoidance", "grief", "grooming", "group_cohesion", "guilt", "hands", "heard_unprocessed", "hearing", "height", "held_seen", "hostility_drivers", "hunger", "i_commitment", "i_serves", "i_speech", "i_step_index", "i_step_targets", "i_steps", "ice", "illnesses", "immunities", "indoors", "inquisitiveness", "inside_of", "intellect", "intoxication", "inv_seen", "involuntary_signs", "jealousy", "joy", "k_last_practice", "k_mastery", "k_self_estimate", "k_technique", "lc_dir", "lc_dist", "lc_file", "lc_kind", "lc_owner", "legitimacy", "life_clock", "life_stage", "light_level", "load_margin", "load_ratio", "look_age_seen", "look_build_seen", "look_drunk_seen", "look_marks_seen", "look_sex_seen", "m_content", "m_defining", "m_emotion", "m_fact_ref", "m_importance", "m_interpretation", "m_rehearsals", "m_role", "m_secret", "m_valence", "m_vividness", "m_when", "m_where", "magic_attunement", "magic_stability", "manipulation", "masking", "memory_capacity", "memory_store_capacity", "mobility", "modesty", "mood_energy", "mood_valence", "moon_phase", "need_achievement", "need_acquisition", "need_autonomy", "need_company", "need_esteem", "need_intimacy", "need_meaning", "need_novelty", "need_play", "need_security", "orientation", "own_held_seen", "pain", "patience", "pc_amount_seen", "pc_color_seen", "pc_depth_seen", "pc_dir", "pc_display", "pc_dist", "pc_file", "pc_file_certainty", "pc_kind_seen", "pc_motion", "pc_owner_believed", "pc_props_seen", "pc_state_seen", "perceptiveness", "permanent_marks", "phenomenon_effects", "phenomenon_intensity", "phenomenon_kind", "phenomenon_signs", "place_bounds", "place_in", "place_recognized", "plant_health", "plant_species", "plant_stage", "plant_yield", "position", "posture", "posture_felt", "pp_air_felt", "pp_crowd_seen", "pp_indoors", "pp_light", "pp_noise", "pp_signs", "pp_sun", "pp_weather_seen", "precipitation", "pregnancy", "pride", "prudence", "q_content", "q_from", "q_since", "r_affection", "r_attraction", "r_familiarity", "r_fear", "r_group_goal", "r_group_kind", "r_group_leader", "r_group_members", "r_group_role", "r_group_size", "r_id_certainty", "r_known_by", "r_last_contact", "r_link_believed", "r_name_believed", "r_obligation", "r_perceived_regard", "r_present", "r_reputation_seen", "r_resentment", "r_respect", "r_rivalry", "r_shared_history", "r_true_entity", "r_trust", "recognized_claims", "recognized_members", "relation_capacity", "reputation_aggregate", "reserves", "resilience", "robustness", "role_holder_support", "s_introduced_at", "s_introduced_by", "s_name", "s_scope", "sadness", "season_felt", "seen_direction", "seen_distance", "seen_motion", "self_control", "self_regard", "senescence", "sentimentality", "sex", "shame", "sickness_felt", "sim_depth", "sincerity", "sleepiness", "smoke", "snow_cover", "sociability", "soil_fertility", "soil_moisture", "soil_state", "storm", "strength", "stress", "surprise", "symptoms", "tastes", "tenderness", "thermal_comfort", "think_more", "thirst", "time_felt", "time_of_day", "trace_direction", "trace_fact", "trace_freshness", "trace_kind", "trace_maker_cue", "transactions", "unconventionality", "underground_depth", "unrest", "v_achievement", "v_authority", "v_honor", "v_liberty", "v_loyalty", "v_pleasure", "v_power", "v_sanctity", "velocity", "village_temperament", "visible_damage", "visible_injury", "vision", "w_think_budget", "water_flow", "water_level", "water_quality", "water_volume", "wealth_objective", "wind", "worn", "wounds", "year", "zones"
+inline constexpr std::array<std::string_view, 378> kVarNames = {
+  "a_document", "a_form", "a_kind_label", "a_obligations", "a_parties", "a_status", "a_witnesses", "age_years", "agility", "air_temperature", "alive", "altruism", "ambient_noise", "anger", "animal_aggression", "animal_attachment", "animal_fear_humans", "animal_group", "animal_species", "animal_tameness", "anxiety", "anxiousness", "assurance", "attention", "attire_seen", "attracted_to", "b_acquired", "b_certainty", "b_confirmed", "b_contradicted", "b_hops", "b_importance", "b_informant", "b_origin_fact", "b_polarity", "b_proposition", "b_secret", "b_source", "b_told_to", "b_truth", "b_unintelligible", "b_weight", "baseline_mood", "belief_capacity", "biological_parents", "bleeding", "blood_volume", "body_mass", "body_temperature", "boredom", "breath", "calendar_params", "carried", "cloud_cover", "commitments_seen", "condition", "confusion", "consciousness", "contempt", "coordination", "creativity", "crowding", "custody_log", "custom_aggregate", "day_of_year", "deposit", "diligence", "disgust", "endurance", "envy", "ep_age", "ep_attire", "ep_build", "ep_condition", "ep_dir", "ep_dist", "ep_expression", "ep_gaze", "ep_health", "ep_held", "ep_marks", "ep_motion", "ep_posture", "ep_sex", "ep_signs", "ep_wounds", "ev_actor", "ev_age", "ev_among", "ev_count", "ev_from_to", "ev_gesture", "ev_manner_seen", "ev_sense", "ev_target", "ev_with", "exhaustion", "expression", "fairness", "fear", "fearfulness", "fecundity", "fire_extent", "fire_fuel", "fire_heat", "fire_spread", "fog", "forgiveness", "frontier_depth", "g_deadline", "g_desired", "g_mode", "g_origin", "g_origin_ref", "g_priority", "g_progress", "g_since", "g_status", "g_when", "game_time", "gaze", "gentleness", "gratitude", "greed_avoidance", "grief", "grooming", "group_cohesion", "guilt", "hands", "heard_unprocessed", "hearing", "height", "held_seen", "hostility_drivers", "hunger", "i_commitment", "i_serves", "i_speech", "i_step_index", "i_step_targets", "i_steps", "ice", "illnesses", "immunities", "indoors", "inquisitiveness", "inside_of", "intellect", "intoxication", "inv_seen", "involuntary_signs", "jealousy", "joy", "k_last_practice", "k_mastery", "k_self_estimate", "k_technique", "lc_dir", "lc_dist", "lc_file", "lc_kind", "lc_owner", "legitimacy", "life_clock", "life_stage", "light_level", "load_margin", "load_ratio", "look_age_seen", "look_build_seen", "look_drunk_seen", "look_marks_seen", "look_sex_seen", "m_content", "m_defining", "m_emotion", "m_fact_ref", "m_importance", "m_interpretation", "m_rehearsals", "m_role", "m_secret", "m_valence", "m_vividness", "m_when", "m_where", "magic_attunement", "magic_stability", "manipulation", "masking", "memory_capacity", "memory_store_capacity", "mobility", "modesty", "mood_energy", "mood_valence", "moon_phase", "need_achievement", "need_acquisition", "need_autonomy", "need_company", "need_esteem", "need_intimacy", "need_meaning", "need_novelty", "need_play", "need_security", "orientation", "own_held_seen", "pain", "patience", "pc_amount_seen", "pc_color_seen", "pc_depth_seen", "pc_dir", "pc_display", "pc_dist", "pc_file", "pc_file_certainty", "pc_kind_seen", "pc_motion", "pc_owner_believed", "pc_props_seen", "pc_state_seen", "perceptiveness", "permanent_marks", "phenomenon_effects", "phenomenon_intensity", "phenomenon_kind", "phenomenon_signs", "place_bounds", "place_in", "place_recognized", "plant_health", "plant_species", "plant_stage", "plant_yield", "position", "posture", "posture_felt", "pp_air_felt", "pp_crowd_seen", "pp_indoors", "pp_light", "pp_noise", "pp_signs", "pp_sun", "pp_weather_seen", "precipitation", "pregnancy", "pride", "prudence", "q_content", "q_from", "q_since", "r_affection", "r_attraction", "r_familiarity", "r_fear", "r_group_goal", "r_group_kind", "r_group_leader", "r_group_members", "r_group_role", "r_group_size", "r_id_certainty", "r_known_by", "r_last_contact", "r_link_believed", "r_name_believed", "r_obligation", "r_perceived_regard", "r_present", "r_reputation_seen", "r_resentment", "r_respect", "r_rivalry", "r_shared_history", "r_true_entity", "r_trust", "recognized_claims", "recognized_members", "relation_capacity", "reputation_aggregate", "reserves", "resilience", "robustness", "role_holder_support", "s_introduced_at", "s_introduced_by", "s_name", "s_scope", "sadness", "season_felt", "seen_direction", "seen_distance", "seen_motion", "self_control", "self_regard", "senescence", "sentimentality", "sex", "shame", "sickness_felt", "sim_depth", "sincerity", "sleepiness", "smoke", "snow_cover", "sociability", "soil_fertility", "soil_moisture", "soil_state", "storm", "strength", "stress", "surprise", "symptoms", "tastes", "tenderness", "thermal_comfort", "think_more", "thirst", "time_felt", "time_of_day", "trace_direction", "trace_fact", "trace_freshness", "trace_kind", "trace_maker_cue", "transactions", "unconventionality", "underground_depth", "unrest", "v_achievement", "v_authority", "v_honor", "v_liberty", "v_loyalty", "v_pleasure", "v_power", "v_sanctity", "velocity", "village_temperament", "visible_damage", "visible_injury", "vision", "w_think_budget", "water_flow", "water_level", "water_quality", "water_volume", "wealth_objective", "wind", "worn", "wounds", "year", "zones", "animal_product_ready", "g_has_plan", "g_parent", "i_attempts", "i_repeat", "i_repeat_period", "i_status", "i_step_progress", "i_step_started", "made_at", "made_by", "pc_age_seen", "pp_smell_seen", "process_progress", "process_started_at", "r_group_my_task", "r_group_present", "r_group_tasks_open", "s_last_believed", "w_outcome"
 };
-inline constexpr std::uint64_t kVarRegistryFingerprint = 0x9092d0716bc20ff4ull;   // FNV-1a 64 of the registry names, one per line
+inline constexpr std::uint64_t kVarRegistryFingerprint = 0x44b09a8409b67891ull;   // FNV-1a 64 of the registry names, one per line
 
-inline constexpr std::array<VariableSpec, 358> kVariables = {{
+inline constexpr std::array<VariableSpec, 378> kVariables = {{
   VariableSpec{"a_document", "agreement_terms", Scale::id, 0x01, 0, 0, 0, false, false, false, false},
   VariableSpec{"a_form", "agreement_terms", Scale::enum_, 0x01, 0, 0, 0, false, false, false, false},
   VariableSpec{"a_kind_label", "agreement_terms", Scale::enum_, 0x40, 0, 0, 0, false, false, false, false},
@@ -832,7 +855,7 @@ inline constexpr std::array<VariableSpec, 358> kVariables = {{
   VariableSpec{"g_priority", "goal", Scale::unipolar10, 0x04, 10, 30, 0, false, false, false, false},
   VariableSpec{"g_progress", "goal", Scale::ratio, 0x40, 0, 0, 0, false, false, false, false},
   VariableSpec{"g_since", "goal", Scale::time, 0x01, 0, 0, 0, false, false, false, false},
-  VariableSpec{"g_status", "goal", Scale::enum_, 0x03, 0, 0, 0, false, false, false, false},
+  VariableSpec{"g_status", "goal", Scale::enum_, 0x02, 0, 0, 0, false, false, false, false},
   VariableSpec{"g_when", "goal", Scale::time, 0x03, 0, 0, 0, false, false, false, false},
   VariableSpec{"game_time", "clock", Scale::time, 0x01, 0, 0, 0, false, false, false, false},
   VariableSpec{"gaze", "appearance", Scale::id, 0x40, 0, 0, 0, false, true, false, false},
@@ -1073,6 +1096,26 @@ inline constexpr std::array<VariableSpec, 358> kVariables = {{
   VariableSpec{"wounds", "body", Scale::list, 0x01, 0, 0, 0, false, true, true, false},
   VariableSpec{"year", "clock", Scale::qty, 0x40, 0, 0, 0, false, false, false, false},
   VariableSpec{"zones", "body", Scale::enum_, 0x10, 0, 0, 0, false, true, true, false},
+  VariableSpec{"animal_product_ready", "animal_behavior", Scale::list, 0x01, 0, 0, 0, false, false, false, false},
+  VariableSpec{"g_has_plan", "goal", Scale::bool_, 0x40, 0, 0, 0, false, false, false, false},
+  VariableSpec{"g_parent", "goal", Scale::mref, 0x02, 0, 0, 0, false, false, false, false},
+  VariableSpec{"i_attempts", "intention", Scale::qty, 0x01, 0, 0, 0, false, false, false, false},
+  VariableSpec{"i_repeat", "intention", Scale::enum_, 0x02, 0, 0, 0, false, false, false, false},
+  VariableSpec{"i_repeat_period", "intention", Scale::qty, 0x02, 0, 0, 0, false, false, false, false},
+  VariableSpec{"i_status", "intention", Scale::enum_, 0x03, 0, 0, 0, false, false, false, false},
+  VariableSpec{"i_step_progress", "intention", Scale::ratio, 0x01, 0, 0, 0, false, false, false, false},
+  VariableSpec{"i_step_started", "intention", Scale::time, 0x01, 0, 0, 0, false, false, false, false},
+  VariableSpec{"made_at", "provenance", Scale::time, 0x01, 0, 0, 0, false, false, false, false},
+  VariableSpec{"made_by", "provenance", Scale::id, 0x01, 0, 0, 0, false, false, false, false},
+  VariableSpec{"pc_age_seen", "percept", Scale::word, 0x40, 0, 0, 0, false, false, false, false},
+  VariableSpec{"pp_smell_seen", "place_percept", Scale::list, 0x40, 0, 0, 0, false, false, false, false},
+  VariableSpec{"process_progress", "transformation", Scale::ratio, 0x01, 0, 0, 0, false, true, false, false},
+  VariableSpec{"process_started_at", "transformation", Scale::time, 0x01, 0, 0, 0, false, true, false, false},
+  VariableSpec{"r_group_my_task", "relation", Scale::mref, 0x40, 0, 0, 0, false, false, false, false},
+  VariableSpec{"r_group_present", "relation", Scale::qty, 0x40, 0, 0, 0, false, false, false, false},
+  VariableSpec{"r_group_tasks_open", "relation", Scale::qty, 0x40, 0, 0, 0, false, false, false, false},
+  VariableSpec{"s_last_believed", "social_referent", Scale::time, 0x01, 0, 0, 0, false, false, false, false},
+  VariableSpec{"w_outcome", "setting", Scale::enum_, 0x01, 0, 0, 0, false, true, false, false},
 }};
 
 }  // namespace em::social::gen

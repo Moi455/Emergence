@@ -111,7 +111,8 @@ class TestRefTypes(Base):
 
     def test_the_kinds_the_review_listed(self):
         ft = TOK.interface.token_types
-        self.assertEqual(ft["WAKE"]["fields"]["trigger"]["ref_types"], ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN"])
+        self.assertEqual(ft["WAKE"]["fields"]["trigger"]["ref_types"],
+                         ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN", "COMMIT", "ENTITY", "GROUP"])      # T08b widened it
         self.assertEqual(ft["PLAN"]["fields"]["goal"]["ref_types"], ["GOAL"])
         self.assertEqual(ft["REQUEST"]["fields"]["from"]["ref_types"], ["ENTITY"])
         self.assertEqual(ft["BELIEF"]["fields"]["informant"]["ref_types"], ["ENTITY"])
@@ -124,7 +125,7 @@ class TestRefTypes(Base):
 
     def test_a_pointer_of_the_wrong_kind_is_refused(self):
         ent = Record("ENTITY", "@E1", {})
-        self.refuses(ent, Record("WAKE", "wake", {"trigger": "@E1"}))
+        self.refuses(Record("THING", "@T1", {}), Record("WAKE", "wake", {"trigger": "@T1"}))        # ENTITY is valid since T08b
         self.refuses(Record("BELIEF", "b:1", {}), Record("PLAN", "p:1", {"goal": "b:1"}))
         self.refuses(Record("THING", "@T1", {}), Record("BELIEF", "b:1", {"informant": "@T1"}))
         self.refuses(Record("THING", "@T1", {}), Record("THING", "@T2", {"owner": "@T1"}))
@@ -291,8 +292,8 @@ class TestContextConstruction(Base):
         import tok2.layout
         self.assertFalse(hasattr(tok2.codecs, "OUT_OF_CONTEXT") or hasattr(tok2.layout, "OUT_OF_CONTEXT"))
 
-    def test_the_schema_is_model_interface_2(self):
-        self.assertEqual(TOK.interface.schema_version, "model-interface-2")
+    def test_the_schema_is_model_interface_3(self):
+        self.assertEqual(TOK.interface.schema_version, "model-interface-3")
         raw = json.loads(Path(__file__).resolve().parents[3].joinpath("catalogue/generated/model_interface.json").read_text())
         raw["schema_version"] = "model-interface-1"
         with self.assertRaises(TokenError):

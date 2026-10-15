@@ -21,8 +21,8 @@ class TestModelInterface(unittest.TestCase):
     def test_the_generated_file_is_up_to_date(self):
         self.assertEqual((ROOT / "generated" / "model_interface.json").read_text(encoding="utf-8"), self.mi.text())
 
-    def test_schema_version_2(self):
-        self.assertEqual(self.spec["schema_version"], "model-interface-2")
+    def test_schema_version_3(self):
+        self.assertEqual(self.spec["schema_version"], "model-interface-3")
 
     def test_every_mref_field_declares_the_record_types_it_accepts(self):
         types = self.spec["input"]["token_types"]
@@ -34,7 +34,7 @@ class TestModelInterface(unittest.TestCase):
                     self.assertTrue(spec.get("ref_types"), f"{t}.{f}")
                     self.assertTrue(set(spec["ref_types"]) <= set(types), f"{t}.{f}")
         self.assertGreaterEqual(seen, 20)
-        self.assertEqual(types["WAKE"]["fields"]["trigger"]["ref_types"], ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN"])
+        self.assertEqual(types["WAKE"]["fields"]["trigger"]["ref_types"], ["EVENT", "HEARD", "REQUEST", "GOAL", "PLAN", "COMMIT", "ENTITY", "GROUP"])
 
     def test_a_new_mref_field_without_ref_types_is_refused(self):
         class Bad(model_interface.ModelInterface):

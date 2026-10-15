@@ -319,7 +319,8 @@ class HandCases:
         return self.base(Record("BELIEF", "b:1", {"prop": "(owns me)"}))
 
     def bad_pointer_of_the_wrong_kind(self):
-        return self.base(Record("ENTITY", "@E1", {}), Record("WAKE", "wake", {"trigger": "@E1"}))
+        # T09 : ENTITY est devenu un porteur valide de WAKE.trigger (T08b) ; on prend une sorte restée refusée
+        return self.base(Record("THING", "@T1", {}), Record("WAKE", "wake", {"trigger": "@T1"}))
 
     def bad_ghost_of_the_wrong_kind(self):
         return self.base(Record("BELIEF", "b:1", {"informant": "@T9"}), known=["me", "@PLACE", "b:1", "@T9"])

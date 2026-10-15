@@ -1083,6 +1083,24 @@
      "scale": "time_until",
      "unit": "",
      "list_of": ""
+    },
+    "has_plan": {
+     "block": "num",
+     "col": 5,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "bool",
+     "unit": "",
+     "list_of": ""
+    },
+    "parent": {
+     "block": "ptr",
+     "col": 1,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -1191,6 +1209,33 @@
     "size": {
      "block": "num",
      "col": 5,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
+    },
+    "my_task": {
+     "block": "ptr",
+     "col": 5,
+     "width": 1,
+     "codec": "PointerCodec",
+     "scale": "mref",
+     "unit": "",
+     "list_of": ""
+    },
+    "present": {
+     "block": "num",
+     "col": 6,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
+    },
+    "tasks_open": {
+     "block": "num",
+     "col": 7,
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "qty",
@@ -1804,6 +1849,15 @@
      "scale": "word",
      "unit": "",
      "list_of": ""
+    },
+    "age": {
+     "block": "cat",
+     "col": 12,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -2053,6 +2107,15 @@
      "scale": "list",
      "unit": "",
      "list_of": "word"
+    },
+    "smell": {
+     "block": "cat",
+     "col": 13,
+     "width": 6,
+     "codec": "BagCodec",
+     "scale": "list",
+     "unit": "",
+     "list_of": "word"
     }
    }
   },
@@ -2139,6 +2202,42 @@
      "scale": "list",
      "unit": "",
      "list_of": "word"
+    },
+    "attempts": {
+     "block": "num",
+     "col": 2,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
+    },
+    "repeat": {
+     "block": "cat",
+     "col": 8,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
+    },
+    "repeat_period": {
+     "block": "num",
+     "col": 3,
+     "width": 1,
+     "codec": "ScalarCodec",
+     "scale": "qty",
+     "unit": "",
+     "list_of": ""
+    },
+    "status": {
+     "block": "cat",
+     "col": 9,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -3918,6 +4017,15 @@
      "scale": "word",
      "unit": "",
      "list_of": ""
+    },
+    "age": {
+     "block": "cat",
+     "col": 12,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "word",
+     "unit": "",
+     "list_of": ""
     }
    }
   },
@@ -3975,6 +4083,15 @@
      "width": 1,
      "codec": "ScalarCodec",
      "scale": "unipolar10",
+     "unit": "",
+     "list_of": ""
+    },
+    "outcome": {
+     "block": "cat",
+     "col": 2,
+     "width": 1,
+     "codec": "SymbolCodec",
+     "scale": "enum",
      "unit": "",
      "list_of": ""
     }
@@ -5639,6 +5756,42 @@
   "work_dress",
   "workshop",
   "yawning",
-  "yellow"
+  "yellow",
+  "acrid",
+  "aromatic",
+  "blocked",
+  "c_have",
+  "c_target_near",
+  "c_unwatched",
+  "cover_face",
+  "done",
+  "drawling",
+  "every",
+  "goal_check",
+  "growing",
+  "hear",
+  "idle",
+  "interrupted",
+  "limit_reached",
+  "low_slow",
+  "musty",
+  "new",
+  "occasion",
+  "old",
+  "once",
+  "putrid",
+  "r_group_my_task",
+  "r_group_present",
+  "r_group_tasks_open",
+  "rancid",
+  "rising",
+  "smoky",
+  "sour",
+  "suspended",
+  "sweet",
+  "trace_sign",
+  "twist",
+  "wink",
+  "worn"
  ]
 }

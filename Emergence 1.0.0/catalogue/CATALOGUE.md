@@ -2,7 +2,7 @@
 
 Généré par `catalogue/tools/render.py` depuis `catalogue/data/*.toml`. Ne pas éditer à la main.
 
-Compte : entity 16, component 51, variable 358, property 90, action 40, concept 338, grammar 9, interpretation 46, hard_rule 4, shape 18, story 148, site 56, percept_word 100, material 84, process 31, form 63, item_type 421, species 79, migration 161
+Compte : entity 16, component 52, variable 378, property 90, action 40, concept 365, grammar 9, interpretation 46, hard_rule 4, shape 18, story 172, site 56, percept_word 100, material 84, process 44, form 63, item_type 421, species 79, migration 161, duration_level 3, illness 8, forgetting 12
 
 ## Histoires (tests d'acceptation)
 
@@ -52,7 +52,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | cowardice_judged | §21 | expressible | Un homme fuit au lieu d'aider pendant l'attaque des loups ; ceux qui l'ont vu le méprisent, sa femme le défend. |
 | heroism_judged | §24 | expressible | Une inconnue sort un enfant d'une maison en feu ; elle devient quelqu'un dont on parle et qu'on écoute. |
 | hypocrisy_exposed | §5, §27 | expressible | Le prêtre qui prêche la fidélité est vu sortant de chez une veuve à l'aube ; les fidèles se partagent entre déni et colère. |
-| smell_smoke_wake | §8, §16 | gap | La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle. |
+| smell_smoke_wake | §8, §16 | expressible | La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle. |
 | hear_scream_investigate | §8 | expressible | Un cri dans la ruelle : un PNJ curieux va voir, un autre ferme ses volets. |
 | rain_interrupts_harvest | §8 | expressible | Une averse arrive pendant la moisson ; les moissonneurs rentrent les gerbes en hâte. |
 | notice_missing_item | §5 | expressible | Un forgeron remarque que son meilleur marteau a disparu de l'établi et soupçonne son apprenti. |
@@ -72,7 +72,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | village_war | §10 | expressible | Après des vols de bétail répétés, les hommes du village de la forêt attaquent ceux du village de la montagne ; des morts, des rancunes pour des générations. |
 | war_property_change | §10, §25 | expressible | Après le conflit, les terres d'une famille décimée sont prises par un voisin ; personne n'ose contester. |
 | famine_riot | §10, §11 | expressible | Pendant la disette, une foule affamée force le grenier du chef ; le chef s'enfuit. |
-| epidemic_fear_exclusion | §10 | gap | Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole. |
+| epidemic_fear_exclusion | §10 | expressible | Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole. |
 | festival_brings_couples | §10, §13 | expressible | Pendant la fête du village, on danse, on boit ; deux couples se forment et une vieille querelle se rallume. |
 | love_village_hate_mayor | §11 | expressible | Un vieux pêcheur aime profondément son village, mais déteste le chef et le dit à qui veut l'entendre. |
 | loyal_person_hostile_group | §11 | expressible | Une femme est l'amie fidèle d'un homme de la bande des collines tout en méprisant la bande elle-même. |
@@ -123,7 +123,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | lost_in_marches | §19, §3 | expressible | Un chasseur part trop loin dans la forêt profonde ; on ne le revoit jamais ; son histoire devient un avertissement. |
 | isolated_family_found | §19 | expressible | Le joueur trouve une famille dans une ferme éloignée, qui ne sait rien des querelles du bourg et se méfie des étrangers. |
 | belief_in_beyond | §18 | expressible | Un conteur jure qu'au-delà du désert il existe une cité d'or ; certains le croient, d'autres rient, un jeune part la chercher. |
-| touchy_mayor_disaster | §27, §7 | gap | Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant. |
+| touchy_mayor_disaster | §27, §7 | expressible | Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant. |
 | clumsy_npc_chain | §27 | expressible | Un maladroit renverse un tonneau qui roule jusqu'au marché, effraie un âne, qui piétine l'étal du chef. |
 | eccentric_collector | §7 | expressible | Une vieille ramasse toutes les pierres bleues qu'elle trouve et en remplit sa maison ; les enfants l'adorent, les voisins s'agacent. |
 | shy_becomes_confident | §6 | expressible | Un garçon timide, félicité pour son travail plusieurs fois, ose peu à peu parler à l'assemblée ; adulte, il est porte-parole. |
@@ -136,7 +136,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | isolated_death_unnoticed | §25 | expressible | Un ermite meurt seul ; personne ne le sait pendant des semaines ; sa mort ne change presque rien. |
 | orphan_adopted | §25, §12 | expressible | Deux enfants perdent leurs parents ; une tante en prend un, un voisin sans enfant l'autre. |
 | knowledge_lost_with_death | §25, §17 | expressible | Le seul verrier du village meurt sans apprenti ; plus personne ne sait faire le verre, il faut l'acheter ailleurs. |
-| illness_and_care | §25, §12 | gap | Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement. |
+| illness_and_care | §25, §12 | expressible | Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement. |
 | pregnancy_birth | §25 | gap | Une femme mariée attend un enfant, ralentit son travail ; la sage-femme l'aide à accoucher. |
 | player_inaction_noticed | §20, §21 | expressible | Le joueur voit une rixe et ne fait rien ; la victime le lui reproche ensuite. |
 | stranger_integration | §22, §5 | expressible | Le joueur arrive en étranger ; d'abord ignoré et méfié, il travaille aux champs, se fait des amis et devient « du village ». |
@@ -156,6 +156,30 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | storm_cold_death | §19, §25 | expressible | Un voyageur surpris par la tempête de neige dans la montagne s'abrite dans une grotte ; sans feu, il meurt de froid. |
 | revenge_plot_three | §5, §9, §11, §20 | expressible | Pierre, Jacques et Jean partent dans la forêt pour tuer ensemble George, car il a trompé leurs femmes (adultes, Monsieur 12 oct.). |
 | mayor_gold_expedition | §9, §11, §20 | expressible | Le maire organise une expédition pour aller trouver de l'or (Monsieur, 12 oct.). |
+| tree_fall_crushes_shed | §29 | expressible | Un bûcheron entaille un chêne au-delà de son cœur ; l'arbre tombe sur un cabanon et le brise. |
+| barn_dismantled_reused | §29 | expressible | On démonte une grange planche par planche, aux joints, pour refaire le toit d'une maison. |
+| seed_sprouts_after_rain | §29 | expressible | Une graine semée en sol labouré lève après la pluie ; on la voit pousser en quelques jours. |
+| thresh_winnow_butter | §29 | expressible | Au grenier, on bat le blé, on le vanne au vent ; à la laiterie, on baratte la crème. |
+| milk_the_cow_every_morning | §29 | expressible | Chaque matin, une fille presse le pis plein d'une vache dans un seau ; le lendemain, il est de nouveau plein. |
+| wash_wound_before_binding | §29 | expressible | Un homme lave une plaie à l'eau et au savon avant de la bander ; elle s'infecte moins que celle qu'on a laissée sale. |
+| whetstone_sharpens_knife | §29 | expressible | Un couteau émoussé retrouve son tranchant sur une pierre à aiguiser. |
+| charcoal_burner_stack | §29 | expressible | Un charbonnier empile du bois sous la terre, laisse brûler sans air pendant deux jours et sort du charbon de bois. |
+| snare_catches_hare | §29 | expressible | Un collet tendu sur un sentier retient un lièvre au matin. |
+| limekiln_makes_mortar | §29 | expressible | On cuit du calcaire un jour entier dans un four ; la chaux sert ensuite à gâcher du mortier. |
+| rotten_smell_in_cellar | §29 | expressible | Une odeur de chair gâtée monte de la cave ; on la sent depuis l'escalier avant de rien voir. |
+| sick_house_pale_faces | §29 | expressible | Dans une maison, tout le monde est pâle et tousse ; on le voit de la rue, sans rien savoir de la maladie. |
+| butcher_carcass_parts | §29 | expressible | On dépèce un cerf : viande, peau, os, bois et graisse sortent chacun de leur partie. |
+| pull_root_leaves_bare_soil | §29 | expressible | On arrache un panais enraciné à la main : la plante vient, le sol reste nu. |
+| sea_salt_left_by_sun | §29 | expressible | Au bord de la mer, l'eau d'un bassin s'évapore au soleil ; il reste une croûte blanche, du sel. |
+| trembling_voice_news | §8 | expressible | Un homme annonce la mort d'un voisin d'une voix qui tremble à la tablée, puis, d'une voix lente et basse, à la veuve. |
+| eat_off_the_plant_twisted_cord | §29 | expressible | Elle cueille des baies sur le buisson, tord du chanvre en corde, puis colle l'oreille à la ruche pour savoir si elle bourdonne. |
+| saddle_on_the_mule | §29 | expressible | Le muletier pose le bât sur la mule avant de charger les sacs. |
+| guild_joins_the_brotherhood | §24 | expressible | La guilde des tisserands entre dans la confrérie des marchands de la rivière. |
+| old_chest_new_lock | §29 | expressible | Un coffre vieux de cent ans porte une serrure toute neuve, ce qui intrigue le marchand. |
+| smell_of_smoke_and_rot | §16 | expressible | Au coin de la rue, elle sent la fumée avant de la voir ; dans la ruelle voisine, une odeur de charogne. |
+| watch_rota_interrupted | §8 | expressible | Le guetteur fait sa ronde toutes les huit heures ; un coup reçu l'interrompt, la route est bloquée, il reprend plus tard. |
+| sow_in_autumn_reap_in_summer | §29 | expressible | Il sème le blé à l'automne ; au bout de l'hiver, la moisson est mûre et ne reste bonne qu'un temps. |
+| wink_cover_face_trace_sign | §8 | expressible | Il cligne de l'œil à son frère, se couvre le visage des mains à l'annonce, puis trace une figure dans l'air devant la porte. |
 
 ## Types d'entités
 
@@ -163,9 +187,9 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 |---|---|---|---|
 | agent | personne (PNJ ou joueur) | identity, spatial, physical, body, needs, mind_static, mind_dynamic, beliefs, relations, memory, goals, skills, activity, carrier, appearance, lifecycle | transformer |
 | animal | animal (bétail, gibier, prédateur, chien) | identity, spatial, physical, body, needs, animal_behavior, activity, lifecycle, appearance, ledger | engine |
-| plant | plante (arbre, culture, buisson, herbe) | identity, spatial, physical, growth, lifecycle, ledger | engine |
-| item | objet (tout ce qui se déplace sans être un être : outil, nourriture, pièce, coffre, bateau, document) | identity, spatial, physical, provenance, container, inscription, access, magic, substance, ledger | engine |
-| structure | construction (mur, maison, pont, puits, porte, meuble fixe, étai) | identity, spatial, physical, provenance, stability, container, access, inscription, ledger | engine |
+| plant | plante (arbre, culture, buisson, herbe) | identity, spatial, physical, growth, transformation, lifecycle, ledger | engine |
+| item | objet (tout ce qui se déplace sans être un être : outil, nourriture, pièce, coffre, bateau, document) | identity, spatial, physical, provenance, transformation, container, inscription, access, magic, substance, ledger | engine |
+| structure | construction (mur, maison, pont, puits, porte, meuble fixe, étai) | identity, spatial, physical, provenance, transformation, stability, container, access, inscription, ledger | engine |
 | terrain | terrain (sol, roche, gisement : une région de voxels non bâtie) | identity, spatial, physical, soil, stability, ledger | engine |
 | water_body | masse d'eau (mer, rivière, étang, eau d'un puits, flaque) | identity, spatial, substance, flow | engine |
 | fire | feu | identity, spatial, combustion | engine |
@@ -203,7 +227,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | climate | climat et météo : température, vent, nuages, précipitations par région | world |
 | fact_record | fait : acteur, geste, paramètres de manière, cibles, instrument, lieu, instant, résultats objectifs, témoins possibles | fact |
 | social_referent | référent social : nom, catégorie, fondateur, date ; le reste est dans les croyances | group, role, agreement |
-| agreement_terms | termes : parties, ce qui est dû par qui (expression), échéance, témoins ; statut objectif (en cours, échu, rempli, rompu) | agreement |
+| agreement_terms | termes : parties, ce qui est dû par qui (expression), échéance, témoins ; état de fait (ouvert, échu, relâché, nul ; tenu ou rompu n'est pas un état, c'est un jugement de chacun) | agreement |
 | body | corps : anatomie par zones, blessures, douleur, conscience, vie | agent, animal |
 | needs | besoins du corps : faim, soif, fatigue, froid, maladie | agent, animal |
 | lifecycle | cycle de vie : âge sur l'horloge de vie, stade, fertilité, grossesse | agent, animal, plant |
@@ -225,7 +249,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | relation | une relation : attitudes envers une personne, un animal, un groupe ou un rôle | agent |
 | episode | un souvenir : un fait vécu, vu ou appris, et ce qu'on en a pensé | agent |
 | goal | un objectif : une proposition qu'on veut rendre vraie, garder vraie ou éviter | agent |
-| intention | l'intention en cours : la suite de gestes choisie pour un objectif | agent |
+| intention | une intention : le plan (la suite de gestes) choisi pour un objectif ; une réserve de 4, un plan par objectif actif | agent |
 | request | une demande reçue et pas encore traitée (qui, quoi, depuis quand) | agent |
 | skill | une maîtrise : une technique et son niveau (la vraie compétence, tenue par le moteur) | agent |
 | percept | une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité | agent |
@@ -233,6 +257,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | entity_percept | une personne (ou une bête) perçue par CET observateur : ce qu'il en voit d'où il est, avec sa lumière, son attention, son œil | agent |
 | place_percept | le lieu tel que CET observateur le perçoit (lumière, bruit, gens qu'il voit, air, temps qu'il fait, signes étranges) | agent |
 | locus | un lieu qu'il connaît et qui compte maintenant (sa maison, sa destination, la mine, le lieu d'un souvenir) | agent |
+| transformation | transformation en cours : où en est un processus lent (bière qui fermente, peau qui tanne, graine qui germe), depuis quand | item, structure, plant, terrain |
 
 ## Variables d'état
 
@@ -250,7 +275,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | a_obligations | qui doit rendre vrai quoi, avant quand, à quelle condition, une fois ou à chaque période (chaque jour, chaque saison, chaque année), et la part déjà remplie | list | moteur |  | moteur seul | repris tel quel de la proposition acceptée (expression de la langue) |  | 3 |
 | a_witnesses | les témoins | list | moteur |  | moteur seul | ceux qui ont perçu l'échange de paroles, cachés compris ; un accord sans témoin ne se prouve que par la parole |  | 0 |
 | a_form | forme (dit, devant témoins, écrit, scellé, rituel) | enum (spoken, witnessed, written, sealed, ritual) | moteur |  | moteur seul | écrit quand une inscription le porte ; scellé si un sceau y est apposé ; rituel si fait selon une coutume crue (noces au temple) |  | 0 |
-| a_status | état objectif (en cours, tenu, rompu, délié, caduc) | enum (open, fulfilled, broken, released, void) | moteur |  | moteur seul | tenu quand les obligations deviennent vraies ; rompu à l'échéance dépassée ou sur refus dit ; délié quand le bénéficiaire le dit ; caduc à la mort d'une partie (que la dette passe aux héritiers est une croyance, pas une règle) |  | 5 |
+| a_status | état de fait (en cours, échéance passée, délié, caduc) | enum (open, expired, released, void) | moteur |  | moteur seul | le moteur ne tient que des FAITS (P50) : open ; expired quand l'échéance est passée (un fait du temps) ; released quand le bénéficiaire l'a dit (un fait de parole) ; void à la mort d'une partie. Tenu ou rompu est un JUGEMENT que chaque partie et chaque témoin écrit dans ses croyances ; le moteur réveille les parties à l'échéance (P2b, déclencheur COMMIT) et ne juge jamais |  | 5 |
 | a_document | l'écrit qui le porte, s'il existe | id | moteur |  | privé |  |  | 0 |
 | a_kind_label | étiquette pour la chronique (prêt, vente, mariage, emploi, apprentissage, serment, alliance, garde…) | enum (promise, loan, sale, barter, employment, apprenticeship, marriage, betrothal, oath, alliance, custody, other) | calculé |  | moteur seul | tirée du contenu ; sert à l'affichage, jamais à décider |  | 7 |
 
@@ -264,20 +289,21 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | animal_attachment | attachement à un humain (le chien au berger) | list | moteur |  | moteur seul | monte quand on le nourrit et le soigne ; reste après la mort du maître |  | 3 |
 | animal_group | troupeau, meute, nid | id | moteur |  | observable |  |  | 0 |
 | animal_tameness | domestication (sauvage, apprivoisé, domestique) | enum (wild, tamed, domestic) | moteur |  | observable |  |  | 0 |
+| animal_product_ready | ce qui se refait entre deux traites, deux tontes, deux pontes (lait, laine, œufs : fraction prête, 0 à 1) | list | moteur |  | moteur seul | remonte avec le temps selon l'espèce (product_regrow_days) et la nourriture ; redescend à la traite, la tonte ou la ponte ramassée ; ce qu'un autre voit : le pis plein, la toison longue (apparence), jamais la fraction |  | 1 |
 
 ### appearance
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | condition | état apparent (debout, blessé, à terre, immobile, mort à l'évidence) | enum (active, hurt, down, motionless, obviously_dead) | calculé |  | observable | un corps immobile peut être inconscient ou mort : seul un examen (geste examine) le dit |  | 5 |
-| symptoms | symptômes visibles (fièvre, toux, taches, pâleur, tremblements) | list | calculé |  | observable |  |  | 1 |
+| symptoms | symptômes visibles (fièvre, toux, taches, pâleur, tremblements) | list | calculé |  | observable |  |  | 2 |
 | expression | expression du visage | enum (neutral, smile, laugh, frown, anger, fear, sadness, crying, disgust, surprise, pain, contempt, boredom, tenderness) | calculé |  | observable | tirée des émotions réelles, atténuée par la volonté de masquer (esprit mouvant, étape 5) et la maîtrise de soi |  | 1 |
 | involuntary_signs | signes involontaires (rougir, pâlir, transpirer, trembler, larmes, voix qui tremble) | list | calculé |  | observable | on les masque mal : c'est par eux qu'un mensonge ou une peur se trahit |  | 1 |
 | posture | posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | observable |  |  | 2 |
 | visible_injury | blessures visibles | unipolar10 | calculé |  | observable | plaies des zones non couvertes, sang sur les vêtements, boiterie |  | 0 |
 | attire_seen | ce qu'on voit de la tenue (sobre ou riche, de fête, de deuil, de travail, armure) | list | calculé |  | observable | tiré des vêtements portés : matières, qualité, teintes, emplacements |  | 0 |
 | held_seen | ce qu'il tient en main, vu par ses usages (armé, outil, objet de valeur) | list | calculé |  | observable | vecteur d'usages de l'objet en main : qu'il coupe ou perce, et non son nom |  | 0 |
-| grooming | propreté, cheveux, barbe, mouillé | unipolar10 | calculé |  | observable |  |  | 0 |
+| grooming | propreté, cheveux, barbe, mouillé | unipolar10 | calculé |  | observable |  |  | 1 |
 | gaze | ce qu'il regarde (une personne, une chose, un lieu) | id | calculé |  | observable | tiré de l'attention et de l'orientation ; on voit qu'on est regardé, ou qu'il regarde ailleurs |  | 0 |
 | look_build_seen | carrure apparente (taille, corpulence, force qu'on devine, maigreur) | list | calculé |  | observable | tirée du corps vu, en niveaux grossiers ; un manteau épais trompe |  | 0 |
 | look_sex_seen | sexe apparent | enum (female, male, unclear) | calculé |  | observable | unclear de loin, de dos, sous une cape |  | 0 |
@@ -314,8 +340,8 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | b_unintelligible | parole incompréhensible : ce qu'on vient d'entendre ne se traduit pas dans la langue intérieure (langue inconnue, cri indistinct, demande absurde) | bool | moteur |  | privé | posé par le moteur quand l'interface ne peut pas traduire la parole en proposition valide ; la proposition reste inconnue (pas vide) : le PNJ sait qu'on lui a parlé mais pas de quoi (HEARD l'hérite de BELIEF) | BELIEF.unintelligible | 1 |
 | b_informant | qui l'a dit (ou l'auteur de l'écrit) | mref | moteur |  | privé | un billet anonyme n'a pas d'informateur connu | BELIEF.informant (pointeur) | 1 |
 | b_hops | de combien de bouches elle est passée (0 vu, 1 dit par un témoin, 2 et plus : ouï-dire) | qty | moteur |  | privé | pris dans ce que dit l'informateur (« je l'ai vu », « on me l'a dit ») : il peut mentir dessus | BELIEF.hops | 8 |
-| b_acquired | depuis quand on le croit | time | moteur |  | privé |  | BELIEF.age | 0 |
-| b_confirmed | dernière confirmation (revu, réentendu) | time | moteur |  | privé | une croyance confirmée résiste à l'oubli |  | 0 |
+| b_acquired | depuis quand on le croit | time | moteur |  | privé | horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien | BELIEF.age | 0 |
+| b_confirmed | dernière confirmation (revu, réentendu) | time | moteur |  | privé | une croyance confirmée résiste à l'oubli ; horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien |  | 0 |
 | b_importance | importance pour soi (règle l'oubli et ce qui revient à l'esprit) | unipolar10 | moteur, T pas | 1.0 | privé | le moteur donne une valeur neutre à la création ; seul le Transformer juge ce qui compte | BELIEF.importance | 0 |
 | b_secret | à garder pour soi (choix de ne pas le répéter) | bool | T saut |  | privé | un secret confié peut avoir été promis (accord) ; le trahir est un fait que d'autres jugeront | BELIEF.secret | 6 |
 | b_told_to | à qui on l'a déjà dit | list | moteur |  | privé | rempli par les paroles réellement dites | BELIEF.shared (déjà répété ou non) | 1 |
@@ -347,7 +373,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | breath | souffle (asphyxie : noyade, fumée, étranglement) | unipolar10 | moteur |  | observable | baisse en secondes sous l'eau, dans la fumée, la gorge serrée ; à 0, perte de conscience puis mort | SELF.body.breath | 0 |
 | body_temperature | température du corps | qty | moteur |  | moteur seul | suit le lieu, la tenue (isolation), l'humidité, le feu ; fièvre par infection ; < 33 °C ou > 41 °C : danger |  | 1 |
 | zones | zones du corps | enum (head, neck, upper_torso, lower_torso, upper_arm_l, upper_arm_r, forearm_l, forearm_r, hand_l, hand_r, pelvis, thigh_l, thigh_r, calf_l, calf_r, feet) | naissance |  | moteur seul |  |  | 0 |
-| wounds | blessures : zone, type (contusion, coupure, perforation, brûlure, fracture, gelure, morsure), gravité, infectée, soignée, âge | list | moteur |  | observable | processus heal_tissue ; l'infection les aggrave ; une fracture non réduite laisse une séquelle | SELF.wound (les 2 pires : région grossière tête/torse/bras/jambes, type, gravité) | 8 |
+| wounds | blessures : zone, type (contusion, coupure, perforation, brûlure, fracture, gelure, morsure), gravité, infectée, soignée, âge | list | moteur |  | observable | processus heal_tissue ; l'infection les aggrave ; une fracture non réduite laisse une séquelle | SELF.wound (les 2 pires : région grossière tête/torse/bras/jambes, type, gravité) | 10 |
 | permanent_marks | séquelles et marques (cicatrice, boiterie, œil perdu, doigts manquants) | list | moteur |  | observable |  |  | 0 |
 | mobility | capacité à se déplacer | ratio | calculé |  | observable | jambes blessées, épuisement, charge, ivresse, âge | SELF.body.mobility | 1 |
 | manipulation | capacité à manier (mains et bras) | ratio | calculé |  | observable | mains et bras blessés, froid, tremblements, ivresse | SELF.body.manipulation | 0 |
@@ -360,7 +386,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | robustness | robustesse (résistance aux coups et aux maladies) | unipolar10 | naissance, moteur |  | privé |  |  | 0 |
 | vision | acuité visuelle | unipolar10 | naissance, moteur |  | privé | baisse avec l'âge, une blessure à l'œil ; la nuit réduit ce qu'elle permet |  | 0 |
 | hearing | acuité auditive | unipolar10 | naissance, moteur |  | privé |  |  | 0 |
-| illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent |  | 4 |
+| illnesses | maladies : type, gravité, stade (incubation, symptômes, convalescence), contagion | list | moteur |  | moteur seul | incubation invisible même au malade ; les symptômes, eux, se voient et se ressentent |  | 5 |
 | immunities | immunités acquises | list | moteur |  | moteur seul |  |  | 0 |
 | intoxication | ivresse, effet d'une drogue (alcool, pavot, somnifère : ce qu'on ressent) ; le poison est une maladie (illnesses), dont on ne sent que les symptômes | unipolar10 | moteur |  | observable | monte par la potency de ce qu'on ingère, redescend en heures | SELF.body.intox | 4 |
 | posture_felt | sa propre posture | enum (standing, walking, running, sitting, kneeling, crouching, lying, prone, climbing, swimming, guard, carrying) | calculé |  | privé |  | SELF.posture | 0 |
@@ -413,7 +439,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | fire_heat | chaleur | qty | moteur |  | observable |  |  | 0 |
 | fire_fuel | combustible restant | qty | moteur |  | observable |  |  | 0 |
 | fire_spread | propagation (selon inflammabilité, humidité, vent) | ratio | moteur |  | observable | l'eau versée, la terre jetée, l'absence de combustible l'arrêtent |  | 0 |
-| smoke | fumée (cache la vue, étouffe, se sent de loin) | unipolar10 | moteur |  | observable | baisse le souffle de ceux qui la respirent ; s'entend et se sent avant de se voir |  | 2 |
+| smoke | fumée (cache la vue, étouffe, se sent de loin) | unipolar10 | moteur |  | observable | baisse le souffle de ceux qui la respirent ; s'entend et se sent avant de se voir |  | 3 |
 
 ### entity_percept
 
@@ -442,7 +468,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 |---|---|---|---|---|---|---|---|---|
 | m_content | ce qui a été perçu (proposition : qui a fait quoi, sur quoi) | proposition | moteur, T saut |  | privé | le moteur l'écrit tel que perçu (pas tel qu'il s'est passé) ; il se déforme quand la netteté baisse ; le Transformer peut aussi créer un souvenir (charte § 8) | MEMORY.prop | 2 |
 | m_fact_ref | le fait réel (lien pour le moteur) | id | moteur |  | moteur seul |  |  | 0 |
-| m_when | quand | time | moteur |  | privé |  | MEMORY.age | 0 |
+| m_when | quand | time | moteur |  | privé | horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien | MEMORY.age | 0 |
 | m_where | où | mref | moteur |  | privé |  | MEMORY.place (pointeur) | 0 |
 | m_role | son rôle dans ce fait (auteur, cible, témoin, l'a appris) | enum (actor, target, witness, told) | moteur |  | privé |  | MEMORY.role | 0 |
 | m_valence | ce que ce souvenir fait ressentir (−10 blessure, +10 bonheur) | bipolar10 | T saut, T pas | 1.0 | privé | libre à la création ; ensuite réinterprété par pas de 1 | MEMORY.valence | 0 |
@@ -467,7 +493,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | ev_sense | vu, seulement entendu, ou senti sur soi (une main dans sa bourse) | enum (seen, heard, felt) | calculé |  | observable |  | EVENT.sense | 0 |
 | ev_count | combien de personnes l'ont fait (percept collectif : mains levées, voix, coups, cris) ; 1 pour un geste individuel | qty | calculé |  | observable | compté sur ce qu'il VOIT (partiel dans la foule ou le noir : 'quelques-uns', 'la plupart') ; un décompte exact demande qu'il compte, c'est une décision | EVENT.count | 5 |
 | ev_among | sur combien de personnes présentes à sa vue (le total du percept collectif) | qty | calculé |  | observable |  | EVENT.among | 5 |
-| ev_age | il y a combien de temps | time | calculé |  | observable |  | EVENT.age | 0 |
+| ev_age | quand c'est arrivé (l'instant où il l'a perçu) | time | calculé |  | observable | horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien | EVENT.age | 0 |
 
 ### flow
 
@@ -484,13 +510,15 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | g_desired | ce qu'on veut (proposition) | proposition | T saut |  | privé | créé, réorienté (autre cible) ou abandonné par le Transformer ; au plus 8 gardés | GOAL.prop | 13 |
 | g_mode | rendre vrai, garder vrai, empêcher | enum | T saut |  | privé |  | GOAL.mode | 2 |
 | g_priority | priorité | unipolar10 | T pas | 1.0 | privé |  | GOAL.priority | 3 |
-| g_deadline | échéance (avant la fête, avant l'hiver…) | time | T saut, moteur |  | privé | quand l'objectif vient d'un accord, le moteur reprend l'échéance CRUE (commitments_seen), jamais la vraie | GOAL.deadline | 1 |
+| g_deadline | échéance (avant la fête, avant l'hiver…) | time | T saut, moteur |  | privé | quand l'objectif vient d'un accord, le moteur reprend l'échéance CRUE (commitments_seen), jamais la vraie ; à l'échéance il réveille (timer), il ne juge pas | GOAL.deadline | 1 |
 | g_when | rendez-vous : le moment où il faut y être ou le faire (« à l'aube », « dans 3 jours »), distinct de l'échéance g_deadline (« avant ») | time | T saut, moteur |  | privé | tiré de la proposition de l'objectif quand elle porte (at_time TE …) ; le moteur ne le lit que pour réveiller le PNJ à l'heure, jamais pour décider à sa place | GOAL.when | 2 |
 | g_origin | d'où vient l'objectif (de soi, d'une demande, d'un rôle, d'un accord, d'une norme) | enum (self, asked, role, agreement, norm) | T saut, moteur |  | privé |  | GOAL.origin | 0 |
 | g_origin_ref | qui l'a demandé, quel accord, quel rôle | mref | moteur, T saut |  | privé |  | GOAL.origin_ref (pointeur) | 0 |
-| g_status | état (actif, en pause, atteint, échoué, abandonné) | enum (active, paused, achieved, failed, abandoned) | T saut, moteur |  | privé | le Transformer met en pause, reprend, abandonne ; le moteur constate atteint ou échoué d'après les CROYANCES de la personne, jamais d'après la vérité (un mort qu'elle n'a pas appris reste à venger) | GOAL.status | 3 |
+| g_parent | l'objectif dont celui-ci est une étape (sous-objectif : « trouver de l'or » sert « enrichir le village ») | mref | T saut |  | privé | écrit par le modèle en créant le sous-objectif ; pointe un autre GOAL du même PNJ ; le moteur n'en tire aucune conséquence | GOAL.parent (pointeur) | 0 |
+| g_has_plan | cet objectif a-t-il déjà un plan (au moins une intention non abandonnée) ? | bool | calculé |  | privé | calculé des intentions que le PNJ a écrites (i_serves) ; montre les objectifs encore sans plan, pour que le modèle en écrive un | GOAL.has_plan | 0 |
+| g_status | état (actif, en pause, atteint, échoué, abandonné) | enum (active, paused, achieved, failed, abandoned) | T saut |  | privé | ÉCRIT PAR LE MODÈLE SEUL (P35) : il met en pause, reprend, déclare atteint ou échoué, abandonne. Le moteur ne constate rien : quand une valeur dérivée des croyances change (g_progress atteint 1, une croyance contredit l'objectif) il réveille avec goal_check, et la personne relit puis écrit. Un mort qu'elle n'a pas appris reste à venger | GOAL.status | 3 |
 | g_progress | avancement (quand il se mesure : pièces économisées / prix cru de la maison) | ratio | calculé |  | privé |  | GOAL.progress | 1 |
-| g_since | depuis quand | time | moteur |  | privé |  | GOAL.age | 0 |
+| g_since | depuis quand | time | moteur |  | privé | horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien | GOAL.age | 0 |
 
 ### goals
 
@@ -503,7 +531,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | plant_species | espèce | id | naissance |  | moteur seul |  |  | 0 |
-| plant_stage | stade (graine, pousse, adulte, en fleur, en fruit, sec, mort) | enum (seed, sprout, mature, flowering, fruiting, dry, dead) | moteur |  | observable |  |  | 2 |
+| plant_stage | stade (graine, pousse, adulte, en fleur, en fruit, sec, mort) | enum (seed, sprout, mature, flowering, fruiting, dry, dead) | moteur |  | observable |  |  | 3 |
 | plant_yield | ce qu'elle porte (fruits, grain, bois) | qty | moteur |  | observable | selon la saison, l'eau, le sol, la lumière, les soins |  | 4 |
 | plant_health | santé (sécheresse, maladie, piétinement, feu) | unipolar10 | moteur |  | observable |  |  | 0 |
 
@@ -515,7 +543,13 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | i_step_targets | la cible de chacune des premières étapes (jusqu'à 4 pointeurs, dans l'ordre de i_steps ; vide = pas de cible) | list | T saut |  | privé | écrit avec i_steps ; un PNJ peut ainsi relire « aller à @L3, saisir @T2, frapper @E4 » et réviser un plan long | PLAN.step_targets (pointeurs) | 2 |
 | i_speech | la parole prévue : l'énoncé complet que le PNJ compte dire à l'étape `speak` (une offre préparée, un recrutement) | proposition | T saut |  | privé | préparée à l'avance, pas dite : relue et révisée comme le reste du plan ; au moment de parler elle est validée, puis figée comme toute parole (language_grammar.toml). Elle libère le but (g:) du bord des 20 symboles | PLAN.says | 2 |
 | i_serves | l'objectif qu'elle sert | mref | T saut |  | privé |  | PLAN.goal (pointeur) | 0 |
-| i_step_index | étape en cours, progression | qty | moteur |  | privé |  | PLAN.progress | 0 |
+| i_step_index | étape en cours (numéro dans i_steps) | qty | moteur |  | privé | avance quand le moteur constate que l'étape a fini (fait d'exécution) ; le modèle la relit par PLAN.step et PLAN.next |  | 0 |
+| i_step_progress | où en est l'étape en cours (0 à 1) | ratio | moteur |  | privé | fait d'exécution : avance avec le geste, remis à 0 à chaque étape ; sauvegardé | PLAN.progress | 0 |
+| i_step_started | quand l'étape en cours a commencé (temps de jeu) | time | moteur |  | moteur seul | sauvegardé : une étape en cours survit au rechargement ; sert au calcul de i_step_progress, jamais à un jugement |  | 0 |
+| i_status | où en est le plan (en cours, suspendu, bloqué = geste sans effet perçu, fini, abandonné) | enum (running, suspended, blocked, done, abandoned) | moteur, T saut |  | privé | le moteur n'écrit que des FAITS : running (le geste choisi est PLAN.next), suspended (le modèle a choisi un autre geste), blocked (un fait d'exécution perçu sur place : le geste n'a produit aucun effet, c_blocked ; ce n'est PAS une comparaison avec le but), done (les étapes sont épuisées). Seul le modèle écrit abandoned, jamais le moteur (P35) | PLAN.status | 1 |
+| i_repeat | le plan se refait-il (une fois, chaque jour, chaque saison, chaque année, ou toutes les N heures) ? | enum (once, each_day, each_season, each_year, every) | T saut |  | privé | écrit par le modèle ; le moteur ne fait que réveiller à la période (timer, P2b) : le plan terminé ou suspendu est remontré, la personne décide de le refaire | PLAN.repeat | 1 |
+| i_repeat_period | la période de i_repeat = every, en heures de jeu (1 à 2 000) : un tour de garde toutes les 8 h, une réunion tous les 2 jours | qty | T saut |  | privé | en heures et en jours de jeu, jamais en semaines : avec D30 une année dure environ 4,7 jours de jeu, une semaine de 7 jours la dépasserait | PLAN.repeat_period | 1 |
+| i_attempts | combien de fois l'étape en cours a échoué | qty | moteur |  | privé | compte les échecs PERÇUS sur place (P51), remis à 0 quand l'étape change ; un fait, pas un verdict | PLAN.attempts | 1 |
 | i_commitment | fermeté (résister aux interruptions mineures) | unipolar10 | T saut |  | privé | haute : seul un vrai danger interrompt ; basse : la moindre chose détourne | PLAN.commitment | 2 |
 
 ### ledger
@@ -558,7 +592,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| memory_store_capacity | nombre de souvenirs gardés | qty | calculé |  | moteur seul | de 32 à 128 selon la mémoire (memory_capacity) ; s'oublie le moins important, le moins net, le plus ancien ; jamais un souvenir marquant |  | 0 |
+| memory_store_capacity | nombre de souvenirs gardés | qty | calculé |  | moteur seul | v1 : NON appliquée, la capacité est le max_count fixe du composant (docs/14 § 7.5) ; visée : de 32 à 128 selon la mémoire (memory_capacity) ; s'oublie le moins important, le moins net, le plus ancien ; jamais un souvenir marquant |  | 0 |
 
 ### mind_dynamic
 
@@ -659,7 +693,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | pc_color_seen | couleur apparente (rouge, bleu, vert…) : une propriété qui se voit, pas toujours la vraie (lumière, teinture, pénombre) | word | calculé |  | observable | tirée de la propriété color de la chose, ternie par la lumière ; des mots de couleur existent donc pour les goûts (TASTE.concept) et pour parler (appears @T1 blue) | THING.color | 1 |
 | pc_file | le dossier mental de cette chose, si on la connaît (« mon marteau », « la vache du voisin ») | mref | calculé |  | observable |  | THING.file | 0 |
 | pc_props_seen | propriétés et usages qui se voient (tranchant, lourd, contient, brûle…) : le vecteur perceptible | list | calculé |  | observable | seulement les propriétés perceptibles et les usages qui en découlent (Catalogue.object_vector : usages et états perceptibles + masse, taille, tranchant, pointe, allonge, contenance) ; toxicité, puissance magique, clé de quelle serrure : jamais | THING.props | 0 |
-| pc_state_seen | état apparent (intact, abîmé, fissuré, en feu, mouillé, pourri, vide, mûr…) | list | calculé |  | observable |  | THING.state | 0 |
+| pc_state_seen | état apparent (intact, abîmé, fissuré, en feu, mouillé, pourri, vide, mûr…) | list | calculé |  | observable |  | THING.state | 2 |
 | pc_amount_seen | quantité apparente (aucun, un peu, assez, beaucoup, on ne sait pas) | enum (none, few, some, many, unknown) | calculé |  | observable |  | THING.amount | 0 |
 | pc_display | ce que fait une bête, vu de dehors (calme, broute, aux aguets, fuit, grogne, montre les dents, charge, rôde, joue) | enum (calm, grazing, alert, fleeing, growling, baring_teeth, charging, stalking, playing) | calculé |  | observable | tiré du comportement réel de la bête, sans dire pourquoi : le danger se juge | THING.display | 4 |
 | pc_owner_believed | à qui on CROIT que c'est (croyance owns) | mref | calculé |  | privé |  | THING.owner | 0 |
@@ -667,6 +701,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | pc_dir | direction apparente (sinus, cosinus) | qty | calculé |  | observable |  | THING.dir | 0 |
 | pc_file_certainty | certitude que c'est bien la chose de ce dossier (mon marteau ? un marteau pareil ?) | unipolar10 | calculé |  | observable | le moteur rattache par l'apparence et le lieu cru, jamais par l'identité vraie : un sosie posé à la place passe pour l'original | THING.file_certainty | 0 |
 | pc_depth_seen | profondeur apparente d'une eau (à gué, à la taille, profonde, fond invisible) | enum (shallow, waist, deep, unseen_bottom) | calculé |  | observable |  | THING.depth | 1 |
+| pc_age_seen | âge apparent d'une chose (neuf, usé, vieux) : ce que l'usure, la patine, la fraîcheur laissent voir | word | calculé |  | observable | calculé par la perception depuis l'écart entre l'instant courant et made_at (provenance), brouillé par la lumière et la distance ; un faux vieux (patiné à dessein) paraît vieux ; le PNJ ne lit jamais made_at ni l'âge exact | THING.age | 1 |
 | pc_motion | mouvement apparent (immobile, s'approche, s'éloigne, tombe, roule) | enum (still, approaching, leaving, falling, rolling) | calculé |  | observable |  | THING.motion | 1 |
 
 ### phenomenon_field
@@ -688,7 +723,15 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | pp_air_felt | air ressenti (glacial, froid, frais, doux, chaud, brûlant) | enum (freezing, cold, cool, mild, warm, hot) | calculé |  | observable |  | PLACE.air_felt | 0 |
 | pp_weather_seen | temps qu'il voit et entend (pluie, neige, orage, vent fort, brouillard) | list | calculé |  | observable |  | PLACE.weather | 2 |
 | pp_sun | où il voit le soleil ou la lune (hauteur apparente ; rien sous terre ou par ciel couvert) | qty | calculé |  | observable |  | PLACE.sun | 0 |
+| pp_smell_seen | odeurs qu'il sent ici (fumée, moisi, pourriture, pain chaud…), par type ; la source n'est pas donnée | list | calculé |  | observable | la loi smell_spread porte le champ d'odeur (vent, air libre) ; son odorat le perçoit, le mot nomme le type et jamais la cause ; une odeur forte réveille (P3, O30) | PLACE.smell | 1 |
 | pp_signs | signes étranges qu'il perçoit (lumières errantes, silence soudain, froid brutal) | list | calculé |  | observable |  | PLACE.signs | 1 |
+
+### provenance
+
+| id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
+|---|---|---|---|---|---|---|---|---|
+| made_at | quand la chose a été faite, extraite ou cueillie (instant de jeu) | time | moteur |  | moteur seul | écrit une fois à la fabrication ; l'âge est game_time − made_at |  | 1 |
+| made_by | qui a fait la chose (auteur réel, vérité du moteur) | id | moteur |  | moteur seul |  |  | 0 |
 
 ### relation
 
@@ -709,7 +752,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | r_rivalry | rivalité (en concurrence pour une même chose : une place, une personne, un marché) | unipolar10 | T pas, moteur | 0.5 | privé |  | ENTITY.rel.rivalry | 2 |
 | r_familiarity | familiarité (combien on le connaît) | unipolar10 | moteur |  | privé | monte avec le temps passé ensemble et les échanges, baisse lentement sans contact | ENTITY.rel.familiarity | 4 |
 | r_perceived_regard | ce qu'on croit qu'il pense de soi (−10 il me hait, +10 il m'adore) | bipolar10 | calculé |  | privé | résumé des croyances attitude(lui, …, moi) : ce qu'on croit qu'il pense de soi ; peut être faux | ENTITY.rel.perceived_regard | 1 |
-| r_last_contact | dernière fois qu'on s'est vus ou parlé | time | moteur |  | privé |  |  | 2 |
+| r_last_contact | dernière fois qu'on s'est vus ou parlé | time | moteur |  | privé | horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien |  | 2 |
 | r_shared_history | nombre de souvenirs partagés | qty | calculé |  | privé |  |  | 0 |
 | r_link_believed | le lien qu'on croit avoir (parent, conjoint, maître, employeur…) | enum | calculé |  | privé | tiré des croyances link et des accords tels que crus (commitments_seen) ; le plus fort est montré | ENTITY.link | 1 |
 | r_reputation_seen | ce qu'on croit de lui : honnête, dangereux, compétent, riche, pieux (réputation crue) | list | calculé |  | privé | tiré des croyances has_trait ; on peut se tromper | ENTITY.rep (honnêteté, danger, compétence, richesse, piété) | 1 |
@@ -719,6 +762,9 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | r_group_role | mon rôle cru dans ce groupe (chef, membre, invité, étranger…) | word | calculé |  | privé | tiré des croyances holds et member | GROUP.role | 1 |
 | r_group_kind | ce que je crois qu'il est (foyer, bande, équipe, guilde, culte…) | word | calculé |  | privé | tiré des croyances is_a | GROUP.kind | 0 |
 | r_group_size | combien je crois qu'ils sont | qty | calculé |  | privé | tiré des croyances count et member | GROUP.size | 2 |
+| r_group_my_task | ma part dans ce groupe, telle que je la crois : l'accord que je crois avoir envers lui | mref | calculé |  | privé | tiré de MES accords crus (commitments_seen) dont la contrepartie est ce groupe ; vide si je ne crois rien devoir | GROUP.my_task (pointeur COMMIT) | 0 |
+| r_group_tasks_open | combien de tâches je crois en cours dans ce groupe (le chef suit ses effectifs) | qty | calculé |  | privé | compté dans MES croyances (accords crus envers le groupe, non crus tenus ni rompus) ; le groupe peut en croire un autre nombre ; aucun compte n'est tenu par le moteur pour lui | GROUP.tasks_open | 0 |
+| r_group_present | combien des membres que je crois siens sont là, d'après ce que je vois et ce que je crois | qty | calculé |  | privé | compté dans MES percepts (entity_percept) et MES croyances member ; un membre caché ou hors de vue n'est pas compté | GROUP.present | 0 |
 
 ### relations
 
@@ -733,7 +779,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 |---|---|---|---|---|---|---|---|---|
 | q_from | qui demande | mref | moteur |  | privé |  | REQUEST.from (pointeur) | 0 |
 | q_content | ce qui est demandé (proposition : « que tu viennes te promener en forêt ») | proposition | moteur |  | privé |  | REQUEST.prop | 3 |
-| q_since | depuis quand on attend une réponse | time | moteur |  | privé | ne pas répondre est aussi une réponse (charte § 20) : la demande expire, le demandeur le perçoit | REQUEST.age | 1 |
+| q_since | depuis quand on attend une réponse | time | moteur |  | privé | ne pas répondre est aussi une réponse (charte § 20) : la demande expire, le demandeur le perçoit ; horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien | REQUEST.age | 1 |
 
 ### setting
 
@@ -741,6 +787,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 |---|---|---|---|---|---|---|---|---|
 | village_temperament | tempérament du village (0 sages, 5 modérés, 10 fous) : à quel point les réactions des habitants sont mesurées, ou disproportionnées et absurdes | unipolar10 | moteur |  | public | choisi par le joueur à la création de la partie, par village (le même pour tous ses habitants) ; peut être changé dans les options ; le moteur ne le fait jamais bouger tout seul | WAKE.temperament | 2 |
 | w_think_budget | combien de pas de réflexion encore accordés dans cette suite (pensée écrite) | qty | moteur |  | privé | fixé par l'ordonnanceur (profondeur de simulation du PNJ, charge du GPU) ; décroît d'un à chaque pas de réflexion ; à 0 le modèle doit agir | WAKE.budget | 2 |
+| w_outcome | comment l'étape qui vient de finir a fini, tel que perçu (fini, geste sans effet perçu, passage bloqué, interrompu, délai atteint) | enum (done, failed, blocked, interrupted, limit_reached) | moteur |  | privé | un fait d'exécution perçu sur place (P51), joint au réveil de fin d'étape (cause plan) ; failed (le geste n'a produit aucun effet perçu : une porte qui ne s'ouvre pas, c_blocked) et blocked (le passage ou le geste est empêché, perçu) sont des FAITS D'EXÉCUTION perçus, jamais une comparaison du résultat avec le but ; ils n'abandonnent rien : le modèle réécrit les étapes ou abandonne lui-même ; limit_reached est une butée qui réveille, pas une décision (P37) | WAKE.outcome | 1 |
 
 ### skill
 
@@ -749,7 +796,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | k_self_estimate | ce qu'on croit valoir dans une technique (tiré de ce qu'on a vu de ses propres réussites et ratés) | unipolar10 | calculé |  | privé | moyenne glissante des résultats PERÇUS de ses propres gestes ; un vantard qui n'a jamais essayé se croit bon (croyance knows_how), son estimation, elle, reste vide | SKILL.self_estimate | 3 |
 | k_technique | technique | enum | moteur |  | privé |  | SKILL.technique | 0 |
 | k_mastery | maîtrise (0 rien, 10 maître) | unipolar10 | moteur |  | privé | monte en pratiquant, plus vite avec un maître présent qui montre et corrige (faits objectifs : gestes de l'un vus par l'autre) ; baisse lentement sans pratique ; se perd à la mort si personne ne l'a apprise (charte § 25) |  | 10 |
-| k_last_practice | dernière pratique | time | moteur |  | moteur seul |  |  | 0 |
+| k_last_practice | dernière pratique | time | moteur |  | moteur seul | horodatage : un instant de jeu en secondes (jamais une durée) ; l'oubli en tire la récence par maintenant − cette valeur, une valeur plus petite = plus ancien |  | 0 |
 
 ### social_referent
 
@@ -759,6 +806,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | s_introduced_by | qui en a parlé le premier (tout agent peut créer un référent en le nommant ou le décrivant : « nous trois », « ceux de la forêt ») | id | moteur |  | moteur seul |  |  | 0 |
 | s_introduced_at | quand on en a parlé la première fois | time | moteur |  | moteur seul |  |  | 0 |
 | s_scope | pour un rôle : le groupe dans lequel il s'exerce (chef DU village de la forêt) | id | moteur |  | moteur seul |  |  | 0 |
+| s_last_believed | dernier moment où un dossier de PNJ vivant désignait ce groupe ou ce rôle | time | moteur |  | moteur seul | temps (sauvegardé) : sert au cycle de vie du référent, archivé après une saison de calendrier entière (1 h 45 réelle, D30) sans qu'aucun dossier ne le désigne ; un fait de comptage, pas un jugement sur l'existence du groupe |  | 0 |
 | recognized_members | qui est reconnu membre d'un groupe, et par combien de gens | list | calculé |  | moteur seul | agrégat des croyances member |  | 1 |
 | role_holder_support | qui est cru titulaire d'un rôle, et par combien (deux chefs peuvent coexister) | list | calculé |  | moteur seul | agrégat des croyances holds, pondéré par la familiarité au groupe |  | 5 |
 | legitimacy | légitimité d'un titulaire (part des membres qui croient qu'il a le droit) | ratio | calculé |  | moteur seul |  |  | 2 |
@@ -771,7 +819,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
 | soil_fertility | fertilité | unipolar10 | moteur |  | observable | s'épuise par les récoltes, remonte en jachère et avec le fumier |  | 1 |
-| soil_state | état (nu, labouré, semé, cultivé, en jachère, piétiné) | enum (bare, tilled, sown, growing, fallow, trampled) | moteur |  | observable |  |  | 1 |
+| soil_state | état (nu, labouré, semé, cultivé, en jachère, piétiné) | enum (bare, tilled, sown, growing, fallow, trampled) | moteur |  | observable |  |  | 3 |
 | soil_moisture | humidité du sol | unipolar10 | moteur |  | observable | pluie, arrosage, sécheresse |  | 1 |
 | deposit | gisement (minerai, pierre, sel, argile : nature, quantité, profondeur) | list | moteur |  | moteur seul | s'épuise quand on extrait |  | 1 |
 
@@ -789,7 +837,7 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 
 | id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
 |---|---|---|---|---|---|---|---|---|
-| load_margin | marge avant effondrement (charge / résistance, appuis) | ratio | moteur |  | moteur seul | creuser sous un mur, ôter un étai, le feu, l'eau la font baisser ; à 0, effondrement (une suite d'Operation) |  | 5 |
+| load_margin | marge avant effondrement (charge / résistance, appuis) | ratio | moteur |  | moteur seul | creuser sous un mur, ôter un étai, le feu, l'eau la font baisser ; à 0, effondrement (une suite d'Operation) |  | 6 |
 | visible_damage | dégâts visibles (fissures, affaissement) | unipolar10 | calculé |  | observable | les fissures précèdent l'effondrement : on peut les voir et avertir |  | 3 |
 
 ### substance
@@ -808,6 +856,13 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | trace_freshness | fraîcheur (s'efface avec le temps, la pluie, la neige, les passages) | unipolar10 | moteur |  | observable |  |  | 1 |
 | trace_direction | direction (des pas, d'un traînage) | qty | moteur |  | observable |  |  | 0 |
 | trace_fact | le fait qui l'a laissée (le moteur seul) | id | moteur |  | moteur seul |  |  | 0 |
+
+### transformation
+
+| id | libellé | échelle | écrit par | pas | visibilité | dynamique | jeton | histoires |
+|---|---|---|---|---|---|---|---|---|
+| process_progress | avancement du processus en cours (0 à 1) | ratio | moteur |  | moteur seul | monte avec l'horloge du processus (nominal_game_s) quand ses conditions tiennent ; se fige ou recule quand elles cessent |  | 3 |
+| process_started_at | instant de jeu où le processus en cours a commencé | time | moteur |  | moteur seul |  |  | 0 |
 
 ## Propriétés et affordances
 
@@ -1010,37 +1065,71 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 
 | id | libellé | entrées | conditions | effet | déclencheur | horloge | durée nominale (s de jeu) | consomme | produit |
 |---|---|---|---|---|---|---|---|---|---|
-| cut | couper, trancher | matière tendre (bois, chair, tissu, plante, corde) | cuts | sépare en morceaux selon la force et l'angle ; l'outil s'use |  |  |  |  |  |
-| split | fendre (le bois dans le fil, la pierre litée) | bois, ardoise, calcaire | impacts, edge | éclats et planches grossières |  |  |  |  |  |
-| fracture | casser, briser | toute matière | impacts | si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse ; silex contre fer : des étincelles (qui allument l'amadou) |  |  |  |  |  |
-| crush | écraser, moudre, broyer | grain, minerai, herbe, os | impacts | grain → farine ; minerai → minerai broyé ; herbe → pâte |  |  |  |  |  |
-| extract | extraire (arracher du terrain : creuser, piocher) | terrain | digs | retire des voxels ; la matière extraite devient objet ; la stabilité voisine change |  |  |  |  |  |
-| till | labourer, retourner la terre | sol (terrain) | digs | le sol passe à « labouré » (soil_state) ; l'humidité et la fertilité s'en ressentent ; une houe, une bêche ou un araire tiré par un bœuf |  |  |  |  |  |
-| assemble | assembler (empiler, emboîter, clouer, maçonner) | pièces de bois, pierres, briques, mortier | graspable | crée ou agrandit une structure ; la stabilité dépend des appuis |  |  |  |  |  |
-| bind | lier, nouer, coudre | corde, fil, cuir, tissu | binds | attache deux choses ; tient tant que la ténacité du lien n'est pas dépassée |  |  |  |  |  |
-| mix | mélanger, pétrir, dissoudre | farine + eau, argile + eau, teinture + eau, sel + eau | contains | produit un mélange (pâte, mortier, saumure, bain de teinture) |  |  |  |  |  |
-| spin_weave | filer et tisser (fibre → fil → étoffe) | laine, lin, chanvre |  | étoffe, dont la qualité suit la maîtrise |  |  |  |  |  |
-| carve | tailler, sculpter, graver | bois, pierre, os | cuts | change la forme ; peut produire une inscription |  |  |  |  |  |
-| forge | forger (déformer le métal chaud par des coups) | métal chaud | impacts, heats | outils, lames, clous, serrures ; qualité selon maîtrise, chaleur, outil |  |  |  |  |  |
-| mold_cast | mouler, couler (argile façonnée, métal fondu dans un moule) | argile humide, métal fondu | contains | forme imposée par le moule ou la main |  |  |  |  |  |
-| magic_shape | façonner par magie (bâtir, assembler ou désassembler la matière) | matières présentes | shapes_matter | transforme des matières disponibles en construction ou objet, sans en créer ; consomme la charge ; échec ou accident si la puissance dépasse la maîtrise |  |  |  |  |  |
-| heat | chauffer |  | heats | la température monte selon la source, la masse, la conduction ; un frottement long et fort (bois sec contre bois) chauffe jusqu'à la braise |  |  |  |  |  |
-| combust | brûler |  | fuel, ignites | consomme le combustible, crée un feu qui se propage selon l'inflammabilité, l'humidité, le vent ; produit cendre et fumée |  |  |  |  |  |
-| melt | fondre |  | heats | au-delà du point de fusion, la matière devient fluide |  |  |  |  |  |
-| smelt | réduire le minerai (bas fourneau) | minerai broyé + charbon | heats | minerai → métal brut, scories |  |  |  |  |  |
-| fire_clay | cuire l'argile | argile façonnée sèche | heats | argile → céramique (pots, tuiles, briques) |  |  |  |  |  |
-| cook | cuire un aliment | pâte, chair, légumes, grain | heats | pâte → pain ; chair crue → cuite (plus nourrissante, moins de maladie) ; trop cuit → brûlé |  |  |  |  |  |
-| cool_freeze | refroidir, geler |  |  | la température baisse vers celle du lieu ; l'eau gèle sous 0 °C |  |  |  |  |  |
-| ferment | fermenter | grain, fruit, lait + eau, dans un récipient fermé | contains | bière, vin, fromage, après des jours |  |  |  |  |  |
-| rot | pourrir, se gâter |  |  | la fraîcheur baisse ; à zéro, l'aliment devient toxique ; le bois mouillé perd son intégrité |  |  |  |  |  |
-| dry_preserve | sécher, saler, fumer (conserver) | chair, poisson, herbe, grain |  | la fraîcheur baisse beaucoup plus lentement |  |  |  |  |  |
-| tan | tanner | peau + écorce + eau |  | peau → cuir, après des jours |  |  |  |  |  |
-| dye_process | teindre | étoffe + bain de teinture |  | change la teinte |  |  |  |  |  |
-| heal_tissue | cicatriser |  |  | les blessures se referment avec le temps, plus vite si propres, soignées et au repos ; l'infection les aggrave |  |  |  |  |  |
-| wear | s'user |  |  | l'usage et le temps baissent l'intégrité et la qualité ; le fer rouille à l'humidité |  |  |  |  |  |
-| grow | pousser, mûrir, se reproduire (plantes, animaux) |  |  | selon saison, eau, sol, lumière ; les graines tombent, les troupeaux s'agrandissent |  |  |  |  |  |
-| flow | couler, s'écouler |  |  | un liquide versé ou libéré descend et s'étale ; un seau renversé mouille |  |  |  |  |  |
-| absorb_evaporate | absorber, s'évaporer |  |  | le sol boit l'eau, la chaleur l'évapore ; un puits se remplit par la nappe |  |  |  |  |  |
+| smell_spread | l'odeur se répand | toute source d'odeur : chair qui pourrit, fumée, bête, cuisine, fleur | odor | un champ d'odeur porté par le vent et l'air libre ; une narine à portée sent le type et la force (PLACE.smell) ; une odeur forte réveille (P3), sinon elle s'ajoute à la perception du lieu | sources d'odeur (odor) ; le vent les porte | real |  |  |  |
+| contagion | la maladie passe d'un corps à un autre | un corps malade (incubation ou symptômes), de l'eau souillée, une plaie, une morsure |  | chaque maladie de la table illness passe selon sa voie (contact, air, eau, morsure, plaie, naissance) ; le hasard vient de hash3 ; un corps déjà guéri est protégé un temps | proximité, eau souillée, morsure | calendar |  |  |  |
+| illness_course | le cours d'une maladie | un corps atteint |  | incubation (rien ne se voit, même du malade), symptômes visibles, puis guérison ou mort ; les soins, le repos, la nourriture et l'âge changent l'issue ; l'immunité suit la guérison | temps écoulé depuis la contagion | calendar | 518400 |  |  |
+| cut | couper, trancher | matière tendre (bois, chair, tissu, plante, corde) | cuts | sépare en morceaux selon la force et l'angle ; l'outil s'use ; une carcasse rend ses produits selon l'espèce et la partie (viande, peau, os, corne, plume, graisse) et la maîtrise | contact : un outil qui coupe (cuts) sur une matière tendre | game |  |  |  |
+| split | fendre (le bois dans le fil, la pierre litée) | bois, ardoise, calcaire | impacts, edge | éclats et planches grossières | contact : outil à tranchant frappé (edge, impacts) dans le fil | game |  | oak_raw, slate | oak_planks |
+| fracture | casser, briser | toute matière | impacts | si l'énergie du choc dépasse la ténacité : morceaux, débris ; sinon l'intégrité baisse ; silex contre fer : des étincelles (qui allument l'amadou) | contact : choc dont l'énergie dépasse la ténacité | real |  |  | rubble_masonry |
+| crush | écraser, moudre, broyer | grain, minerai, herbe, os | impacts | grain → farine ; minerai → minerai broyé ; herbe → pâte | contact : choc ou meule sur grain, minerai, herbe, os | game |  | grain, bone | flour |
+| extract | extraire (arracher du terrain : creuser, piocher) | terrain | digs | retire des voxels ; la matière extraite devient objet ; la stabilité voisine change ; arracher une plante enracinée (racine, tubercule, souche) en fait un objet et laisse le sol nu | contact : un outil qui creuse (digs) sur le terrain | game |  |  |  |
+| till | labourer, retourner la terre | sol (terrain) | digs | le sol passe à « labouré » (soil_state) ; l'humidité et la fertilité s'en ressentent ; une houe, une bêche ou un araire tiré par un bœuf | contact : un outil qui creuse (digs) sur un sol cultivable | game |  |  |  |
+| assemble | assembler (empiler, emboîter, clouer, maçonner) | pièces de bois, pierres, briques, mortier | graspable | crée ou agrandit une structure ; la stabilité dépend des appuis | contact : pièces tenues ou posées l'une sur l'autre | game |  |  |  |
+| bind | lier, nouer, coudre | corde, fil, cuir, tissu | binds | attache deux choses ; tient tant que la ténacité du lien n'est pas dépassée | contact : un lien (binds) passé autour de deux choses | game |  | rope_fiber, leather |  |
+| mix | mélanger, pétrir, dissoudre | farine + eau, argile + eau, teinture + eau, sel + eau | contains | produit un mélange (pâte, mortier, saumure, bain de teinture) | contact : deux matières versées dans un contenant (contains) | game |  | flour, clay, water, salt | lime_mortar |
+| spin_weave | filer et tisser (fibre → fil → étoffe) | laine, lin, chanvre |  | étoffe, dont la qualité suit la maîtrise | contact : fibre travaillée à la main ou au métier | game |  | wool, linen, rope_fiber | cloth |
+| carve | tailler, sculpter, graver | bois, pierre, os | cuts | change la forme ; peut produire une inscription | contact : outil qui coupe (cuts) sur bois, pierre ou os | game |  | oak_raw, bone |  |
+| forge | forger (déformer le métal chaud par des coups) | métal chaud | impacts, heats | outils, lames, clous, serrures ; qualité selon maîtrise, chaleur, outil | chaleur (heats) et coups (impacts) sur un métal | game |  | iron | iron |
+| mold_cast | mouler, couler (argile façonnée, métal fondu dans un moule) | argile humide, métal fondu | contains | forme imposée par le moule ou la main | matière fluide ou plastique versée ou pressée dans un moule (contains) | game |  | clay |  |
+| magic_shape | façonner par magie (bâtir, assembler ou désassembler la matière) | matières présentes | shapes_matter | transforme des matières disponibles en construction ou objet, sans en créer ; consomme la charge ; échec ou accident si la puissance dépasse la maîtrise | pouvoir de façonner la matière, chargé | game |  |  |  |
+| heat | chauffer |  | heats | la température monte selon la source, la masse, la conduction ; un frottement long et fort (bois sec contre bois) chauffe jusqu'à la braise | une source de chaleur (heats) proche, ou un frottement long et fort | real |  |  |  |
+| combust | brûler |  | fuel, ignites | consomme le combustible, crée un feu qui se propage selon l'inflammabilité, l'humidité, le vent ; produit cendre et fumée | combustible (fuel) touché par ce qui allume (ignites) | real |  | softwood, oak_raw, straw | ash |
+| melt | fondre |  | heats | au-delà du point de fusion, la matière devient fluide | température au-delà du point de fusion de la matière | real |  |  |  |
+| smelt | réduire le minerai (bas fourneau) | minerai broyé + charbon | heats | minerai → métal brut, scories | minerai broyé et charbon dans un bas fourneau, chaleur > 1 200 °C | calendar | 14400 | iron_ore, charcoal | iron |
+| fire_clay | cuire l'argile | argile façonnée sèche | heats | argile → céramique (pots, tuiles, briques) | argile sèche portée au-delà de 900 °C | calendar | 43200 | clay | ceramic |
+| cook | cuire un aliment | pâte, chair, légumes, grain | heats | pâte → pain ; chair crue → cuite (plus nourrissante, moins de maladie) ; trop cuit → brûlé | aliment tenu près d'une source de chaleur (heats) | game | 1800 | flour, flesh, vegetable, grain | bread |
+| cool_freeze | refroidir, geler |  |  | la température baisse vers celle du lieu ; l'eau gèle sous 0 °C | température du lieu plus basse que celle de la chose | calendar |  | water |  |
+| ferment | fermenter | grain, fruit, lait + eau, dans un récipient fermé | contains | bière, vin, fromage, après des jours | grain, fruit ou lait + eau gardés dans un récipient fermé | calendar | 129600 | grain, milk, water | ale, cheese |
+| rot | pourrir, se gâter |  |  | la fraîcheur baisse ; à zéro, l'aliment devient toxique ; le bois mouillé perd son intégrité | temps écoulé ; la fraîcheur baisse, plus vite au chaud et à l'humide | calendar | 259200 | flesh, vegetable, bread |  |
+| dry_preserve | sécher, saler, fumer (conserver) | chair, poisson, herbe, grain |  | la fraîcheur baisse beaucoup plus lentement | chair, poisson, herbe ou grain séchés, salés ou fumés | calendar | 432000 | flesh, herb, salt |  |
+| tan | tanner | peau + écorce + eau |  | peau → cuir, après des jours | peau + écorce + eau, laissées dans le bain | calendar | 172800 | hide, bark, water | leather |
+| dye_process | teindre | étoffe + bain de teinture |  | change la teinte | étoffe plongée dans un bain de teinture | game | 3600 | cloth, dye | cloth |
+| heal_tissue | cicatriser |  |  | les blessures se referment avec le temps, plus vite si propres, soignées et au repos ; l'infection les aggrave | temps écoulé sur une blessure ; plus vite si propre, soignée et au repos | calendar | 432000 |  |  |
+| wear | s'user |  |  | l'usage et le temps baissent l'intégrité et la qualité ; le fer rouille à l'humidité | usage répété, ou temps et humidité | calendar |  |  |  |
+| grow | pousser, mûrir, se reproduire (plantes, animaux) |  |  | selon saison, eau, sol, lumière ; les graines tombent, les troupeaux s'agrandissent | temps, saison, eau, sol et lumière | calendar | 100800 | water | vegetable, grain |
+| flow | couler, s'écouler |  |  | un liquide versé ou libéré descend et s'étale ; un seau renversé mouille | liquide libéré sur une pente | real |  |  |  |
+| absorb_evaporate | absorber, s'évaporer |  |  | le sol boit l'eau, la chaleur l'évapore ; un puits se remplit par la nappe ; l'eau salée qui s'évapore laisse son soluté : le sel | sol ou étoffe au contact de l'eau ; chaleur ou vent sur l'eau | calendar |  | water | salt |
+| collapse | s'effondrer, tomber | construction ou arbre dont plus rien ne porte |  | ce qui n'est plus porté tombe : suite d'Operation, blessures sous la chute, débris | load_margin ≤ 0 (marge de charge, moteur seul) ; arbre coupé au-delà de son cœur | real |  |  | rubble_masonry |
+| disassemble | démonter (aux joints) | matière à cohésion built : planches, briques, moellons liés | impacts | rend des éléments réutilisables au lieu de débris ; une matière naturelle ne fait que se fracturer | impacts sur une matière à cohésion built, aux joints | game |  | oak_planks, brick | oak_planks, brick |
+| germinate | germer | graine en sol labouré et humide, ou grain trempé |  | la graine pousse (plant_stage = sprout) ; le grain trempé donne du malt | temps ; graine en sol labouré et humide, ou trempée | calendar | 43200 | grain, water | grain |
+| separate | séparer (battre, vanner, tamiser, écrémer, baratter) | mélange de grain et de paille, farine et son, lait |  | battage, vannage, tamisage, écrémage, barattage : deux matières mêlées se séparent | choc, vent, tamis ou mouvement sur un mélange | game |  | grain, milk | grain, straw, butter |
+| press_extract | presser, traire, essorer | ce qui contient un fluide : fruit, pis, étoffe mouillée, fromage frais | contains | traite, pressoir, égouttage, essorage ; le lait d'une bête suit animal_product_ready | work en pressant ou en serrant ce qui contient un fluide | game |  | vegetable | oil, milk |
+| wash | laver | eau (+ savon) et frottement sur une chose, un corps, un lieu | wipes | dirtiness et grooming s'améliorent ; une plaie lavée s'infecte moins | eau (+ savon) et frottement | game |  | water, soap |  |
+| abrade | aiguiser, polir, raboter, limer | tranchant à refaire, surface à lisser | sharpens | refait un tranchant (edge), polit, rabote, lime | frottement d'une chose qui aiguise (sharpens) sur une autre | game |  |  |  |
+| char | carboniser (meule de charbonnier) | bois en tas couvert de terre | fuel, heats | bois → charbon de bois | chaleur sans air, longtemps | calendar | 172800 | oak_raw, softwood | charcoal |
+| trap_catch | prendre au piège, au filet, à l'hameçon | bête qui passe sur un piège armé, dans un filet, devant un hameçon appâté | traps | la bête est prise selon l'espèce, l'appât, la maîtrise (D29) ; sinon le piège reste armé ou se referme à vide | piège armé (traps), filet, hameçon appâté, bête qui passe | real |  |  |  |
+| calcine | calciner (chaux) | calcaire | heats | calcaire → chaux vive (matière plaster : chaux, plâtre ; aucune matière nouvelle, pour ne pas élargir la table des sortes) ; priorité basse | chaleur > 900 °C sur du calcaire | calendar | 86400 | limestone | plaster |
+
+## Durées choisies (secondes de jeu)
+
+| id | libellé | secondes de jeu |
+|---|---|---|
+| brief | bref | 120 |
+| a_while | un moment | 1800 |
+| long | longtemps | 7200 |
+
+## Maladies
+
+| id | libellé | transmission | incubation (j) | durée (j) | symptômes visibles | létalité % |
+|---|---|---|---|---|---|---|
+| common_cold | rhume | air, contact | 1 | 3 | coughing, flushed | 0 |
+| winter_fever | fièvre d'hiver | air, contact | 1 | 4 | feverish, shivering, pale | 5 |
+| marsh_fever | fièvre des marais | water, bite | 2 | 8 | feverish, sallow, shivering | 15 |
+| red_spots | fièvre éruptive (taches rouges) | air, contact | 2 | 6 | flushed, feverish, swollen | 10 |
+| lung_rot | mal des poumons | air | 3 | 20 | coughing, emaciated, pale | 40 |
+| bloody_flux | flux de ventre | water, contact | 1 | 5 | pale, emaciated, sallow | 20 |
+| wound_fever | fièvre des plaies | wound | 1 | 6 | feverish, swollen, flushed | 30 |
+| black_plague | peste noire | air, contact, bite | 2 | 7 | swollen, feverish, pale, coughing | 70 |
 
 ## Formes de parties (la grammaire des objets)
 
@@ -1114,19 +1203,19 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 
 | id | libellé | règne | habitat | domestique | produits (partie:matière) | danger | comportement | semis | jours à maturité | fenêtre de récolte (j) | repousse produit (j) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| sheep | mouton, brebis | animal | meadow, mountain | oui | fleece:wool, meat:flesh, milk:milk, hide:hide, bone:bone, fat:tallow |  | suit le troupeau, fuit le loup, rentre au son de la voix connue |  |  |  |  |
-| goat | chèvre | animal | mountain, meadow, desert | oui | milk:milk, meat:flesh, hide:hide, horn:horn |  | grimpe, mange tout, s'échappe des enclos mal fermés |  |  |  |  |
-| cow | vache | animal | meadow | oui | milk:milk, meat:flesh, hide:hide, bone:bone, fat:tallow, horn:horn | 1 |  |  |  |  |  |
-| ox | bœuf (trait) | animal | fields | oui | meat:flesh, hide:hide | 2 | tire la charrue sous le joug |  |  |  |  |
-| horse | cheval | animal | meadow | oui | hide:hide, hair:rope_fiber | 2 | se monte, tire, prend peur au feu |  |  |  |  |
-| donkey | âne, mule | animal | fields, desert, mountain | oui | hide:hide | 1 | porte le bât ; têtu, s'effraie et rue |  |  |  |  |
-| camel | chameau (caravanes du désert) | animal | desert | oui | milk:milk, hair:wool, hide:hide | 2 | porte loin sans boire |  |  |  |  |
-| pig | cochon | animal | village, forest | oui | meat:flesh, fat:tallow, hide:hide | 1 | fouille, mange les déchets, s'échappe |  |  |  |  |
-| chicken | poule, coq | animal | village | oui | egg:egg, meat:flesh, feather:feather |  | pond, picore, chante à l'aube |  |  |  |  |
-| goose | oie, canard | animal | village, river | oui | egg:egg, meat:flesh, feather:feather, fat:tallow |  | crie à l'approche d'un étranger |  |  |  |  |
-| dog | chien | animal | village | oui |  | 2 | s'attache à qui le nourrit ; garde son territoire (là où il dort et mange) ; aboie, suit ; mord qui frappe celui auquel il est attaché, ou qui entre la nuit sur son territoire |  |  |  |  |
-| cat | chat | animal | village | oui |  |  | chasse les rats, va où il veut |  |  |  |  |
-| bee | abeilles (colonie) | animal | meadow, village | oui | honey:honey, wax:wax | 1 | pique qui ouvre la ruche sans fumée |  |  |  |  |
+| sheep | mouton, brebis | animal | meadow, mountain | oui | fleece:wool, meat:flesh, milk:milk, hide:hide, bone:bone, fat:tallow |  | suit le troupeau, fuit le loup, rentre au son de la voix connue | spring | 7 |  | 5 |
+| goat | chèvre | animal | mountain, meadow, desert | oui | milk:milk, meat:flesh, hide:hide, horn:horn |  | grimpe, mange tout, s'échappe des enclos mal fermés | spring | 5 |  | 1 |
+| cow | vache | animal | meadow | oui | milk:milk, meat:flesh, hide:hide, bone:bone, fat:tallow, horn:horn | 1 |  | spring | 9 |  | 1 |
+| ox | bœuf (trait) | animal | fields | oui | meat:flesh, hide:hide | 2 | tire la charrue sous le joug | spring | 9 |  |  |
+| horse | cheval | animal | meadow | oui | hide:hide, hair:rope_fiber | 2 | se monte, tire, prend peur au feu | spring | 14 |  |  |
+| donkey | âne, mule | animal | fields, desert, mountain | oui | hide:hide | 1 | porte le bât ; têtu, s'effraie et rue | spring | 9 |  |  |
+| camel | chameau (caravanes du désert) | animal | desert | oui | milk:milk, hair:wool, hide:hide | 2 | porte loin sans boire | spring | 14 |  | 1 |
+| pig | cochon | animal | village, forest | oui | meat:flesh, fat:tallow, hide:hide | 1 | fouille, mange les déchets, s'échappe | spring, autumn | 5 |  |  |
+| chicken | poule, coq | animal | village | oui | egg:egg, meat:flesh, feather:feather |  | pond, picore, chante à l'aube | spring | 2 |  | 1 |
+| goose | oie, canard | animal | village, river | oui | egg:egg, meat:flesh, feather:feather, fat:tallow |  | crie à l'approche d'un étranger | spring | 2 |  | 1 |
+| dog | chien | animal | village | oui |  | 2 | s'attache à qui le nourrit ; garde son territoire (là où il dort et mange) ; aboie, suit ; mord qui frappe celui auquel il est attaché, ou qui entre la nuit sur son territoire | spring, autumn | 5 |  |  |
+| cat | chat | animal | village | oui |  |  | chasse les rats, va où il veut | spring, summer | 3 |  |  |
+| bee | abeilles (colonie) | animal | meadow, village | oui | honey:honey, wax:wax | 1 | pique qui ouvre la ruche sans fumée | spring | 1 |  | 5 |
 | deer | cerf, biche | animal | forest |  | meat:flesh, hide:hide, antler:horn, bone:bone | 1 | fuit au moindre bruit, revient aux mêmes passages |  |  |  |  |
 | boar | sanglier | animal | forest |  | meat:flesh, hide:hide, tusk:bone | 5 | charge quand il est blessé ou acculé, ravage les champs |  |  |  |  |
 | hare | lièvre, lapin | animal | meadow, fields |  | meat:flesh, fur:fur |  |  |  |  |  |  |
@@ -1148,30 +1237,30 @@ Compte : entity 16, component 51, variable 358, property 90, action 40, concept 
 | eel | anguille | animal | river, sea |  | meat:flesh |  |  |  |  |  |  |
 | shellfish_bed | coquillages, crabes | animal | sea |  | meat:flesh |  |  |  |  |  |  |
 | seal | phoque | animal | sea |  | fur:fur, fat:oil, meat:flesh | 2 |  |  |  |  |  |
-| wheat | blé | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | semé au printemps ou en automne, mûr à l'été ; versé par l'orage |  |  |  |  |
-| barley | orge | plant | fields, mountain | oui | grain:grain, straw:straw, seed:grain |  |  |  |  |  |  |
-| oats | avoine | plant | fields | oui | grain:grain, straw:straw, seed:grain |  |  |  |  |  |  |
-| rye | seigle (peut porter l'ergot qui rend fou) | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | les années humides, l'ergot rend le grain toxique : visions, convulsions |  |  |  |  |
-| beans | pois, fèves, lentilles | plant | fields | oui | pod:vegetable, seed:vegetable |  |  |  |  |  |  |
-| cabbage | chou | plant | fields | oui | leaf:vegetable, seed:vegetable |  |  |  |  |  |  |
-| turnip | navet, rave | plant | fields | oui | root:vegetable, seed:vegetable |  |  |  |  |  |  |
-| onion | oignon, poireau, ail | plant | fields | oui | bulb:vegetable, seed:vegetable |  |  |  |  |  |  |
-| carrot | carotte, panais | plant | fields | oui | root:vegetable, seed:vegetable |  |  |  |  |  |  |
-| flax | lin | plant | fields | oui | fiber:linen, seed:oil |  |  |  |  |  |  |
-| hemp | chanvre | plant | fields | oui | fiber:rope_fiber, seed:oil |  |  |  |  |  |  |
-| grapevine | vigne | plant | fields, desert | oui | fruit:vegetable, wood:oak_raw |  |  |  |  |  |  |
-| apple_tree | pommier | plant | village, fields | oui | fruit:vegetable, wood:oak_raw, seed:vegetable |  |  |  |  |  |  |
-| pear_tree | poirier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  |  |  |  |  |
-| cherry_tree | cerisier, prunier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  |  |  |  |  |
-| walnut_tree | noyer, châtaignier, noisetier | plant | forest, village |  | nut:vegetable, wood:oak_raw, husk:dye |  |  |  |  |  |  |
+| wheat | blé | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | semé au printemps ou en automne, mûr à l'été ; versé par l'orage | autumn | 4 | 1 |  |
+| barley | orge | plant | fields, mountain | oui | grain:grain, straw:straw, seed:grain |  |  | spring | 2 | 1 |  |
+| oats | avoine | plant | fields | oui | grain:grain, straw:straw, seed:grain |  |  | spring | 2 | 1 |  |
+| rye | seigle (peut porter l'ergot qui rend fou) | plant | fields | oui | grain:grain, straw:straw, seed:grain |  | les années humides, l'ergot rend le grain toxique : visions, convulsions | autumn | 4 | 1 |  |
+| beans | pois, fèves, lentilles | plant | fields | oui | pod:vegetable, seed:vegetable |  |  | spring | 2 | 1 |  |
+| cabbage | chou | plant | fields | oui | leaf:vegetable, seed:vegetable |  |  | spring | 2 | 1 |  |
+| turnip | navet, rave | plant | fields | oui | root:vegetable, seed:vegetable |  |  | summer, autumn | 1 | 1 |  |
+| onion | oignon, poireau, ail | plant | fields | oui | bulb:vegetable, seed:vegetable |  |  | spring | 2 | 1 |  |
+| carrot | carotte, panais | plant | fields | oui | root:vegetable, seed:vegetable |  |  | spring | 2 | 1 |  |
+| flax | lin | plant | fields | oui | fiber:linen, seed:oil |  |  | spring | 2 | 1 |  |
+| hemp | chanvre | plant | fields | oui | fiber:rope_fiber, seed:oil |  |  | spring | 2 | 1 |  |
+| grapevine | vigne | plant | fields, desert | oui | fruit:vegetable, wood:oak_raw |  |  | spring | 14 | 1 | 5 |
+| apple_tree | pommier | plant | village, fields | oui | fruit:vegetable, wood:oak_raw, seed:vegetable |  |  | spring | 23 | 1 | 5 |
+| pear_tree | poirier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  | spring | 28 | 1 | 5 |
+| cherry_tree | cerisier, prunier | plant | village | oui | fruit:vegetable, wood:oak_raw |  |  | spring | 14 | 1 | 5 |
+| walnut_tree | noyer, châtaignier, noisetier | plant | forest, village |  | nut:vegetable, wood:oak_raw, husk:dye |  |  | spring | 28 | 1 | 5 |
 | oak | chêne | plant | forest |  | wood:oak_raw, bark:bark, acorn:vegetable |  |  |  |  |  |  |
 | beech | hêtre | plant | forest |  | wood:oak_raw, nut:vegetable |  |  |  |  |  |  |
 | pine | pin, sapin | plant | mountain, forest |  | wood:softwood, resin:pitch |  |  |  |  |  |  |
 | birch | bouleau | plant | forest, mountain |  | wood:oak_raw, bark:bark |  |  |  |  |  |  |
 | willow | saule (osier) | plant | river |  | withy:wicker, bark:bark |  |  |  |  |  |  |
 | yew | if (arcs ; toxique) | plant | forest |  | wood:yew_wood | 3 |  |  |  |  |  |
-| date_palm | palmier dattier | plant | desert |  | fruit:vegetable, fiber:rope_fiber |  |  |  |  |  |  |
-| olive_tree | olivier | plant | desert, village |  | fruit:vegetable, oil:oil, wood:oak_raw |  |  |  |  |  |  |
+| date_palm | palmier dattier | plant | desert |  | fruit:vegetable, fiber:rope_fiber |  |  | spring | 28 | 1 | 5 |
+| olive_tree | olivier | plant | desert, village |  | fruit:vegetable, oil:oil, wood:oak_raw |  |  | spring | 47 | 1 | 5 |
 | meadow_grass | herbe des prés, foin | plant | meadow |  | hay:straw |  |  |  |  |  |  |
 | reed_plant | roseau, jonc | plant | river |  | stem:reed |  |  |  |  |  |  |
 | heather | bruyère, ajonc | plant | mountain, marches |  | stem:straw, flower:herb |  |  |  |  |  |  |
@@ -1648,46 +1737,46 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 
 | id | famille | libellé | paramètres | effets | perception | fin naturelle | cadence (ms) | productif | histoires |
 |---|---|---|---|---|---|---|---|---|---|
-| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion |  |  |  | 55 |
-| climb | move | grimper, escalader, descendre une paroi | target:ref; pace:enum=slow/walk/brisk | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu |  |  |  | 1 |
-| swim | move | nager | target:ref; intensity:enum=faint/light/firm/hard/full | épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade | vu, entendu |  |  |  | 0 |
-| jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu |  |  |  | 0 |
-| mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu |  |  |  | 0 |
-| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie_down | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu |  |  |  | 4 |
-| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise |  |  |  | 26 |
-| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion |  |  |  | 22 |
-| give | grasp | tendre, donner en main propre (une chose, une bête qu'on cède), nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu |  |  |  | 26 |
-| throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) |  |  |  | 3 |
-| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu |  |  |  | 2 |
-| wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref?; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu |  |  |  | 0 |
-| operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) |  |  |  | 5 |
-| strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) |  |  |  | 22 |
-| push | force | pousser, bousculer, renverser | target:ref; intensity:enum=faint/light/firm/hard/full; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu |  |  |  | 9 |
-| pull | force | tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre) | target:ref; intensity:enum=faint/light/firm/hard/full; toward:ref? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu |  |  |  | 1 |
-| grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu |  |  |  | 5 |
-| guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu |  |  |  | 2 |
-| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu |  |  |  | 9 |
-| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu |  |  |  | 9 |
-| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu |  |  |  | 6 |
-| blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu |  |  |  | 1 |
-| shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu |  |  |  | 4 |
-| channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:ref; intent:enum=assemble/disassemble/mend/shape; intensity:enum=faint/light/firm/hard/full; into:ref? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu |  |  |  | 3 |
-| eat | consume | manger, ou faire manger (un enfant, un malade, une bête) | item:ref; amount:enum=little/some/all; to:ref? | faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté | vu |  |  |  | 1 |
-| drink | consume | boire, ou faire boire | item:ref; amount:enum=little/some/all; to:ref? | soif ; ivresse ou poison selon ce qu'il y a dedans | vu |  |  |  | 4 |
-| sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu |  |  |  | 2 |
-| rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu |  |  |  | 1 |
-| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu |  |  |  | 6 |
-| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) |  |  |  | 9 |
-| listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché |  |  |  | 1 |
-| search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu |  |  |  | 4 |
-| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu |  |  |  | 3 |
-| read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu |  |  |  | 1 |
-| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) |  |  |  | 128 |
-| sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu |  |  |  | 7 |
-| write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:ref; content:expression | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu |  |  |  | 1 |
-| perform | communicate | chanter, jouer d'un instrument, danser (les paroles d'un chant passent par speak) | with:ref?; mood:enum=joyful/sad/solemn/lively/eerie; duration:enum=brief/a_while/long | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu |  |  |  | 1 |
-| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu |  |  |  | 4 |
-| stop | meta | s'arrêter, interrompre ce qu'on fait |  | interrompt l'intention en cours ; le PNJ repasse au Transformer | vu |  |  |  | 0 |
+| go | move | aller : vers quelque chose, en le suivant, ou en s'en écartant (marcher, courir, fuir, suivre, pister, conduire une monture ou une barque) | target:ref; relation:enum=toward/along/away; pace:enum=slow/walk/brisk/run; stealth:enum=open/discreet; stop_at:enum=touch/near/talk/sight? | déplacement sur la navigation ; monté ou en barque, c'est la monture ou le véhicule qui va (maîtrise) ; la course épuise ; discret : moins de bruit, reste hors des regards quand c'est possible | vu ; pas entendus selon l'allure, le sol, la discrétion | oui | 800 |  | 58 |
+| climb | move | grimper, escalader, descendre une paroi | target:ref; pace:enum=slow/walk/brisk | chute possible selon la maîtrise, l'allure, la charge, la prise mouillée | vu | oui | 900 |  | 1 |
+| swim | move | nager | target:ref; intensity:enum=faint/light/firm/hard/full | épuise ; le courant emporte ; sans maîtrise, trop chargé ou épuisé, le souffle manque : noyade | vu, entendu | oui | 1000 |  | 0 |
+| jump | move | sauter | target:ref; intensity:enum=faint/light/firm/hard/full | franchit un fossé, descend d'un toit, plonge ; mauvaise réception : blessure aux jambes | vu | oui | 600 |  | 0 |
+| mount | move | monter sur une bête ou dans un véhicule, en descendre | target:ref; mode:enum=get_on/get_off | une bête mal dressée peut refuser ou désarçonner ; ensuite go conduit | vu | oui | 1200 |  | 0 |
+| set_posture | posture | se tenir (debout, assis, à genoux, accroupi, couché) | posture:enum=stand/sit/kneel/crouch/lie_down | accroupi derrière ce qui cache : on est caché ; ce que les autres pensent d'un genou à terre leur appartient | vu | oui | 800 |  | 4 |
+| take | grasp | prendre, ramasser, porter (un objet ; un enfant, un blessé, un corps ; au sol, dans un contenant, des mains de quelqu'un, sur quelqu'un) | target:ref; from:enum=ground/container/hand_of/worn_by/growing; hold:enum=in_hand/in_arms/on_back/by_arm; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | la chose passe dans les mains ou sur le dos ; le registre note de quelles mains, par quel geste ; des mains de quelqu'un qui serre : lutte de force | vu selon la discrétion, la maîtrise, l'attention des présents ; senti (felt) par celui qu'on dépouille selon la maîtrise | oui | 600 |  | 33 |
+| put | grasp | poser, déposer, ranger, cacher, mettre en place (au sol, dans, sur, sous, dans un mur, en terre) | item:ref; where:ref; stealth:enum=open/discreet; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | une pierre dans un mur = assembler (stabilité) ; une graine dans un sol labouré = semer ; sous une pierre = cacher | vu selon la discrétion | oui | 600 |  | 29 |
+| give | grasp | tendre, donner en main propre (une chose, une bête qu'on cède), nourrir une bête à la main | item:ref; to:ref; mode:enum=offer/press | la chose passe de main en main (registre : donné) ; offerte et refusée, elle reste | vu | oui | 700 |  | 26 |
+| throw | grasp | lancer, jeter, tirer (à la main, à la fronde, à l'arc, à l'arbalète) | item:ref; at:ref; zone:enum=head/torso/arms/legs/any?; intensity:enum=faint/light/firm/hard/full; with:ref? | projectile ; touche selon la maîtrise, la distance, le vent ; casse ce qui est fragile ; un coup s'il touche quelqu'un (body.toml) ; un filet lancé à l'eau prend du poisson | vu ; entendu (claquement, impact) | oui | 700 |  | 3 |
+| pour | grasp | verser, vider, répandre | from:ref; into:ref; amount:enum=little/some/all; stealth:enum=open/discreet | le liquide ou la poudre passe (processus couler) ; de l'eau sur un feu l'éteint ; une fiole dans une chope : le mélange | vu selon la discrétion et la lumière ; entendu | oui | 1000 |  | 4 |
+| wear | grasp | mettre ou ôter un vêtement, un bijou, un masque, une armure (sur soi ou sur quelqu'un : habiller un enfant, un malade, un mort) | item:ref; mode:enum=put_on/take_off; on:ref?; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | change la tenue vue, la protection, l'isolation ; un masque cache le visage (certitude d'identification) | vu | oui | 1500 |  | 0 |
+| operate | grasp | manœuvrer un mécanisme (ouvrir, fermer, verrouiller, déverrouiller, actionner : porte, coffre, serrure, rouet, métier, cloche, poulie, piège, moulin) | target:ref; mode:enum=open/close/lock/unlock/activate; with:ref?; stealth:enum=open/discreet | déverrouille si la clé correspond (de quelle serrure : invisible) ou si la maîtrise vainc la serrure ; activer : rouet, métier, cloche, piège armé ; échoue sans effet si rien ne s'ouvre ni ne se ferme | vu ; entendu (grincements, cloche) | non | 900 | oui | 5 |
+| strike | force | frapper, taper, mordre (une personne, une bête, un arbre, une pierre, un mur, le terrain, du métal chaud) | target:ref; zone:enum=head/torso/arms/legs/any; with:enum=held/open_hand/fist/foot/head/mouth; motion:enum=swing/thrust; intensity:enum=faint/light/firm/hard/full; until:condition | énergie = intensité × masse et allonge de ce qui frappe × maîtrise ; sur un corps : dommage par zone (body.toml : taille + tranchant = coupure, estoc + pointe = perforation, sinon contusion ; bouche = morsure) ; sur la matière : fracture, coupe, extraction, forge selon l'outil et la matière ; silex contre fer : étincelles | vu, entendu (bruit selon l'impact) | non | 900 |  | 22 |
+| push | force | pousser, bousculer, renverser | target:ref; intensity:enum=faint/light/firm/hard/full; direction:enum=away/down/aside/into | déplace, fait tomber (selon force, masse, appuis) ; dans le vide ou l'eau : chute, noyade | vu | oui | 800 |  | 9 |
+| pull | force | tirer (quelqu'un par le bras, une charrette, une corde, un filet, une poutre) | target:ref; intensity:enum=faint/light/firm/hard/full; toward:ref? | déplace vers soi ; un filet tiré ramène ce qu'il a pris ; une poutre tirée peut faire tomber ce qu'elle porte | vu | oui | 900 |  | 2 |
+| grab | force | saisir quelqu'un (bras, col, cheveux, cou, taille) et le tenir | target:ref; hold_zone:enum=arm/collar/hair/neck/waist; intensity:enum=faint/light/firm/hard/full; until:condition | retient (l'autre lutte selon sa force) ; au cou, l'intensité serre le souffle : tenir jusqu'à l'immobilité étrangle | vu | non | 500 |  | 5 |
+| guard | force | se protéger (parer, esquiver, se couvrir d'un bouclier) | against:ref; stance:enum=block/dodge/cover | réduit ou évite le prochain coup ; avec ce qui protège, absorbe | vu | non | 1000 |  | 2 |
+| scoop | tool | pelleter, puiser, ramasser une matière en vrac (terre, sable, neige, grain, eau) | target:ref; with:ref?; amount:enum=little/some/all; into:ref? | retire de la matière (Operation) ; puiser baisse vraiment le niveau du puits ; pelleter près d'un mur change sa stabilité | vu, entendu | oui | 900 | oui | 11 |
+| work | tool | travailler une chose au contact (presser un bandage, appliquer un onguent ou une torche, frotter, scier, aiguiser, polir, remuer, pétrir, baratter, presser, traire, essorer) | target:ref; with:ref?; motion:enum=press/rub/stir/squeeze/saw/twist; intensity:enum=faint/light/firm/hard/full; duration:enum=brief/a_while/long; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur tire l'effet des propriétés de ce qui touche : presser une torche allume (ignites), un onguent soigne (potency), un sceau marque, un bandage arrête le sang ; frotter coupe (lame), scie (dents), aiguise (abrasif), polit ; frotter du bois sec longtemps chauffe ; remuer mélange ; presser trait, essore, écrase | vu, entendu | non | 900 | oui | 20 |
+| tie | tool | lier, nouer, ligoter, coudre, attacher | target:ref; to:ref?; mode:enum=knot/lash/sew/bind; with:ref; tightness:enum=light/firm/hard; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | processus lier ; tient tant que la ténacité du lien n'est pas dépassée ; ligoter quelqu'un l'empêche de bouger (mobilité) ; un bandage noué arrête le sang | vu | oui | 1000 | oui | 7 |
+| blow | tool | souffler (sur des braises, dans une canne de verrier, un cor, une flûte ; éteindre une chandelle) | target:ref; intensity:enum=faint/light/firm/hard/full | attise ou éteint une petite flamme ; gonfle le verre en fusion ; fait sonner un instrument à vent | entendu, vu | oui | 800 |  | 2 |
+| shape | transform | façonner à la main une matière malléable (argile, cire, pâte, neige) | target:ref; into:ref; intensity:enum=faint/light/firm/hard/full | la qualité suit la maîtrise et le soin ; le métal se forge au marteau (strike sur métal chaud) | vu | non | 900 | oui | 4 |
+| channel | transform | manier une baguette sur la matière (assembler, désassembler, réparer, façonner) | target:ref; intent:enum=assemble/disassemble/mend/shape; intensity:enum=faint/light/firm/hard/full; into:ref? | processus magic_shape : transforme des matières présentes sans en créer ; consomme la charge ; au-delà de la maîtrise : échec, accident, baguette qui éclate (magic_stability) | vu (lueur), entendu | non | 1000 | oui | 3 |
+| eat | consume | manger, ou faire manger (un enfant, un malade, une bête) | item:ref; amount:enum=little/some/all; to:ref? | faim et réserves selon la nutrition (invisible) ; la toxicité agit ; goûter dit à peu près si c'est gâté | vu | oui | 1200 |  | 1 |
+| drink | consume | boire, ou faire boire | item:ref; amount:enum=little/some/all; to:ref? | soif ; ivresse ou poison selon ce qu'il y a dedans | vu | oui | 900 |  | 4 |
+| sleep | consume | dormir | where:ref; until:condition | rembourse le besoin de sommeil ; on perçoit à peine ce qui se passe (un bruit fort réveille) | vu | non | 2000 |  | 2 |
+| rest | consume | se reposer, souffler | duration:enum=brief/a_while/long | l'épuisement baisse | vu | non | 2000 |  | 1 |
+| touch | care | toucher quelqu'un (tapoter l'épaule, prendre la main, serrer dans ses bras, caresser une bête, embrasser) | target:ref; with:enum=hand/arms/lips/forehead/body; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body; manner:enum=gentle/firm/playful/romantic/intimate; duration:enum=brief/a_while/long | aucun effet écrit : l'autre ressent et juge (son Transformer) ; intimate : jamais montré, fondu au noir (D15), adultes seulement (D10) | vu | oui | 700 |  | 6 |
+| look | perceive | regarder, observer, fixer, guetter | target:ref; mode:enum=glance/watch/stare; stealth:enum=open/discreet | met la cible au centre de l'attention : perception plus fine, souvenir plus net ; fixer se voit | vu (le regard) | non | 600 |  | 12 |
+| listen | perceive | écouter, tendre l'oreille, épier | target:ref?; stealth:enum=open/discreet | entend plus loin et plus bas ; discret derrière ce qui cache : épier | vu si l'on n'est pas caché | non | 1000 |  | 1 |
+| search | perceive | fouiller, chercher (une pièce, un coffre, un tas, un champ, quelqu'un) | target:ref; thoroughness:enum=brief/a_while/long | révèle ce qui est caché selon le soin et la maîtrise ; laisse des traces de fouille | vu, entendu | non | 900 |  | 4 |
+| examine | perceive | examiner de près (tâter un pouls, mordre une pièce, soupeser, sentir, goûter, lire des traces) | target:ref; sense:enum=look/touch/weigh/smell/taste/hear; contact_zone:enum=head/face/shoulder/arms/hands/back/torso/legs/body | le moteur révèle ce que ce sens peut révéler à cette maîtrise : vivant ou mort, pièce trop légère, viande gâtée, trace fraîche, serrure fermée ; jamais une propriété invisible par nature | vu | oui | 800 |  | 5 |
+| read | perceive | lire | target:ref | perçoit l'inscription (une expression de la langue) si l'on sait lire ; sinon des signes | vu | oui | 1500 |  | 1 |
+| speak | communicate | parler (à quelqu'un, à un groupe, à une bête, à la cantonade, à soi-même) | to:ref?; volume:enum=whisper/low/normal/loud/shout; tone:enum=warm/calm/cold/angry/pleading/rising/trembling/low_slow/drawling; content:expression | les présents à portée l'entendent (volume, bruit ambiant, ouïe) ; leur moteur note « X m'a dit P » ; ce qu'ils en croient, leur Transformer en décide | entendu ; vu (lèvres, gestes) | oui | 1200 |  | 130 |
+| sign | communicate | faire un signe, décrit par sa forme (montrer du doigt, hocher, secouer la tête, saluer de la main, faire signe de venir, hausser les épaules, s'incliner, applaudir, lever la main, montrer ce qu'on tient, cracher, lever le poing, cligner d'un œil, couvrir son visage des mains, tracer une figure dans l'air) | kind:enum=point/nod/shake_head/wave/beckon/shrug/bow/applaud/raise_hand/show/spit/fist/wink/cover_face/trace_sign; at:ref? | aucun effet écrit : ceux qui le voient le comprennent selon ce qu'ils croient des usages | vu | oui | 800 |  | 9 |
+| write | communicate | écrire, graver (une lettre, un billet, une enseigne, un registre, un mot à la craie sur un mur) | on:ref; content:expression | crée une inscription ; l'auteur réel est noté par le moteur seul ; une écriture se reconnaît (ou non) | vu | oui | 1000 |  | 1 |
+| perform | communicate | chanter, jouer d'un instrument, danser (les paroles d'un chant passent par speak) | with:ref?; mood:enum=joyful/sad/solemn/lively/eerie; duration:enum=brief/a_while/long | s'entend loin ; la qualité suit la maîtrise ; les auditeurs en jugent | entendu, vu | non | 1000 |  | 1 |
+| wait | meta | attendre (rester, ne rien faire, guetter) | until:condition | rien ; ne rien faire est aussi un comportement observable (charte § 20) | vu | non | 1000 |  | 9 |
+| stop | meta | s'arrêter, interrompre ce qu'on fait |  | interrompt l'intention en cours ; le PNJ repasse au Transformer | vu | oui | 250 |  | 0 |
 
 ## Langue intérieure : concepts
 
@@ -1716,6 +1805,9 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | c_sees_ref | condition | entity | je vois cette personne ou cette chose (un dossier connu) ; sur un GROUPE : je vois tous les membres que je crois siens (« attendre que tous soient là ») |  |
 | c_state_seen | condition | entity, concept | l'état VU de … est … (le pain paraît cuit, le métal est rouge, le mur est tombé, le seau est plein, le sang ne coule plus) : lu dans pc_state_seen |  |
 | c_rested | condition |  | je me sens reposé |  |
+| c_have | condition | kind, quantity | j'ai au moins N choses de cette sorte apparente, d'après ce que j'ai VU (mains, sur moi, contenant que je porte) ou ce que je CROIS d'un contenant (amount) |  |
+| c_unwatched | condition |  | personne ne paraît me regarder, parmi ceux que je vois |  |
+| c_target_near | condition | entity | la cible paraît à portée de main ou de voix |  |
 | at | predicate | entity, place | se trouve à |  |
 | located | predicate | entity, concept, entity | est (dans, sur, sous, derrière, près de, à côté de, au-dessus de) … |  |
 | lives_at | predicate | agent, place | habite à |  |
@@ -1754,7 +1846,7 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | able | predicate | agent, gesture | est capable de |  |
 | link | predicate | agent, concept, agent | est le … de (parent, conjoint, ami, maître, employeur… : un lien cru) |  |
 | works_as | predicate | agent, concept | est (métier) : une étiquette tirée de ce qu'on le voit faire |  |
-| member | predicate | agent, group | fait partie de |  |
+| member | predicate | agent, group | fait partie de (une personne, ou un groupe membre d'un groupe : la guilde dans la confrérie ; T08c) |  |
 | leads | predicate | agent, group | mène, dirige |  |
 | holds | predicate | agent, role | occupe le rôle de |  |
 | may | predicate | entity, proposition | a le droit de (les pouvoirs d'un rôle, une permission donnée) |  |
@@ -1777,6 +1869,30 @@ Un type connu est un savoir commun, jamais une limite : le moteur accepte tout a
 | achieve | goal_mode |  | rendre vrai |  |
 | maintain | goal_mode |  | garder vrai |  |
 | avoid | goal_mode |  | empêcher |  |
+| running | plan_state |  | en cours (l'étape se déroule) |  |
+| suspended | plan_state |  | mis de côté (un autre geste a été choisi) |  |
+| blocked | plan_state |  | bloqué (un geste sans effet perçu, un passage fermé) |  |
+| done | plan_state |  | fini |  |
+| abandoned | plan_state |  | laissé tomber (par la personne seule) |  |
+| failed | plan_state |  | sans effet perçu (le geste n'a rien produit : la porte ne s'ouvre pas) |  |
+| interrupted | plan_state |  | interrompu (un coup, un cri, une main qui retient) |  |
+| limit_reached | plan_state |  | la butée de durée est atteinte (le temps prévu pour l'étape est écoulé) |  |
+| once | plan_repeat |  | une seule fois |  |
+| every | plan_repeat |  | à intervalle régulier (avec une période en heures de jeu) |  |
+| goal_check | wake_cause |  | je relis mes buts (une croyance dont dépend un but a bougé) |  |
+| occasion | wake_cause |  | une occasion se présente (quelqu'un, quelque chose que je cherchais) |  |
+| idle | wake_cause |  | rien à faire : je décide de ce que je fais |  |
+| smoky | odor |  | sent la fumée |  |
+| sweet | odor |  | sent le doux (miel, fruit mûr, fleur) |  |
+| sour | odor |  | sent l'aigre (lait tourné, vinaigre) |  |
+| acrid | odor |  | sent l'âcre (brûlé, fumée de plastique ou de cuir, soufre) |  |
+| musty | odor |  | sent le moisi, le renfermé |  |
+| putrid | odor |  | sent la pourriture, la charogne |  |
+| aromatic | odor |  | sent les herbes, les fleurs, le pain chaud (une odeur de plante ou de cuisson) |  |
+| rancid | odor |  | sent le rance (graisse, huile) |  |
+| new | age |  | neuf, frais fait |  |
+| worn | age |  | usé, marqué par l'usage |  |
+| old | age |  | vieux, ancien |  |
 | parent | link |  | parent |  |
 | child | link |  | enfant |  |
 | sibling | link |  | frère, sœur |  |

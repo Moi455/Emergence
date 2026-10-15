@@ -89,7 +89,7 @@
   },
   {
    "name": "put",
-   "sig": "ref:item:0:agent/animal/item|ref:where:0:item/place/structure/terrain/voxel/water|enum:stealth:stealth:0|enum:contact_zone:contact_zone:0"
+   "sig": "ref:item:0:agent/animal/item|ref:where:0:animal/item/place/structure/terrain/voxel/water|enum:stealth:stealth:0|enum:contact_zone:contact_zone:0"
   },
   {
    "name": "read",
@@ -263,6 +263,18 @@
   },
   {
    "name": "c_tool_broken",
+   "sig": ""
+  },
+  {
+   "name": "c_have",
+   "sig": "kind,quantity"
+  },
+  {
+   "name": "c_target_near",
+   "sig": "entity"
+  },
+  {
+   "name": "c_unwatched",
    "sig": ""
   }
  ],
@@ -642,6 +654,22 @@
   {
    "name": "think_more",
    "sig": "bool|jump|0.0|self|0|"
+  },
+  {
+   "name": "g_parent",
+   "sig": "mref|jump|0.0|goal|1|"
+  },
+  {
+   "name": "i_repeat",
+   "sig": "enum|jump|0.0|plan|0|once/each_day/each_season/each_year/every"
+  },
+  {
+   "name": "i_repeat_period",
+   "sig": "qty|jump|0.0|plan|0|"
+  },
+  {
+   "name": "i_status",
+   "sig": "enum|jump|0.0|plan|0|running/suspended/blocked/done/abandoned"
   }
  ],
  "forms": [
@@ -795,7 +823,16 @@
   "threat_felt",
   "trespass",
   "usurpation",
-  "vandalism"
+  "vandalism",
+  "once",
+  "each_day",
+  "each_season",
+  "each_year",
+  "every",
+  "running",
+  "suspended",
+  "blocked",
+  "done"
  ],
  "directions": [
   "ahead",
@@ -868,7 +905,8 @@
     "ground",
     "container",
     "hand_of",
-    "worn_by"
+    "worn_by",
+    "growing"
    ],
    "capacity": 8
   },
@@ -946,7 +984,10 @@
     "raise_hand",
     "show",
     "spit",
-    "fist"
+    "fist",
+    "wink",
+    "cover_face",
+    "trace_sign"
    ],
    "capacity": 16
   },
@@ -1027,7 +1068,8 @@
     "touch",
     "weigh",
     "smell",
-    "taste"
+    "taste",
+    "hear"
    ],
    "capacity": 9
   },
@@ -1113,7 +1155,11 @@
     "calm",
     "cold",
     "angry",
-    "pleading"
+    "pleading",
+    "rising",
+    "trembling",
+    "low_slow",
+    "drawling"
    ],
    "capacity": 9
   },
@@ -1154,7 +1200,8 @@
     "rub",
     "stir",
     "squeeze",
-    "saw"
+    "saw",
+    "twist"
    ],
    "capacity": 9
   },

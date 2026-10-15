@@ -1074,6 +1074,66 @@
   },
   {
    "name": "zones"
+  },
+  {
+   "name": "animal_product_ready"
+  },
+  {
+   "name": "g_has_plan"
+  },
+  {
+   "name": "g_parent"
+  },
+  {
+   "name": "i_attempts"
+  },
+  {
+   "name": "i_repeat"
+  },
+  {
+   "name": "i_repeat_period"
+  },
+  {
+   "name": "i_status"
+  },
+  {
+   "name": "i_step_progress"
+  },
+  {
+   "name": "i_step_started"
+  },
+  {
+   "name": "made_at"
+  },
+  {
+   "name": "made_by"
+  },
+  {
+   "name": "pc_age_seen"
+  },
+  {
+   "name": "pp_smell_seen"
+  },
+  {
+   "name": "process_progress"
+  },
+  {
+   "name": "process_started_at"
+  },
+  {
+   "name": "r_group_my_task"
+  },
+  {
+   "name": "r_group_present"
+  },
+  {
+   "name": "r_group_tasks_open"
+  },
+  {
+   "name": "s_last_believed"
+  },
+  {
+   "name": "w_outcome"
   }
  ]
 }

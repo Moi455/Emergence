@@ -713,3 +713,24 @@ label_fr = "piège (retient ce qui déclenche)"
 category = "affordance"
 applies_to = ["item", "structure"]
 derived_from = ["trigger"]
+
+# ─── Provenance (T08a, docs/16 4.5) ─────────────────────────────────────────────────────────────
+[[variable]]
+id = "made_at"
+label_fr = "quand la chose a été faite, extraite ou cueillie (instant de jeu)"
+holder = "provenance"
+scale = "time"
+writer = ["engine"]
+visibility = "engine"
+dynamics = "écrit une fois à la fabrication ; l'âge est game_time − made_at"
+clock = "none"
+note = "Temps. Le PNJ ne lit jamais cet instant : il voit l'âge APPARENT (pc_age_seen : neuf, usé, vieux), calculé par la perception."
+
+[[variable]]
+id = "made_by"
+label_fr = "qui a fait la chose (auteur réel, vérité du moteur)"
+holder = "provenance"
+scale = "id"
+writer = ["engine"]
+visibility = "engine"
+note = "Auteur réel, moteur seul, sans jeton (un id objectif n'en porte pas). Ce que le PNJ croit de l'auteur est une croyance (b_proposition) : il reconnaît une façon, pas un registre."

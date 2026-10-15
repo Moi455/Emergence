@@ -2112,6 +2112,126 @@
   },
   {
    "name": "from"
+  },
+  {
+   "name": "abandoned"
+  },
+  {
+   "name": "failed"
+  },
+  {
+   "name": "running"
+  },
+  {
+   "name": "trembling"
+  },
+  {
+   "name": "acrid"
+  },
+  {
+   "name": "aromatic"
+  },
+  {
+   "name": "blocked"
+  },
+  {
+   "name": "c_have"
+  },
+  {
+   "name": "c_target_near"
+  },
+  {
+   "name": "c_unwatched"
+  },
+  {
+   "name": "cover_face"
+  },
+  {
+   "name": "done"
+  },
+  {
+   "name": "drawling"
+  },
+  {
+   "name": "every"
+  },
+  {
+   "name": "goal_check"
+  },
+  {
+   "name": "growing"
+  },
+  {
+   "name": "hear"
+  },
+  {
+   "name": "idle"
+  },
+  {
+   "name": "interrupted"
+  },
+  {
+   "name": "limit_reached"
+  },
+  {
+   "name": "low_slow"
+  },
+  {
+   "name": "musty"
+  },
+  {
+   "name": "new"
+  },
+  {
+   "name": "occasion"
+  },
+  {
+   "name": "old"
+  },
+  {
+   "name": "once"
+  },
+  {
+   "name": "putrid"
+  },
+  {
+   "name": "r_group_my_task"
+  },
+  {
+   "name": "r_group_present"
+  },
+  {
+   "name": "r_group_tasks_open"
+  },
+  {
+   "name": "rancid"
+  },
+  {
+   "name": "rising"
+  },
+  {
+   "name": "smoky"
+  },
+  {
+   "name": "sour"
+  },
+  {
+   "name": "suspended"
+  },
+  {
+   "name": "sweet"
+  },
+  {
+   "name": "trace_sign"
+  },
+  {
+   "name": "twist"
+  },
+  {
+   "name": "wink"
+  },
+  {
+   "name": "worn"
   }
  ],
  "kinds": [

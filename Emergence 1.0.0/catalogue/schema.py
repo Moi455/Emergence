@@ -341,11 +341,21 @@ class Story(Entry):
                                                          # "phase | kind | content" (checked by tools/probes.py)
 
 
+@dataclass
+class Forgetting(Entry):
+    """The law of forgetting of one kind of record (docs/14 7.5): what the engine drops when the store is full.
+    The id is the record (a component with part_of); the law is data/forgetting.toml, checked by tools/forgetting.py."""
+    record: str = ""                     # a record component (entities.toml, max_count)
+    protect: list[str] = field(default_factory=list)   # bool variables of the record: spared while one is true (evicted only when the whole store is protected)
+    score: list[dict] = field(default_factory=list)    # terms {var, weight, cap?, kind? = value|recency, half_life_seasons?};
+                                         # the lowest score is forgotten first, a tie forgets the oldest
+
+
 KINDS: dict[str, type[Entry]] = {
     "entity": EntityKind, "component": Component, "variable": Variable, "property": Property,
     "action": Action, "concept": Concept, "grammar": Grammar, "interpretation": Interpretation,
     "hard_rule": HardRule, "shape": Shape, "story": Story, "site": Site, "percept_word": PerceptWord, "material": Material, "process": Process, "form": Form, "item_type": ItemType, "species": Species, "migration": Migration,
-    "duration_level": DurationLevel, "illness": Illness,
+    "duration_level": DurationLevel, "illness": Illness, "forgetting": Forgetting,
 }
 ENGINE_MATERIALS = Path(__file__).resolve().parents[1] / "engine" / "data" / "materials.csv"
 SEASONS = ("spring", "summer", "autumn", "winter")
@@ -407,6 +417,8 @@ class Catalogue:
         if unknown:
             self.load_errors.append(f"{fname}: [[{kind}]] {row.get('id', '?')}: unknown fields {sorted(unknown)}")
             row = {k: v for k, v in row.items() if k in names}
+        if kind == "forgetting" and "id" not in row and "record" in row:
+            row = dict(row, id=row["record"])        # a law of forgetting is named after its record
         if "id" not in row:
             self.load_errors.append(f"{fname}: [[{kind}]] without id")
             return
@@ -614,8 +626,8 @@ class Catalogue:
                     p.append(f"action {a.id}: enum param {prm.name} without values")
                 if prm.ordinal and len(prm.values) > 5:
                     p.append(f"action {a.id}: ordinal param {prm.name} has more than 5 bins")
-                if prm.type == "enum" and not prm.ordinal and len(prm.values) > 12:
-                    p.append(f"action {a.id}: param {prm.name} has more than 12 values")
+                if prm.type == "enum" and not prm.ordinal and len(prm.values) > 16:
+                    p.append(f"action {a.id}: param {prm.name} has more than 16 values")
                 if prm.type == "ref":
                     if not prm.accepts:
                         p.append(f"action {a.id}: ref param {prm.name} without accepts")

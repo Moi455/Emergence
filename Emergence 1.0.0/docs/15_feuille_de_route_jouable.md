@@ -87,7 +87,7 @@ Chemins critiques : jusqu'à J2, **T08a → T08c → T09 → T26 → T27 → T29
   - 12 entrées `[[forgetting]]` ;
   - `check.py` refuse un score qui lit `b_truth`, `b_origin_fact`, `m_fact_ref` ou `r_true_entity` (test) ;
   - parité C++ / Python sur 10 000 enregistrements ;
-  - réserve pleine : un souvenir marquant n'est jamais oublié, et un ajout dans une réserve toute protégée est refusé et compté.
+  - réserve pleine : un souvenir marquant est épargné tant qu'un autre peut partir ; dans une réserve toute protégée, le moins bon enregistrement protégé est évincé et compté (`evicted_protected()`), l'ajout n'est jamais refusé.
 - Taille : M.
 - Piège : faire dépendre l'oubli de la vérité.
 
@@ -283,7 +283,7 @@ Chemins critiques : jusqu'à J2, **T08a → T08c → T09 → T26 → T27 → T29
 **T22 : Exécuteur de gestes**
 - Dossiers : `engine/act/{gesture_executor,gesture_execution,gesture_timing}.*`.
 - Dépendances : T15, T16, T18, T21 (navigation par une interface ; T23b fournit la vraie).
-- Interface : docs/14 § 4.3 et 4.4 ; ordre des conditions d'arrêt : `until`, puis tête d'arrêt de décision, puis `natural_end`, puis butée `a_while` (`timeout`).
+- Interface : docs/14 § 4.3 et 4.4 ; ordre des conditions d'arrêt : `until`, puis tête d'arrêt de décision, puis `natural_end`, puis butée `a_while` (`limit_reached`).
 - Acceptation :
   - machine à états testée sur les 40 gestes ;
   - abattre un chêne : nombre de coups et durée réelle à ±20 % du calcul de docs/14 § 4.4 ;
@@ -606,7 +606,7 @@ Chemins critiques : jusqu'à J2, **T08a → T08c → T09 → T26 → T27 → T29
 - Interface :
   - conflit et soin : `slap`, `kick`, `shove`, `block`, `grab_restrain`, `die`, `kneel_tend`, `support_walk`, `change_clothes` ;
   - signes : `point`, `beckon`, `shrug`, `bow`, `applaud`, `spit`, `fist`, `wink`, `cover_face`, `trace_sign`, `raise_hand` ;
-  - parole : `talk_angry`, `talk_pleading`, `talk_joyful` (piloté par `bright`), `talk_trembling`, `talk_grave`, `talk_drawling` ;
+  - parole : `talk_angry`, `talk_pleading`, `talk_joyful` (piloté par `rising`), `talk_trembling`, `talk_low_slow`, `talk_drawling` ;
   - attention, écriture, rites : `listen`, `look_around`, `search_bend`, `read_paper`, `write`, `dance`, `pray`, `mourn` ;
   - tendresse : `embrace`, `hold_hands`, `lean_in`, `kiss`.
 - Acceptation : validateur Khronos à 0 erreur ; clips de tendresse pudiques (jamais au-delà du fondu au noir).

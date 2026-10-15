@@ -423,7 +423,7 @@ class WriteTable:
             if not WriteTable._values(v):
                 raise SpaceError(f"{v.id}: an enumerated variable without values")
             return ValueKind.ENUM
-        if v.scale in ("time", "time_until"):
+        if v.scale in ("time", "time_until", "qty"):      # T09 : i_repeat_period (qty, écrit par le modèle) prend la tête de quantité
             return ValueKind.QTY
         if v.scale == "mref":
             return ValueKind.PTR

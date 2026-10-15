@@ -497,13 +497,13 @@ text_fr = "Le prêtre qui prêche la fidélité est vu sortant de chez une veuve
 # ─── Boucle cognitive, perception, interruption ───────────────────────────────────────────────────
 [[story]]
 id = "smell_smoke_wake"
-status = "gap"
+status = "expressible"
 actions = ["touch", "speak", "take", "go"]
 variables = ["smoke", "fire_extent", "sleepiness", "fear", "consciousness"]
 properties = ["burning"]
 interpretations = ["rescue"]
 utterances = ["(watch_out (assert (state @T5 burning high)))"]
-note = "RESTE UN TROU DU MOTEUR, pas de la langue : sentir une chose hors de vue (odorat) et la loi de réveil par l'odeur ; la parole (watch_out (assert (state @T5 burning high))) est exprimable ; ensuite touch(enfant, hand, shoulder, firm, brief : liste blanche D10), take(by_arm), go(away, run)"
+note = "fermé par T08a : la loi smell_spread (body.toml) porte l'odeur, PLACE.smell la donne au dormeur et le réveil P3 l'appelle ; ensuite parole (watch_out …), touch(enfant, hand, shoulder, firm, brief : liste blanche D10), take(by_arm), go(away, run)"
 charter = ["§8", "§16"]
 text_fr = "La nuit, une femme sent la fumée, réveille ses enfants et sort ; la maison voisine brûle."
 
@@ -718,12 +718,12 @@ text_fr = "Pendant la disette, une foule affamée force le grenier du chef ; le 
 
 [[story]]
 id = "epidemic_fear_exclusion"
-status = "gap"
+status = "expressible"
 actions = ["go", "speak"]
 variables = ["illnesses", "symptoms", "ep_health", "fear", "r_trust", "need_company"]
 interpretations = ["nothing_special"]
 utterances = ["(no)", "(assert (if (did me touch @E28) (future (state me sickness_felt high))))"]
-note = "RESTE UN TROU DU MOTEUR : la loi de contagion et le cours d'une maladie (aucun processus déclaré) ; la parole et la peur sont exprimables"
+note = "fermé par T08a : contagion et illness_course (body.toml, table illness) ; les voisins ne voient que les symptômes (pale, coughing, feverish) ; la peur et la parole étaient déjà exprimables"
 charter = ["§10"]
 text_fr = "Une maladie frappe une famille ; les voisins les évitent, refusent de leur vendre ; la famille s'isole."
 
@@ -1262,12 +1262,12 @@ text_fr = "Un conteur jure qu'au-delà du désert il existe une cité d'or ; cer
 # ─── Personnalités marquées, humour émergent ─────────────────────────────────────────────────────
 [[story]]
 id = "touchy_mayor_disaster"
-status = "gap"
+status = "expressible"
 actions = ["speak", "push"]
 variables = ["anger", "self_regard", "modesty", "illnesses"]
 interpretations = ["injustice"]
 utterances = ["(no (assert (think (not (that b:2)))))", "(request (not (lives_at you here)))"]
-note = "l'expulsion est exprimable ; RESTE UN TROU DU MOTEUR : l'épidémie du mois suivant demande la loi de contagion"
+note = "fermé par T08a : l'épidémie du mois suivant vient de contagion et illness_course ; l'expulsion était déjà exprimable"
 charter = ["§27", "§7"]
 text_fr = "Le chef, extrêmement susceptible, chasse le seul guérisseur du village qui l'a contredit ; une épidémie arrive le mois suivant."
 
@@ -1394,13 +1394,13 @@ text_fr = "Le seul verrier du village meurt sans apprenti ; plus personne ne sai
 
 [[story]]
 id = "illness_and_care"
-status = "gap"
+status = "expressible"
 actions = ["go", "speak", "give", "drink", "work"]
 variables = ["illnesses", "sickness_felt", "r_affection"]
 properties = ["potency"]
 interpretations = ["kindness"]
 utterances = ["(request (did you give herbal_remedy (to me)))"]
-note = "RESTE UN TROU DU MOTEUR : le cours d'une maladie et l'effet d'un remède sur elle (heal_tissue ne vaut que pour les plaies) ; les gestes et les paroles sont exprimables"
+note = "fermé par T08a : illness_course (la maladie suit son cours, le repos et les soins changent l'issue) ; les gestes et les paroles étaient déjà exprimables"
 charter = ["§25", "§12"]
 text_fr = "Un homme tombe malade ; sa sœur va chercher des herbes chez le guérisseur et le soigne ; il guérit lentement."
 
@@ -1684,3 +1684,247 @@ trace = [
 note = "L'expédition du maire (Monsieur, 12 oct.), décomposée pas à pas : une légende entendue puis une croyance, le souvenir d'un marchand qui y est allé, un but du chef (le village possède 100 d'or), une question pour savoir où, une réponse, le recrutement public (cinq volontaires au rendez-vous dans trois jours, quantifié par (of 5 @G1)), le partage promis à parts égales, les vivres pour dix jours, l'acceptation d'une offre précise (yes h:3), un groupe d'expédition (@G2) dont le maire croit être le chef, deux engagements (envers le village, envers l'équipe), un plan lisible dont la parole de recrutement est prévue, l'attente de TOUS les membres (c_sees_ref sur le groupe), le départ à l'aube, puis le percept collectif. Aucune entrée n'est propre à cette histoire : temps, groupe, accord, quantité, lieu (montagne, ville) sont les primitives générales de l'étape 19a. Tous adultes."
 charter = ["§9", "§11", "§20"]
 text_fr = "Le maire organise une expédition pour aller trouver de l'or (Monsieur, 12 oct.)."
+
+[[story]]
+id = "tree_fall_crushes_shed"
+status = "expressible"
+actions = ["work", "go"]
+variables = ["load_margin", "wounds"]
+properties = ["cuts"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Un bûcheron entaille un chêne au-delà de son cœur ; l'arbre tombe sur un cabanon et le brise."
+
+[[story]]
+id = "barn_dismantled_reused"
+status = "expressible"
+actions = ["work", "take", "put"]
+properties = ["joins", "impacts"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "On démonte une grange planche par planche, aux joints, pour refaire le toit d'une maison."
+
+[[story]]
+id = "seed_sprouts_after_rain"
+status = "expressible"
+actions = ["put", "wait", "look"]
+variables = ["plant_stage", "soil_state"]
+properties = ["wetness", "plantable"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Une graine semée en sol labouré lève après la pluie ; on la voit pousser en quelques jours."
+
+[[story]]
+id = "thresh_winnow_butter"
+status = "expressible"
+actions = ["work", "blow", "pour"]
+properties = ["divisible"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Au grenier, on bat le blé, on le vanne au vent ; à la laiterie, on baratte la crème."
+
+[[story]]
+id = "milk_the_cow_every_morning"
+status = "expressible"
+actions = ["work", "scoop"]
+variables = ["animal_product_ready", "process_progress"]
+properties = ["contains"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Chaque matin, une fille presse le pis plein d'une vache dans un seau ; le lendemain, il est de nouveau plein."
+
+[[story]]
+id = "wash_wound_before_binding"
+status = "expressible"
+actions = ["pour", "work", "tie"]
+variables = ["wounds", "grooming"]
+properties = ["dirtiness", "wipes"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Un homme lave une plaie à l'eau et au savon avant de la bander ; elle s'infecte moins que celle qu'on a laissée sale."
+
+[[story]]
+id = "whetstone_sharpens_knife"
+status = "expressible"
+actions = ["work"]
+properties = ["sharpens", "edge", "abrasiveness"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Un couteau émoussé retrouve son tranchant sur une pierre à aiguiser."
+
+[[story]]
+id = "charcoal_burner_stack"
+status = "expressible"
+actions = ["put", "wait", "work"]
+variables = ["process_progress"]
+properties = ["fuel", "heats"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Un charbonnier empile du bois sous la terre, laisse brûler sans air pendant deux jours et sort du charbon de bois."
+
+[[story]]
+id = "snare_catches_hare"
+status = "expressible"
+actions = ["put", "wait", "look"]
+properties = ["traps"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Un collet tendu sur un sentier retient un lièvre au matin."
+
+[[story]]
+id = "limekiln_makes_mortar"
+status = "expressible"
+actions = ["put", "wait", "work"]
+variables = ["process_progress"]
+properties = ["heats", "contains"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "On cuit du calcaire un jour entier dans un four ; la chaux sert ensuite à gâcher du mortier."
+
+[[story]]
+id = "rotten_smell_in_cellar"
+status = "expressible"
+actions = ["go", "examine"]
+properties = ["odor"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Une odeur de chair gâtée monte de la cave ; on la sent depuis l'escalier avant de rien voir."
+
+[[story]]
+id = "sick_house_pale_faces"
+status = "expressible"
+actions = ["look", "go"]
+variables = ["illnesses", "symptoms"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Dans une maison, tout le monde est pâle et tousse ; on le voit de la rue, sans rien savoir de la maladie."
+
+[[story]]
+id = "butcher_carcass_parts"
+status = "expressible"
+actions = ["work", "take"]
+properties = ["cuts"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "On dépèce un cerf : viande, peau, os, bois et graisse sortent chacun de leur partie."
+
+[[story]]
+id = "pull_root_leaves_bare_soil"
+status = "expressible"
+actions = ["pull", "take"]
+variables = ["soil_state"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "On arrache un panais enraciné à la main : la plante vient, le sol reste nu."
+
+[[story]]
+id = "sea_salt_left_by_sun"
+status = "expressible"
+actions = ["scoop", "wait", "take"]
+properties = ["contains"]
+note = "sonde T08a : la loi du moteur ne demande aucun geste de plus ; seuls les gestes physiques et la perception du résultat"
+charter = ["§29"]
+text_fr = "Au bord de la mer, l'eau d'un bassin s'évapore au soleil ; il reste une croûte blanche, du sel."
+
+# ─── Sondes T08c : manières, langue, perception, temps des cultures ─────────────────────────────────
+[[story]]
+id = "trembling_voice_news"
+status = "expressible"
+actions = ["speak", "sign"]
+utterances = ["(assert (past (dead @E4)))"]
+trace = [
+  "percept | heard | (assert (past (dead @E4)))",
+  "plan | gesture | speak to=@G1 volume=low tone=trembling",
+  "plan | gesture | speak to=@E3 volume=normal tone=low_slow",
+]
+note = "sonde T08c : speak.tone gagne rising, trembling, low_slow, drawling, décrits par la forme de la voix (monte et vive, tremble, lente et basse, traînante) ; ce que la voix dit de l'état d'esprit (peur, deuil, ivresse) est jugé par l'auditeur, jamais écrit dans le geste (D28)"
+charter = ["§8"]
+text_fr = "Un homme annonce la mort d'un voisin d'une voix qui tremble à la tablée, puis, d'une voix lente et basse, à la veuve."
+
+[[story]]
+id = "eat_off_the_plant_twisted_cord"
+status = "expressible"
+actions = ["take", "work", "examine"]
+trace = [
+  "plan | gesture | take target=@T1 from=growing",
+  "plan | gesture | work target=@T2 motion=twist intensity=firm",
+  "plan | gesture | examine target=@T3 sense=hear",
+]
+note = "sonde T08c : take.from=growing (cueillir sur la plante qui pousse, la plante garde son pied), work.motion=twist (tordre en tournant : une corde, un linge), examine.sense=hear (l'oreille contre la chose : une ruche, un tonneau en fermentation) ; hear n'est pas dans la liste blanche D10 d'examine : refusé avec une personne mineure"
+charter = ["§29"]
+text_fr = "Elle cueille des baies sur le buisson, tord du chanvre en corde, puis colle l'oreille à la ruche pour savoir si elle bourdonne."
+
+[[story]]
+id = "saddle_on_the_mule"
+status = "expressible"
+actions = ["put", "take"]
+utterances = ["(request (did you put @T4 (where donkey)))"]
+note = "sonde T08c : put.where accepte une bête (le bât sur l'âne, la selle sur le cheval) ; le sac posé sur la bête reste une chose portée par elle"
+charter = ["§29"]
+text_fr = "Le muletier pose le bât sur la mule avant de charger les sacs."
+
+[[story]]
+id = "guild_joins_the_brotherhood"
+status = "expressible"
+actions = ["speak"]
+utterances = ["(assert (member @G2 @G1))", "(offer (if (leads @E2 @G1) (member us @G1)))"]
+note = "sonde T08c : member accepte un groupe comme premier argument (arg_classes agent|group), une guilde entrée dans une confrérie ; un objet n'est pas membre (refusé par le test)"
+charter = ["§24"]
+text_fr = "La guilde des tisserands entre dans la confrérie des marchands de la rivière."
+
+[[story]]
+id = "old_chest_new_lock"
+status = "expressible"
+variables = ["pc_age_seen", "made_at", "pc_state_seen"]
+utterances = ["(assert (appears @T2 old))", "(assert (appears @T3 new))"]
+note = "sonde T08c : l'âge apparent est un mot (new, worn, old), calculé par la perception depuis made_at ; le PNJ ne lit jamais l'instant de fabrication, un coffre patiné à dessein paraît vieux"
+charter = ["§29"]
+text_fr = "Un coffre vieux de cent ans porte une serrure toute neuve, ce qui intrigue le marchand."
+
+[[story]]
+id = "smell_of_smoke_and_rot"
+status = "expressible"
+variables = ["pp_smell_seen", "smoke"]
+properties = ["odor"]
+utterances = ["(watch_out (assert (appears @L1 smoky)))", "(assert (appears @L2 putrid))"]
+note = "sonde T08c : PLACE.smell liste des types d'odeur (smoky, sweet, sour, acrid, musty, putrid, aromatic, rancid) ; la source n'est jamais donnée, elle se cherche (examine sense=smell, go) ; la loi smell_spread porte le champ"
+charter = ["§16"]
+text_fr = "Au coin de la rue, elle sent la fumée avant de la voir ; dans la ruelle voisine, une odeur de charogne."
+
+[[story]]
+id = "watch_rota_interrupted"
+status = "expressible"
+variables = ["i_status", "i_repeat", "i_repeat_period", "w_outcome", "i_attempts"]
+utterances = ["(assert (appears @L3 blocked))", "(request (if (not (dead @E2)) (habitual (at me @L3))))"]
+trace = [
+  "plan | gesture | go target=@L3 pace=brisk",
+  "plan | write | i_status me running",
+  "percept | event | (past (did @E5 strike me))",
+  "act | write | i_status me suspended",
+  "act | write | i_repeat me every",
+]
+note = "sonde T08c : les mots des valeurs de PLAN.status (running, suspended, blocked, done, abandoned), PLAN.repeat (once, every), WAKE.outcome (done, failed, blocked, interrupted, limit_reached) et WAKE.cause (goal_check, occasion, idle) existent dans la langue ; le moteur n'écrit que des faits (suspended après un coup, blocked après un échec perçu), abandoned reste au modèle"
+charter = ["§8"]
+text_fr = "Le guetteur fait sa ronde toutes les huit heures ; un coup reçu l'interrompt, la route est bloquée, il reprend plus tard."
+
+[[story]]
+id = "sow_in_autumn_reap_in_summer"
+status = "expressible"
+actions = ["put", "take", "work"]
+variables = ["pc_state_seen"]
+note = "sonde T08c : species.toml donne sow_seasons, days_to_mature, harvest_window_days, product_regrow_days (le blé d'automne mûrit en 4 jours de jeu, la vache se traite chaque jour, la brebis se tond une fois l'an) ; la loi vit dans le moteur (T26), le PNJ voit seulement l'état apparent (mûr, vert, fauché)"
+charter = ["§29"]
+text_fr = "Il sème le blé à l'automne ; au bout de l'hiver, la moisson est mûre et ne reste bonne qu'un temps."
+
+[[story]]
+id = "wink_cover_face_trace_sign"
+status = "expressible"
+actions = ["sign"]
+trace = [
+  "plan | gesture | sign kind=wink at=@E3",
+  "plan | gesture | sign kind=cover_face",
+  "plan | gesture | sign kind=trace_sign at=@L2",
+]
+note = "sonde T08c : sign.kind gagne wink, cover_face, trace_sign, décrits par leur forme seule ; ce qu'ils veulent dire (entente, chagrin, bénédiction, serment) est jugé par ceux qui les voient, jamais écrit dans le geste (D28)"
+charter = ["§8"]
+text_fr = "Il cligne de l'œil à son frère, se couvre le visage des mains à l'annonce, puis trace une figure dans l'air devant la porte."
