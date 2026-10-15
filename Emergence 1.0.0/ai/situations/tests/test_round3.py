@@ -52,9 +52,12 @@ class TestGhostsAndTheDead(unittest.TestCase):
                     self.assertTrue(r.fields["target"] in recs or not r.fields["target"].startswith("@E"))
         self.assertLess(ghosts / cited, 0.1)
 
-    def test_death_is_rare(self):
-        n = sum(1 for s in SITS if dead_of(s))
-        self.assertTrue(0.01 < n / N <= 0.035, n / N)
+    def test_death_is_rare_except_in_a_situation_about_a_loss(self):
+        plain = [s for s in SITS if s.structure != "loss"]
+        n = sum(1 for s in plain if dead_of(s))
+        self.assertTrue(0.01 < n / len(plain) <= 0.035, n / len(plain))
+        loss = [s for s in SITS if s.structure == "loss"]
+        self.assertGreater(sum(1 for s in loss if dead_of(s)) / len(loss), 0.5)
 
     def test_the_dead_inform_nobody_owe_nothing_own_nothing_and_are_not_planned_for(self):
         for sit in SITS:
@@ -278,7 +281,10 @@ class TestBeliefsAndWake(unittest.TestCase):
                 if r.type != "PLAN":
                     continue
                 n += 1
-                self.assertEqual(recs[r.fields["goal"]].fields["status"], "active")
+                goal = recs[r.fields["goal"]].fields["status"]
+                self.assertIn(goal, ("active", "paused"))
+                if goal == "paused":                                     # a paused goal: a suspended plan
+                    self.assertEqual(r.fields["status"], "suspended")
                 t = r.fields["target"]
                 if t.startswith("@E"):
                     self.assertTrue(t in recs and recs[t].fields["present"], t)

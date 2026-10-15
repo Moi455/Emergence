@@ -2,19 +2,21 @@
 #pragma once
 #include <cstdint>
 
+#include "emergence/social/proposition_arena.h"
 #include "emergence/social/state_types.h"
 
 namespace em::social::gen {
 
 using em::social::EntityId; using em::social::GameTime; using em::social::ListRef;
-using em::social::MRef; using em::social::Proposition; using em::social::RecordPool;
+using em::social::MRef; using em::social::PackedTime; using em::social::PropRef; using em::social::RecordPool;
 
 // mind_static: esprit stable : traits, valeurs, tempérament
 struct MindStatic {
+  ListRef attracted_to{};  // handle into a side table (variable-size data)
+  ListRef tastes{};  // handle into a side table (variable-size data)
   std::int16_t altruism{};  // tenths of the charter scale
   std::int16_t anxiousness{};  // tenths of the charter scale
   std::int16_t assurance{};  // tenths of the charter scale
-  ListRef attracted_to{};  // handle into a side table (variable-size data)
   std::int16_t baseline_mood{};  // tenths of the charter scale
   std::int16_t coordination{};  // tenths of the charter scale
   std::int16_t creativity{};  // tenths of the charter scale
@@ -36,7 +38,6 @@ struct MindStatic {
   std::int16_t sentimentality{};  // tenths of the charter scale
   std::int16_t sincerity{};  // tenths of the charter scale
   std::int16_t sociability{};  // tenths of the charter scale
-  ListRef tastes{};  // handle into a side table (variable-size data)
   std::int16_t unconventionality{};  // tenths of the charter scale
   std::int16_t v_achievement{};  // tenths of the charter scale
   std::int16_t v_authority{};  // tenths of the charter scale
@@ -50,9 +51,9 @@ struct MindStatic {
 
 // mind_dynamic: esprit mouvant : émotions, humeur, pulsions, stress
 struct MindDynamic {
+  MRef attention{};  // persistent id of one of the NPC's own records
   std::int16_t anger{};  // tenths of the charter scale
   std::int16_t anxiety{};  // tenths of the charter scale
-  MRef attention{};  // persistent id of one of the NPC's own records
   std::int16_t boredom{};  // tenths of the charter scale
   std::int16_t confusion{};  // tenths of the charter scale
   std::int16_t contempt{};  // tenths of the charter scale
@@ -89,31 +90,31 @@ struct MindDynamic {
 
 // body: corps : anatomie par zones, blessures, douleur, conscience, vie
 struct Body {
-  std::int16_t agility{};  // tenths of the charter scale
-  bool alive{};
-  std::int16_t bleeding{};  // tenths of the charter scale
   std::int32_t blood_volume{};  // milli-units of its unit
   std::int32_t body_mass{};  // milli-units of its unit
   std::int32_t body_temperature{};  // milli-units of its unit
+  std::int32_t height{};  // milli-units of its unit
+  ListRef illnesses{};  // handle into a side table (variable-size data)
+  ListRef immunities{};  // handle into a side table (variable-size data)
+  ListRef permanent_marks{};  // handle into a side table (variable-size data)
+  ListRef wounds{};  // handle into a side table (variable-size data)
+  std::int16_t agility{};  // tenths of the charter scale
+  std::int16_t bleeding{};  // tenths of the charter scale
   std::int16_t breath{};  // tenths of the charter scale
   std::int16_t consciousness{};  // tenths of the charter scale
   std::int16_t endurance{};  // tenths of the charter scale
   std::int16_t hearing{};  // tenths of the charter scale
-  std::int32_t height{};  // milli-units of its unit
-  ListRef illnesses{};  // handle into a side table (variable-size data)
-  ListRef immunities{};  // handle into a side table (variable-size data)
   std::int16_t intoxication{};  // tenths of the charter scale
   std::int16_t manipulation{};  // per-mille
   std::int16_t mobility{};  // per-mille
   std::int16_t pain{};  // tenths of the charter scale
-  ListRef permanent_marks{};  // handle into a side table (variable-size data)
-  std::uint8_t posture_felt{};  // value index
   std::int16_t robustness{};  // tenths of the charter scale
-  std::uint8_t sex{};  // value index
   std::int16_t sickness_felt{};  // tenths of the charter scale
   std::int16_t strength{};  // tenths of the charter scale
   std::int16_t vision{};  // tenths of the charter scale
-  ListRef wounds{};  // handle into a side table (variable-size data)
+  bool alive{};
+  std::uint8_t posture_felt{};  // value index
+  std::uint8_t sex{};  // value index
   std::uint8_t zones{};  // value index
 };
 
@@ -131,20 +132,20 @@ struct Needs {
 struct Lifecycle {
   std::int32_t age_years{};  // milli-units of its unit
   ListRef biological_parents{};  // handle into a side table (variable-size data)
+  PackedTime life_clock{};  // game seconds
   std::int16_t fecundity{};  // tenths of the charter scale
-  GameTime life_clock{};  // game seconds
+  std::int16_t senescence{};  // tenths of the charter scale
   std::uint8_t life_stage{};  // value index
   std::uint8_t pregnancy{};  // value index
-  std::int16_t senescence{};  // tenths of the charter scale
 };
 
 // carrier: porteur : mains, dos, ceinture, vêtements portés, charge
 struct Carrier {
   ListRef carried{};  // handle into a side table (variable-size data)
   ListRef hands{};  // handle into a side table (variable-size data)
-  std::int16_t load_ratio{};  // per-mille
   std::int32_t wealth_objective{};  // milli-units of its unit
   ListRef worn{};  // handle into a side table (variable-size data)
+  std::int16_t load_ratio{};  // per-mille
 };
 
 // activity: activité : geste en cours, séquence, progression, condition d'arrêt
@@ -159,8 +160,8 @@ struct Beliefs {
   ListRef inv_seen{};  // handle into a side table (variable-size data)
   ListRef own_held_seen{};  // handle into a side table (variable-size data)
   MRef place_recognized{};  // persistent id of one of the NPC's own records
-  std::uint8_t season_felt{};  // value index
   std::int32_t time_felt{};  // milli-units of its unit
+  std::uint8_t season_felt{};  // value index
 };
 
 // relations: attitudes envers chaque personne connue
@@ -181,22 +182,22 @@ struct Goals {
 
 // belief: une croyance : une proposition tenue pour vraie, avec sa certitude, sa source, son poids (records, 384 per NPC)
 struct Belief {
-  GameTime b_acquired{};  // game seconds
-  std::int16_t b_certainty{};  // tenths of the charter scale
-  GameTime b_confirmed{};  // game seconds
-  bool b_contradicted{};
+  PackedTime b_acquired{};  // game seconds
+  PackedTime b_confirmed{};  // game seconds
   std::int32_t b_hops{};  // milli-units of its unit
-  std::int16_t b_importance{};  // tenths of the charter scale
   MRef b_informant{};  // persistent id of one of the NPC's own records
   EntityId b_origin_fact{};  // objective id (engine only)
+  PropRef b_proposition{};  // handle into the per-NPC proposition arena (T06)
+  ListRef b_told_to{};  // handle into a side table (variable-size data)
+  std::int16_t b_certainty{};  // tenths of the charter scale
+  std::int16_t b_importance{};  // tenths of the charter scale
+  std::int16_t b_weight{};  // tenths of the charter scale
+  bool b_contradicted{};
   bool b_polarity{};
-  Proposition b_proposition{};
   bool b_secret{};
   std::uint8_t b_source{};  // value index
-  ListRef b_told_to{};  // handle into a side table (variable-size data)
   bool b_truth{};
   bool b_unintelligible{};
-  std::int16_t b_weight{};  // tenths of the charter scale
 };
 
 // entity_percept: une personne (ou une bête) perçue par CET observateur : ce qu'il en voit d'où il est, avec sa lumière, son attention, son œil (records, 10 per NPC)
@@ -204,82 +205,82 @@ struct EntityPercept {
   std::int32_t ep_age{};  // milli-units of its unit
   ListRef ep_attire{};  // handle into a side table (variable-size data)
   ListRef ep_build{};  // handle into a side table (variable-size data)
-  std::uint8_t ep_condition{};  // value index
   std::int32_t ep_dir{};  // milli-units of its unit
   std::int32_t ep_dist{};  // milli-units of its unit
-  std::uint8_t ep_expression{};  // value index
   MRef ep_gaze{};  // persistent id of one of the NPC's own records
   ListRef ep_health{};  // handle into a side table (variable-size data)
   ListRef ep_held{};  // handle into a side table (variable-size data)
   ListRef ep_marks{};  // handle into a side table (variable-size data)
+  ListRef ep_signs{};  // handle into a side table (variable-size data)
+  std::int16_t ep_wounds{};  // tenths of the charter scale
+  std::uint8_t ep_condition{};  // value index
+  std::uint8_t ep_expression{};  // value index
   std::uint8_t ep_motion{};  // value index
   std::uint8_t ep_posture{};  // value index
   std::uint8_t ep_sex{};  // value index
-  ListRef ep_signs{};  // handle into a side table (variable-size data)
-  std::int16_t ep_wounds{};  // tenths of the charter scale
 };
 
 // episode: un souvenir : un fait vécu, vu ou appris, et ce qu'on en a pensé (records, 128 per NPC)
 struct Episode {
-  Proposition m_content{};
-  bool m_defining{};
-  std::uint8_t m_emotion{};  // value index
+  PropRef m_content{};  // handle into the per-NPC proposition arena (T06)
   EntityId m_fact_ref{};  // objective id (engine only)
+  std::int32_t m_rehearsals{};  // milli-units of its unit
+  PackedTime m_when{};  // game seconds
+  MRef m_where{};  // persistent id of one of the NPC's own records
   std::int16_t m_importance{};  // tenths of the charter scale
   std::uint16_t m_interpretation{};  // vocabulary id
-  std::int32_t m_rehearsals{};  // milli-units of its unit
-  std::uint8_t m_role{};  // value index
-  bool m_secret{};
   std::int16_t m_valence{};  // tenths of the charter scale
   std::int16_t m_vividness{};  // tenths of the charter scale
-  GameTime m_when{};  // game seconds
-  MRef m_where{};  // persistent id of one of the NPC's own records
+  bool m_defining{};
+  std::uint8_t m_emotion{};  // value index
+  std::uint8_t m_role{};  // value index
+  bool m_secret{};
 };
 
 // event_seen: un geste d'autrui perçu récemment (vu ou entendu) : qui, quel geste, sur quoi, comment (records, 6 per NPC)
 struct EventSeen {
   MRef ev_actor{};  // persistent id of one of the NPC's own records
-  GameTime ev_age{};  // game seconds
+  PackedTime ev_age{};  // game seconds
   std::int32_t ev_among{};  // milli-units of its unit
   std::int32_t ev_count{};  // milli-units of its unit
   MRef ev_from_to{};  // persistent id of one of the NPC's own records
-  std::uint16_t ev_gesture{};  // vocabulary id
   ListRef ev_manner_seen{};  // handle into a side table (variable-size data)
-  std::uint8_t ev_sense{};  // value index
   MRef ev_target{};  // persistent id of one of the NPC's own records
   MRef ev_with{};  // persistent id of one of the NPC's own records
+  std::uint16_t ev_gesture{};  // vocabulary id
+  std::uint8_t ev_sense{};  // value index
 };
 
 // goal: un objectif : une proposition qu'on veut rendre vraie, garder vraie ou éviter (records, 8 per NPC)
 struct Goal {
-  GameTime g_deadline{};  // game seconds
-  Proposition g_desired{};
+  PackedTime g_deadline{};  // game seconds
+  PropRef g_desired{};  // handle into the per-NPC proposition arena (T06)
+  MRef g_origin_ref{};  // persistent id of one of the NPC's own records
+  MRef g_parent{};  // persistent id of one of the NPC's own records
+  PackedTime g_since{};  // game seconds
+  PackedTime g_when{};  // game seconds
+  std::int16_t g_priority{};  // tenths of the charter scale
+  std::int16_t g_progress{};  // per-mille
   bool g_has_plan{};
   std::uint8_t g_mode{};  // value index
   std::uint8_t g_origin{};  // value index
-  MRef g_origin_ref{};  // persistent id of one of the NPC's own records
-  MRef g_parent{};  // persistent id of one of the NPC's own records
-  std::int16_t g_priority{};  // tenths of the charter scale
-  std::int16_t g_progress{};  // per-mille
-  GameTime g_since{};  // game seconds
   std::uint8_t g_status{};  // value index
-  GameTime g_when{};  // game seconds
 };
 
 // intention: une intention : le plan (la suite de gestes) choisi pour un objectif ; une réserve de 4, un plan par objectif actif (records, 4 per NPC)
 struct Intention {
   std::int32_t i_attempts{};  // milli-units of its unit
-  std::int16_t i_commitment{};  // tenths of the charter scale
-  std::uint8_t i_repeat{};  // value index
   std::int32_t i_repeat_period{};  // milli-units of its unit
   MRef i_serves{};  // persistent id of one of the NPC's own records
-  Proposition i_speech{};
-  std::uint8_t i_status{};  // value index
+  PropRef i_speech{};  // handle into the per-NPC proposition arena (T06)
   std::int32_t i_step_index{};  // milli-units of its unit
-  std::int16_t i_step_progress{};  // per-mille
-  GameTime i_step_started{};  // game seconds
+  PackedTime i_step_started{};  // game seconds
   ListRef i_step_targets{};  // handle into a side table (variable-size data)
   ListRef i_steps{};  // handle into a side table (variable-size data)
+  std::int16_t i_commitment{};  // tenths of the charter scale
+  std::int16_t i_step_progress{};  // per-mille
+  std::uint8_t i_repeat{};  // value index
+  std::uint8_t i_status{};  // value index
 };
 
 // locus: un lieu qu'il connaît et qui compte maintenant (sa maison, sa destination, la mine, le lieu d'un souvenir) (records, 3 per NPC)
@@ -287,83 +288,83 @@ struct Locus {
   std::int32_t lc_dir{};  // milli-units of its unit
   std::int32_t lc_dist{};  // milli-units of its unit
   MRef lc_file{};  // persistent id of one of the NPC's own records
-  std::uint16_t lc_kind{};  // vocabulary id
   MRef lc_owner{};  // persistent id of one of the NPC's own records
+  std::uint16_t lc_kind{};  // vocabulary id
 };
 
 // percept: une chose perçue maintenant (objet, construction, plante, bête, eau, feu, trace) : ce qui se voit, s'entend, se sent, jamais la vérité (records, 16 per NPC)
 struct Percept {
-  std::uint16_t pc_age_seen{};  // vocabulary id
-  std::uint8_t pc_amount_seen{};  // value index
-  std::uint16_t pc_color_seen{};  // vocabulary id
-  std::uint8_t pc_depth_seen{};  // value index
   std::int32_t pc_dir{};  // milli-units of its unit
-  std::uint8_t pc_display{};  // value index
   std::int32_t pc_dist{};  // milli-units of its unit
   MRef pc_file{};  // persistent id of one of the NPC's own records
-  std::int16_t pc_file_certainty{};  // tenths of the charter scale
-  std::uint16_t pc_kind_seen{};  // vocabulary id
-  std::uint8_t pc_motion{};  // value index
   MRef pc_owner_believed{};  // persistent id of one of the NPC's own records
   ListRef pc_props_seen{};  // handle into a side table (variable-size data)
   ListRef pc_state_seen{};  // handle into a side table (variable-size data)
+  std::uint16_t pc_age_seen{};  // vocabulary id
+  std::uint16_t pc_color_seen{};  // vocabulary id
+  std::int16_t pc_file_certainty{};  // tenths of the charter scale
+  std::uint16_t pc_kind_seen{};  // vocabulary id
+  std::uint8_t pc_amount_seen{};  // value index
+  std::uint8_t pc_depth_seen{};  // value index
+  std::uint8_t pc_display{};  // value index
+  std::uint8_t pc_motion{};  // value index
 };
 
 // place_percept: le lieu tel que CET observateur le perçoit (lumière, bruit, gens qu'il voit, air, temps qu'il fait, signes étranges) (records, 1 per NPC)
 struct PlacePercept {
-  std::uint8_t pp_air_felt{};  // value index
   std::int32_t pp_crowd_seen{};  // milli-units of its unit
-  bool pp_indoors{};
-  std::int16_t pp_light{};  // tenths of the charter scale
-  std::int16_t pp_noise{};  // tenths of the charter scale
   ListRef pp_signs{};  // handle into a side table (variable-size data)
   ListRef pp_smell_seen{};  // handle into a side table (variable-size data)
   std::int32_t pp_sun{};  // milli-units of its unit
   ListRef pp_weather_seen{};  // handle into a side table (variable-size data)
+  std::int16_t pp_light{};  // tenths of the charter scale
+  std::int16_t pp_noise{};  // tenths of the charter scale
+  std::uint8_t pp_air_felt{};  // value index
+  bool pp_indoors{};
 };
 
 // relation: une relation : attitudes envers une personne, un animal, un groupe ou un rôle (records, 96 per NPC)
 struct Relation {
-  std::int16_t r_affection{};  // tenths of the charter scale
-  std::int16_t r_attraction{};  // tenths of the charter scale
-  std::int16_t r_familiarity{};  // tenths of the charter scale
-  std::int16_t r_fear{};  // tenths of the charter scale
-  Proposition r_group_goal{};
-  std::uint16_t r_group_kind{};  // vocabulary id
+  PropRef r_group_goal{};  // handle into the per-NPC proposition arena (T06)
   MRef r_group_leader{};  // persistent id of one of the NPC's own records
   ListRef r_group_members{};  // handle into a side table (variable-size data)
   MRef r_group_my_task{};  // persistent id of one of the NPC's own records
   std::int32_t r_group_present{};  // milli-units of its unit
-  std::uint16_t r_group_role{};  // vocabulary id
   std::int32_t r_group_size{};  // milli-units of its unit
   std::int32_t r_group_tasks_open{};  // milli-units of its unit
+  PackedTime r_last_contact{};  // game seconds
+  ListRef r_reputation_seen{};  // handle into a side table (variable-size data)
+  std::int32_t r_shared_history{};  // milli-units of its unit
+  EntityId r_true_entity{};  // objective id (engine only)
+  std::int16_t r_affection{};  // tenths of the charter scale
+  std::int16_t r_attraction{};  // tenths of the charter scale
+  std::int16_t r_familiarity{};  // tenths of the charter scale
+  std::int16_t r_fear{};  // tenths of the charter scale
+  std::uint16_t r_group_kind{};  // vocabulary id
+  std::uint16_t r_group_role{};  // vocabulary id
   std::int16_t r_id_certainty{};  // tenths of the charter scale
-  std::uint8_t r_known_by{};  // value index
-  GameTime r_last_contact{};  // game seconds
-  std::uint8_t r_link_believed{};  // value index
   std::uint16_t r_name_believed{};  // vocabulary id
   std::int16_t r_obligation{};  // tenths of the charter scale
   std::int16_t r_perceived_regard{};  // tenths of the charter scale
-  bool r_present{};
-  ListRef r_reputation_seen{};  // handle into a side table (variable-size data)
   std::int16_t r_resentment{};  // tenths of the charter scale
   std::int16_t r_respect{};  // tenths of the charter scale
   std::int16_t r_rivalry{};  // tenths of the charter scale
-  std::int32_t r_shared_history{};  // milli-units of its unit
-  EntityId r_true_entity{};  // objective id (engine only)
   std::int16_t r_trust{};  // tenths of the charter scale
+  std::uint8_t r_known_by{};  // value index
+  std::uint8_t r_link_believed{};  // value index
+  bool r_present{};
 };
 
 // request: une demande reçue et pas encore traitée (qui, quoi, depuis quand) (records, 8 per NPC)
 struct Request {
-  Proposition q_content{};
+  PropRef q_content{};  // handle into the per-NPC proposition arena (T06)
   MRef q_from{};  // persistent id of one of the NPC's own records
-  GameTime q_since{};  // game seconds
+  PackedTime q_since{};  // game seconds
 };
 
 // skill: une maîtrise : une technique et son niveau (la vraie compétence, tenue par le moteur) (records, 26 per NPC)
 struct Skill {
-  GameTime k_last_practice{};  // game seconds
+  PackedTime k_last_practice{};  // game seconds
   std::int16_t k_mastery{};  // tenths of the charter scale
   std::int16_t k_self_estimate{};  // tenths of the charter scale
   std::uint8_t k_technique{};  // value index

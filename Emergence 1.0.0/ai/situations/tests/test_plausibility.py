@@ -11,6 +11,7 @@ import statistics
 import unittest
 from pathlib import Path
 
+from ..builders import WAKE_CAUSES
 from .test_situations import (ACTIONS, ADULT, GOV, N, SAMPLER, SAMPLERS, SITS, D10Audit, D10Violation, Party, Record,
                               by_key, nodes, props)
 
@@ -226,7 +227,7 @@ class TestEvents(unittest.TestCase):
 
 
 class TestWake(unittest.TestCase):
-    TARGET = {"perception": 0.30, "routine": 0.20, "body": 0.15, "speech": 0.10, "request": 0.10, "plan": 0.10, "timer": 0.05}
+    TARGET = WAKE_CAUSES
 
     def test_the_causes_follow_the_target_distribution(self):
         c = collections.Counter(by_key(s)["wake"].fields["cause"] for s in SITS)
@@ -248,8 +249,20 @@ class TestWake(unittest.TestCase):
             else:
                 me = recs["me"].fields
                 self.assertLessEqual(max(me[k] for k in ("need.hunger", "need.thirst", "need.sleep", "need.exhaustion", "body.pain")), 9.01)
-            if w["cause"] == "timer":
-                self.assertLess(recs[w["trigger"]].fields["deadline"], 0)
+            if w["cause"] == "timer":                      # a deadline passed, or a repeating plan comes round again
+                trig = recs[w["trigger"]]
+                if trig.type == "PLAN":
+                    self.assertNotEqual(trig.fields["repeat"], "once")
+                    self.assertIn(trig.fields["status"], ("done", "suspended"))
+                else:
+                    self.assertLess(trig.fields["deadline"], 0)
+            if w["cause"] == "goal_check":
+                self.assertEqual(recs[w["trigger"]].type, "GOAL")
+                self.assertGreaterEqual(recs[w["trigger"]].fields["progress"], 0.97)
+            if w["cause"] == "occasion":
+                self.assertIn(recs[w["trigger"]].type, ("GOAL", "ENTITY", "GROUP"))
+            if w["cause"] in ("idle", "routine", "body"):
+                self.assertEqual(w["trigger"], "")
             if w["cause"] == "plan":
                 self.assertEqual(recs[w["trigger"]].type, "PLAN")
             if w["cause"] == "perception":
@@ -400,10 +413,11 @@ class TestDemography(unittest.TestCase):
 
 
 class TestPlans(unittest.TestCase):
-    SERVES = {"has": {"go", "take", "examine", "search", "wait"}, "at": {"go", "wait", "rest", "set_posture"},
-              "owns": {"go", "take", "examine"}, "works_as": {"go", "work", "examine"}, "knows_how": {"examine", "work"},
-              "link": {"go", "look", "wait"}}
-    NEED = {"thirst": {"drink", "go", "rest"}, "hunger": {"eat", "go", "rest"}, "exhaustion": {"set_posture", "rest", "go", "sleep"},
+    SERVES = {"has": {"go", "take", "examine", "search", "wait", "look"}, "at": {"go", "wait", "rest", "set_posture", "look", "search", "speak"},
+              "owns": {"go", "take", "examine", "look"}, "works_as": {"go", "work", "examine", "rest", "look"},
+              "knows_how": {"examine", "work", "go"}, "link": {"go", "look", "wait", "speak"},
+              "did": {"go", "give", "speak", "look"}}
+    NEED = {"thirst": {"drink", "go", "rest", "look"}, "hunger": {"eat", "go", "rest", "look"}, "exhaustion": {"set_posture", "rest", "go", "sleep"},
             "pain": {"rest", "set_posture"}}
 
     def test_a_plan_serves_its_goal(self):
@@ -414,9 +428,13 @@ class TestPlans(unittest.TestCase):
                 if r.type != "PLAN":
                     continue
                 goal = next(iter(props_of(recs[r.fields["goal"]])))
+                while goal.head in ("at_time", "before", "after"):             # a time mark does not change what serves the goal
+                    goal = goal.args[-1]
                 n[goal.head] += 1
                 allowed = self.NEED[goal.args[1]] if goal.head == "state" else self.SERVES[goal.head]
-                self.assertTrue({r.fields["step"], r.fields["next"]} <= allowed, (goal.head, r.fields["step"], r.fields["next"]))
+                self.assertTrue(set(r.fields["steps"]) <= allowed,
+                                (goal.head, r.fields["steps"]))
+                self.assertTrue({r.fields["step"], r.fields["next"]} <= set(r.fields["steps"]))
                 if r.fields["target"].startswith("@T") and r.fields["step"] in ("drink", "eat"):
                     kind = recs[r.fields["target"]].fields["kind"]
                     self.assertTrue(POOLS.item_has(kind, FOOD_DRINK[r.fields["step"]]))

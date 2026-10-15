@@ -107,6 +107,7 @@ const std::vector<const ComponentDesc*>& all_descs() {
 
 struct ListEnc {
   const SideTable* side;
+  const PropositionArena* props;                    // behind the PropRef fields
   std::vector<ListRef> order;                       // lists in order of first use
   std::unordered_map<ListRef, std::uint32_t> index; // ref -> 1-based index
   std::uint32_t of(ListRef ref) {
@@ -130,7 +131,9 @@ void write_cells(Writer& w, const ComponentDesc& d, const unsigned char* base, L
       case ColType::Time: { std::uint64_t v; std::memcpy(&v, p, 8); w.u64(v); break; }
       case ColType::List: { ListRef v; std::memcpy(&v, p, 4); w.u32(le.of(v)); break; }
       case ColType::Prop: {
-        const auto& pr = *reinterpret_cast<const Proposition*>(p);
+        PropRef ref;
+        std::memcpy(&ref, p, 4);
+        const Proposition pr = le.props->get(ref);   // the wire format is the one of the 20-symbol exchange type
         w.u8(std::uint8_t(pr.size()));
         for (int i = 0; i < pr.size(); ++i) { w.u32(pr.symbol(i)); w.u8(pr.children(i)); }
         break;
@@ -154,7 +157,7 @@ void write_pool(Writer& w, const ComponentDesc& d, const Pool& pool, ListEnc& le
 }
 
 void encode_npc(Writer& out, const NpcBundle& npc) {
-  ListEnc le{&npc.side, {}, {}};
+  ListEnc le{&npc.side, &npc.propositions, {}, {}};
   Writer body;
   gen::visit_components(npc.state, [&](const ComponentDesc& d, const auto& c) {
     write_cells(body, d, reinterpret_cast<const unsigned char*>(&c), le);
@@ -207,6 +210,7 @@ struct LoadCtx {
   std::vector<ListRef> list_refs;
   std::vector<bool> list_done;
   SideTable* side = nullptr;
+  PropositionArena* props = nullptr;
   LoadReport* rep = nullptr;
   Refusal refusal = Refusal::None;
   std::string detail;
@@ -277,7 +281,15 @@ void store_cell(unsigned char* base, const FieldDesc& f, const Cell& c, LoadCtx&
     case ColType::I32: { auto v = std::int32_t(c.i); std::memcpy(p, &v, 4); break; }
     case ColType::Entity: case ColType::MRef: { auto v = std::uint32_t(c.i); std::memcpy(p, &v, 4); break; }
     case ColType::Time: { auto v = std::int64_t(c.i); std::memcpy(p, &v, 8); break; }
-    case ColType::Prop: *reinterpret_cast<Proposition*>(p) = c.p; break;
+    case ColType::Prop: {   // packed into the NPC's arena, in reading order: deterministic
+      PropRef ref = 0;
+      if (!c.p.empty()) {
+        ref = cx.props->put(c.p);
+        if (ref == 0) ++cx.rep->arena_overflow_propositions;   // an old save can hold more than the arena: never a failure
+      }
+      std::memcpy(p, &ref, 4);
+      break;
+    }
     case ColType::List: {
       ListRef ref = 0;
       const std::uint64_t idx = std::uint64_t(c.i);
@@ -546,6 +558,7 @@ LoadReport NpcStateCodec::load(std::span<const std::uint8_t> name_section, std::
   for (std::uint32_t n = 0; n < nnpc; ++n) {
     auto npc = std::make_unique<NpcBundle>();
     cx.side = &npc->side;
+    cx.props = &npc->propositions;
     cx.lists.clear();
     const std::uint32_t nl = r.u32();
     if (r.bad() || nl > r.left() / 2) return refused(rep, Refusal::Truncated, "NPCS lists");

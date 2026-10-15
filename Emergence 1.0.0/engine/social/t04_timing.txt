@@ -1,0 +1,1 @@
+500 NPC save+load (best of 5): 91.9642 ms + 114.599 ms = 206.564 ms, 17267961 bytes

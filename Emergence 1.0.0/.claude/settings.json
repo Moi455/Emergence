@@ -51,6 +51,7 @@
       "Read(./engine/scripts/**)",
       "Read(./engine/em_water/**)",
       "Read(./worldgen/**)",
+      "Read(./générateurs de voxels/**)",
       "Read(./game/**)",
       "Read(./prototypes/**)",
       "Read(./characters/**)",

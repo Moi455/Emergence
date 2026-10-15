@@ -39,7 +39,7 @@ class StatusReport:
         days: dict = defaultdict(lambda: defaultdict(lambda: {
             "batches": 0, "repairs": 0, "errors": 0, "prompt": 0, "output": 0, "thoughts": 0, "latency": 0.0, "asked": 0,
             "valid_first": 0, "valid_repair": 0, "sent_to_repair": 0, "codes": Counter(), "families": defaultdict(Counter),
-            "gestures": Counter()}))
+            "gestures": Counter(), "traced": 0}))
         for r in self.records():
             day, model = r.get("pday", "?"), r.get("model", "?")
             m = days[day][model]
@@ -69,6 +69,7 @@ class StatusReport:
                 m["families"][fam]["ok" if ok else x.get("code", "?")] += 1
                 if ok:
                     m["gestures"][x.get("gesture", "")] += 1
+                    m["traced"] += 1 if x.get("traced") else 0
         return days
 
     # ---- text
@@ -101,6 +102,10 @@ class StatusReport:
                            f"{f'; {valid / asked:.0%} of asked' if asked else ''}); repair requests per batch {rep_rate:.2f}, "
                            f"repair recovered {recovered:.0%}; passive gestures {passive / okn:.0%} of the valid ones" if okn else
                            f"    decisions asked {asked}, valid {valid}")
+                if m["traced"] or m["codes"].get("incoherent_trace"):
+                    out.append(f"    planner: {m['traced']} valid first-pass decisions with a non-empty trace"
+                               f"{f' ({m['traced'] / okn:.0%} of the valid)' if okn else ''}; incoherent_trace refusals "
+                               f"{m['codes'].get('incoherent_trace', 0)}")
                 if m["codes"]:
                     out.append("    first-pass codes: " + json.dumps(dict(m["codes"].most_common())))
                 for fam, c in sorted(m["families"].items()):

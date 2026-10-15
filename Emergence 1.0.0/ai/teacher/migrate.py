@@ -115,11 +115,15 @@ class Migration:
             if isinstance(v, (int, float)):
                 return format(float(v), ".10g")
             return str(v)
-        return json.dumps({"gesture": decision.get("gesture", ""),
-                           "params": [{"name": k, "value": text(v)} for k, v in (decision.get("params") or {}).items()],
-                           "speech": decision.get("speech") or "",
-                           "writes": [{"target": w["target"], "variable": w["variable"], "value": text(w["value"])}
-                                      for w in decision.get("writes", [])]}, ensure_ascii=False)
+        raw = {"gesture": decision.get("gesture", ""),
+               "params": [{"name": k, "value": text(v)} for k, v in (decision.get("params") or {}).items()],
+               "speech": decision.get("speech") or "",
+               "writes": [{"target": w["target"], "variable": w["variable"], "value": text(w["value"])}
+                          for w in decision.get("writes", [])]}
+        for name in ("plan", "stop", "thoughts"):               # T11 / T36: kept, so a planner line is revalidated whole (and not stripped)
+            if name in decision:
+                raw[name] = decision[name]
+        return json.dumps(raw, ensure_ascii=False)
 
     # ---- a file
     def file(self, src: Path, dst: Path, limit: int | None = None) -> MigrationReport:

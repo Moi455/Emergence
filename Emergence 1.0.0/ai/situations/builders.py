@@ -20,7 +20,6 @@ from .context import BuildContext, stage_of
 from .gestures import EARSHOT, INFANT, REACH, YOUNG, Target
 from .layout import Entry
 from .memories import MemoryColour
-from .plans import PlanTable
 from .propositions import CHILD_TECHNIQUES, WORK_MIN_AGE
 from .scene import ADULT, Person, separation
 
@@ -74,13 +73,16 @@ REACH_BOOST = 40.0                                # what is within reach is this
 NEEDS = ("need.hunger", "need.thirst", "need.sleep", "need.exhaustion", "body.pain")
 NEED_CAP = 7.5                                    # unless his body is why he wakes, no need is extreme
 # why he wakes: how the mode and the urgency are drawn
-WAKE_MODES = {"request": ("act", "act", "listen"), "speech": ("listen", "listen", "reflect"),
-              "perception": ("act", "act", "listen"), "timer": ("act",), "plan": ("act",), "body": ("act",),
-              "routine": ("act", "reflect")}
+WAKE_MODES = {"request": ("act", "act", "listen", "reflect"), "speech": ("listen", "listen", "reflect", "reflect"),
+              "perception": ("act", "act", "listen", "reflect"), "timer": ("act", "reflect"), "plan": ("act", "act", "reflect"),
+              "body": ("act",), "routine": ("act", "reflect", "reflect"), "goal_check": ("reflect", "reflect", "reflect", "act"),
+              "occasion": ("reflect", "reflect", "act"), "idle": ("reflect", "act", "reflect")}
 WAKE_URGENCY = {"request": (3, 8), "speech": (1, 7), "perception": (2, 9), "timer": (3, 8), "plan": (1, 6),
-                "body": (3, 9), "routine": (0, 3)}
-WAKE_CAUSES = {"perception": 0.30, "routine": 0.20, "body": 0.15, "speech": 0.10, "request": 0.10, "plan": 0.10,
-               "timer": 0.05}
+                "body": (3, 9), "routine": (0, 3), "goal_check": (1, 5), "occasion": (2, 7), "idle": (0, 1.5)}
+WAKE_CAUSES = {"perception": 0.22, "routine": 0.13, "body": 0.12, "speech": 0.09, "request": 0.08, "plan": 0.10,
+               "timer": 0.06, "goal_check": 0.08, "occasion": 0.06, "idle": 0.06}
+THINK_BUDGET = (1, 5)                             # steps of thought still granted when he is asked to reflect
+GROUP_COMMIT_RATE = 0.3                           # an agreement toward a group he knows well
 
 
 class RecordBuilder(ABC):
@@ -132,7 +134,7 @@ class SelfBuilder(RecordBuilder):
         if c.cause == "body":
             for k in d.sample(NEEDS, 2 if d.chance(0.25) else 1):
                 body[k] = d.uniform(NEED_CAP, 10.0)
-        elif d.chance(0.12):
+        elif d.chance(0.12) and c.cause != "idle":             # nothing presses him when he has nothing to do
             body[d.pick(NEEDS)] = d.uniform(NEED_CAP, 9.0)
 
     @staticmethod
@@ -593,84 +595,34 @@ class SocialBuilder(RecordBuilder):
                     or f"(ask (at {asker} where))"}))
         if c.me.age < 12 or not lay.alive:
             return
-        for _ in range(c.count("COMMIT", 0, 2)):
+        n = c.count("COMMIT", 1 if c.structure in ("debt", "cooperation") else 0, 2)
+        for _ in range(n):
+            groups = [r.key for r in c.of("GROUP") if r.fields.get("known_by") == "seen"]
+            if groups and d.chance(GROUP_COMMIT_RATE * (2.5 if c.structure == "cooperation" else 1.0)):
+                self._with_group(c, d.pick(groups))
+                continue
             who = d.pick(lay.alive)
             mine = d.chance(0.5)
             prop = c.session.validate(f"(did {'me' if mine else who} give {c.session.kind(gift=True)} (to {who if mine else 'me'}))", "belief")
             if prop is not None:
-                c.add(Record("COMMIT", f"c:{len(c.of('COMMIT')) + 1}", {
-                    "counterparty": who, "mine": mine, "prop": prop, "deadline": c.until(1, 300),
-                    "status": c.enum("COMMIT", "status", COMMIT_STATUS), "witnesses": d.sample(lay.alive, d.between(0, 2))}))
-
-
-class GoalBuilder(RecordBuilder):
-    """GOAL (what he wants) and PLAN (the step he is on, consistent with an active goal)."""
+                self._commit(c, who, mine, prop)
 
     @staticmethod
-    def _origin_ref(c: BuildContext, prop: str, pool: list[Record]) -> str:
-        """A belief or a memory that has something to do with the goal: it mentions one of the same pointers."""
-        keys = set(KEY.findall(prop))
-        near = [r.key for r in pool if keys & set(KEY.findall(r.fields.get("prop", "")))]
-        return c.d.pick(near) if near else ""
-
-    def build(self, c: BuildContext) -> None:
+    def _commit(c: BuildContext, counterparty: str, mine: bool, prop: str) -> None:
         d = c.d
-        sources = c.of("BELIEF") + c.of("MEMORY")
-        asked = [r.key for r in c.of("REQUEST")]
-        deals = [r.key for r in c.of("COMMIT")]
-        k = 0
-        for _ in range(c.count("GOAL", 1)):
-            got = c.session.goal()
-            if got is None or got[0] in c.said:
-                continue
-            prop, mode = got
-            c.said.add(prop)
-            origin = c.enum("GOAL", "origin", GOAL_ORIGIN)
-            if (origin == "asked" and not asked) or (origin == "agreement" and not deals):
-                origin = "self"
-            status = c.enum("GOAL", "status", GOAL_STATUS)
-            ref = d.pick({"asked": asked, "agreement": deals}[origin]) if origin in ("asked", "agreement") else \
-                self._origin_ref(c, prop, sources)
-            k += 1
-            c.add(Record("GOAL", f"g:{k}", c.fill("GOAL", {
-                "prop": prop, "mode": mode, "status": status, "origin": origin, "origin_ref": ref,
-                "age": c.hours_ago(0.1, 500), "progress": 1.0 if status == "achieved" else d.uniform(0, 0.9, 2),
-                "deadline": c.until(1, 500) if d.chance(0.4) else None})))
-        goals = c.of("GOAL")
-        if c.cause == "timer":                                      # a deadline that has passed is why he wakes
-            if not goals:
-                goals = [self._need_goal(c, 0)]
-            late = d.pick(goals)
-            late.fields["deadline"] = -c.hours_ago(0.05, 60)
-            late.fields["status"] = "active"
-        if goals and (c.cause == "plan" or d.chance(0.6)):
-            self._plan(c, c.cause == "plan")
+        close = c.structure == "debt"                                  # a debt in progress falls due soon
+        c.add(Record("COMMIT", f"c:{len(c.of('COMMIT')) + 1}", {
+            "counterparty": counterparty, "mine": mine, "prop": prop, "deadline": c.until(1, 60 if close else 300, 0.05 if close else 0.12),
+            "status": "open" if close else c.enum("COMMIT", "status", COMMIT_STATUS),
+            "witnesses": d.sample(c.layout.alive, d.between(0, 2))}))
 
-    @staticmethod
-    def _need_goal(c: BuildContext, k: int) -> Record:
-        text = c.session.need_goal(c.d.pick(("exhaustion", "pain"))) or "(state me exhaustion low)"
-        goals = c.of("GOAL")
-        if len(goals) >= c.cap["GOAL"]:                              # no room: the need takes the place of the last goal
-            goals[-1].fields.update(prop=text, mode="achieve", status="active", deadline=None, origin_ref="")
-            return goals[-1]
-        return c.add(Record("GOAL", f"g:{k + 1}", c.fill("GOAL", {
-            "prop": text, "mode": "achieve", "status": "active", "origin": "self", "origin_ref": "",
-            "age": c.hours_ago(0.1, 50), "progress": c.d.uniform(0, 0.5, 2)})))
-
-    def _plan(self, c: BuildContext, required: bool) -> None:
-        table = PlanTable(c.pools, c.grammar.chooser)
-        view = c.scene_view()
-        for attempt in range(2 if required else 1):
-            goals = [g for g in c.of("GOAL") if g.fields["status"] == "active"]
-            c.rng.shuffle(goals)
-            for g in goals:
-                got = table.make(c.d, g.fields["prop"], view, c.parties)
-                if got is not None:
-                    c.add(Record("PLAN", "p:1", c.fill("PLAN", {"step": got.step, "next": got.next, "goal": g.key,
-                                                                "target": got.target})))
-                    return
-            if required and attempt == 0:                           # no active goal can be served: a need to serve
-                self._need_goal(c, len(c.of("GOAL")))
+    def _with_group(self, c: BuildContext, group: str) -> None:
+        """What he owes a group he knows, or what it owes him (the group is a counterparty, never a witness)."""
+        mine = c.d.chance(0.75)
+        kind = c.session.kind(gift=True)
+        prop = c.session.validate(f"(did {'me' if mine else group} give {kind} (to {group if mine else 'me'}))", "belief")
+        if prop is not None:
+            self._commit(c, group, mine, prop)
 
 
 class SkillBuilder(RecordBuilder):
@@ -724,22 +676,32 @@ class StateBuilder(RecordBuilder):
 
 class WakeBuilder(RecordBuilder):
     """WAKE: why he decides now (the cause was drawn first; the other builders made the situation that justifies it).
-    The trigger is the record that woke him (@V, h:, q:, g:, p:); a body or a routine has none ("" = known: nobody).
-    The urgency follows the content: a blow aimed at him is more urgent than a glance, a need by its level."""
+    The trigger is the record that woke him (@V, h:, q:, g:, p:, c:, an ENTITY or a GROUP); a body, a routine or an idle
+    moment has none ("" = known: nobody). The urgency follows the content: a blow aimed at him is more urgent than a
+    glance, a need by its level. A reflection is granted a budget of thought steps; the village temperament is the
+    player's setting (the same for every inhabitant of a village)."""
 
     def build(self, c: BuildContext) -> None:
         key = lambda typ: (c.records.first(typ).key if c.records.first(typ) else "")  # noqa: E731
         late = [x.key for x in c.of("GOAL") if (x.fields.get("deadline") or 0) < 0]
         triggers = {"request": key("REQUEST"), "speech": key("HEARD"),
                     "perception": min(c.events, key=lambda e: e.fields["age"]).key if c.events else "",
-                    "timer": late[0] if late else "", "plan": key("PLAN"), "body": "", "routine": ""}
+                    "timer": c.trigger or (late[0] if late else ""), "plan": key("PLAN"), "body": "",
+                    "routine": "", "goal_check": c.trigger, "occasion": c.trigger, "idle": ""}
         cause = c.cause
-        if cause not in ("body", "routine") and not triggers[cause]:    # the situation could not justify it
+        if cause not in ("body", "routine", "idle") and not triggers[cause]:    # the situation could not justify it
             cause = "routine"
-        by_key = {r.key: r for r in c.records.ordered(("EVENT", "HEARD", "REQUEST", "GOAL", "PLAN"))}
+        if cause == "plan" and not c.outcome:                           # no step of a plan has just ended
+            cause = "routine"
+        by_key = {r.key: r for r in c.records.ordered(("EVENT", "HEARD", "REQUEST", "GOAL", "PLAN", "COMMIT", "ENTITY", "GROUP"))}
         trig = by_key.get(triggers[cause])
-        c.add(Record("WAKE", "wake", {"mode": c.rng.choice(WAKE_MODES[cause]), "cause": cause, "trigger": triggers[cause],
-                                      "urgency": round(self._urgency(c, cause, trig), 1)}))
+        mode = c.rng.choice(WAKE_MODES[cause])
+        fields = {"mode": mode, "cause": cause, "trigger": triggers[cause], "urgency": round(self._urgency(c, cause, trig), 1),
+                  "budget": c.d.between(*THINK_BUDGET) if mode == "reflect" else (c.d.between(1, 2) if c.d.chance(0.15) else 0),
+                  "temperament": c.d.uniform(0.0, 10.0)}
+        if cause == "plan" and c.outcome:
+            fields["outcome"] = c.outcome
+        c.add(Record("WAKE", "wake", fields))
 
     @staticmethod
     def _urgency(c: BuildContext, cause: str, trig) -> float:
@@ -759,7 +721,10 @@ class WakeBuilder(RecordBuilder):
         if cause == "speech":
             return d.clip(1 + 0.6 * f.get("importance", 3) + d.rng.uniform(0, 2), 0.5, 8.0)
         if cause == "timer":
+            if f.get("deadline") is None or f["deadline"] >= 0:            # a plan that comes round again
+                return d.uniform(2, 5)
             return d.clip(3 + 1.6 * math.log1p(-f["deadline"]), 3.0, 9.0)
         if cause == "plan":
-            return d.clip(0.7 * f.get("commitment", 4) + d.rng.uniform(0, 2), 1.0, 7.0)
-        return d.uniform(0, 3)
+            return d.clip(0.7 * f.get("commitment", 4) + d.rng.uniform(0, 2) + (1.0 if c.outcome in ("blocked", "failed") else 0.0), 1.0, 7.0)
+        lo, hi = WAKE_URGENCY[cause]
+        return d.uniform(lo, hi)

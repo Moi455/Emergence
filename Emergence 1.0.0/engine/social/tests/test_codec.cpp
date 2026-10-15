@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
+#include <string>
 
 #include "emergence/social/npc_state_codec.h"
 #include "emergence/testing/check.h"
@@ -30,7 +32,8 @@ std::int64_t draw(Rng& rng, const gen::FieldDesc& f) {   // uniform in the catal
   return f.min + std::int64_t(rng.next() % width);
 }
 
-void fill_field(Rng& rng, SideTable& side, const gen::FieldDesc& f, unsigned char* base) {
+void fill_field(Rng& rng, NpcBundle& npc, const gen::FieldDesc& f, unsigned char* base) {
+  SideTable& side = npc.side;
   unsigned char* p = base + f.offset;
   switch (f.type) {
     case ColType::Bool: *p = std::uint8_t(draw(rng, f)); break;
@@ -50,29 +53,31 @@ void fill_field(Rng& rng, SideTable& side, const gen::FieldDesc& f, unsigned cha
       break;
     }
     case ColType::Prop: {   // a well formed tree: one root with k leaves
-      auto& pr = *reinterpret_cast<Proposition*>(p);
-      pr = Proposition{};
-      if (rng.below(4) == 0) break;
+      Proposition pr;
+      PropRef ref = 0;
+      if (rng.below(4) == 0) { std::memcpy(p, &ref, 4); break; }
       const std::uint8_t k = std::uint8_t(rng.below(5));
       pr.push(Proposition::make(Proposition::kWord, rng.below(unsigned(gen::kWords.size()))), k);
       for (int i = 0; i < k; ++i) {
         if (rng.below(2)) pr.push(Proposition::make(Proposition::kKind, rng.below(unsigned(gen::kKinds.size()))), 0);
         else pr.push(Proposition::make(Proposition::kNumber, rng.below(1000)), 0);
       }
+      ref = npc.propositions.put(pr);   // 0 when the arena is full: the field stays empty
+      std::memcpy(p, &ref, 4);
       break;
     }
   }
 }
 
-void fill_cells(Rng& rng, SideTable& side, const gen::ComponentDesc& d, unsigned char* base) {
-  for (const auto& f : d.fields) fill_field(rng, side, f, base);
+void fill_cells(Rng& rng, NpcBundle& npc, const gen::ComponentDesc& d, unsigned char* base) {
+  for (const auto& f : d.fields) fill_field(rng, npc, f, base);
 }
 
 std::unique_ptr<NpcBundle> make_npc(std::uint64_t seed) {
   Rng rng{seed};
   auto npc = std::make_unique<NpcBundle>();
   gen::visit_components(npc->state, [&](const gen::ComponentDesc& d, auto& c) {
-    fill_cells(rng, npc->side, d, reinterpret_cast<unsigned char*>(&c));
+    fill_cells(rng, *npc, d, reinterpret_cast<unsigned char*>(&c));
   });
   gen::visit_pools(npc->state, [&](const gen::ComponentDesc& d, auto& pool) {
     using T = typename std::decay_t<decltype(pool)>::value_type;
@@ -81,7 +86,7 @@ std::unique_ptr<NpcBundle> make_npc(std::uint64_t seed) {
     const int adds = rng.below(3) == 0 ? cap + int(rng.below(40)) : std::max(1, int(rng.below(unsigned(cap) + 1)));
     for (int i = 0; i < adds; ++i) {
       T rec{};
-      fill_cells(rng, npc->side, d, reinterpret_cast<unsigned char*>(&rec));
+      fill_cells(rng, *npc, d, reinterpret_cast<unsigned char*>(&rec));
       pool.add(rec, [](const T& r) { return int(reinterpret_cast<const std::uintptr_t&>(r) & 0) + 0; });   // all equal: oldest goes
       if (rng.below(8) == 0 && pool.size() > 0) {   // a removal now and then: holes in the slots
         pool.remove(MRef{pool.slot_serial(int(rng.below(unsigned(cap))))});
@@ -226,12 +231,12 @@ TEST(propositions_are_translated_through_the_name_table) {
   p.push(Proposition::make(Proposition::kWord, 3), 1);
   p.push(Proposition::make(Proposition::kWord, 4), 0);
   gen::Belief b;
-  b.b_proposition = p;
+  b.b_proposition = npc->store_proposition(p, 0);
   npc->state.belief_records.add(b, [](const gen::Belief&) { return 0; });
   Proposition q;   // uses word 10: that one disappears from the NAME table
   q.push(Proposition::make(Proposition::kWord, 10), 0);
   gen::Belief b2;
-  b2.b_proposition = q;
+  b2.b_proposition = npc->store_proposition(q, 0);
   npc->state.belief_records.add(b2, [](const gen::Belief&) { return 0; });
   std::vector<std::unique_ptr<NpcBundle>> world;
   world.push_back(std::move(npc));
@@ -246,12 +251,13 @@ TEST(propositions_are_translated_through_the_name_table) {
   CHECK_EQ(rep.dropped_propositions, 1u);
   int seen = 0;
   back[0]->state.belief_records.for_each([&](MRef, gen::Belief& r) {
-    if (r.b_proposition.size() == 2) {
+    const Proposition pr = back[0]->proposition(r.b_proposition);
+    if (pr.size() == 2) {
       ++seen;
-      CHECK_EQ(Proposition::value(r.b_proposition.symbol(0)), 4u);   // saved 3 -> its name is now number 4
-      CHECK_EQ(Proposition::value(r.b_proposition.symbol(1)), 3u);
+      CHECK_EQ(Proposition::value(pr.symbol(0)), 4u);   // saved 3 -> its name is now number 4
+      CHECK_EQ(Proposition::value(pr.symbol(1)), 3u);
     } else {
-      CHECK(r.b_proposition.empty());
+      CHECK(pr.empty());
     }
   });
   CHECK_EQ(seen, 1);
@@ -320,7 +326,10 @@ long out_of_bounds(NpcBundle& npc) {
         case ColType::Time: std::memcpy(&v, p, 8); break;
         case ColType::List: continue;
         case ColType::Prop: {
-          const auto& pr = *reinterpret_cast<const Proposition*>(p);
+          PropRef ref;
+          std::memcpy(&ref, p, 4);
+          if (ref != 0 && !npc.propositions.valid(ref)) ++bad;
+          const Proposition pr = npc.propositions.get(ref);
           if (!pr.empty() && !pr.well_formed()) ++bad;
           for (int i = 0; i < pr.size(); ++i) {
             const auto tg = Proposition::tag(pr.symbol(i));
@@ -399,7 +408,9 @@ TEST(malformed_propositions_are_emptied_and_counted) {
     c.u8(3);   // b_source next to it, valid
     return load_hand(hand_npcs("belief", true, {{"b_proposition", ColType::Prop}, {"b_source", ColType::U8}}, c.b), back);
   };
-  auto belief = [&]() -> const gen::Belief& { return back[0]->state.belief_records.slot_record(0); };
+  auto belief = [&]() { struct V { Proposition b_proposition; std::uint8_t b_source; } v;
+    const auto& r = back[0]->state.belief_records.slot_record(0);
+    v.b_proposition = back[0]->proposition(r.b_proposition); v.b_source = r.b_source; return v; };
   auto rep = run({{9u << 24 | 1, 0}});                       // tag 9
   CHECK(rep.ok && rep.invalid_propositions == 1 && belief().b_proposition.empty());
   CHECK_EQ(int(belief().b_source), 3);
@@ -453,6 +464,42 @@ TEST(fuzz_2000_mutations_never_leave_an_out_of_bounds_value) {
   }
   std::printf("  fuzz : %d acceptes, %d refuses, %ld valeurs ramenees a l'initial\n", accepted, refused_n, corrected);
   CHECK(accepted > 0 && refused_n > 0 && corrected > 0);
+}
+
+// T06: reference_save_pre_t06.emsv was written by the code BEFORE the compaction (Proposition inside the records,
+// 108 152-byte NpcState); the .fingerprints file holds the logical fingerprints that code computed. Reloaded now
+// (PropRef + arena), every NPC must have the same logical fingerprint, and saving again must not change it.
+TEST(a_save_written_before_the_compaction_reloads_with_the_same_fingerprint) {
+  auto slurp = [](const char* name) {
+    std::ifstream f(std::string(EM_TESTDATA_DIR) + "/" + name, std::ios::binary);
+    return std::vector<std::uint8_t>(std::istreambuf_iterator<char>(f), {});
+  };
+  const auto file = slurp("reference_save_pre_t06.emsv");
+  CHECK(file.size() > 1000);
+  const auto fp_text = slurp("reference_save_pre_t06.fingerprints");
+  std::vector<std::uint64_t> expected;
+  for (std::size_t i = 0; i + 16 <= fp_text.size(); i += 17)
+    expected.push_back(std::stoull(std::string(fp_text.begin() + long(i), fp_text.begin() + long(i) + 16), nullptr, 16));
+  CHECK_EQ(expected.size(), 4u);
+  // two framed sections back to back: u32 tag | u16 version | u16 flags | u64 length | u32 crc | bytes
+  auto section_len = [&](std::size_t at) { std::uint64_t n; std::memcpy(&n, file.data() + at + 8, 8); return std::size_t(20 + n); };
+  const std::size_t name_len = section_len(0), npcs_len = section_len(name_len);
+  CHECK_EQ(name_len + npcs_len, file.size());
+  std::vector<std::unique_ptr<NpcBundle>> back;
+  const auto rep = NpcStateCodec::load(std::span(file).first(name_len), std::span(file).subspan(name_len, npcs_len), 100, 5, back);
+  CHECK(rep.ok);
+  CHECK_EQ(back.size(), 4u);
+  CHECK_EQ(rep.arena_overflow_propositions, 0u);
+  CHECK(rep.unknown_columns == 0 && rep.absent_columns == 0 && rep.dropped_propositions == 0 && rep.invalid_propositions == 0);
+  CHECK(rep.out_of_range_values == 0 && rep.lost_lists == 0);
+  for (std::size_t i = 0; i < back.size(); ++i) CHECK(NpcStateCodec::fingerprint(*back[i]) == expected[i]);
+  // and the round trip of the NEW layout keeps it
+  const auto again = NpcStateCodec::save_npcs_section(back);
+  std::vector<std::unique_ptr<NpcBundle>> back2;
+  CHECK(NpcStateCodec::load(NpcStateCodec::save_name_section(), again, 100, 5, back2).ok);
+  for (std::size_t i = 0; i < back2.size(); ++i) CHECK(NpcStateCodec::fingerprint(*back2[i]) == expected[i]);
+  // the encoding itself is byte-identical to the one the old code wrote (same wire format)
+  CHECK(again.size() == npcs_len && std::equal(again.begin(), again.end(), file.begin() + long(name_len)));
 }
 
 EMERGENCE_TEST_MAIN()

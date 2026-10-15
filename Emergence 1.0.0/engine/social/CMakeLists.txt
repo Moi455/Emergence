@@ -47,3 +47,16 @@ target_link_libraries(test_social_language PRIVATE emergence_social)
 target_include_directories(test_social_language PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 emergence_strict_target(test_social_language)
 add_test(NAME test_social_language COMMAND test_social_language)
+
+# T06: the per-NPC proposition arena and its law of forgetting.
+target_sources(emergence_social PRIVATE src/npc_bundle.cpp)
+
+# T06: the reference save written BEFORE the compaction is reloaded by the test.
+target_compile_definitions(test_social_codec PRIVATE EM_TESTDATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
+
+# T14: the governor judges speech and records (check_utterance, check_record), parity with governor.py on shared vectors.
+add_executable(test_social_governor_speech tests/test_governor_speech.cpp)
+target_link_libraries(test_social_governor_speech PRIVATE emergence_social)
+target_include_directories(test_social_governor_speech PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+emergence_strict_target(test_social_governor_speech)
+add_test(NAME test_social_governor_speech COMMAND test_social_governor_speech)

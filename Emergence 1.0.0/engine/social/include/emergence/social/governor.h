@@ -6,11 +6,13 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <span>
 #include <string_view>
 #include <type_traits>
 
 #include "emergence/social/catalogue_gen.h"
+#include "emergence/social/language.h"
 
 namespace em::social {
 
@@ -40,6 +42,8 @@ enum class Reason : std::uint8_t {
   unknown_gesture, invalid_value,
   d10_intimate, d10_value, d10_person, d10_whitelist,
   duplicate, too_many_writes, ledger_full,
+  d10_hearer,   // T14 (P30): an intimate act or desire told to a hearer who may be a minor, or to unknown hearers
+  unexpanded,   // T14: a cited record has no frozen copy (missing, invalid, or nested too deep)
   kCount
 };
 
@@ -145,6 +149,21 @@ struct GestureCall {
 // A condition id the model may name: false for gen::Condition::kCount, out of range, or a retired slot (retired_N).
 bool condition_is_live(gen::Condition c);
 
+// What a cited record (b: m: g: h: q: c:) or perceived event (@V) says: its frozen copy, parsed as a BARE proposition
+// (ParseOptions::bare). null = no copy. A copy that is not ok() counts as no copy. The callback is called at most once
+// per reference and per check; the pointer must stay valid until the check returns.
+using RecordLookup = std::function<const TypedExpression*(std::string_view)>;
+
+// A symbol of the content (@E2, n:7, you, us ...) and who it designates. `me` is always the speaker (the engine's
+// word, never a binding). A symbol that is not bound is a thing if it is a thing pointer / deictic / number / kind,
+// and an UNKNOWN person otherwise. A null party is an unknown person.
+struct PartyBinding {
+  std::string_view symbol;
+  const Party* party = nullptr;
+};
+
+enum class RecordKind : std::uint8_t { goal, belief, memory, agreement, plan };
+
 class Governor {
  public:
   Verdict check_write(const WriteRequest& request, WriteLedger& ledger) const;
@@ -153,6 +172,24 @@ class Governor {
   // param is given (speak, write) is refused (Reason::structured): its content goes through check_utterance,
   // which is not ported yet (review 10). The oracle checks the content inside check_gesture.
   Verdict check_gesture(const GestureCall& call, const Party* actor, bool executed = false) const;
+
+  // T14: the CONTENT of a speech (port of governor.py check_utterance), D10 and P30.
+  //  * hearers matter only for an intimate ACT or DESIRE (intimate manner, intimate variable, intimate gesture): never
+  //    said to a hearer who may be a minor (Reason::d10_hearer); `hearers` empty = unknown hearers (a possible minor).
+  //    Links (spouse, lover) and judgements (adultery) stay social facts a child may hear (P30, O22).
+  //  * the PARTICIPANTS of an intimate act or link must be adults (Reason::d10_intimate), a described gesture is
+  //    checked as a gesture; every cited record is unfolded through `expand` and checked as said, one level deeper
+  //    each time (more than 2 levels, or no copy: Reason::unexpanded).
+  //  * said = false: not said to anyone (a private thought): the hearers are ignored.
+  //  * an expression that is not ok(): Reason::invalid_value.
+  Verdict check_utterance(const TypedExpression& expression, const Party* speaker,
+                          std::span<const PartyBinding> parties = {}, std::span<const Party* const> hearers = {},
+                          const RecordLookup& expand = {}, bool said = true) const;
+
+  // A goal, belief, memory, agreement or plan written by the model: not said, so check_utterance(said = false).
+  // A kind outside RecordKind is Reason::invalid_value.
+  Verdict check_record(RecordKind kind, const TypedExpression& expression, const Party* owner,
+                       std::span<const PartyBinding> parties = {}, const RecordLookup& expand = {}) const;
 
   // Sparse writes: one per (target, variable), the first kWritesPerDecision kept. out[i] is the verdict of
   // keys[i]: ok (kept), duplicate, or too_many_writes; returns how many are kept. `out` shorter than `keys`:

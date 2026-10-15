@@ -57,9 +57,12 @@ class Codes:
     TRUTH_ERROR = "truth_error"
     TOO_MANY_STEPS = "too_many_steps"
     BAD_PLAN = "bad_plan"
+    TOO_MANY_THOUGHTS = "too_many_thoughts"
+    BAD_THOUGHT = "bad_thought"
+    INCOHERENT_TRACE = "incoherent_trace"
     GOVERNOR = "governor:"
     ALL = (INVALID_JSON, BAD_SHAPE, UNKNOWN_GESTURE, TOO_MANY_WRITES, BAD_PARAM, BAD_POINTER, BAD_SPEECH, BAD_WRITE, UNKNOWN_OLD,
-           TRUTH_ERROR, TOO_MANY_STEPS, BAD_PLAN)
+           TRUTH_ERROR, TOO_MANY_STEPS, BAD_PLAN, TOO_MANY_THOUGHTS, BAD_THOUGHT, INCOHERENT_TRACE)
 
 
 class Refusal(Exception):
@@ -88,6 +91,8 @@ class Decision:
     plan_given: bool = False           # the answer carried a `plan` field (None then means "no plan", explicitly)
     stop: str | None = None            # the decision's stop condition (a gesture without `until`)
     stop_given: bool = False
+    thoughts: list | None = None       # the written trace (T36), normalised; None: the answer carried none
+    thoughts_given: bool = False
 
     def to_dict(self) -> dict:
         d = {"gesture": self.gesture, "params": self.params, "speech": self.speech,
@@ -97,6 +102,8 @@ class Decision:
             d["plan"] = self.plan
         if self.stop_given:
             d["stop"] = self.stop
+        if self.thoughts_given:                               # absent for every answer that did not carry a trace (older data)
+            d["thoughts"] = self.thoughts or []
         return d
 
 
@@ -579,6 +586,174 @@ class PlanChecker:
         return {"gesture": g.id, "target": target}
 
 
+# ---------------------------------------------------------------------------------------------------- thoughts
+class ThoughtChecker:
+    """The written trace of a decision (T36): up to MAX_THOUGHTS thoughts, each ONE record the mind writes before the act.
+    Every thought is a form the validator already knows, checked by the same code as the same thing written elsewhere:
+
+      belief / belief_about   {kind, target: new|b:N, prop}              a proposition (belief_about: (believes ...)); b_proposition
+      goal                    {kind, target: new|g:N, prop, mode, parent, deadline_h, when_h}   g_desired, g_mode, g_parent, g_deadline, g_when
+      plan                    {kind, serves: g:N|g:new, steps, says, repeat, repeat_period}     the steps as a `plan`; says = i_speech
+
+    The result is the normalised list; nothing here judges what the person thinks, only that it is well formed, bounded,
+    pointed at real records and allowed (D10 through the same governor calls)."""
+
+    KINDS = ("belief", "belief_about", "goal", "plan")
+    MODE_WORDS = ("achieve", "maintain", "avoid")
+
+    def __init__(self, tk: Toolkit, mind: Mind, params: ParamChecker, writes: "WriteChecker", speech: SpeechChecker):
+        self.tk, self.mind, self.writes, self.speech = tk, mind, writes, speech
+        self.plans = PlanChecker(tk, mind, params, writes)
+        self.max = tk.spec.max_thoughts
+
+    def check(self, raw: list, actor: Party) -> list:
+        if len(raw) > self.max:
+            raise Refusal(Codes.TOO_MANY_THOUGHTS, f"{len(raw)} > {self.max}")
+        out, new_goal = [], False
+        for i, t in enumerate(raw):
+            kind = t.get("kind")
+            if kind not in self.KINDS:
+                raise Refusal(Codes.BAD_THOUGHT, f"thought {i + 1}: kind {kind!r} is not one of {list(self.KINDS)}")
+            try:
+                if kind == "plan":
+                    one = self._plan(t, actor, new_goal)
+                else:
+                    one = self._record(kind, t, actor)
+                    new_goal = new_goal or (kind == "goal" and one["target"] == "new")
+            except Refusal as r:
+                raise Refusal(r.code, f"thought {i + 1} ({kind}): {r.detail}") from None
+            out.append(one)
+        return out
+
+    def _text(self, t: dict, name: str, required: bool = False) -> str:
+        v = t.get(name, "")
+        if v is None:
+            v = ""
+        if not isinstance(v, str):
+            raise Refusal(Codes.BAD_SHAPE, f"{name} must be a string")
+        if required and not v.strip():
+            raise Refusal(Codes.BAD_THOUGHT, f"{name} is required")
+        return v.strip()
+
+    def _hours(self, t: dict, name: str):
+        v = t.get(name)
+        if v in (None, ""):
+            return None
+        if isinstance(v, bool) or not isinstance(v, (int, float, str)):
+            raise Refusal(Codes.BAD_SHAPE, f"{name} must be a number of hours")
+        return str(v)
+
+    def _record(self, kind: str, t: dict, actor: Party) -> dict:
+        target = self._text(t, "target") or "new"
+        prop = self._text(t, "prop", required=True)
+        out = {"kind": kind, "target": target}
+        if kind == "goal":
+            mode = self._text(t, "mode")
+            head = prop[1:].split(None, 1)[0] if prop.startswith("(") else ""
+            if head in self.MODE_WORDS:                       # "(achieve P)": the mode written as the head of the goal
+                mode, prop = head, self._unwrap(prop, head)
+            if mode and mode not in self.MODE_WORDS:
+                raise Refusal(Codes.BAD_THOUGHT, f"mode {mode!r} is not one of {list(self.MODE_WORDS)}")
+            out["mode"] = mode or None
+        elif kind == "belief_about" and not prop.startswith("(believes"):
+            raise Refusal(Codes.BAD_THOUGHT, "belief_about is a proposition (believes PERSON PROP)")
+        var = "g_desired" if kind == "goal" else "b_proposition"
+        w = self.writes._one(target, var, prop, None, actor)
+        out["prop"] = w.value
+        if kind == "goal":
+            if out["mode"]:
+                self._aux("g_mode", target, out["mode"], actor)
+            parent = self._text(t, "parent")
+            if parent:
+                self._aux("g_parent", target, parent, actor)
+            out["parent"] = parent or None
+            for name, var2 in (("deadline_h", "g_deadline"), ("when_h", "g_when")):
+                hours = self._hours(t, name)
+                if hours is not None:
+                    self._aux(var2, target, hours, actor)
+                out[name] = float(hours) if hours is not None else None
+        return out
+
+    def _aux(self, var: str, target: str, value: str, actor: Party) -> None:
+        """A companion field of a goal (mode, parent, deadline, start): checked as the write it stands for."""
+        self.writes._structured(self.tk.spec.writes[var], target, target, value, actor)
+
+    @staticmethod
+    def _unwrap(prop: str, head: str) -> str:
+        inner = prop.strip()[1:-1].strip() if prop.strip().endswith(")") else prop.strip()[1:]
+        return inner[len(head):].strip()
+
+    def _plan(self, t: dict, actor: Party, new_goal: bool) -> dict:
+        steps = t.get("steps")
+        if not isinstance(steps, list) or not steps:
+            raise Refusal(Codes.BAD_PLAN, "a plan thought needs steps")
+        if not all(isinstance(st, dict) and isinstance(st.get("gesture"), str) and isinstance(st.get("target", ""), (str, type(None)))
+                   for st in steps):
+            raise Refusal(Codes.BAD_SHAPE, "steps must be [{gesture, target}]")
+        repeat, period = t.get("repeat"), t.get("repeat_period")
+        for name, v in (("repeat", repeat), ("repeat_period", period)):
+            if v is not None and (isinstance(v, bool) or not isinstance(v, (str, int))):
+                raise Refusal(Codes.BAD_SHAPE, f"{name} must be a string or a whole number")
+        plan = self.plans.check({"steps": steps, "repeat": repeat, "repeat_period": period}, actor)
+        serves = self._text(t, "serves")
+        if serves == "g:new":
+            if not new_goal:
+                raise Refusal(Codes.BAD_THOUGHT, "serves g:new, but no earlier thought creates a goal")
+        elif serves:
+            self.plans._parent(serves)
+        says = self._text(t, "says")
+        if says:                                              # a planned word is judged like a spoken one (D10: hearer, intimacy)
+            expr = self.speech.check(says)
+            v = self.tk.governor.check_utterance(expr, actor, self.mind.content_parties(None), addressees=None,
+                                                 expand=self.mind.expand, said=True)
+            if not v.allowed:
+                raise Refusal(Codes.GOVERNOR + v.code, f"says: {v.reason}")
+        return {"kind": "plan", "serves": serves or None, "steps": plan["steps"], "says": " ".join(says.split()) or None,
+                "repeat": plan["repeat"], "repeat_period": plan["repeat_period"]}
+
+
+class TraceChecker:
+    """`incoherent_trace`: only a FORMAL contradiction (docs/14 10.1). The answer writes a plan, its act is not the first
+    step of that plan, neither the act's gesture nor its target appears in any thought of the same answer, and the wake is
+    not P0 or P1 (cause perception, speech, request). Whether the act really serves the goal is measured elsewhere (M2), never
+    refused here."""
+
+    URGENT = ("perception", "speech", "request")
+
+    def __init__(self, tk: Toolkit, mind: Mind):
+        self.tk, self.mind = tk, mind
+
+    def check(self, thoughts: list, top_plan: dict | None, gesture, params: dict) -> None:
+        plans = [t for t in thoughts if t["kind"] == "plan"] + ([top_plan] if top_plan else [])
+        if not plans:
+            return
+        wake = self.mind.by_key.get("wake")
+        if wake is not None and wake.fields.get("cause") in self.URGENT:
+            return
+        refs = [p for p in gesture.params if p.kind == "ref"]
+        target = params.get(refs[0].name) if refs else None
+        for p in plans:                                       # the act is the first step of a plan
+            first = p["steps"][0]
+            if first["gesture"] == gesture.id and (first["target"] or None) in (None, target):
+                return
+        if any(st["gesture"] == gesture.id for p in plans for st in p["steps"]):
+            return
+        if target is not None and target in self._keys(thoughts):
+            return
+        raise Refusal(Codes.INCOHERENT_TRACE, f"you wrote a plan, but {gesture.id}" + (f" on {target}" if target else "") +
+                      " appears in none of your thoughts and is not its first step")
+
+    @staticmethod
+    def _keys(thoughts: list) -> set:
+        text = []
+        for t in thoughts:
+            for k in ("prop", "says", "target", "serves", "parent"):
+                if isinstance(t.get(k), str):
+                    text.append(t[k])
+            text += [st["target"] for st in t.get("steps", []) if st.get("target")]
+        return set(re.findall(r"[@\w:.]+", " ".join(text).replace("(", " ").replace(")", " ")))
+
+
 # ---------------------------------------------------------------------------------------------------- the validator
 class AnswerValidator:
     """validate(raw JSON text, situation) -> Outcome."""
@@ -634,6 +809,9 @@ class AnswerValidator:
                     raise Refusal(Codes.BAD_SHAPE, f"plan.{k} must be a string")
             if not isinstance(plan.get("repeat_period", ""), (str, int, type(None))) or isinstance(plan.get("repeat_period"), bool):
                 raise Refusal(Codes.BAD_SHAPE, "plan.repeat_period must be a string or a whole number")
+        thoughts = data.get("thoughts")
+        if thoughts is not None and (not isinstance(thoughts, list) or not all(isinstance(t, dict) for t in thoughts)):
+            raise Refusal(Codes.BAD_SHAPE, "thoughts must be a list of objects")
         for name, keys in (("params", ("name", "value")), ("writes", ("target", "variable", "value"))):
             lst = data.get(name, [])
             if not isinstance(lst, list):
@@ -683,5 +861,9 @@ class AnswerValidator:
         plan = None
         if data.get("plan") is not None:
             plan = PlanChecker(tk, mind, ParamChecker(tk, mind), write_checker).check(data["plan"], actor)
+        thoughts = None
+        if data.get("thoughts") is not None:
+            thoughts = ThoughtChecker(tk, mind, ParamChecker(tk, mind), write_checker, speech_checker).check(data["thoughts"], actor)
+            TraceChecker(tk, mind).check(thoughts, plan, gesture, params)
         return Decision(gesture.id, params, " ".join(speech_text.split()) if expression is not None else None, writes,
-                        notes, gesture.family, plan, "plan" in data, stop, "stop" in data)
+                        notes, gesture.family, plan, "plan" in data, stop, "stop" in data, thoughts, "thoughts" in data)

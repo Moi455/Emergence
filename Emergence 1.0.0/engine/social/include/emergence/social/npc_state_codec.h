@@ -3,7 +3,7 @@
 //   initial value; a change of type is refused (only a widening i16 -> i32 or u8 -> u16 is accepted).
 // - No raw struct copy: every field goes through the generated descriptors (npc_fields_gen.h), so the compaction of
 //   the state (T06) or a new column never breaks an old save.
-// - Lists (ListRef) are saved as their CONTENT and put back in a fresh SideTable; propositions are saved with their
+// - Lists (ListRef) are saved as their CONTENT and put back in a fresh SideTable; propositions (PropRef since T06) are saved as the 20-symbol exchange type, with their
 //   word and kind symbols as indices of the NAME tables, and translated back by name on load.
 // - Values are validated against the bounds of the catalogue (FieldDesc::min / max): a value outside is reset to the
 //   initial one and counted, never kept. A structural error (kind, slot, serial) refuses the whole load, and `out` is emptied.
@@ -19,6 +19,7 @@
 #include "emergence/social/governor.h"
 #include "emergence/social/npc_fields_gen.h"
 #include "emergence/social/npc_state_gen.h"
+#include "emergence/social/proposition_arena.h"
 #include "emergence/social/side_table.h"
 #include "emergence/social/vocab_gen.h"
 
@@ -28,9 +29,37 @@ namespace em::social {
 struct NpcBundle {
   gen::NpcState state;
   SideTable side;                          // targets of the ListRef fields
+  PropositionArena propositions;           // targets of the PropRef fields (T06)
   WriteLedger ledger;                      // what the model already moved (restored by WriteLedger::restore)
   std::vector<std::uint8_t> mental_map;    // reserved: the mental map, filled by T23b (opaque bytes)
+
+  // Keeps a proposition for a record field. When the arena is full: first a compaction (garbage left by overwritten
+  // or forgotten records), then the law of forgetting of the catalogue frees the worst belief or episode that holds a
+  // proposition (a protected one only when every candidate is protected, counted in evicted_protected()), and so on.
+  // Never aborts, never allocates. Returns 0 (counted in propositions.refused()) only when nothing more can go.
+  // Put the returned reference in a record of this NPC BEFORE the next call: a compaction only keeps the references
+  // that a record holds.
+  PropRef store_proposition(const Proposition& p, GameTime now);
+  Proposition proposition(PropRef ref) const { return propositions.get(ref); }
+  // Compaction of the arena: keeps what the records of this NPC reference, in the order of the descriptors.
+  void collect_propositions();
+  // Calls f(PropRef&) for every proposition reference held by a flat component or a used slot of a pool.
+  template <class F>
+  void for_each_prop_ref(F&& f);
 };
+
+template <class F>
+void NpcBundle::for_each_prop_ref(F&& f) {
+  auto walk = [&](const gen::ComponentDesc& d, unsigned char* base) {
+    for (const gen::FieldDesc& fd : d.fields)
+      if (fd.type == gen::ColType::Prop) f(*reinterpret_cast<PropRef*>(base + fd.offset));
+  };
+  gen::visit_components(state, [&](const gen::ComponentDesc& d, auto& c) { walk(d, reinterpret_cast<unsigned char*>(&c)); });
+  gen::visit_pools(state, [&](const gen::ComponentDesc& d, auto& pool) {
+    for (int i = 0; i < std::decay_t<decltype(pool)>::kCapacity; ++i)
+      if (pool.slot_used(i)) walk(d, reinterpret_cast<unsigned char*>(&pool.slot_record_mut(i)));
+  });
+}
 
 // The NAME tables: the names behind every numeric id, in the order of this build.
 struct NameTables {
@@ -53,6 +82,7 @@ struct LoadReport {
   std::size_t widened_columns = 0;       // columns read through an accepted widening
   std::size_t dropped_propositions = 0;  // propositions with a word or kind the NAME table no longer knows (emptied)
   std::size_t invalid_propositions = 0;  // malformed propositions (tag outside 1..6, children counts that are not one tree): emptied
+  std::size_t arena_overflow_propositions = 0;   // valid propositions that did not fit the 20 KiB arena (a save older than T06 can hold more): emptied
   std::size_t out_of_range_values = 0;   // values outside the catalogue bounds of their column: reset to the initial value
   std::size_t dangling_refs = 0;         // MRef above every serial the NPC ever issued: reset to 0
   std::size_t dropped_ledger_entries = 0;

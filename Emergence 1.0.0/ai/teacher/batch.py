@@ -25,7 +25,7 @@ from typing import Callable
 from .gemini import ApiResult
 from .phrasebook import PhraseBook
 from .render import SituationRenderer
-from .schema import EXAMPLES, MAX_WHY_WORDS, DecisionSchema, InstructionBuilder
+from .schema import EXAMPLES, MAX_WHY_WORDS, PLANNER_EXAMPLE, DecisionSchema, InstructionBuilder
 from .toolkit import Toolkit
 from .validate import AnswerValidator, Outcome
 
@@ -36,8 +36,8 @@ NOT_REPAIRED = ("governor:d10", "truth_error")        # D10 is never negotiated;
 class BatchInstructionBuilder(InstructionBuilder):
     """The single-situation instructions, with the answer format of a batch and the phrasebook before the examples."""
 
-    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None, vocabulary: str = "full"):
-        super().__init__(tk, vocabulary)
+    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None, vocabulary: str = "full", thoughts: bool = False):
+        super().__init__(tk, vocabulary, thoughts=thoughts)
         self.phrasebook = phrasebook
 
     def answer_format(self) -> str:
@@ -48,6 +48,7 @@ class BatchInstructionBuilder(InstructionBuilder):
                 "(any order). Each element is:\n"
                 '  "id": the situation id (S1, S2...), copied exactly;\n'
                 f'  "why": at most {MAX_WHY_WORDS} words, your reason (discarded afterwards, think briefly here first);\n'
+                + (self.thought_format() if self.thoughts else "") +
                 '  "gesture": exactly one gesture id from GESTURES;\n'
                 '  "params": a list of {"name", "value"} (both strings), one per parameter of that gesture; every parameter '
                 "is required unless marked ?; do not repeat a name;\n"
@@ -61,7 +62,10 @@ class BatchInstructionBuilder(InstructionBuilder):
                 "would: do not make them all gentle, nor all alike.")
 
     def examples(self) -> str:
-        items = [{"id": f"S{i + 1}", **DecisionSchema.example_object(e)} for i, e in enumerate(EXAMPLES)]
+        if self.thoughts:
+            items = [{"id": "S1", **DecisionSchema.example_object(PLANNER_EXAMPLE, PLANNER_EXAMPLE["thoughts"])}]
+        else:
+            items = [{"id": f"S{i + 1}", **DecisionSchema.example_object(e)} for i, e in enumerate(EXAMPLES)]
         out = ["== EXAMPLE (format only; keys are examples, use those of each situation) ==",
                json.dumps({"decisions": items}, separators=(",", ":"))]
         return "\n".join(out)
@@ -76,8 +80,8 @@ class BatchInstructionBuilder(InstructionBuilder):
 
 
 class BatchInstructions:
-    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None = None, vocabulary: str = "full"):
-        self.builder = BatchInstructionBuilder(tk, phrasebook, vocabulary)
+    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None = None, vocabulary: str = "full", thoughts: bool = False):
+        self.builder = BatchInstructionBuilder(tk, phrasebook, vocabulary, thoughts)
         self._text: str | None = None
 
     def text(self) -> str:

@@ -12,12 +12,19 @@ Deterministic (fixed seed, sorted iteration). The vectors compare the REASON COD
     accepts any string there), so its expected reason is written directly: invalid_value.
   * an EXPRESSION param given (speak, write): the oracle checks its content (here a neutral "(help)") inside
     check_gesture; the C++ port has no language yet and refuses it (structured) until check_utterance is ported;
+  * SPEECH (T14): check_utterance / check_record on utterances and records, with the speaker, the hearers (adult, minor,
+    unknown, absent, none) and the symbols of the content bound to palette parties (real / believed / apparent ages,
+    perceived or absent, name-only), a library of cited records (intimate acts, links, chains deeper than the limit,
+    a self-cycle, an invalid copy, a missing copy) and expand given or not; P30: an intimate act or desire is never
+    said to a possible minor, links and judgements are; a private thought is not a speech. The texts come from the
+    catalogue's stories, from templates and from substitutions of intimate words; the oracle decides each one;
   * the ledger: days that go back and aberrant jumps (both ignored: time never goes back, review 11 and 13)
     and a ledger filled to LEDGER_CAPACITY live keys (the next new key: ledger_full).
 """
 from __future__ import annotations
 
 import random
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -26,9 +33,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "tools"))
 from schema import Catalogue  # noqa: E402
 from governor import LEDGER_CAPACITY, SELF_HOLDERS, Governor, Party, WriteLedger, age_tenths, tenths  # noqa: E402
+import language  # noqa: E402
 from gen_cpp import Orders, ident  # noqa: E402
 
 OUT = ROOT.parent / "engine" / "social" / "tests" / "governor_vectors.inc"
+OUT_SPEECH = ROOT.parent / "engine" / "social" / "tests" / "governor_speech_vectors.inc"
+OUT_WORDS = ROOT.parent / "engine" / "social" / "src" / "governor_words.inc"
+SPEECH_CASES = 9000
 ORDERS = None   # gen_cpp.Orders: the C++ value index of an enum param is its position in the model's manner head
 NAN = float("nan")
 # Ages in YEARS, as the Python governor sees them; the C++ side gets them in tenths (floored, toward "minor")
@@ -278,6 +289,198 @@ def gen_gestures(cat, g, rng, L, counts):
         emit("em::social::gen::Gesture::kCount", [-1] * 6, [-1] * 6, -1, False, "unknown_gesture")
     L.append("};")
 
+# ---------------------------------------------------------------------------------------------- speech (T14)
+# Records cited by the contents: ref -> bare proposition. INVALID ones are copies that are not valid propositions
+# (the governor must refuse them as unexpanded); MISSING refs have no copy at all.
+RECORDS = {
+    "b:1": "(dead @E1)", "b:2": "(owns me silver_coin:3)", "b:3": "(did @E1 touch @E2 (how gentle))",
+    "b:4": "(did @E1 touch @E2 (how romantic))", "b:5": "(did @E1 touch @E2 (how intimate))",
+    "b:6": "(link @E1 spouse @E2)", "b:7": "(wants @E1 (did @E1 touch @E3 (how romantic)))",
+    "b:8": "(believes @E2 b:4)", "b:9": "(believes @E2 b:8)", "b:10": "(believes @E2 b:9)", "b:11": "(believes @E2 b:10)",
+    "b:12": "(knows @E1 b:12)", "b:13": "(assert (dead @E1))", "b:14": "(state @E1 attracted_to 3)",
+    "b:15": "(link @E1 lover @E3)", "b:16": "(believes @E2 b:3)", "b:17": "(believes @E2 b:16)", "b:18": "(knows @E1 b:6)",
+    "m:1": "(did @E1 touch @E2 (how romantic))", "m:2": "(did @E1 touch @E2 (how gentle))",
+    "m:3": "(did @E1 give silver_coin:3 (to @E2))", "m:4": "(did you touch me (how intimate))",
+    "m:5": "(did n:3 touch n:12 (how romantic))", "m:6": "(did @G1 touch @E2 (how romantic))",
+    "m:7": "(did @E1 go @L1)", "m:8": "(did @E1 speak (to @E2) (says b:4))",
+    "g:1": "(dead @E3)", "g:2": "(did me touch @E2 (how romantic))", "g:3": "(wants me b:4)", "g:4": "(owns me silver_coin:3)",
+    "h:2": "(did @E3 speak (to @E1) (says b:4))", "h:3": "(did @E3 speak (to @E1) (says b:3))", "h:4": "m:1",
+    "q:1": "(did @E1 give silver_coin:3 (to @E2))", "q:2": "(did @E1 touch @E2 (how romantic))",
+    "c:1": "(owes me @E2 b:3)", "c:2": "(owes me @E2 b:4)",
+    "@V1": "(did @E1 touch @E2 (how romantic))", "@V2": "(did @E1 go @L1)", "@V3": "(past (did @E1 touch @E2 (how intimate)))",
+}
+INVALID = {"b:13"}
+MISSING = ["b:99", "m:99", "g:99", "h:9", "q:9", "c:9", "@V9"]
+SYMS = ["@E1", "@E2", "@E3", "@G1", "n:3", "n:12", "you", "us", "someone", "@T1", "@L1"]
+INTIMATE_WORDS = ["romantic", "intimate", "spouse", "lover", "betrothed", "former_spouse", "adultery", "attracted_to"]
+TEMPLATES = [
+    "(assert (did {A} touch {B} (how romantic)))", "(assert (did {A} touch {B} (how intimate)))",
+    "(assert (did {A} touch {B} (how gentle)))", "(offer (did {A} touch {B} (how romantic)))",
+    "(ask (did {A} touch {B} (how intimate)))", "(assert (past (did {A} touch {B} (how romantic))))",
+    "(assert (link {A} spouse {B}))", "(assert (link {A} lover {B}))", "(assert (link {A} betrothed {B}))",
+    "(assert (link {A} former_spouse {B}))", "(assert (link {A} friend {B}))", "(assert (link {A} parent {B}))",
+    "(assert (qualifies m:1 adultery))", "(assert (qualifies m:2 adultery))", "(assert (qualifies m:99 adultery))",
+    "(assert (qualifies m:5 adultery))", "(assert (qualifies m:6 adultery))", "(assert (qualifies m:4 adultery))",
+    "(assert (qualifies @V1 adultery))", "(assert (qualifies @V2 adultery))", "(assert (qualifies h:2 adultery))",
+    "(assert (state {A} attracted_to 3))", "(assert (state {A} pain 3))",
+    "(assert (wants {A} (did {A} touch {B} (how romantic))))", "(assert (wants {A} (dead {B})))",
+    "(assert (believes {A} b:{N}))", "(assert (knows {A} b:{N}))", "(assert (knows {A} m:{M}))",
+    "(assert (did {A} speak (to {B}) (says b:{N})))", "(assert (did {A} speak (to {B}) (says (that b:{N}))))",
+    "(assert (did {A} speak (to {B}) (says (did {A} touch {B} (how romantic)))))",
+    "(assert (did {A} speak (to {B}) (says (link {A} lover {B}))))",
+    "(assert (did {A} speak (to {B}) (says (dead {B}))))", "(assert (did {A} speak (to {B}) (says m:{M})))",
+    "(assert (did {A} touch {B} (how romantic) (to {A})))", "(assert (did {A} touch (described d_woman) (how romantic)))",
+    "(assert (did {A} touch (of 2 @G1) (how romantic)))", "(assert (did {A} touch {B}))", "(assert (did {A} give silver_coin:3 (to {B})))",
+    "(assert (did {A} touch {B} (how gentle) (with {B})))", "(assert (dead (described d_woman)))",
+    "(assert (owes {A} {B} b:{N}))", "(assert (owes {A} {B} c:{C}))", "(assert (and b:{N} (dead {A})))",
+    "(assert (norm forbidden (did anyone touch someone (how romantic))))", "(assert (b:{N}))",
+    "(assert (caused h:2 (dead {A})))", "(assert (believes {A} (that b:{N})))",
+    "b:{N}", "m:{M}", "g:{G}", "h:{H}", "q:{Q}", "c:{C}", "@V{V}", "(that b:{N})", "(wants {A} g:{G})", "(wants {A} (that q:{Q}))",
+    "(link {A} spouse {B})", "(did {A} touch {B} (how romantic))", "(did {A} touch {B} (how intimate))",
+    "(state {A} attracted_to 3)", "(believes {A} b:{N})", "(owes {A} {B} c:{C})", "(knows {A} h:{H})", "(dead {A})",
+]
+REF_POOL = ["@E1", "@E2", "@E3", "@G1", "n:3", "n:12", "me", "you", "us", "someone", "everyone", "@T1", "@L1", "here",
+            "(described d_woman)", "(of 2 @G1)", "silver_coin:3", "knife", "@E4", "n:99", "3"]
+HAND_SPEECH = ["", "(", "(assert", "(assert (dead @E1)) extra", "hello", "(assert (no_such_word @E1))",
+               "(assert (did me touch you (how romantic)", "(assert (link spouse))", "(assert (dead))"]
+
+
+def speech_words(cat, v) -> list:
+    """(word, flags): 1 = intimate in a node (concept, variable, interpretation, intimate manner), 2 = sensitive for
+    the hearers (intimate manner, intimate gesture, intimate variable). Only the words with a flag."""
+    out = {}
+    for w in set(cat["concept"]) | set(cat["variable"]) | set(cat["interpretation"]) | set(cat["action"]) | v.manner_intimate:
+        c, var, i, a = cat["concept"].get(w), cat["variable"].get(w), cat["interpretation"].get(w), cat["action"].get(w)
+        f = 0
+        if (c is not None and c.intimate) or (var is not None and var.intimate) or (i is not None and i.intimate) or w in v.manner_intimate:
+            f |= 1
+        if w in v.manner_intimate or (a is not None and a.intimate) or (var is not None and var.intimate):
+            f |= 2
+        if f:
+            out[w] = f
+    return sorted(out.items())
+
+
+def emit_words(cat, v) -> None:
+    L = ["// GENERATED by catalogue/tools/governor_vectors.py from the Python governor (oracle). Do not edit.",
+         "// Words D10 looks at in a speech: 1 = intimate in a node (concept, variable, interpretation, manner),",
+         "// 2 = an intimate act or desire (intimate manner, gesture or variable): never said to a possible minor.",
+         "// Sorted by word (byte order), searched by binary search.",
+         "constexpr WordFlag kWordFlags[] = {"]
+    for w, f in speech_words(cat, v):
+        L.append(f'  {{"{w}", {f}}},')
+    L.append("};")
+    OUT_WORDS.write_text("\n".join(L) + "\n", encoding="utf-8")
+
+
+def text_pool(cat, v, rng) -> list:
+    """[(text, bare)]: story texts, templates over many pointers, substitutions of intimate words, a few invalid ones."""
+    import language_vectors as LV
+    from probes import BARE, FULL
+    seeds = []
+    for s in cat["story"].values():
+        seeds += [(u, False) for u in s.utterances]
+        for line in s.trace:
+            parts = [x.strip() for x in line.split("|", 2)]
+            if len(parts) == 3 and parts[1] in BARE:
+                seeds.append((parts[2], True))
+            elif len(parts) == 3 and parts[1] in FULL:
+                seeds.append((parts[2], False))
+    gen = LV.Gen(cat, v, rng, allow_intimate=True)
+    for _ in range(500):
+        seeds.append((LV.unparse(gen.utterance()), False))
+        seeds.append((LV.unparse(gen.prop(0)), True))
+    pool = list(seeds)
+    for t in TEMPLATES:
+        for _ in range(12):
+            a, b = rng.choice(REF_POOL), rng.choice(REF_POOL)
+            ids = {"N": rng.choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 99]),
+                   "M": rng.randint(1, 8) if rng.random() < 0.9 else 99, "G": rng.randint(1, 4), "H": rng.choice([2, 3, 4, 9]),
+                   "Q": rng.choice([1, 2, 9]), "C": rng.choice([1, 2, 9]), "V": rng.choice([1, 2, 3, 9])}
+            txt = t.format(A=a, B=b, **ids)
+            pool.append((txt, not txt.startswith(("(assert", "(offer", "(ask"))))
+    pool += [(h, False) for h in HAND_SPEECH]
+    # substitutions: a symbol of a valid text becomes an intimate word, a pointer, a description or another cite
+    toks = re.compile(r"[^()\s]+")
+    for text, bare in list(seeds):
+        for _ in range(2):
+            ms = list(toks.finditer(text))
+            if not ms:
+                continue
+            m = rng.choice(ms)
+            repl = rng.choice(INTIMATE_WORDS + REF_POOL[:14] + ["b:4", "m:1", "b:8", "b:99", "@V1", "h:2"])
+            pool.append((text[:m.start()] + repl + text[m.end():], bare))
+    seen, out = set(), []
+    for t in pool:
+        if t not in seen:
+            seen.add(t)
+            out.append(t)
+    return out
+
+
+def gen_speech(cat, g, rng, counts):
+    v = g.vocab
+    emit_words(cat, v)
+    lib = {}
+    for ref, txt in RECORDS.items():
+        e = language.Expression(txt, v, bare=True)
+        assert e.ok == (ref not in INVALID), (ref, txt, e.problems)
+        lib[ref] = e
+    pool = text_pool(cat, v, rng)
+    exprs = {}
+    valid = 0
+    for text, bare in pool:
+        e = language.Expression(text, v, bare=bare)
+        exprs[(text, bare)] = e
+        valid += e.ok
+    assert len(pool) > 2000 and valid > 1000, (len(pool), valid)
+    # keep every valid text reachable, and the invalid ones in small number
+    good = [k for k in pool if exprs[k].ok]
+    bad = [k for k in pool if not exprs[k].ok]
+    ops = ["said", "unsaid", "goal", "belief", "memory", "agreement", "plan", "bad_kind"]
+    L = ["// GENERATED by catalogue/tools/governor_vectors.py from the Python governor (oracle). Do not edit.",
+         "// Speech and record vectors (T14). The palette is that of governor_vectors.inc (party index, -1 = none).",
+         "struct SpeechRecord { const char* ref; const char* text; };", "static constexpr SpeechRecord kSpeechRecords[] = {"]
+    for ref, txt in RECORDS.items():
+        L.append(f'  {{"{ref}", "{txt}"}},')
+    L.append("};")
+    L.append("struct SpeechBinding { const char* symbol; signed char party; };")
+    L.append("// op: 0 said utterance, 1 unsaid utterance, 2..6 record goal/belief/memory/agreement/plan, 7 an unknown record kind")
+    L.append("struct SpeechCase { const char* text; bool bare; signed char op; signed char speaker; signed char n_hearers;"
+             " signed char hearers[4]; signed char n_parties; SpeechBinding parties[5]; bool expand; em::social::Reason reason; };")
+    L.append("static constexpr SpeechCase kSpeechCases[] = {")
+    for n in range(SPEECH_CASES):
+        text, bare = rng.choice(bad) if rng.random() < 0.03 else rng.choice(good)
+        e = exprs[(text, bare)]
+        op = rng.choices(range(8), weights=[55, 8, 6, 8, 5, 5, 5, 1] if not bare else [30, 6, 12, 16, 10, 12, 12, 2])[0]
+        speaker = pick_party(rng, 0.7)
+        nh = rng.choice([0, 1, 1, 1, 2, 2, 3, 4])
+        hearers = [pick_party(rng, 0.55) for _ in range(nh)]
+        np_ = rng.randint(0, 5)
+        bound = [(sym, pick_party(rng, 0.6)) for sym in rng.sample(SYMS, np_)]
+        if rng.random() < 0.5:                         # the usual cast: @E1 and @E2 are adults the speaker knows
+            bound = [b for b in bound if b[0] not in ("@E1", "@E2")] + [("@E1", rng.choice(ADULTS)), ("@E2", rng.choice(ADULTS))]
+            bound = bound[:5]
+        use_expand = rng.random() < 0.88
+        expand = (lambda ref: lib.get(ref)) if use_expand else None
+        parties = {sym: party_ref(i) for sym, i in bound}     # None: "malformed party", an UNKNOWN person
+        addressed = [party_ref(i) for i in hearers]
+        sp = party_ref(speaker)
+        if op < 2:
+            r = g.check_utterance(e, sp, parties, addressees=addressed, expand=expand, said=(op == 0))
+        elif op < 7:
+            r = g.check_record(["goal", "belief", "memory", "agreement", "plan"][op - 2], e, sp, parties, expand=expand)
+        else:
+            r = g.check_record("no_such_kind", e, sp, parties, expand=expand)
+        counts["speech"][r.code] += 1
+        hs = ", ".join(map(str, hearers + [-1] * (4 - len(hearers))))
+        bs = ", ".join(f'{{"{s}", {i}}}' for s, i in bound[:5]) or '{"", -1}'
+        t = text.replace("\\", "\\\\").replace('"', '\\"')
+        L.append(f'  {{"{t}", {str(bare).lower()}, {op}, {speaker}, {nh}, {{{hs}}}, {len(bound[:5])}, {{{bs}}}, '
+                 f'{str(use_expand).lower()}, {reason(r.code)}}},')
+    L.append("};")
+    OUT_SPEECH.write_text("\n".join(L) + "\n", encoding="utf-8")
+
 
 def main():
     global ORDERS
@@ -285,7 +488,7 @@ def main():
     ORDERS = Orders(cat)
     g = Governor(cat)
     rng = random.Random(SEED)
-    counts = {k: Counter() for k in ("write", "writes", "gesture")}
+    counts = {k: Counter() for k in ("write", "writes", "gesture", "speech")}
     L = ["// GENERATED by catalogue/tools/governor_vectors.py from the Python governor (oracle). Do not edit.",
          "// Party palette: {real, believed, apparent (tenths of years, floored, -1 unknown), resolved, person, perceived} and the",
          "// same ages in YEARS (what Party::from_years must turn into those tenths; -1 = none, NaN = non-finite).",
@@ -301,18 +504,19 @@ def main():
     gen_writes(cat, g, rng, L, counts)
     gen_check_writes(g, rng, L, counts)
     gen_gestures(cat, g, rng, L, counts)
+    gen_speech(cat, g, random.Random(SEED + 14), counts)
     # every reason the C++ governor can give must be covered by at least one vector
-    covered = counts["write"] + counts["writes"] + counts["gesture"]
+    covered = counts["write"] + counts["writes"] + counts["gesture"] + counts["speech"]
     expected = {"ok", "jump", "step", "slow", "clipped", "unknown_variable", "engine_owned", "structured",
                 "unknown_gesture", "invalid_value", "d10_intimate", "d10_value", "d10_person", "d10_whitelist",
-                "duplicate", "too_many_writes"}
+                "duplicate", "too_many_writes", "d10_hearer", "unexpanded", "invalid_value"}
     missing = sorted(expected - set(covered))
     if missing:
         raise SystemExit(f"no vector for the reasons: {missing}")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(L) + "\n", encoding="utf-8")
     print(f"écrit {OUT}")
-    for k in ("write", "writes", "gesture"):
+    for k in ("write", "writes", "gesture", "speech"):
         print(f"  {k:8s} {sum(counts[k].values()):5d}  " + ", ".join(f"{c}={n}" for c, n in sorted(counts[k].items())))
 
 

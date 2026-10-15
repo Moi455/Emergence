@@ -11,6 +11,22 @@ using EntityId = std::uint32_t;   // objective id: engine only, never read by th
 using GameTime = std::int64_t;    // game seconds (D30: a day is 1 h 30 real)
 using ListRef = std::uint32_t;    // handle into a side table of variable-size data (0 = empty)
 
+// A game time STORED in a record: the same 64 bits as a GameTime, kept as two 32-bit halves so that the alignment is 4,
+// not 8. Records then need no 8-byte tail padding (about 1 KiB per NPC, T06). Converts to and from GameTime implicitly;
+// the save codec copies the 8 bytes (little-endian: the same bytes as an int64).
+class PackedTime {
+ public:
+  constexpr PackedTime() = default;
+  constexpr PackedTime(GameTime t) : lo_(std::uint32_t(std::uint64_t(t))), hi_(std::uint32_t(std::uint64_t(t) >> 32)) {}
+  constexpr operator GameTime() const { return static_cast<GameTime>(std::uint64_t(hi_) << 32 | lo_); }
+  constexpr PackedTime& operator+=(GameTime d) { return *this = GameTime(*this) + d; }
+  constexpr PackedTime& operator-=(GameTime d) { return *this = GameTime(*this) - d; }
+
+ private:
+  std::uint32_t lo_ = 0, hi_ = 0;
+};
+static_assert(sizeof(PackedTime) == 8 && alignof(PackedTime) == 4);
+
 // A persistent reference to one of the NPC's OWN records (a mental file, a belief, a memory...): never an
 // objective id, never a token slot. serial 0 = none.
 struct MRef {
@@ -120,6 +136,14 @@ class RecordPool {
     for (int i = 0; i < N; ++i)
       if (r.serial != 0 && serial_[i] == r.serial) { serial_[i] = 0; --count_; return true; }
     return false;
+  }
+  // Drops a record BECAUSE the law of forgetting chose it (not a plain remove): counted in forgotten(), and in
+  // evicted_protected() when it was protected. Used to free room elsewhere (the proposition arena, T06).
+  bool forget(MRef r, bool was_protected) {
+    if (!remove(r)) return false;
+    ++forgotten_;
+    if (was_protected) ++evicted_protected_;
+    return true;
   }
   template <class F>
   void for_each(F&& f) {

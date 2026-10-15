@@ -71,6 +71,9 @@ engine/terrain/
 engine/scripts/
 engine/em_water/
 worldgen/
+# générateurs de voxels livrés par Monsieur le 15 oct. (maisons JS, style bon, architecture à refaire en Rust) :
+# pour la CONSTRUCTION DU MONDE, pas avant ; voir README_TECHNIQUE.md dans le dossier
+générateurs de voxels/
 game/
 prototypes/
 characters/

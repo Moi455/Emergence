@@ -15,9 +15,10 @@ from dataclasses import dataclass, field
 
 from tok2 import Record
 
-from .builders import (BeliefBuilder, EventBuilder, GoalBuilder, MemoryBuilder, PersonBuilder, PlaceBuilder,
-                       SelfBuilder, SkillBuilder, SocialBuilder, StateBuilder, ThingBuilder, WakeBuilder)
+from .builders import (BeliefBuilder, EventBuilder, MemoryBuilder, PersonBuilder, PlaceBuilder, SelfBuilder,
+                       SkillBuilder, SocialBuilder, StateBuilder, ThingBuilder, WakeBuilder)
 from .context import BuildContext
+from .planning import GoalBuilder, GroupBuilder, PlanBuilder
 from .pools import Pools
 from .propositions import PropositionGrammar
 from .scene import Person, Scene
@@ -34,6 +35,7 @@ class Mind:
     records: list[Record]
     people: dict[str, Person] = field(default_factory=dict)      # 'me', @E keys (filed, then ghosts) -> the true person
     extra_known: list[str] = field(default_factory=list)         # ghost keys
+    structure: str = "ordinary"                                  # the family of structure it was built around
 
     def known_keys(self) -> list[str]:
         return [r.key for r in self.records] + self.extra_known
@@ -42,14 +44,14 @@ class Mind:
 class MindBuilder:
     # the order matters: SELF_STATE needs the events and the body, WAKE needs everything
     PIPELINE = (SelfBuilder, PersonBuilder, ThingBuilder, PlaceBuilder, EventBuilder, BeliefBuilder, MemoryBuilder,
-                SocialBuilder, GoalBuilder, SkillBuilder, StateBuilder, WakeBuilder)
+                SocialBuilder, GroupBuilder, GoalBuilder, PlanBuilder, SkillBuilder, StateBuilder, WakeBuilder)
 
     def __init__(self, pools: Pools, grammar: PropositionGrammar):
         self.pools, self.grammar = pools, grammar
         self.builders = [b() for b in self.PIPELINE]                 # built once, reused for every situation
 
-    def build(self, scene: Scene, rng: random.Random, cause: str = "routine") -> Mind:
-        c = BuildContext(rng, self.pools, self.grammar, scene, cause)
+    def build(self, scene: Scene, rng: random.Random, cause: str = "routine", structure: str = "ordinary") -> Mind:
+        c = BuildContext(rng, self.pools, self.grammar, scene, cause, structure)
         for b in self.builders:
             b.build(c)
-        return Mind(c.records.ordered(TYPE_ORDER), c.layout.people(scene.self_), [g.key for g in c.layout.ghosts])
+        return Mind(c.records.ordered(TYPE_ORDER), c.layout.people(scene.self_), [g.key for g in c.layout.ghosts], structure)

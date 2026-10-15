@@ -21,6 +21,9 @@ FLAG_RATES = {("BELIEF", "polarity"): 0.9, ("BELIEF", "secret"): 0.05, ("BELIEF"
               ("HEARD", "polarity"): 0.9, ("HEARD", "secret"): 0.03, ("HEARD", "contradicted"): 0.03,
               ("MEMORY", "defining"): 0.08, ("MEMORY", "secret"): 0.06}
 CHILD_WEAPON_AGE = 12.0
+# a situation built around unequal information: secrets and contradicted beliefs are common
+UNEQUAL_INFO_RATES = {("BELIEF", "secret"): 0.3, ("BELIEF", "contradicted"): 0.25, ("HEARD", "contradicted"): 0.2,
+                      ("MEMORY", "secret"): 0.25}
 
 
 class RecordBook:
@@ -46,8 +49,9 @@ class RecordBook:
 class Filler:
     """Completes the fields a builder did not set, and draws enumerations."""
 
-    def __init__(self, pools: Pools, d: Draw):
+    def __init__(self, pools: Pools, d: Draw, rates: dict | None = None):
         self.pools, self.d, self.prior = pools, d, NumericPrior(d)
+        self.rates = FLAG_RATES | (rates or {})
         self.types = pools.interface.token_types
         self.intimate = pools.intimate_fields
 
@@ -57,7 +61,7 @@ class Filler:
             if name in fields or name in skip or name in self.intimate.get(typ, ()) or spec.get("components"):
                 continue
             if spec["scale"] == "bool":
-                rate = FLAG_RATES.get((typ, name))
+                rate = self.rates.get((typ, name))
                 if rate is not None:
                     fields[name] = self.d.chance(rate)
                 continue
@@ -82,13 +86,21 @@ def stage_of(age: float, values: list[str]) -> str:
 class BuildContext:
     """Everything a builder reads or writes. `cause` is why he wakes (drawn first, the situation justifies it)."""
 
-    def __init__(self, rng: random.Random, pools: Pools, grammar: PropositionGrammar, scene: Scene, cause: str):
+    def __init__(self, rng: random.Random, pools: Pools, grammar: PropositionGrammar, scene: Scene, cause: str,
+                 structure: str = "ordinary"):
         self.rng, self.pools, self.grammar, self.scene, self.cause = rng, pools, grammar, scene, cause
+        self.structure = structure                       # the family of structure of the situation (docs/14 10.2)
+        self.trigger = ""                                # the record that wakes him, once a builder has made it
+        self.outcome: str | None = None                  # how the step that just ended ended (cause plan only)
+        self.leaders: dict[str, str] = {}                # group key -> the person he believes leads it
+        self.focus = ""                                  # the goal the plan that wakes him serves (a builder sets it)
+        self.keep: set[str] = set()                      # goals that a later goal must not take the place of
+        self.routine_wake = False                        # the timer that wakes him is the period of a repeating plan
         self.d = Draw(rng)
         self.me = scene.self_
-        self.filler = Filler(pools, self.d)
+        self.filler = Filler(pools, self.d, UNEQUAL_INFO_RATES if structure == "unequal_info" else None)
         self.cap = {t: spec["count"] for t, spec in pools.interface.token_types.items()}
-        self.layout = Layout(scene, self.cap, self.count("LOCUS", 0), self.count("GROUP", 0))
+        self.layout = Layout(scene, self.cap, self.count("LOCUS", 0), self.count("GROUP", 1 if structure in ("cooperation", "authority") else 0))
         self._somebody_dies()
         self.records = RecordBook()
         self.parties = PartyBook(self.me)
@@ -111,12 +123,13 @@ class BuildContext:
 
     # ---- death (rare) ----------------------------------------------------------------------------------------
     DEATH_RATE = 0.03
+    LOSS_RATE = 0.85                                    # a situation built around a loss: somebody he knew is dead
 
     def _somebody_dies(self) -> None:
         """In about 3 % of the situations he knows somebody who is dead: a person who is not here and not his
         partner. Nobody dead informs him, owes him, owns a thing, is planned for or is talked about as alive."""
         cands = [e for e in self.layout.entries if e.present is None and e.link not in self.pools.intimate_links]
-        if cands and self.d.chance(self.DEATH_RATE):
+        if cands and self.d.chance(self.LOSS_RATE if self.structure == "loss" else self.DEATH_RATE):
             self.d.pick(cands).dead = True
 
     # ---- what belongs here ---------------------------------------------------------------------------------
@@ -134,7 +147,8 @@ class BuildContext:
 
     def scene_view(self) -> SceneView:
         lay = self.layout
-        return SceneView(self.pools, self.refs.thing_kinds, self.refs.animals, set(lay.ikeys), frozenset(lay.here))
+        return SceneView(self.pools, self.refs.thing_kinds, self.refs.animals, set(lay.ikeys), frozenset(lay.here),
+                         lay.loci, self.leaders)
 
     # ---- shared draws --------------------------------------------------------------------------------------
     def count(self, typ: str, lo: int, hi: int | None = None) -> int:

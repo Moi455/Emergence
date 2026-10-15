@@ -645,12 +645,12 @@ class TestBasics(unittest.TestCase):
                 self.assertIn("REQUEST", types)
             if w["cause"] == "perception":
                 self.assertEqual(recs[w["trigger"]].type, "EVENT")
-            if w["cause"] in ("body", "routine"):
+            if w["cause"] in ("body", "routine", "idle"):
                 self.assertEqual(w["trigger"], "")
             else:
-                self.assertIn(recs[w["trigger"]].type, ("REQUEST", "HEARD", "EVENT", "GOAL", "PLAN"))
+                self.assertIn(recs[w["trigger"]].type, ("REQUEST", "HEARD", "EVENT", "GOAL", "PLAN", "COMMIT", "ENTITY", "GROUP"))
             self.assertIn(w["mode"], ("act", "listen", "reflect"))
-        self.assertGreaterEqual(len(causes), 5)
+        self.assertGreaterEqual(len(causes), 9)
 
     def test_plans_have_a_target_and_a_next_gesture(self):
         plans = [r for s in SITS for r in s.context.records if r.type == "PLAN"]

@@ -156,6 +156,8 @@ class GoldenCasesAreStable(unittest.TestCase):
                                       (ROOT / "ai/tok2/golden/cases.jsonl").read_text(encoding="utf-8").splitlines() if line)}
         for c in old:
             self.assertIn(c["name"], new, f"cas retiré : {c['name']}")
+            if c["name"].startswith("sampler_"):       # redessinés exprès (T12, --update-sampler : plans, groupes, sous-objectifs)
+                continue
             self.assertEqual(c["expect"], new[c["name"]]["expect"], f"verdict ou empreinte changés : {c['name']}")
             if c["name"] not in REWRITTEN:
                 a, b = dict(c["context"]), dict(new[c["name"]]["context"])

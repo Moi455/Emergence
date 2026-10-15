@@ -6,7 +6,10 @@ It rebuilds the governor's view from the TRUTH of the scene (the real ages, `peo
 records (apparent age, beliefs about ages, how well each person is known), and asks the GOVERNOR:
   * every proposition (belief, heard, memory, goal, commitment, request) passes `check_record`, with the cited
     records (b:, m:, g:) and perceived events (@V) unfolded from the records;
-  * every EVENT passes `check_gesture`, every PLAN step too;
+  * every EVENT passes `check_gesture`, every PLAN step too (the step and the next one, and each gesture of the whole
+    chain with its own target), and what the plan means to say passes `check_record` as an utterance; a GROUP's
+    aim passes it as a belief;
+  * a goal's parent is another goal of the same mind, and the parents never loop;
   * no intimate symbol (flag `intimate` of the catalogue) in any text or list field of any record;
   * intimate fields (the ones the interface takes from an intimate variable) and intimate links only for an adult
     NPC and toward a person he knows by sight (`known_by == "seen"`) whom the governor does not take for a possible
@@ -118,18 +121,23 @@ class D10Audit:
         parties = self._parties(me, records, people)
         expand = self._expander(records)
         self_rec = next(r for r in records if r.type == "SELF")
+        by_key = {r.key: r for r in records}
         self_adult = me.age >= self.adult and self_rec.fields.get("age", 0) >= self.adult
         for rec in records:
             f = rec.fields
             problems += self._symbols(rec)
             if rec.type in PROP_KINDS and f.get("prop"):
                 problems += self._proposition(rec, PROP_KINDS[rec.type], parties, expand)
+                if rec.type == "GOAL":
+                    problems += self._parent(rec, by_key)
+            elif rec.type == "GROUP" and f.get("goal"):
+                problems += self._proposition(rec, "belief", parties, expand, field="goal")
             elif rec.type == "REQUEST" and f.get("prop"):
                 problems += self._proposition(rec, "goal", parties, expand, utterance=True)
             elif rec.type == "EVENT":
                 problems += self._event(rec, parties)
             elif rec.type == "PLAN":
-                problems += self._plan(rec, parties)
+                problems += self._plan(rec, parties, expand)
             elif rec.type == "SELF_MIND":
                 problems += self._own_intimate_fields(rec, self_adult)
             elif rec.type == "SELF_STATE":
@@ -181,8 +189,21 @@ class D10Audit:
                 yield from self._tokens(x)
 
     # ---- propositions ---------------------------------------------------------------------------------------------
-    def _proposition(self, rec, kind, parties, expand, utterance: bool = False) -> list[str]:
-        e = language.Expression(rec.fields["prop"], self.vocab, bare=not utterance)
+    def _parent(self, rec, by_key) -> list[str]:
+        """A sub-goal points at another goal of his, and the chain of parents ends."""
+        seen, key = {rec.key}, rec.fields.get("parent")
+        while key:
+            parent = by_key.get(key)
+            if parent is None or parent.type != "GOAL":
+                return [f"{rec.key}: its parent {key} is not a goal of his"]
+            if key in seen:
+                return [f"{rec.key}: the parents of this goal loop"]
+            seen.add(key)
+            key = parent.fields.get("parent")
+        return []
+
+    def _proposition(self, rec, kind, parties, expand, utterance: bool = False, field: str = "prop") -> list[str]:
+        e = language.Expression(rec.fields[field], self.vocab, bare=not utterance)
         if not e.ok:
             return [f"{rec.key}: not a sentence of the language ({'; '.join(e.problems)})"]
         v = self.gov.check_record(kind, e, parties["me"], parties, expand=expand)
@@ -216,12 +237,19 @@ class D10Audit:
                 params[name] = m
         return out + self._gesture(rec, "gesture", f["gesture"], params, f.get("target"), parties)
 
-    def _plan(self, rec, parties) -> list[str]:
+    def _plan(self, rec, parties, expand) -> list[str]:
         f = rec.fields
         out = []
         for step in ("step", "next"):
             if f.get(step):
                 out += self._gesture(rec, step, f[step], {}, f.get("target"), parties)
+        targets = iter(f.get("step_targets") or [])                  # one target per step that takes one, in order
+        for g in f.get("steps") or []:
+            a = self.cat["action"].get(g)
+            takes = a is not None and any(p.type == "ref" for p in a.params)
+            out += self._gesture(rec, "steps", g, {}, next(targets, None) if takes else None, parties)
+        if f.get("says"):
+            out += self._proposition(rec, "goal", parties, expand, utterance=True, field="says")
         return out
 
     # ---- fields -----------------------------------------------------------------------------------------------------

@@ -153,3 +153,16 @@ Exclus d'office (non texte) : tts, image, transcribe, lyria, robotics, computer-
 Le champ `teacher` de chaque ligne du dataset reste le modèle qui a répondu : les professeurs se comparent après coup (`python3 -m teacher.dataset stats`).
 
 **Fragile** : (1) les alias `*-latest` peuvent changer de modèle sans préavis, et partager le quota de leur cible (inconnu) ; (2) les échantillons du banc sont de 6 situations (une seule requête par modèle) : un taux de 83 % ou 100 % pèse peu ; (3) les chiffres de Gemma viennent d'une seule série de 3 requêtes ; (4) la sonde et le banc ont dépensé quelques requêtes que `quota.json` ne connaît pas (écart de 1 à 3 par modèle sur la journée).
+
+
+## T36 : « humain planificateur » et trace de pensée écrite (`--planner`)
+
+Cadre de Monsieur : le professeur est l'occasion de **distiller la psychologie humaine** ; on lui demande de se comporter **en humain** face à des cas, dans un format strict. La consigne décrit le FORMAT et le cadre humain (« avec ce passé, ces buts, ce caractère et le tempérament de ce village, que ferait un vrai être humain ? Pense d'abord, puis agis »), jamais ce qu'il doit décider.
+
+- **Mode, désactivé par défaut** : `DecisionSchema(tk, thoughts=True)`, `BatchInstructions(tk, pb, thoughts=True)`, `python3 -m teacher.generator --planner`. Sans le drapeau, le prompt est inchangé octet pour octet (empreintes épinglées dans `tests/test_thoughts.py`). À lancer dans une **série séparée** (`--name serie_planner`).
+- **Réponse** : avant le geste, `thoughts` (0 à 5, obligatoire mais pouvant être vide), puis la décision. Formes : `belief`, `belief_about` (`(believes ...)`), `goal` (`prop`, `mode`, `parent`, `deadline_h`, `when_h`), `plan` (`serves`, `steps` <= 6, `says`, `repeat`, `repeat_period`). Chaque forme passe par le contrôle de l'écriture ou du plan équivalent (langue, pointeurs, gouverneur, D10 à chaque étape). Le plan est une pensée : le champ `plan` de premier niveau n'est plus demandé dans ce mode (il reste accepté).
+- **Codes** : `too_many_thoughts`, `bad_thought`, et `incoherent_trace` (contradiction **formelle** seulement : un plan écrit, l'acte n'en est pas la première étape, ni son geste ni sa cible ne figurent dans les pensées, et le réveil n'est pas P0/P1, c'est-à-dire cause `perception`, `speech` ou `request`). La réparation existante marche telle quelle (la réponse refusée, `thoughts` compris, est renvoyée avec le code).
+- **Dossier** : `decision.thoughts` (liste normalisée) n'apparaît que si la réponse en portait une.
+- **Mesure sans réseau** : `python3 -m teacher.planner_measure --n 120` (réponses factices passant par le vrai chemin ; mesure la plomberie, pas Gemini).
+- **Mesure réelle (décision de Monsieur / du chef de projet, quota gratuit)** : `python3 -m teacher.generator --name serie_planner --planner --call --k 6 --max-requests 5`, puis `--status`. Pilote d'acceptation de la spec : 300 décisions (50 requêtes de 6).
+- **Reste** : `mind_replay.py` (rejeu des états intermédiaires en tok-2, exemples `reflect`/`act`), le suivi par code `incoherent_trace` et de la part de passivité dans `status.py`, les lignes `thoughts` dans `migrate.py` (`raw_answer` ne les recopie pas), la grammaire GBNF (inchangée).

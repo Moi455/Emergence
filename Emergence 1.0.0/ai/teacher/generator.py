@@ -134,7 +134,7 @@ class Generator:
                  days: float | None = None, max_requests: int | None = None, temperature: float = 0.9, repair: bool = True,
                  phrases: int = DEFAULT_COUNT, tk: Toolkit | None = None, pacer: Pacer | None = None, log=None,
                  watcher: RestartWatcher | None = None, restarter=None, argv: list[str] | None = None,
-                 sampler_factory=None, selfcheck=None):
+                 sampler_factory=None, selfcheck=None, planner: bool = False, max_items: bool = True):
         self.series, self.k, self.days, self.argv = series, k, days, list(argv or [])
         self.log = log or Log(getattr(client, "redactor", None))
         self.tk = tk or Toolkit()
@@ -151,9 +151,11 @@ class Generator:
         if self.desk.rebuilt:
             self.log(f"quota.json was damaged: today's counters of {', '.join(self.desk.rebuilt)} rebuilt from journal.jsonl")
         self.caller = ModelCaller(client, self.desk, self.pacer, self.log, self._event, temperature, 8192, max_requests)
-        self.schema_single = DecisionSchema(self.tk, "full")
+        self.planner = planner                          # T36: the "human planner" instructions and the trace of thoughts (off by default)
+        self.schema_single = DecisionSchema(self.tk, "full", thoughts=planner, max_items=max_items)
+        self._check_mode()
         self.phrasebook = PhraseBook(self.tk, phrases)
-        self.instructions = BatchInstructions(self.tk, self.phrasebook)
+        self.instructions = BatchInstructions(self.tk, self.phrasebook, thoughts=planner)
         self.renderer = SituationRenderer(self.tk)
         self.round = GroupedRound(self.instructions, BatchSchema(self.schema_single), BatchPrompt(self.renderer),
                                   AnswerValidator(self.tk), self.caller, self.caller.can_call, repair,
@@ -166,6 +168,17 @@ class Generator:
         self.holding = False            # a reply is held, not yet written: no restart now (it would be asked again)
         if watcher is not None and self.pacer.idle is None:
             self.pacer.idle = self.check_restart
+
+    # ---- mode of the series (default | planner): never mixed without an alert
+    def _check_mode(self) -> None:
+        want = "planner" if self.planner else "default"
+        have = self.state.extra.get("mode", "default")
+        untouched = self.state.requests == 0 and self.state.next_index == 0 and not self.dataset.count_lines()
+        if have != want and ('mode' in self.state.extra or not untouched):
+            raise FatalError(f"series {self.series.name} is a '{have}' series; this run is '{want}' (use another --name)")
+        if want == "planner" and self.state.extra.get("mode") != "planner":
+            self.state.extra["mode"] = "planner"         # a default series never gets the key: its state.json stays as it was
+            self.state.save(self.series.state)
 
     # ---- resume
     def _floor_cursor(self) -> None:
@@ -387,6 +400,8 @@ class Generator:
             results.append({"id": s.label, "index": s.situation.index, "code": o.code, "gesture": gesture,
                             "family": o.decision.family if o.ok else self._family(gesture),
                             "detail": o.detail[:160] if not o.ok else ""})
+            if o.ok and o.decision.thoughts:                 # T36: only planner lines carry the key; default journals are unchanged
+                results[-1]["traced"] = len(o.decision.thoughts)
         r = rq.result
         return {"t": _iso(now), "ts": round(now, 1), "pday": PacificDay.key(now), "kind": rq.kind, "model": rq.model,
                 "http": r.status, "finish": r.finish, "latency_s": round(r.latency, 2), "usage": _usage(r.usage),
@@ -473,6 +488,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--quota-file", type=Path, default=DEFAULT_CONFIG, help="known free-tier limits")
     ap.add_argument("--temperature", type=float, default=0.9)
     ap.add_argument("--phrases", type=int, default=DEFAULT_COUNT, help="valid sentences listed in the instructions")
+    ap.add_argument("--planner", action="store_true",
+                    help="T36 'human planner' mode: a short written trace of thoughts before each act (use a SEPARATE series, "
+                         "e.g. --name serie_planner; default off: the prompt of the running series is unchanged)")
+    ap.add_argument("--no-max-items", action="store_true",
+                    help="planner mode: leave maxItems off the thoughts and steps arrays (if the API answers 400 'invalid argument')")
     ap.add_argument("--no-repair", action="store_true", help="no repair request for the refused decisions")
     ap.add_argument("--no-restart", action="store_true", help="do not restart when the code or the catalogue changes")
     ap.add_argument("--key-file", type=Path, default=None, help="key file (default ~/.config/emergence/API_Keys)")
@@ -493,6 +513,8 @@ def selfcheck() -> int:
         n += len(renderer.render(sampler.sample(i)))
     QuotaConfig.load()
     problems = []
+    if len(BatchInstructions(tk, pb, thoughts=True).text()) < 5000:        # T36 planner mode loads too (not run)
+        problems.append("the planner instructions are suspiciously short")
     if len(phrases) < 10:
         problems.append(f"only {len(phrases)} valid sentences in the phrasebook")
     if len(text) < 5000:
@@ -506,8 +528,8 @@ def dry_run(a, series: SeriesDirectory, qc: QuotaConfig) -> int:
     from situations.sampler import SituationSampler
     tk = Toolkit()
     pb = PhraseBook(tk, a.phrases)
-    inst = BatchInstructions(tk, pb)
-    schema = BatchSchema(DecisionSchema(tk, "full"))
+    inst = BatchInstructions(tk, pb, thoughts=a.planner)
+    schema = BatchSchema(DecisionSchema(tk, "full", thoughts=a.planner, max_items=not a.no_max_items))
     prompt = BatchPrompt(SituationRenderer(tk))
     sampler = SituationSampler(a.seed)
     from .batch import Slot
@@ -556,7 +578,7 @@ def main(argv=None) -> int:
     log = Log(Redactor(key))
     watcher = None if a.no_restart else RestartWatcher(CodeFingerprint())
     gen = Generator(series, client, qc, a.k, a.seed, a.days, a.max_requests, a.temperature, not a.no_repair, a.phrases, log=log,
-                    watcher=watcher, argv=argv)
+                    watcher=watcher, argv=argv, planner=a.planner, max_items=not a.no_max_items)
     for sig in (signal.SIGTERM, signal.SIGINT):
         signal.signal(sig, lambda *_: gen.pacer.request_stop())
     return gen.run()

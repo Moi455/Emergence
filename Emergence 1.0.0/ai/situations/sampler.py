@@ -21,6 +21,7 @@ from .builders import WAKE_CAUSES
 from .draw import Draw
 from .gestures import INFANT
 from .mind import MindBuilder
+from .planning import STRUCTURES
 from .pools import Pools
 from .propositions import PropositionGrammar
 from .scene import Person, Scene, SceneFactory
@@ -37,6 +38,7 @@ class Situation:
     context: DecisionContext
     encoded: Encoded
     people: dict[str, Person] = field(default_factory=dict)    # key ('me', @E1…, ghosts) -> the TRUE person behind it
+    structure: str = "ordinary"                                # the family of structure (docs/14 10.2) it was built around
 
 
 class SituationSampler:
@@ -52,13 +54,14 @@ class SituationSampler:
     def sample(self, index: int) -> Situation:
         rng = random.Random(f"situation:{self.seed}:{index}")
         cause = Draw(rng).weighted(WAKE_CAUSES)                      # why he wakes comes first; the rest justifies it
+        structure = Draw(rng).weighted(STRUCTURES)                   # then what the situation is about
         scene = SceneFactory(rng, self.pools, self.grammar.rules).make(needs_company=cause in NEEDS_COMPANY)
         if scene.self_.age < INFANT and cause in ("speech", "request"):    # a baby neither speaks nor is asked anything
             cause = "perception"
-        mind = self.minds.build(scene, rng, cause)
+        mind = self.minds.build(scene, rng, cause, structure)
         self.audit.check(scene.self_, mind.records, mind.people)
         ctx = DecisionContext(mind.records, known_keys=mind.known_keys())
-        return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx), mind.people)
+        return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx), mind.people, structure)
 
 
 def main(argv=None):

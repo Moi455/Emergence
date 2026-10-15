@@ -11,6 +11,11 @@ catalogue: a catalogue change changes the prompt. The answer is ONE gesture; wha
 `plans=True` (T11, off by default: the prompt and the schema of every existing caller are unchanged, byte for byte) lets
 the teacher also WRITE a plan (`plan`: up to 6 steps, each a gesture and one target, a repeat mode, a parent goal) and
 a stop condition for the decision (`stop`); both are optional in the answer, and the validator accepts them either way.
+
+`thoughts=True` (T36, off by default, same guarantee) is the "human planner" mode: the role is "you are this person, what would
+a real human do", and the answer carries a short written trace BEFORE the act (`thoughts`: up to 5 records, belief, judgment
+of what another believes, goal, plan), then the decision. The plan is written as a thought, so the top-level `plan` is not
+asked in that mode (the validator still accepts it). The text describes the FORMAT and the human frame, never what to decide.
 """
 from __future__ import annotations
 
@@ -24,6 +29,7 @@ from .toolkit import Toolkit
 REF_KINDS = (("ENTITY", "@E"), ("GROUP", "@G"), ("THING", "@T"), ("INV", "@T"), ("PLACE", "@PLACE"), ("LOCUS", "@L"),
              ("BELIEF", "b:"), ("relative_direction_head", "direction"), ("forms", "form"))
 MAX_WHY_WORDS = 30
+THOUGHT_KINDS = ("belief", "belief_about", "goal", "plan")       # = validate.ThoughtChecker.KINDS
 EXAMPLES = (
     {"why": "He is rude to me, I answer him sharply.", "gesture": "speak",
      "params": [("to", "@E2"), ("volume", "loud"), ("tone", "angry")],
@@ -35,18 +41,31 @@ EXAMPLES = (
                 ("contact_zone", "hands")], "speech": "", "writes": [("@E2", "r_trust", "3")]},
 )
 
+# ONE example for the planner mode: thoughts, goal and act belong to the same case, and show the FORMAT only.
+PLANNER_EXAMPLE = {
+    "why": "I want that bowl, so I ask her for it.", "gesture": "speak",
+    "params": [("to", "@E2"), ("volume", "normal"), ("tone", "calm")],
+    "speech": "(request (did you give wooden_bowl (to me)))", "writes": [],
+    "thoughts": [{"kind": "belief", "target": "new", "prop": "(has @E2 wooden_bowl)"},
+                 {"kind": "goal", "target": "new", "prop": "(has me wooden_bowl)", "mode": "achieve", "deadline_h": "12"},
+                 {"kind": "plan", "serves": "g:new", "steps": [{"gesture": "speak", "target": "@E2"}],
+                  "says": "(request (did you give wooden_bowl (to me)))", "repeat": "once"}],
+}
+
 
 # ------------------------------------------------------------------------------------------- instruction text
 class InstructionBuilder:
     """The system text, section by section. Every list comes from the spec or the catalogue."""
 
-    def __init__(self, tk: Toolkit, vocabulary: str = "full", plans: bool = False):
-        self.tk, self.spec, self.vocabulary, self.plans = tk, tk.spec, vocabulary, plans
+    def __init__(self, tk: Toolkit, vocabulary: str = "full", plans: bool = False, thoughts: bool = False):
+        self.tk, self.spec, self.vocabulary, self.plans, self.thoughts = tk, tk.spec, vocabulary, plans, thoughts
 
     def build(self) -> str:
         parts = [self.role(), self.answer_format(), self.gestures(), self.manners(), self.conditions(), self.language(),
                  self.writes()]
-        if self.plans:
+        if self.thoughts:
+            parts.append(self.thoughts_section())
+        elif self.plans:
             parts.append(self.plan())
         parts.append(self.rules())
         if self.vocabulary != "none":
@@ -56,6 +75,8 @@ class InstructionBuilder:
 
     # ---- role and format
     def role(self) -> str:
+        if self.thoughts:
+            return self.human_role()
         return ("== ROLE ==\n"
                 "You are one inhabitant of a medieval-fantasy village in a simulated world. You are given your own mind "
                 "at this moment: what you perceive, believe, remember and want (never the hidden truth of the world). "
@@ -65,10 +86,25 @@ class InstructionBuilder:
                 "Doing nothing is a choice only when nothing in your mind calls for more. You know only what your "
                 "records say; you can be wrong.")
 
+    def human_role(self) -> str:
+        return ("== ROLE ==\n"
+                "You are one inhabitant of a medieval-fantasy village in a simulated world, and you are a human being. "
+                "Your records show what you perceive, believe, remember and want at this moment, never the hidden truth of "
+                "the world. Be this person: with this past, these ties, these goals, this character and the temperament "
+                "of this village (see WHY YOU DECIDE NOW and your records), what would a real human being do? Think first as "
+                "that person thinks: what they believe and judge, what they want, how they mean to go about it, what "
+                "they might offer or ask. Then act. People are kind, selfish, afraid, proud, deceitful, patient or "
+                "violent, each in their own measure. You know only what your records say, and you can be wrong.")
+
+    def thought_format(self) -> str:
+        return (f'  "thoughts": at most {self.spec.max_thoughts} thoughts you write BEFORE acting, in the order they come to '
+                'you, each one a record of your own mind (see THOUGHTS); the list may be empty;\n')
+
     def answer_format(self) -> str:
         return ("== ANSWER FORMAT ==\n"
                 "Reply with one JSON object and nothing else:\n"
                 f'  "why": at most {MAX_WHY_WORDS} words, your reason (discarded afterwards, think briefly here first);\n'
+                + (self.thought_format() if self.thoughts else "") +
                 f'  "gesture": exactly one gesture id from GESTURES;\n'
                 '  "params": a list of {"name", "value"} (both strings), one per parameter of that gesture; every parameter '
                 "is required unless marked ?; do not repeat a name;\n"
@@ -217,6 +253,29 @@ class InstructionBuilder:
                 'you make no plan now. Also optional: "stop", a stop condition (see STOP CONDITIONS) for a gesture that has '
                 'no "until" of its own: when the engine should stop it and ask you again (empty: it ends by itself).')
 
+    # ---- thoughts (T36)
+    def thoughts_section(self) -> str:
+        spec = self.spec
+        modes = "|".join(spec.writes["g_mode"].values)
+        repeats = "|".join(spec.writes["i_repeat"].values)
+        types = ", ".join(self.tk.interface.token_types["PLAN"]["fields"]["step_targets"]["ref_types"])
+        return ("== THOUGHTS (the short trace you write before the act; each thought writes ONE record of your mind) ==\n"
+                f"Up to {spec.max_thoughts} thoughts. Each is an object with a \"kind\"; propositions are written in the inner "
+                "language (see SPEECH) on keys of your records. The forms:\n"
+                '  {"kind":"belief","target":"new","prop":PROP}  something you now hold true (a fact, a judgment of someone or '
+                "of something);\n"
+                '  {"kind":"belief_about","target":"new","prop":(believes PERSON PROP)}  what you think another person believes;\n'
+                f'  {{"kind":"goal","target":"new","prop":PROP,"mode":{modes},"parent":"g:N","deadline_h":"hours","when_h":"hours"}}  '
+                "something you want to bring about, keep or avoid; parent (optional) = a goal of your records it serves; "
+                "deadline_h and when_h (optional) = hours from now;\n"
+                '  {"kind":"plan","serves":"g:N","steps":[{"gesture":ID,"target":KEY}],"says":UTT,"repeat":'
+                f'{repeats},"repeat_period":"hours"}}  how you mean to reach a goal: at most {spec.max_plan_steps} steps in order, '
+                "each a gesture id from GESTURES and ONE target key (the first pointer of that gesture), a record of type "
+                f"{types}; says (optional) = what you mean to say, as an utterance; repeat_period only with repeat every.\n"
+                '"target" is "new" for a new record, or the key (b:N, g:N) of one of your records that you replace. "serves" '
+                'is a goal key of your records, or "g:new" for the goal you wrote in an earlier thought of this answer. '
+                "Plan steps pass the same hard rules as a gesture (rule 1). Your gesture of this answer comes after the trace.")
+
     # ---- rules
     def rules(self) -> str:
         return ("== HARD RULES ==\n"
@@ -254,6 +313,9 @@ class InstructionBuilder:
     # ---- examples
     def examples(self) -> str:
         out = ["== EXAMPLES (format only; keys are examples, use yours) =="]
+        if self.thoughts:
+            out.append(json.dumps(DecisionSchema.example_object(PLANNER_EXAMPLE, PLANNER_EXAMPLE["thoughts"]), separators=(",", ":")))
+            return "\n".join(out)
         for e in EXAMPLES:
             out.append(json.dumps(DecisionSchema.example_object(e), separators=(",", ":")))
         return "\n".join(out)
@@ -265,20 +327,31 @@ class DecisionSchema:
 
     FIELDS = ("why", "gesture", "params", "speech", "writes")
 
-    def __init__(self, tk: Toolkit | None = None, vocabulary: str = "full", plans: bool = False):
+    def __init__(self, tk: Toolkit | None = None, vocabulary: str = "full", plans: bool = False, thoughts: bool = False,
+                 max_items: bool = True):
         self.tk = tk or Toolkit()
+        self.max_items = max_items            # False: no maxItems on the thoughts and steps arrays (in case the API answers 400)
         self.spec: OutputSpec = self.tk.spec
         self.vocabulary = vocabulary
-        self.plans = plans
+        self.plans = plans or thoughts
+        self.thoughts = thoughts
+
+    @property
+    def fields(self) -> tuple:
+        return ("why", "thoughts", *self.FIELDS[1:]) if self.thoughts else self.FIELDS
 
     @staticmethod
-    def example_object(e: dict) -> dict:
-        return {"why": e["why"], "gesture": e["gesture"], "params": [{"name": n, "value": v} for n, v in e["params"]],
-                "speech": e["speech"], "writes": [{"target": t, "variable": n, "value": v} for t, n, v in e["writes"]]}
+    def example_object(e: dict, thoughts: list | None = None) -> dict:
+        d = {"why": e["why"]}
+        if thoughts is not None:
+            d["thoughts"] = thoughts
+        d.update(gesture=e["gesture"], params=[{"name": n, "value": v} for n, v in e["params"]], speech=e["speech"],
+                 writes=[{"target": t, "variable": n, "value": v} for t, n, v in e["writes"]])
+        return d
 
     # ---- text
     def instructions(self) -> str:
-        return InstructionBuilder(self.tk, self.vocabulary, self.plans).build()
+        return InstructionBuilder(self.tk, self.vocabulary, self.plans, self.thoughts).build()
 
     # ---- JSON schema
     def _object(self, props: dict, required: list, gemini: bool) -> dict:
@@ -286,6 +359,12 @@ class DecisionSchema:
         node = {"type": t("object"), "properties": props, "required": required}
         if gemini:
             node["propertyOrdering"] = list(props)
+        return node
+
+    def _array(self, items: dict, limit: int, gemini: bool) -> dict:
+        node = {"type": "ARRAY" if gemini else "array", "items": items}
+        if self.max_items:
+            node["maxItems"] = limit
         return node
 
     def _schema(self, gemini: bool) -> dict:
@@ -302,13 +381,25 @@ class DecisionSchema:
             "speech": string,
             "writes": {"type": t("array"), "items": write, "maxItems": self.spec.max_writes},
         }
-        if self.plans:                       # optional: not in `required`, so an answer without them stays valid
+        if self.thoughts:                    # planner mode: the trace is asked (required, may be empty); the plan is one of its thoughts
+            step = self._object({"gesture": {**string, "enum": self.spec.gesture_ids}, "target": string}, ["gesture", "target"], gemini)
+            thought = self._object({
+                "kind": {**string, "enum": list(THOUGHT_KINDS)}, "target": string, "prop": string,
+                "mode": {**string, "enum": list(self.spec.writes["g_mode"].values)}, "parent": string,
+                "deadline_h": string, "when_h": string, "serves": string,
+                "steps": self._array(step, self.spec.max_plan_steps, gemini), "says": string,
+                "repeat": {**string, "enum": list(self.spec.writes["i_repeat"].values)}, "repeat_period": string,
+            }, ["kind"], gemini)
+            props = {"why": props["why"], "thoughts": self._array(thought, self.spec.max_thoughts, gemini),
+                     **{k: v for k, v in props.items() if k != "why"}}
+            props["stop"] = string
+        elif self.plans:                     # optional: not in `required`, so an answer without them stays valid
             step = self._object({"gesture": {**string, "enum": self.spec.gesture_ids}, "target": string}, ["gesture", "target"], gemini)
             props["plan"] = self._object({"steps": {"type": t("array"), "items": step, "maxItems": self.spec.max_plan_steps},
                                           "repeat": {**string, "enum": list(self.spec.writes["i_repeat"].values)},
                                           "repeat_period": string, "parent": string}, ["steps"], gemini)
             props["stop"] = string
-        return self._object(props, list(self.FIELDS), gemini)
+        return self._object(props, list(self.fields), gemini)
 
     def response_schema(self) -> dict:
         """For generationConfig.responseSchema (Gemini): uppercase OpenAPI types, propertyOrdering, no oneOf."""
