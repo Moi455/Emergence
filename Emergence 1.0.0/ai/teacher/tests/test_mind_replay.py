@@ -53,7 +53,7 @@ class ReplayShape(unittest.TestCase):
         for s in self.res.steps:
             w = next(r for r in s.record.context["records"] if r["type"] == "WAKE")["fields"]
             wakes.append((w["mode"], w["budget"]))
-        self.assertEqual(wakes, [("reflect", BUDGET), ("reflect", BUDGET - 1), ("reflect", BUDGET - 2), ("act", BUDGET - 3)])
+        self.assertEqual(wakes, [("reflect", BUDGET), ("reflect", BUDGET - 1), ("reflect", BUDGET - 2), ("act", 0)])   # the act: the line's own budget, n is not readable
         self.assertEqual([think_more_of(s.record.decision) for s in self.res.steps[:3]], [True, True, False])
         self.assertIsNone(think_more_of(self.res.steps[3].record.decision))
 
@@ -97,6 +97,28 @@ class ReplayShape(unittest.TestCase):
 
 
 class ReplayRules(unittest.TestCase):
+    def test_new_records_look_natural_and_are_deterministic(self):
+        a = MR.replay(line(THREE)).steps
+        b = MR.replay(line(THREE)).steps
+        self.assertEqual([s.record.context for s in a], [s.record.context for s in b])
+        c = MR.replay(line(THREE, index=7)).steps
+        fa = MindState.of(a[3].record.context, TOK)
+        fc = MindState.of(c[3].record.context, TOK)
+        for key in ("b:2", "g:2"):
+            self.assertNotEqual(fa.record(key).fields, fc.record(key).fields)          # no constant to recognise
+        self.assertNotEqual((fa.record("b:2").fields["certainty"], fa.record("b:2").fields["importance"]), (5.0, 5.0))
+        self.assertGreater(fa.record("b:2").fields["age"], 0.0)
+
+    def test_a_proposition_tok2_cannot_type_is_refused_by_the_validator_not_at_tokenisation(self):
+        from teacher.tests.test_thoughts import with_thoughts
+        from teacher.tests.test_teacher import MINI_VALIDATOR
+        bad = [{"kind": "belief", "target": "new", "prop": "(did @E1 speak @T1)"}]       # @T1 is a bowl: `speak` takes an agent
+        o = MINI_VALIDATOR.validate(with_thoughts(bad), MINI)
+        self.assertFalse(o.ok)
+        self.assertIn("bad_speech", o.code)
+        ok = [{"kind": "belief", "target": "new", "prop": "(did @E1 speak @E3)"}]
+        self.assertTrue(MINI_VALIDATOR.validate(with_thoughts(ok), MINI).ok)
+
     def test_no_thought_keeps_the_line_as_an_act(self):
         r = MR.replay(line([]))
         self.assertTrue(r.ok)

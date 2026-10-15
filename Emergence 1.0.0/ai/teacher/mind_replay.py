@@ -7,7 +7,7 @@ to go on thinking, then the `act`. This module turns one planner line into those
 file (`emergence-labels-1`), so that `student2.data.LabelDataset` reads them as they are:
 
     state 0 ──thought 1──► state 1 ──thought 2──► state 2 ... ──► state n ──act
-    (reflect, budget 5)    (reflect, budget 4)                      (act, budget 5 - n)
+    (reflect, budget 5)    (reflect, budget 4)                      (act, budget = the line's own)
 
 For a line with n >= 1 thoughts it writes n `reflect` lines and one `act` line (ids `<id>#r0` .. `<id>#r<n-1>`, `<id>#a`);
 for n = 0 the line is kept as it is (`<id>#a`). Everything below follows the conventions of the project:
@@ -23,9 +23,12 @@ for n = 0 the line is kept as it is (`<id>#a`). Everything below follows the con
     record KEY, never a slot; the new record is the first of its kind and, when the kind is full, the least salient
     record that nothing in the line mentions is evicted: its key stays in `known_keys`, so pointers to it become ghosts).
   * `WAKE.mode` is `reflect` and `WAKE.budget` decreases by one at each step (a fixed grant of 5, so that the number of
-    thoughts of the line is NOT readable from the budget); the act state keeps the original mode (`reflect` becomes `act`).
+    thoughts of the line is NOT readable from the budget); the act state keeps the original mode (`reflect` becomes `act`) and the
+    ORIGINAL budget of the line, whatever n is (a budget of 5 - n would give n away to the student at the act).
+  * the fields the engine fills in for a new record are drawn deterministically from the deciles observed in the teacher's
+    own contexts (see DECILES, `Natural`), and the record is inserted at a natural rank among its kind, not at the head.
   * nothing true enters the tokens: only the thought's own text (already checked against the keys of the mind) and
-    fixed defaults for the fields the engine fills in (source `inferred`, certainty 5, importance 5, ...).
+    natural-looking values for the fields the engine fills in (source `inferred`/`assumed`, certainty, importance, ...).
   * D10 and the governor at every step: each thought is re-checked by the REAL `ThoughtChecker` on the mind of the state it
     is written in (grammar, pointers, `check_record`, `check_gesture` for every plan step), the new state must tokenise, and
     the act is re-validated by the REAL `AnswerValidator` on the final state. A line any step of which fails is refused whole
@@ -38,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import re
 import sys
@@ -147,13 +151,60 @@ class MindState:
         return DecisionContext(list(self.records), sorted(self.known)).to_dict(tokenizer)
 
 
+
+# ---------------------------------------------------------------------------------------------------- natural fields
+# Deciles (0, 10, ..., 100 %) of the fields the engine fills in when a record is created, as OBSERVED in the contexts of the
+# teacher's planner series (2 652 lines, 15 Oct.): BELIEF of source `inferred`, GOAL of origin `self`, every PLAN. A written
+# record is given values DRAWN from these (so that the student cannot tell a replayed record from a natural one by a constant),
+# deterministically: a hash of (line id, step, field), never a global random generator. They are conventions of the replay, to be
+# replaced by what the engine writes.
+DECILES = {
+    "BELIEF.age": [0.101, 0.316, 0.877, 2.284, 6.892, 20.114, 54.104, 131.665, 368.915, 1013.55, 2995.543],   # n = 2204
+    "BELIEF.certainty": [0.0, 1.5, 2.2, 2.8, 3.4, 3.9, 4.38, 4.9, 5.4, 6.1, 10.0],   # n = 2204
+    "BELIEF.hops": [1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],   # n = 2204
+    "BELIEF.importance": [0.0, 0.3, 0.6, 1.0, 1.3, 1.7, 2.1, 2.6, 3.3, 4.1, 8.0],   # n = 2204
+    "BELIEF.weight": [-10.0, -3.7, -2.5, -1.7, -0.8, 0.0, 0.7, 1.6, 2.5, 3.8, 9.1],   # n = 2204
+    "GOAL.age": [0.003, 0.168, 0.375, 0.899, 2.121, 5.119, 11.417, 26.491, 62.479, 155.81, 499.582],   # n = 5840
+    "GOAL.priority": [0.0, 0.7, 1.4, 2.2, 3.3, 4.6, 5.7, 6.5, 7.1, 7.8, 10.0],   # n = 5840
+    "GOAL.progress": [0.0, 0.069, 0.13, 0.19, 0.26, 0.33, 0.4, 0.5, 0.59, 0.79, 1.0],   # n = 5840
+    "PLAN.attempts": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 3.0],   # n = 2648
+    "PLAN.commitment": [1.0, 1.9, 2.6, 3.4, 4.2, 4.9, 5.7, 6.6, 7.3, 8.2, 9.0],   # n = 2648
+    "PLAN.progress": [0.0, 0.1, 0.2, 0.31, 0.41, 0.51, 0.602, 0.7, 0.81, 0.99, 1.0],   # n = 2648
+}
+INFERRED_SHARE = 2204 / (2204 + 1363)      # a belief the mind writes is `inferred` or `assumed`, in the proportion observed
+
+
+class Natural:
+    """Deterministic draws from DECILES, keyed by (seed, name): u in [0, 1) is a hash, the value its interpolated quantile."""
+
+    def __init__(self, seed: str):
+        self.seed = seed
+
+    def u(self, name: str) -> float:
+        h = hashlib.blake2b(f"{self.seed}|{name}".encode(), digest_size=8).digest()
+        return int.from_bytes(h, "little") / 2**64
+
+    def value(self, table: str, name: str | None = None) -> float:
+        q = DECILES[table]
+        x = self.u(name or table) * (len(q) - 1)
+        i = min(int(x), len(q) - 2)
+        return q[i] + (q[i + 1] - q[i]) * (x - i)
+
+    def whole(self, table: str) -> int:
+        return int(round(self.value(table)))
+
+    def rank(self, n: int, name: str) -> int:
+        """A position among the n + 1 gaps of a list of n records (a natural rank is uniform in the observed contexts)."""
+        return min(int(self.u(name) * (n + 1)), n)
+
+
 class RecordWriter:
     """What the mind looks like after ONE thought: the record it writes (new, or a revision of an existing one)."""
 
     def __init__(self, tk: Toolkit):
         self.cap = {t: v["count"] for t, v in tk.interface.token_types.items()}
 
-    def apply(self, state: MindState, thought: dict, protected: set) -> tuple[MindState, str]:
+    def apply(self, state: MindState, thought: dict, protected: set, seed: str = "") -> tuple[MindState, str]:
         """-> (next state, key of the record written). `thought` is the normalised one (ThoughtChecker's output) whose
         `serves` has been resolved to a real key. The input state is not modified."""
         s = state.copy()
@@ -169,7 +220,8 @@ class RecordWriter:
                 self._goal_extras(rec.fields, thought, revise=True)
             return s, target
         key = s.next_key(prefix)
-        fields = {"belief": self._belief, "belief_about": self._belief, "goal": self._goal, "plan": self._plan}[kind](thought)
+        nat = Natural(f"{seed}|{key}")
+        fields = {"belief": self._belief, "belief_about": self._belief, "goal": self._goal, "plan": self._plan}[kind](thought, nat)
         if kind == "plan":
             served = thought.get("serves") or ""
             for old in [r for r in s.of_type("PLAN") if served and r.fields.get("goal") == served and r.key not in protected]:
@@ -178,8 +230,9 @@ class RecordWriter:
             if goal is not None:
                 goal.fields["has_plan"] = True
         self._make_room(s, type_, protected)
-        first = next((i for i, r in enumerate(s.records) if r.type == type_), len(s.records))
-        s.records.insert(first, Record(type_, key, fields))
+        idx = [i for i, r in enumerate(s.records) if r.type == type_]
+        at = (idx[0] + nat.rank(len(idx), "rank")) if idx else len(s.records)       # a natural rank among its kind, not the head
+        s.records.insert(at, Record(type_, key, fields))
         s.known.add(key)
         return s, key
 
@@ -194,14 +247,18 @@ class RecordWriter:
         raise ReplayError("no_room", f"{type_} is full and every record of it is mentioned in the line")
 
     @staticmethod
-    def _belief(t: dict) -> dict:
-        return {"prop": t["prop"], "source": "inferred", "age": 0.0, "contradicted": False, "hops": 0, "certainty": 5.0,
-                "informant": "", "shared": [], "importance": 5.0, "polarity": True, "secret": False, "weight": 0.0}
+    def _belief(t: dict, nat: Natural) -> dict:
+        return {"prop": t["prop"], "source": "inferred" if nat.u("source") < INFERRED_SHARE else "assumed",
+                "age": round(nat.value("BELIEF.age"), 3), "contradicted": False, "hops": nat.whole("BELIEF.hops"),
+                "certainty": round(nat.value("BELIEF.certainty"), 1), "informant": "", "shared": [],
+                "importance": round(nat.value("BELIEF.importance"), 1), "polarity": True, "secret": False,
+                "weight": round(nat.value("BELIEF.weight"), 1)}
 
     @classmethod
-    def _goal(cls, t: dict) -> dict:
+    def _goal(cls, t: dict, nat: Natural) -> dict:
         f = {"prop": t["prop"], "mode": t.get("mode") or "achieve", "status": "active", "origin": "self", "origin_ref": "",
-             "age": 0.0, "progress": 0.0, "priority": 5.0, "has_plan": False}
+             "age": round(nat.value("GOAL.age"), 3), "progress": round(nat.value("GOAL.progress"), 2),
+             "priority": round(nat.value("GOAL.priority"), 1), "has_plan": False}
         cls._goal_extras(f, t, revise=False)
         return f
 
@@ -216,12 +273,13 @@ class RecordWriter:
                 f[field_] = float(t[name])
 
     @staticmethod
-    def _plan(t: dict) -> dict:
+    def _plan(t: dict, nat: Natural) -> dict:
         steps = [s["gesture"] for s in t["steps"]]
         targets = [s["target"] for s in t["steps"] if s.get("target")]
         f = {"step": "", "next": steps[0], "goal": t.get("serves") or "", "target": t["steps"][0].get("target") or "",
-             "steps": steps, "step_targets": targets[:4], "status": "running", "progress": 0.0, "attempts": 0,
-             "repeat": t.get("repeat") or "once", "commitment": 5.0}
+             "steps": steps, "step_targets": targets[:4], "status": "running",
+             "progress": round(nat.value("PLAN.progress"), 2), "attempts": nat.whole("PLAN.attempts"),
+             "repeat": t.get("repeat") or "once", "commitment": round(nat.value("PLAN.commitment"), 1)}
         if t.get("repeat_period") is not None:
             f["repeat_period"] = int(t["repeat_period"])
         if t.get("says"):
@@ -308,6 +366,7 @@ class MindReplay:
             return [self._act_step(rec, state, act, ages, n=0, mode=None)]
         if len(thoughts) > self.budget:
             raise ReplayError("too_many_thoughts", f"{len(thoughts)} > {self.budget}")
+        own_budget = int(state.wake().fields.get("budget") or 0)
         protected = set(KEY_IN_TEXT.findall(json.dumps(d))) | {"me", "me.mind", "me.state", "wake", "@PLACE"}
         out, last_goal = [], None
         for k, raw in enumerate(thoughts):
@@ -320,7 +379,7 @@ class MindReplay:
             checked, code = self.judge.thought(here.records, ages, t)
             if checked is None:
                 raise ReplayError(f"thought_refused:{code}", f"thought {k + 1} ({t.get('kind')})")
-            nxt, key = self.writer.apply(here, checked, protected)
+            nxt, key = self.writer.apply(here, checked, protected, f"{rec.id}|{k}")
             if checked["kind"] == "goal" and checked["target"] == "new":
                 last_goal = key
             more = k < len(thoughts) - 1
@@ -328,7 +387,7 @@ class MindReplay:
             self._must_tokenise(nxt)
             state = nxt.with_wake(state.wake().fields["mode"], self.budget - k - 1)
         mode = "act" if rec_mode(rec) == "reflect" else rec_mode(rec)
-        out.append(self._act_step(rec, state.with_wake(mode, max(0, self.budget - len(thoughts))), act, ages, len(thoughts), mode))
+        out.append(self._act_step(rec, state.with_wake(mode, own_budget), act, ages, len(thoughts), mode))
         return out
 
     def _must_tokenise(self, state: MindState) -> None:

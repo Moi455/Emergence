@@ -169,6 +169,8 @@ class Mind:
         self.names = {r.fields["name"]: r.key for r in self.records if r.type == "ENTITY" and r.fields.get("name")}
         self._exprs: dict[str, object] = {}
         self._believed = self._believed_ages()
+        self.pointer_kinds = {r.key: r.fields["kind"] for r in self.records       # what a thing or a place IS: tok-2 types pointers by it
+                              if r.type in ("THING", "INV", "LOCUS") and isinstance(r.fields.get("kind"), str) and r.fields["kind"]}
 
     # ---- keys
     def has(self, key: str) -> bool:
@@ -349,7 +351,7 @@ class SpeechChecker:
     def check(self, text: str, wrap: str = ""):
         """text -> Expression. wrap='assert' wraps a proposition (records) into an utterance for validation."""
         s = " ".join(text.split())
-        e = self.tk.expression(f"({wrap} {s})" if wrap else s)
+        e = self.tk.expression(f"({wrap} {s})" if wrap else s, self.mind.pointer_kinds)
         if not e.ok:
             raise Refusal(Codes.BAD_SPEECH, "; ".join(e.problems))
         for sym in e.root.symbols():

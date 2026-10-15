@@ -56,7 +56,10 @@ class Toolkit:
     def printer(self) -> language.EnglishPrinter:
         return language.EnglishPrinter()
 
-    def expression(self, text: str) -> language.Expression:
+    def expression(self, text: str, pointer_kinds: dict | None = None) -> language.Expression:
+        """`pointer_kinds`: {key: kind word} of the things and places of a mind (tok-2 types pointers by it); None = unknown."""
+        if pointer_kinds:
+            return language.Expression(text, self.vocab, pointer_kinds=pointer_kinds)
         return language.Expression(text, self.vocab)
 
     def estimate_tokens(self, text: str) -> int:
