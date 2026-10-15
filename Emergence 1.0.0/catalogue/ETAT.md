@@ -176,3 +176,14 @@ Fait : `PropRef` (u32) + `PropositionArena` (`engine/social/include/emergence/so
 **Sauvegardes anciennes** : `engine/social/tests/data/reference_save_pre_t06.emsv` (4 PNJ) et `.fingerprints` ont été écrits par le code d'AVANT T06. Le test `a_save_written_before_the_compaction_reloads_with_the_same_fingerprint` (`test_social_codec`) les recharge : mêmes empreintes logiques, et la réécriture est identique octet pour octet (le format de fichier n'a pas bougé, version 1).
 
 Vérifié : ctest 15/15 vert, `gen_cpp.py --check` OK, `test_gen_cpp_stable` et `test_forgetting` verts, parité du gouverneur inchangée (`governor.cpp` non touché), aucun identifiant ne bouge (le registre des variables n'a pas changé).
+
+## T21 (15 oct. 2026) : `NpcLaws`, lois du corps et de l'esprit appliquées par le moteur
+
+`engine/social/{include/emergence/social/npc_laws.h, src/npc_laws.cpp, tests/test_npc_laws.cpp}`. Un seul pas du moteur : 16 s de jeu (1 s réelle) ; tout autre pas est refusé (`LawReport::refused`). Le résidu fractionnaire fait partie de l'enregistrement du PNJ (`NpcBundle::laws_residue`), sauvegardé dans une section `LAWS` ajoutée (une sauvegarde sans elle se recharge avec un résidu nul ; `NPCS` n'a pas changé). Contrat d'âge : `life_clock` fait foi ; `set_age()` à la création ; `enforce_d10()` au chargement et après chaque application d'écritures T_step. 60 h de marche : 9 repas, 15 boissons, 2 nuits de 8 h, sommeil max 8,1, aucune saturation.
+
+**Backlog des lacunes de lois (à faire, T34 ou une tâche dédiée)**
+- Mort ou dégâts par soif, faim (réserves à 0), froid (< 33 °C), chaleur (> 41 °C), vieillesse : absents ; seuls des drapeaux de danger sont rendus. Seules deux morts existent : sang < 40 % et souffle à 0 pendant 180 s.
+- `alive` est écrit par `step()` sur ces deux causes, mais la table de lois l'indique « pas de loi ».
+- `r_obligation`, `r_rivalry`, `b_importance` ont un `rate` T_step mais aucune loi moteur (le catalogue ne décrit aucune dérive du moteur).
+- `illnesses`, `immunities`, `pregnancy`, `fecundity`, `height`, `body_mass`, `wounds`, `permanent_marks` : reportés à T34 (listes dans les tables annexes ; la table `illness` n'est pas générée, donc ni cours de maladie ni fièvre).
+- Les paramètres numériques des lois (taux par heure, demi-vies) sont dans un tableau de `npc_laws.cpp` : à faire générer depuis le catalogue (`gen_cpp.py`, table `law`). Même chose pour la fin de l'enfance (3 ans), absente des tables générées.

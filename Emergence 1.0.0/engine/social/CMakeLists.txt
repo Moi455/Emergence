@@ -60,3 +60,12 @@ target_link_libraries(test_social_governor_speech PRIVATE emergence_social)
 target_include_directories(test_social_governor_speech PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 emergence_strict_target(test_social_governor_speech)
 add_test(NAME test_social_governor_speech COMMAND test_social_governor_speech)
+
+# T21: the laws of the body and of the mind that the ENGINE applies at each tick (hunger, thirst, sleep, emotions, ageing...).
+target_sources(emergence_social PRIVATE src/npc_laws.cpp)
+
+add_executable(test_social_npc_laws tests/test_npc_laws.cpp)
+target_link_libraries(test_social_npc_laws PRIVATE emergence_social)
+target_include_directories(test_social_npc_laws PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
+emergence_strict_target(test_social_npc_laws)
+add_test(NAME test_social_npc_laws COMMAND test_social_npc_laws)

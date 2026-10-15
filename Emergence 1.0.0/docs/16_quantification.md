@@ -172,3 +172,41 @@ La « décision valide » s'effondre en passe 2 pour les deux modèles (`small` 
 ### Limites
 
 Un seul lancement par passe (graine 0, latences ±20 %) ; pas de répétition de graine ; hyperparamètres non réglés (lr, dropout, decay) ; quantification `body` seulement dans ce tableau ; pas de mesure de la parole ni du débit de bout en bout d'`xl`. À relancer avec plus de données planificatrices (T12/T36) : `python3 -m student2.compare --data <fichiers> --out <dossier>` (`--reuse` pour re-quantifier sans réentraîner).
+
+
+### Correction : l'effondrement de validité de la passe 2 était un artefact (enquête du 15 oct.)
+
+**Cause, avec preuves.** Ce n'était pas la qualité des modèles.
+1. Le contrôle témoin passe : les étiquettes du professeur sont validées à 100 % (626/626) par le même validateur.
+2. Rejouer le modèle de la passe 1 (qui affichait 95,8 %) avec le code du 15 oct. 11 h donne 25,7 % ; en retirant `plan` et `stop` de ses décisions, 95,8 % (484/505). Les refus lus à la main sont tous de la forme « plan step 1: sleep cannot act on '@G3' » : le modèle émet un plan de 6 pas (et un `stop`) sur presque toutes les décisions (609/626 plans), sans rapport avec l'étiquette.
+3. Pourquoi ce n'était pas visible avant : `teacher/migrate.py` (`Migration.raw_answer`) ne transmettait pas `plan`/`stop`/`thoughts` au validateur avant 07 h 05 ; la passe 1 a importé l'ancienne version. Depuis, le validateur juge aussi le plan. Or **les têtes de plan et d'arrêt n'avaient jamais reçu d'étiquette** : elles sortaient des poids aléatoires.
+4. Trou de pipeline confirmé : le format planificateur (T36) range le plan dans `decision["thoughts"]` (entrées `kind: plan`, 560 lignes sur 2 647 ; 2 630 lignes portent des pensées), jamais dans `plan`. `labels.py` ne lisait que `plan`/`stop` de premier niveau et **ignorait `thoughts` sans le compter**. Aucune des deux séries ne porte de clé `stop`.
+
+**Corrigé dans `ai/student2`** (tests : `tests/test_xl.py::ThoughtsPlanTest`, 95 tests de la suite verts) :
+- `labels.py` : `LabelCodec.plan_of` lit le plan de premier niveau, sinon le premier `thoughts[kind=plan]` converti (`serves` -> `parent`, `g:new` -> pas de parent, `says` non appris) ; une trace sans plan = « pas de plan » explicite ; sans trace = pas d'étiquette. Résultat : 560 plans et 2 087 « pas de plan » étiquetés.
+- `data.py` : `CACHE_VERSION` 2 -> 3. Constat : le cache de jetons (clé = empreintes du catalogue + octets de la ligne) **ne se périme pas quand `labels.py` change** ; une première relance a donc entraîné sur d'anciennes cibles sans plan (plans `n = 0`). À retenir à chaque changement de `labels.py`.
+- `evaluate.py` : une étiquette sans plan/stop (`NO_LABEL`) ne fait plus juger le plan/stop prédit (comme `Trainer.exact_match`) ; nouvelle section `plans` du rapport (présence d'un plan, geste et cible de chaque pas étiqueté).
+- Non corrigé, signalé : les **pensées elles-mêmes** (croyances, buts : ~1 931 buts et 1 498 croyances sur `target: new`) ne sont apprises par aucune tête ; `labels.py` n'a pas de représentation pour elles (travail de schéma de sortie, pas un correctif).
+
+**Relance sur `planner_copy.jsonl` seul** (2 526 entraînement / 121 validation, plans étiquetés, mêmes réglages ; données et résultats dans `runs/xl_vs_small/run3b`). Validité : `small` **96,7 %**, `xl` **86,0 %** (xl : 16 `bad_speech`). Plans : présence correcte 80,2 % (la ligne « jamais de plan » donnerait ~79 %), **gestes et cibles des pas 0 % sur 31 pas étiquetés** : la tête de plan n'apprend que « pas de plan » avec 560 plans. Les chiffres de coût GPU, de taille et d'accord int8 (99,2 % d'accord de décision entière, 100 % geste+pointeurs) sont les mêmes qu'en passe 1. Les tableaux des passes 1 et 2 ci-dessus restent exacts pour les têtes réactives ; la colonne « décision valide » de la passe 2 est à ignorer.
+
+Données : 2526 entraînement / 121 validation, graine 0.
+
+| modèle | params (M) | lr | époques jouées / retenue | perte entraînement (retenue) | perte validation (retenue) | débit entraînement (déc/s) | pic mémoire entraînement (Mo) |
+|---|---|---|---|---|---|---|---|
+| small | 12.12 | 0.0003 | 10 / 7 | 9.293 | 11.76 | 253.1 | 630 |
+| xl | 175.27 | 0.0001 | 7 / 4 | 12.8409 | 12.396 | 93.4 | 3788 |
+
+| variante | geste top-1 | geste top-3 | pointeurs (geste juste) | manières (geste juste) | condition d'arrêt (geste juste) | nombre d'écritures | écriture exacte | parole exacte (geste juste) | décision valide (validateur) |
+|---|---|---|---|---|---|---|---|---|---|
+| small fp16 | 36.4 % | 66.1 % | 82.9 % | 86.2 % | n/a | 52.1 % | 0.0 % | 57.1 % | 96.7 % |
+| xl fp16 | 38.8 % | 62.8 % | 81.0 % | 86.1 % | n/a | 51.2 % | 3.2 % | 0.0 % | 86.0 % |
+| xl int8-weights/body | 38.8 % | 62.8 % | 81.0 % | 86.1 % | n/a | 51.2 % | 3.2 % | 0.0 % | 86.0 % |
+| xl int8-w8a8/body | 38.8 % | 62.8 % | 81.0 % | 86.1 % | n/a | 51.2 % | 3.2 % | 0.0 % | 86.0 % |
+
+| variante | taille (Mo) | poids GPU (Mo) | pic inférence lot 32 / 128 (Mo) | politique lot 32 / 128 (ms, graphe) | décisions/s lot 32 / 128 | coût GPU à 200 déc/s, lot 32 / 128 | vs budget 25% | accord geste+pointeurs avec le fp16 | accord décision entière |
+|---|---|---|---|---|---|---|---|---|---|
+| small fp16 | 23.12 | 23.25 | 101.3 / 337.3 | 12.99 / 42.73 | 2463 / 2996 | 0.081 / 0.067 | x0.3 (tient) | (réf.) | (réf.) |
+| xl fp16 | 334.29 | 348.54 | 508.1 / 982.4 | 64.79 / 240.44 | 494 / 532 | 0.405 / 0.376 | x1.6 (dépasse) | (réf.) | (réf.) |
+| xl int8-weights/body | 189.16 | 192.34 | 351.9 / 826.6 | 71.94 / 249.86 | 445 / 512 | 0.45 / 0.39 | x1.8 (dépasse) | 100.0 % | 99.2 % |
+| xl int8-w8a8/body | 189.16 | 192.34 | 446.7 / 1501.8 | 138.07 / 533.69 | 232 / 240 | 0.863 / 0.834 | x3.5 (dépasse) | 100.0 % | 99.2 % |

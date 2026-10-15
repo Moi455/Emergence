@@ -32,6 +32,10 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ops/CMakeLists.txt")
   add_subdirectory(ops)   # operation bus and journal (T16)
 endif()
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/act/CMakeLists.txt")
+  add_subdirectory(act)   # EntityStore, the non-voxel world (T15)
+endif()
+
 add_subdirectory(social)   # social engine (D31), tables generated from catalogue/
 
 # Fine world generation (worldgen/) and the terrain module built on it, when present.

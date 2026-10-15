@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "emergence/social/governor.h"
+#include "emergence/social/npc_laws.h"
 #include "emergence/social/npc_fields_gen.h"
 #include "emergence/social/npc_state_gen.h"
 #include "emergence/social/proposition_arena.h"
@@ -32,6 +33,7 @@ struct NpcBundle {
   PropositionArena propositions;           // targets of the PropRef fields (T06)
   WriteLedger ledger;                      // what the model already moved (restored by WriteLedger::restore)
   std::vector<std::uint8_t> mental_map;    // reserved: the mental map, filled by T23b (opaque bytes)
+  NpcLaws::Residue laws_residue;           // fractions kept by the laws of the tick (T21); saved in the LAWS section, not in NPCS
 
   // Keeps a proposition for a record field. When the arena is full: first a compaction (garbage left by overwritten
   // or forgotten records), then the law of forgetting of the catalogue frees the worst belief or episode that holds a

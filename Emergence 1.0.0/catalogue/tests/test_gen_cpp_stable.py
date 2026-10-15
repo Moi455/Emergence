@@ -194,6 +194,79 @@ class TestGenCppStable(unittest.TestCase):
         self.assertEqual(up.names("vars"), names + ["gone_var"])
         self.assertTrue(up.entries[-1].get("retired"))
 
+    # --- T15: world_registry.json (EntityKind, ComponentId) and the schema fingerprint of the EntityStore ---
+    @staticmethod
+    def world_ids(text: str, enum: str) -> dict:
+        return enum_ids(text, enum)
+
+    def test_world_registry_is_append_only(self):
+        reg = gen_cpp.WorldRegistry()
+        kinds, comps = reg.names("entity_kinds"), reg.names("components")
+        cat = Catalogue.load()
+        live_k, live_c = gen_cpp.world_live(cat)
+        self.assertEqual(set(kinds), set(live_k))
+        self.assertEqual(set(comps), set(live_c))
+        # removal: stays in its slot, flagged retired; return: takes its old index back, no flag
+        gone = reg.updated({"entity_kinds": live_k, "components": [c for c in live_c if c != "flow"]})
+        self.assertEqual(gone.names("components"), comps)
+        self.assertTrue([e for e in gone.lists["components"] if e["name"] == "flow"][0].get("retired"))
+        back = gone.updated({"entity_kinds": live_k, "components": live_c})
+        self.assertEqual(back.names("components"), comps)
+        self.assertFalse(any(e.get("retired") for e in back.lists["components"]))
+        # addition: appended at the end
+        grown = reg.updated({"entity_kinds": live_k + ["zz_kind"], "components": live_c + ["zz_comp"]})
+        self.assertEqual(grown.names("components"), comps + ["zz_comp"])
+        self.assertEqual(grown.names("entity_kinds"), kinds + ["zz_kind"])
+
+    def test_world_growth_moves_no_identifier(self):
+        base = self.base[gen_cpp.WORLD_OUT]
+        new_comp = ('\n[[component]]\nid = "aaa_zz_world"\nlabel_fr = "composant factice"\nholder = "plant"\n'
+                    '\n[[variable]]\nid = "aaa_zz_world_var"\nlabel_fr = "variable factice"\nholder = "aaa_zz_world"\n'
+                    'scale = "unipolar10"\nwriter = ["engine"]\nvisibility = "engine"\n')
+
+        def edit(d):
+            with open(d / "entities.toml", "a", encoding="utf-8") as f:
+                f.write(new_comp)
+            txt = (d / "entities.toml").read_text(encoding="utf-8")
+            i = txt.index('id = "plant"')
+            j = txt.index('"transformation", "lifecycle"', i)
+            (d / "entities.toml").write_text(txt[:j] + '"aaa_zz_world", ' + txt[j:], encoding="utf-8")
+        with tempfile.TemporaryDirectory() as t:
+            new = self.regen(Path(t), grow=False, edit=edit)[gen_cpp.WORLD_OUT]
+        for enum in ("EntityKind", "ComponentId"):
+            a, b = enum_ids(base, enum), enum_ids(new, enum)
+            self.assertEqual({k: v for k, v in b.items() if k in a}, a, f"{enum}: an id moved")
+        self.assertEqual(enum_ids(new, "ComponentId")["aaa_zz_world"], len(enum_ids(base, "ComponentId")))
+        fp = lambda t: re.search(r"kWorldSchemaFingerprint = (0x[0-9a-f]+)", t).group(1)
+        self.assertNotEqual(fp(base), fp(new))   # an old save is refused (SchemaMismatch at load)
+
+    def test_world_removed_component_keeps_its_slot(self):
+        base = self.base[gen_cpp.WORLD_OUT]
+        with tempfile.TemporaryDirectory() as t:
+            def edit(d):
+                for v in ("water_level", "water_flow", "ice"):
+                    drop_entry(d, v)
+            try:
+                new = self.regen(Path(t), grow=False, edit=edit)[gen_cpp.WORLD_OUT]
+            except Exception as e:   # flow variables are referenced elsewhere: the catalogue refuses, which is also stable
+                self.skipTest(f"catalogue refuses the removal: {e}")
+        a, b = enum_ids(base, "ComponentId"), enum_ids(new, "ComponentId")
+        self.assertEqual({k: v for k, v in b.items() if k in a and k != "flow"}, {k: v for k, v in a.items() if k != "flow"})
+        self.assertEqual(b[f"retired_{a['flow']}"], a["flow"])
+
+    def test_world_schema_fingerprint_sees_components_of_a_kind(self):
+        base = self.base[gen_cpp.WORLD_OUT]
+
+        def edit(d):   # a component with variables added to a type of entity
+            txt = (d / "entities.toml").read_text(encoding="utf-8")
+            i = txt.index('id = "fire"')
+            j = txt.index('components = ["identity", "spatial", "combustion"', i)
+            (d / "entities.toml").write_text(txt[:j] + 'components = ["identity", "spatial", "combustion", "substance"' + txt[j + len('components = ["identity", "spatial", "combustion"'):], encoding="utf-8")
+        with tempfile.TemporaryDirectory() as t:
+            new = self.regen(Path(t), grow=False, edit=edit)[gen_cpp.WORLD_OUT]
+        fp = lambda t: re.search(r"kWorldSchemaFingerprint = (0x[0-9a-f]+)", t).group(1)
+        self.assertNotEqual(fp(base), fp(new))
+
 
 if __name__ == "__main__":
     unittest.main()

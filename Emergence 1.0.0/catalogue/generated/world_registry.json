@@ -1,0 +1,136 @@
+{
+ "schema": "world-registry-1",
+ "entity_kinds": [
+  {
+   "name": "agent"
+  },
+  {
+   "name": "animal"
+  },
+  {
+   "name": "plant"
+  },
+  {
+   "name": "item"
+  },
+  {
+   "name": "structure"
+  },
+  {
+   "name": "terrain"
+  },
+  {
+   "name": "water_body"
+  },
+  {
+   "name": "fire"
+  },
+  {
+   "name": "phenomenon"
+  },
+  {
+   "name": "place"
+  },
+  {
+   "name": "world"
+  },
+  {
+   "name": "trace"
+  },
+  {
+   "name": "fact"
+  },
+  {
+   "name": "group"
+  },
+  {
+   "name": "role"
+  },
+  {
+   "name": "agreement"
+  }
+ ],
+ "components": [
+  {
+   "name": "activity"
+  },
+  {
+   "name": "agreement_terms"
+  },
+  {
+   "name": "animal_behavior"
+  },
+  {
+   "name": "appearance"
+  },
+  {
+   "name": "area"
+  },
+  {
+   "name": "body"
+  },
+  {
+   "name": "carrier"
+  },
+  {
+   "name": "chronicle"
+  },
+  {
+   "name": "climate"
+  },
+  {
+   "name": "clock"
+  },
+  {
+   "name": "combustion"
+  },
+  {
+   "name": "flow"
+  },
+  {
+   "name": "growth"
+  },
+  {
+   "name": "ledger"
+  },
+  {
+   "name": "lifecycle"
+  },
+  {
+   "name": "magic"
+  },
+  {
+   "name": "needs"
+  },
+  {
+   "name": "phenomenon_field"
+  },
+  {
+   "name": "provenance"
+  },
+  {
+   "name": "setting"
+  },
+  {
+   "name": "social_referent"
+  },
+  {
+   "name": "soil"
+  },
+  {
+   "name": "spatial"
+  },
+  {
+   "name": "stability"
+  },
+  {
+   "name": "substance"
+  },
+  {
+   "name": "trace_record"
+  },
+  {
+   "name": "transformation"
+  }
+ ]
+}

@@ -103,6 +103,7 @@ SYMBOL_REGISTRY = AI_DIR / "tok2" / "registry.json"               # symbols: wor
 VAR_REGISTRY = ROOT / "generated" / "var_registry.json"           # variables (owned by this generator)
 VAR_SCHEMA = "var-registry-1"
 VOCAB_REGISTRY = ROOT / "generated" / "vocab_registry.json"   # words and kinds (owned by this generator)
+WORLD_REGISTRY = ROOT / "generated" / "world_registry.json"   # entity kinds and world components (T15, owned by this generator)
 
 
 class RegistryStale(Exception):
@@ -208,13 +209,37 @@ class VocabRegistry(AppendOnlyFile):
         super().__init__(path)
 
 
+# The mind of an NPC lives in the NpcStore (engine/social), never in the EntityStore.
+MIND_COMPONENTS = ("mind_static", "mind_dynamic", "beliefs", "relations", "memory", "goals", "skills")
+# Carried by the entity record itself (position in mm, holder), not by a generated component field.
+STRUCTURAL_VARS = ("position", "inside_of")
+
+
+def world_live(cat: Catalogue):
+    """(entity kinds, components) of the EntityStore: every entity kind; every component that is not an NPC mind,
+    not a record of one, and that has at least one variable (a presence-only component needs no storage)."""
+    holders = {v.holder for v in cat["variable"].values() if v.id not in STRUCTURAL_VARS}
+    comps = [c.id for c in cat["component"].values()
+             if not c.part_of and c.id not in MIND_COMPONENTS and c.id in holders]
+    return list(cat["entity"]), comps
+
+
+class WorldRegistry(AppendOnlyFile):
+    """Every entity kind and every world component ever in the catalogue (catalogue/generated/world_registry.json), T15:
+    the numeric ids of the EntityStore (EntityKind, ComponentId). Seeded in the order of entities.toml."""
+    SCHEMA, LISTS = "world-registry-1", ("entity_kinds", "components")
+
+    def __init__(self, path: Path = WORLD_REGISTRY):
+        super().__init__(path)
+
+
 class Orders:
     """The stable orders of one generation run. `strict`: a registry owned by the AI side that lacks entries of
     the catalogue is an error (the C++ ids would not match the model's); otherwise the news are appended virtually."""
 
     def __init__(self, cat: Catalogue, strict: bool = True, gesture_registry: Path = GESTURE_REGISTRY,
                  symbol_registry: Path = SYMBOL_REGISTRY, var_registry: VarRegistry | None = None,
-                 vocab_registry: VocabRegistry | None = None):
+                 vocab_registry: VocabRegistry | None = None, world_registry: WorldRegistry | None = None):
         import language
         out = json.loads(Path(gesture_registry).read_text(encoding="utf-8"))
         sym = json.loads(Path(symbol_registry).read_text(encoding="utf-8"))["symbols"]
@@ -252,6 +277,12 @@ class Orders:
         self.kinds = StableOrder(self.vocab_registry.names("kinds"), vocab.kinds)
         self.var_registry = (var_registry or VarRegistry()).updated({"vars": cat["variable"]})
         self.variables = StableOrder(self.var_registry.names("vars"), cat["variable"])
+        live_kinds, live_comps = world_live(cat)
+        self.world_registry = (world_registry or WorldRegistry()).updated(
+            {"entity_kinds": live_kinds, "components": live_comps},
+            {"entity_kinds": list(cat["entity"]), "components": sorted(live_comps)})
+        self.entity_kinds = StableOrder(self.world_registry.names("entity_kinds"), live_kinds)
+        self.world_components = StableOrder(self.world_registry.names("components"), live_comps)
         if strict:
             stale = []
             if self.gestures.pending or self.conditions.pending or self.pending_values:
@@ -677,6 +708,161 @@ class ForgettingGenerator:
                 "inline constexpr unsigned long long kParitySeed = 0xE5CA1AB1Eull;\n")
 
 
+# ---------------------------------------------------------------------------------------------------------
+# World components (T15): the structs the EntityStore (engine/act) holds for the non-voxel world.
+WORLD_OUT = ROOT.parent / "engine" / "act" / "generated" / "emergence" / "act" / "world_gen.h"
+WORLD_TYPES = {"bipolar10": "std::int16_t", "unipolar10": "std::int16_t", "ratio": "std::int16_t", "qty": "std::int32_t",
+               "bool": "bool", "enum": "std::uint8_t", "word": "std::uint16_t", "mref": "std::uint32_t",
+               "id": "std::uint32_t", "list": "std::uint32_t", "proposition": "std::uint32_t", "time": "std::int64_t"}
+WORLD_FIELD_TYPE = {"std::int16_t": "I16", "std::int32_t": "I32", "bool": "Bool", "std::uint8_t": "U8",
+                    "std::uint16_t": "U16", "std::uint32_t": "U32", "std::int64_t": "I64"}
+WORLD_ALIGN = {"std::int64_t": 8, "std::int32_t": 4, "std::uint32_t": 4, "std::int16_t": 2, "std::uint16_t": 2,
+               "std::uint8_t": 1, "bool": 1}
+# Scalars of at most 32 bits can be changed by an EntityDelta (old/new are i32); the others only by their own law.
+WORLD_DELTA_TYPES = ("I16", "I32", "Bool", "U8", "U16")
+
+
+class WorldGenerator:
+    """gen::EntityKind, gen::ComponentId, one struct per world component, one Data struct per entity kind and the
+    field descriptors the EntityStore uses for EntityDelta and for its serialisation (by catalogue variable id)."""
+
+    def __init__(self, cat: Catalogue, orders: Orders):
+        self.cat, self.orders = cat, orders
+        self.sg = StateGenerator(cat, orders)
+        self.var_index = {s.name: s.index for s in orders.variables.slots}
+
+    def fields(self, comp: str):
+        return [v for v in self.sg.fields(comp) if v.id not in STRUCTURAL_VARS]
+
+    def layout(self, comp: str):
+        return sorted(self.fields(comp), key=lambda v: (-WORLD_ALIGN[WORLD_TYPES[v.scale]], v.id))
+
+    def live_comps(self):
+        """[(ComponentId index, component id)] of the live world components, in registry order."""
+        return [(s.index, s.name) for s in self.orders.world_components.slots if s.live]
+
+    def kind_comps(self, kind_id: str):
+        ents = self.cat["entity"][kind_id].components
+        return [(i, c) for i, c in self.live_comps() if c in ents]
+
+    def enum(self, L, name: str, order: StableOrder):
+        check_identifiers(f"enum {name}", [s.cpp for s in order.slots], reserved=("kCount",))
+        L.append(f"enum class {name} : std::uint16_t {{")
+        for sl in order.slots:
+            L.append(f"  {sl.cpp}," + ("" if sl.live else f"   // retired: {sl.name}"))
+        L += ["  kCount", "};",
+              f"inline constexpr std::array<std::string_view, {len(order)}> k{name}Names = {{"]
+        names = [sl.name if sl.live else sl.cpp for sl in order.slots]
+        L += ["  " + ", ".join(cpp_str(w) for w in names[i:i + 6]) + "," for i in range(0, len(names), 6)]
+        L += ["};", ""]
+
+    def generate(self) -> str:
+        o = self.orders
+        L = ["// GENERATED by catalogue/tools/gen_cpp.py from catalogue/ - do not edit (T15, decision D31).",
+             "// The non-voxel world: EntityKind and ComponentId (stable, append-only: catalogue/generated/world_registry.json),",
+             "// one struct per component, one Data struct per entity kind, the field descriptors (EntityDelta, save).",
+             "// The position (mm) and the holder of an entity live in its EntityStore record, not in a component.",
+             "#pragma once", "#include <array>", "#include <cstddef>", "#include <cstdint>", "#include <span>", "#include <string_view>", "",
+             "namespace em::act::gen {", "",
+             "enum class FieldType : std::uint8_t { Bool, U8, I16, U16, I32, U32, I64 };",
+             "struct FieldDesc {",
+             "  std::string_view name;      // catalogue variable id",
+             "  std::uint16_t var;          // index in catalogue/generated/var_registry.json (Var of catalogue_gen.h)",
+             "  std::uint16_t component;    // ComponentId",
+             "  FieldType type;",
+             "  std::uint8_t size;",
+             "  bool delta;                 // changeable by an EntityDelta (scalar of at most 32 bits)",
+             "  std::uint32_t offset;       // offsetof inside the kind's Data struct",
+             "  std::int64_t lo, hi;        // inclusive bounds of a stored value (save and delta refuse outside)",
+             "};", "",
+             "template <class C> struct Tag {};   // find_component(data, Tag<C>{}): the component C of a Data struct, or nullptr", ""]
+        self.enum(L, "EntityKind", o.entity_kinds)
+        self.enum(L, "ComponentId", o.world_components)
+        used = [(i, c) for i, c in self.live_comps() if self.fields(c)]
+        for _, comp in used:
+            c = self.cat["component"][comp]
+            check_identifiers(f"struct {camel(comp)}", [v.id for v in self.fields(comp)])
+            L.append(f"// {comp}: {c.label_fr}")
+            L.append(f"struct {camel(comp)} {{")
+            for v in self.layout(comp):
+                t = WORLD_TYPES[v.scale]
+                L.append(f"  {t} {ident(v.id)}{{}};" + (f"  // {FIELD_NOTES[v.scale]}" if v.scale in FIELD_NOTES else ""))
+            L += ["};", ""]
+        for _, comp in used:
+            n = camel(comp)
+            L.append(f"template <class D> constexpr const {n}* find_component(const D& d, Tag<{n}>) {{")
+            L.append(f"  if constexpr (requires {{ d.{comp}; }}) return &d.{comp}; else return nullptr;")
+            L.append("}")
+        L.append("")
+        # Data struct and descriptors per kind, in EntityKind order
+        kinds = [s for s in o.entity_kinds.slots]
+        schema = []   # hashed into kWorldSchemaFingerprint: kinds, their components, every stored field with its bounds
+        for sl in kinds:
+            if sl.live:
+                comps = [(i, c) for i, c in self.kind_comps(sl.name) if self.fields(c)]
+            else:
+                comps = []
+            n = camel(sl.name) if sl.live else f"Retired{sl.index}"
+            L.append(f"// Everything the EntityStore holds for an entity of kind {sl.name}.")
+            L.append(f"struct {n}Data {{")
+            for _, c in comps:
+                L.append(f"  {camel(c)} {c};")
+            if not comps:
+                L.append("  std::uint8_t none{};")
+            L += ["};"]
+            descs = []
+            for i, c in comps:
+                for v in self.fields(c):
+                    t = WORLD_TYPES[v.scale]
+                    ft = WORLD_FIELD_TYPE[t]
+                    lo, hi = self.sg.value_range(v)
+                    if ft == "U32":
+                        lo, hi = 0, 0xFFFFFFFF
+                    descs.append((i, v, t, ft, lo, hi, c))
+            schema.append(f"kind {sl.index} {sl.name} {sl.live} comps=" + ",".join(f"{i}:{c}" for i, c in comps))
+            schema += [f"  {c}.{v.id} var={self.var_index[v.id]} {t} {lo} {hi}" for i, v, t, ft, lo, hi, c in descs]
+            L.append(f"inline constexpr std::array<FieldDesc, {len(descs)}> k{n}Fields = {{{{")
+            for i, v, t, ft, lo, hi, c in descs:
+                delta = "true" if ft in WORLD_DELTA_TYPES else "false"
+                L.append(f'  {{"{v.id}", {self.var_index[v.id]}, {i}, FieldType::{ft}, sizeof({t}), {delta}, '
+                         f'offsetof({n}Data, {c}.{ident(v.id)}), {lo}ll, {hi}ll}},')
+            L += ["}};", ""]
+        names = [camel(s.name) if s.live else f"Retired{s.index}" for s in kinds]
+        L.append("// Per-kind dispatch: f(table of that kind). Used by the EntityStore, the only reader of these tables.")
+        L.append("template <class Tables, class F>")
+        L.append("void dispatch(EntityKind kind, Tables& t, F&& f) {")
+        L.append("  switch (kind) {")
+        for s, n in zip(kinds, names):
+            L.append(f"    case EntityKind::{s.cpp}: f(t.{ident(s.name) if s.live else f'retired_{s.index}'}); return;")
+        L += ["    default: return;", "  }", "}", ""]
+        L.append("// Tables of the store: one dense row vector per kind (the template is KindTable in entity_store.h).")
+        L.append("template <template <class> class Table>")
+        L.append("struct Tables {")
+        for s, n in zip(kinds, names):
+            L.append(f"  Table<{n}Data> {ident(s.name) if s.live else f'retired_{s.index}'};")
+        L += ["};", ""]
+        L.append(f"inline constexpr std::array<std::span<const FieldDesc>, {len(kinds)}> kKindFields = {{")
+        for n in names:
+            L.append(f"  std::span<const FieldDesc>(k{n}Fields),")
+        L += ["};", f"inline constexpr std::array<std::size_t, {len(kinds)}> kKindDataBytes = {{"]
+        for n in names:
+            L.append(f"  sizeof({n}Data),")
+        L += ["};", ""]
+        # which kinds have a component (spatial = can move)
+        L.append("// Kinds that carry the position component (spatial): only these can be moved.")
+        L.append(f"inline constexpr std::array<bool, {len(kinds)}> kKindHasSpatial = {{")
+        sp = []
+        for s in kinds:
+            sp.append("true" if s.live and any(c == "spatial" for _, c in self.kind_comps(s.name)) else "false")
+        L.append("  " + ", ".join(sp) + ",")
+        L += ["};", ""]
+        schema = "\n".join(schema)
+        L.append(f"inline constexpr std::uint64_t kWorldSchemaFingerprint = 0x{fnv1a64(schema):016x}ull;"
+                 "  // FNV-1a 64 of the stored fields and kinds: a save of another schema is refused")
+        L += ["", "}  // namespace em::act::gen", ""]
+        return "\n".join(L)
+
+
 def build(cat: Catalogue, orders: "Orders | None" = None) -> dict:
     """{path: text} of every generated file (nothing written)."""
     orders = orders or Orders(cat)
@@ -684,7 +870,9 @@ def build(cat: Catalogue, orders: "Orders | None" = None) -> dict:
     fg = ForgettingGenerator(cat)
     return {OUT: CppGenerator(cat, orders).generate(), STATE_OUT: sg.generate_state(), FIELDS_OUT: sg.generate_fields(), VOCAB_OUT: sg.generate_vocab(),
             FORGETTING_OUT: fg.generate(), PARITY_OUT: fg.generate_parity(),
-            VAR_REGISTRY: orders.var_registry.text(), VOCAB_REGISTRY: orders.vocab_registry.text()}
+            WORLD_OUT: WorldGenerator(cat, orders).generate(),
+            VAR_REGISTRY: orders.var_registry.text(), VOCAB_REGISTRY: orders.vocab_registry.text(),
+            WORLD_REGISTRY: orders.world_registry.text()}
 
 
 def main(argv=None) -> int:
