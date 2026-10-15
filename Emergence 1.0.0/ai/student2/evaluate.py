@@ -123,8 +123,20 @@ class Evaluator:
         rep["stop_condition"] = self._condition(T, P, gok)
         rep["writes"] = self._writes(T, P, gok)
         rep["sequences"] = self._sequences(T, P, gok)
+        rep["plans"] = self._plans(T, P)
         rep["validity"] = self._validity(p)
         return rep
+
+    def _plans(self, T, P) -> dict:
+        """Plan head (only the lines whose label carries a plan or an explicit 'no plan'): is there a plan at all, then the
+        gesture and the pointer of each labelled step."""
+        fin = self.rt.space.plan.fin
+        labelled = T["plan_gesture"][:, 0] != NO_LABEL
+        steps = (T["plan_gesture"] != NO_LABEL) & (T["plan_gesture"] != fin)
+        ptr = steps & (T["plan_ref"] != NO_LABEL)
+        return {"has_plan": stat((P["plan_gesture"][:, 0] != fin) == (T["plan_gesture"][:, 0] != fin), labelled),
+                "step_gesture": stat(P["plan_gesture"] == T["plan_gesture"], steps),
+                "step_target": stat(P["plan_ref"] == T["plan_ref"], ptr)}
 
     def _pointers(self, T, P, gok) -> dict:
         valid = T["ref"] != NO_LABEL
@@ -217,12 +229,25 @@ class Evaluator:
         """The model's decision of each row decoded to a dict (None and the reason when it does not decode)."""
         names, out = Targets.names(), []
         for i, m in enumerate(p.meta):
-            t = Targets(**{n: p.pred[n][i] for n in names})
+            t = Targets(**{n: p.pred[n][i].copy() for n in names})
+            self.mask_unlabelled(t, p, i)
             try:
                 out.append((self.rt.codec.decode(t, m["enc"], m["records"]), ""))
             except Exception as e:                                             # noqa: BLE001  (counted, never swallowed)
                 out.append((None, f"{type(e).__name__}: {str(e)[:70]}"))
         return out
+
+    @staticmethod
+    def mask_unlabelled(t: Targets, p: Predictions, i: int) -> None:
+        """A label that says nothing about plans / stops (NO_LABEL: older data, or an answer without a trace) does not
+        judge them: the model's plan / stop for that line are dropped, as train.py's exact_match does. Without this a head
+        that never saw a label (random weights) would be judged by the validator on every decision."""
+        if p.truth["plan_gesture"][i][0] == NO_LABEL:
+            for n in ("plan_gesture", "plan_ref", "plan_repeat", "plan_period", "plan_parent"):
+                setattr(t, n, np.full_like(getattr(t, n), NO_LABEL))
+        if p.truth["stop"][i] == NO_LABEL:
+            for n in ("stop", "stop_ref", "stop_num", "stop_word"):
+                setattr(t, n, np.full_like(getattr(t, n), NO_LABEL))
 
     def _verdict(self, decision: dict, meta: dict) -> str:
         ages = meta["source"].get("ages") if isinstance(meta["source"].get("ages"), dict) else {}

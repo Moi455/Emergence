@@ -53,6 +53,18 @@ Toutes des primitives GÉNÉRALES, comblées dans cet ordre ; aucune entrée n'e
 - Brancher le tempérament dans le sampler et le professeur (`docs/12` § 3).
 - Questions ouvertes pour Monsieur : O16 à O21, O28 à O30 (`docs/01_decisions.md`).
 
+## T08d (15 oct. 2026) : les naissances (P53, décision de Monsieur ; O39 close)
+
+Fait : `body.toml` (processus `conceive`, `gestate_birth` : 44 -> **46**), `schema.py` (horloge de processus `life`), `tools/governor.py` (`Governor.conception_gate`), `stories.toml` (`marriage_and_children` et `pregnancy_birth` : `gap` -> `expressible`, plus aucun trou du moteur), tests `tests/test_t08d_births.py` ; `test_catalogue.py` et `test_language_collective.py` mis à jour (46 processus, `ENGINE_GAPS` vide). Détail : `docs/16_audit_couverture.md` § 4.4.
+
+- **Aucun geste, aucune manière, aucune variable, aucun mot ajoutés** (D28, D10) : `conceive` exige la RÉCIPROCITÉ : deux `touch(manner=intimate)` croisés (A vers B, B vers A) à moins de 1 800 s de jeu, sans tierce personne, chacun déjà autorisé par le gouverneur ; adultes RÉELS, CRUS et APPARENTS, connus et perçus ; sexe, parenté proche et fécondité = faits du moteur à vérifier en T34 ; la porte est Python seulement (parité à faire en T34).
+- **Gestation** : horloge de vie, 105 600 s de jeu = 1,22 jour de jeu = **1 h 50 réelle** (environ 0,98 an de vie ; D30 : 1 jour = 1 h 30, vie = 150 h). Naissance : nouvel agent `infant` (mineur D10 dès le premier instant), sans dossier ; croyances par observateur, formées par la perception seule.
+- **Tests de refus D10** (sans aucun contenu) : mineur réel (0, 2, 9, 14, 17, 17,96 ans), mineur cru, mineur apparent, âge inconnu (cru absent, apparent absent, réel absent ou NaN, dossier non résolu, vue manquante, acteur ou partenaire absent), personne hors de vue, autre sens seul ; manières non intimes ou `romantic` : fermé ; non fécond : fermé.
+- **Interface régénérée, en ajout seul : RIEN ne bouge.** Les processus, les sondes et le gouverneur n'entrent ni dans les jetons ni dans les registres : `model_interface.py` redonne un fichier identique octet pour octet, `tok2.registry --update` « déjà à jour », `output_registry --update` 0 ajout, C++ inchangé, `tok2.golden --update` sans écart. **Empreinte de l'interface : `009376fdb3dbadf2`, disposition `e84a8804b90f5bd1` (identiques à T09)** ; jetons 91 / 128, gestes 40 / 64, variables 378, mots 744 / 768. Parité du gouverneur : 9 336 cas (inchangés).
+- **Données vivantes** : serie1 (9 816 lignes) et serie_planner (2 652 lignes, dont 2 635 avec `thoughts`) portent déjà l'en-tête `009376fd:e84a8804` : `teacher.dataset migrate --in-place` : 0 migrée, 0 perdue, comptes identiques avant et après ; `teacher.generator --selfcheck` : ok.
+- **Tests** : `scripts/test_all.sh` **vert** (237 + 169 + 153 + 245 + 89 tests Python, 15/15 ctest ; les tests de l'élève passent, GPU libre).
+- **Reste (T34, moteur)** : exécuter les deux lois, régler la probabilité de conception (la cible d'une naissance par couple et par 45 h suppose 150 couples féconds en permanence ; R ≈ 0,81 avec 70 % d'adultes en couple : retour de densité à régler), signes perçus de la grossesse (carrure `round`, teint `pale`).
+
 ## T08b (15 oct. 2026) : buts, plans, organisations, réglages
 
 Fait dans `goals.toml`, `entities.toml`, `society.toml`, `relations.toml`, `settings.toml`, `tools/model_interface.py` (causes et déclencheurs de WAKE, `GOAL.parent`, `GROUP.my_task`) et `tools/budget.py` (PLAN : 2 jetons, plafond de champs 10 → 16). Test : `tests/test_t08b_plans_organisations.py`.

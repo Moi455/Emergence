@@ -102,3 +102,73 @@ python3 -m student2.evaluate --ckpt ~/.local/share/emergence/runs/a1/last.pt --d
 python3 -m student2.quantize --wide --ckpt ~/.local/share/emergence/runs/base1/last.pt --data ~/.local/share/emergence/runs/snap_migre.jsonl --out q_base1.json   # écrit aussi q_base1.md
 python3 -m unittest discover -s student2/tests -t .        # 69 tests
 ```
+
+
+## xl vs small : l'étalon quantifié contre le petit non quantifié
+
+Décision de Monsieur (15 oct.) : un Transformer **beaucoup trop gros** pour tenir le budget, quantifié, comparé aux petits non quantifiés. Code : `ai/student2/compare.py` (reproductible), taille `xl` dans `model.py` (`SIZES["xl"]`), tests `ai/student2/tests/test_xl.py`. Tout chiffre est **[Mesuré]** (Quadro RTX 3000 6 Go, PyTorch 2.14, float16, graine 0), sauf mention.
+
+**La taille `xl`** : d=768, 16 couches, 12 têtes, ff 3072, décodeur 4 couches ff 2048, encodeur de propositions d=256 : **175,3 M de paramètres** (`small` : 12,1 M ; `base` : 28,5 M ; le tronc fait 113 M). Dropout résiduel 0,1 et gradient checkpointing ajoutés à `StudentConfig` (champs `dropout`, `checkpoint`, valeurs par défaut = ancien comportement ; un ancien point de contrôle se charge). Entraînement fp16 + AdamW sur 6 Go : **tient** (pic 3,8 Go au lot 32, 4,4 Go au lot 64 ; **sans** checkpointing 5,0 Go au lot 32 et le lot 64 sort de mémoire ; lot 128 sort de mémoire même avec). Débit d'entraînement : ~95 décisions/s (lot 32) contre ~220-270 pour `small`. Pas besoin de réduire : 175 M tient. Au lot 32, des alertes d'allocateur (quasi-OOM, récupérées) apparaissent dans le journal.
+
+**Protocole** : mêmes lignes, même découpage (hachage de l'`id`), même graine, même lot 32, même dropout 0,1 et weight decay 0,1, au plus 12 époques avec arrêt sur la perte de validation (patience 3, meilleure époque restaurée) ; lr 3e-4 (`small`) et 1e-4 (`xl`). Même évaluateur et mêmes lots de validation pour les quatre variantes ; quantification `body` (têtes de sortie en fp16). Empreinte d'interface des données et du code : `009376fdb3dbadf2` (registre `2baec3a96dbc2909`). Données copiées dans `~/.local/share/emergence/runs/xl_vs_small/` (`serie1_copy.jsonl`, `planner_copy.jsonl`).
+
+**Mise en garde, à lire d'abord** : c'est un **test de chaîne**, pas un classement des tailles. Les données sont petites, l'époque d'arrêt est choisie sur la validation même qui sert aux scores (légèrement optimiste, pareil pour les deux), et `xl` surajuste dès l'époque 5 (perte d'entraînement 6,9 contre validation 11,7 à l'époque 7). Les écarts d'exactitude de 1 à 3 points sur 505 à 626 décisions ne sont pas du signal. Les plans n'ont pas de ligne propre dans les tableaux (têtes de plan non rapportées par `evaluate.py` ici).
+
+### Passe 1 : série réactive seule (9 816 lignes, aucune planificatrice)
+
+Données : 9311 entraînement / 505 validation, graine 0.
+
+| modèle | params (M) | lr | époques jouées / retenue | perte entraînement (retenue) | perte validation (retenue) | débit entraînement (déc/s) | pic mémoire entraînement (Mo) |
+|---|---|---|---|---|---|---|---|
+| small | 12.12 | 0.0003 | 8 / 5 | 8.3738 | 9.4646 | 220.4 | 631 |
+| xl | 175.27 | 0.0001 | 7 / 4 | 9.2168 | 10.1796 | 94.1 | 3793 |
+
+| variante | geste top-1 | geste top-3 | pointeurs (geste juste) | manières (geste juste) | condition d'arrêt (geste juste) | nombre d'écritures | écriture exacte | parole exacte (geste juste) | décision valide (validateur) |
+|---|---|---|---|---|---|---|---|---|---|
+| small fp16 | 39.8 % | 69.9 % | 81.1 % | 77.8 % | 100.0 % | 72.7 % | 4.3 % | 27.8 % | 95.8 % |
+| xl fp16 | 39.6 % | 72.9 % | 74.7 % | 80.2 % | 100.0 % | 73.1 % | 4.0 % | 29.4 % | 99.8 % |
+| xl int8-weights/body | 39.6 % | 72.9 % | 74.7 % | 80.2 % | 100.0 % | 73.1 % | 4.0 % | 29.4 % | 99.8 % |
+| xl int8-w8a8/body | 39.6 % | 72.7 % | 75.3 % | 80.2 % | 100.0 % | 73.1 % | 4.0 % | 29.4 % | 99.8 % |
+
+| variante | taille (Mo) | poids GPU (Mo) | pic inférence lot 32 / 128 (Mo) | politique lot 32 / 128 (ms, graphe) | décisions/s lot 32 / 128 | coût GPU à 200 déc/s, lot 32 / 128 | vs budget 25% | accord geste+pointeurs avec le fp16 | accord décision entière |
+|---|---|---|---|---|---|---|---|---|---|
+| small fp16 | 23.12 | 23.25 | 101.3 / 337.3 | 13.09 / 43.26 | 2445 / 2959 | 0.082 / 0.068 | x0.3 (tient) | (réf.) | (réf.) |
+| xl fp16 | 334.29 | 348.54 | 508.1 / 982.4 | 65.85 / 245.35 | 486 / 522 | 0.412 / 0.383 | x1.6 (dépasse) | (réf.) | (réf.) |
+| xl int8-weights/body | 189.16 | 192.34 | 351.9 / 826.6 | 72.79 / 250.96 | 440 / 510 | 0.455 / 0.392 | x1.8 (dépasse) | 99.8 % | 92.9 % |
+| xl int8-w8a8/body | 189.16 | 192.34 | 446.7 / 1501.8 | 138.57 / 529.06 | 231 / 242 | 0.866 / 0.827 | x3.5 (dépasse) | 99.2 % | 84.4 % |
+
+### Passe 2 : réactive + planificatrice (2 647 lignes avec pensées et plans)
+
+Données : 11837 entraînement / 626 validation, graine 0.
+
+| modèle | params (M) | lr | époques jouées / retenue | perte entraînement (retenue) | perte validation (retenue) | débit entraînement (déc/s) | pic mémoire entraînement (Mo) |
+|---|---|---|---|---|---|---|---|
+| small | 12.12 | 0.0003 | 8 / 5 | 8.3005 | 9.0926 | 269.7 | 630 |
+| xl | 175.27 | 0.0001 | 7 / 4 | 8.979 | 9.8433 | 96.6 | 3789 |
+
+| variante | geste top-1 | geste top-3 | pointeurs (geste juste) | manières (geste juste) | condition d'arrêt (geste juste) | nombre d'écritures | écriture exacte | parole exacte (geste juste) | décision valide (validateur) |
+|---|---|---|---|---|---|---|---|---|---|
+| small fp16 | 40.6 % | 73.8 % | 84.6 % | 80.1 % | 100.0 % | 69.2 % | 5.5 % | 29.5 % | 22.7 % |
+| xl fp16 | 40.9 % | 71.9 % | 77.2 % | 81.1 % | 83.3 % | 68.2 % | 2.3 % | 30.2 % | 5.4 % |
+| xl int8-weights/body | 40.9 % | 71.9 % | 77.2 % | 81.1 % | 83.3 % | 68.2 % | 2.3 % | 30.2 % | 5.8 % |
+| xl int8-w8a8/body | 40.7 % | 71.9 % | 77.1 % | 81.2 % | 83.3 % | 68.2 % | 2.3 % | 30.2 % | 5.4 % |
+
+| variante | taille (Mo) | poids GPU (Mo) | pic inférence lot 32 / 128 (Mo) | politique lot 32 / 128 (ms, graphe) | décisions/s lot 32 / 128 | coût GPU à 200 déc/s, lot 32 / 128 | vs budget 25% | accord geste+pointeurs avec le fp16 | accord décision entière |
+|---|---|---|---|---|---|---|---|---|---|
+| small fp16 | 23.12 | 23.25 | 101.3 / 337.3 | 13.07 / 42.95 | 2448 / 2980 | 0.082 / 0.067 | x0.3 (tient) | (réf.) | (réf.) |
+| xl fp16 | 334.29 | 348.54 | 508.1 / 982.4 | 65.2 / 239.82 | 491 / 534 | 0.408 / 0.375 | x1.6 (dépasse) | (réf.) | (réf.) |
+| xl int8-weights/body | 189.16 | 192.34 | 351.9 / 826.6 | 71.39 / 246.07 | 448 / 520 | 0.446 / 0.384 | x1.8 (dépasse) | 99.8 % | 93.6 % |
+| xl int8-w8a8/body | 189.16 | 192.34 | 446.7 / 1501.8 | 137.71 / 525.22 | 232 / 244 | 0.861 / 0.821 | x3.4 (dépasse) | 99.0 % | 85.5 % |
+
+La « décision valide » s'effondre en passe 2 pour les deux modèles (`small` 22,7 %, `xl` 5,4 %) : codes `bad_pointer` / `bad_param` en masse (voir `results.json`). Non expliqué ici (le modèle n'a vu que 4 époques de plans, ou le validateur hors ligne juge mal les décisions à plan) : ne pas lire ce chiffre comme une qualité. Les étiquettes du professeur ne sont pas revalidées dans ce tableau.
+
+### Lecture
+
+- **Coût GPU** : `xl` fp16 prend **0,41 de GPU à 200 déc/s (lot 32), 0,38 (lot 128)**, soit **1,5 à 1,6 fois le budget de 25 %** : il dépasse clairement, comme voulu. `small` : 0,07 à 0,08 (tient). Estimation = 200 x temps de politique par décision, parole non comptée (donc plus bas que le coût réel).
+- **L'int8 ne rend pas `xl` plus rapide ici** : poids seuls 0,45 / 0,39 (déquantification à chaque appel : plus lent que fp16) ; W8A8 0,86 / 0,83, **plus lent encore** (2 784 appels `_int_mm` contre 8 080 retombées sur le chemin poids-seuls : trop peu de lignes par appel, plus la quantification des activations). Il ne ramène pas `xl` dans le budget. Il réduit la taille (334 -> 189 Mo) et la mémoire de poids (349 -> 192 Mo), mais le pic en W8A8 est **plus haut** au lot 128 (1 502 Mo contre 982 Mo).
+- **Fidélité à fp16** : poids seuls 99,8 % d'accord geste+pointeurs, 92,9-93,6 % de décision entière ; W8A8 99,0-99,2 % et 84,4-85,5 %. Exactitudes par tête presque identiques à fp16 (écart <= 0,6 point en passe 1, <= 0,2 en passe 2).
+- **xl contre small** : à ce volume de données, `xl` n'est pas meilleur que `small` (geste top-1 39,6 % contre 39,8 % ; 40,9 % contre 40,6 %), il est pire en perte de validation (10,2 contre 9,5 ; 9,8 contre 9,1). Le gros modèle ne montre aucun avantage tant que les données restent aussi peu nombreuses.
+
+### Limites
+
+Un seul lancement par passe (graine 0, latences ±20 %) ; pas de répétition de graine ; hyperparamètres non réglés (lr, dropout, decay) ; quantification `body` seulement dans ce tableau ; pas de mesure de la parole ni du débit de bout en bout d'`xl`. À relancer avec plus de données planificatrices (T12/T36) : `python3 -m student2.compare --data <fichiers> --out <dossier>` (`--reuse` pour re-quantifier sans réentraîner).

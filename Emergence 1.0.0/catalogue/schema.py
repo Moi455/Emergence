@@ -359,7 +359,7 @@ KINDS: dict[str, type[Entry]] = {
 }
 ENGINE_MATERIALS = Path(__file__).resolve().parents[1] / "engine" / "data" / "materials.csv"
 SEASONS = ("spring", "summer", "autumn", "winter")
-PROCESS_CLOCKS = ("real", "calendar", "game")           # docs/14 4.4: engine cycle, slow process, chosen duration
+PROCESS_CLOCKS = ("real", "calendar", "game", "life")   # docs/14 4.4: engine cycle, slow process, chosen duration; life = life clock (T08d)
 ILLNESS_TRANSMISSIONS = ("contact", "air", "water", "bite", "wound", "birth")
 PROPERTY_CATEGORIES = ("intrinsic", "affordance", "state")
 STORY_REFS = {"actions": "action", "concepts": "concept", "variables": "variable", "entities": "entity",

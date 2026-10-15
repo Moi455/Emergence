@@ -6,7 +6,7 @@ Sources vérifiées : `catalogue/data/actions.toml` (40 gestes), `matter.toml` (
 
 Révision du 15 oct. :
 - les valeurs de manière sont décrites par leur forme ;
-- la conception et la naissance sont retirées des ajouts : elles attendent la question O39 à Monsieur ;
+- la conception et la naissance, retirées en attendant O39, sont levées le 15 oct. par P53 (§ 4.4, T08d) ;
 - `c_have` porte sur ce qu'on a vu ou cru ;
 - les budgets de jetons seront re-mesurés ;
 - les routines ont une période ;
@@ -112,7 +112,7 @@ Légende du statut :
 |---|---|---|---|---|
 | 61 | Soigner une plaie | `examine`(`touch`) ; `work`(onguent, `press`) ; `tie`(bandage) ; `pour`(eau, plaie) | `heal_tissue` | **Manque** : `wash` |
 | 62 | Soigner un malade | `examine` ; `drink`(remède, to malade) ; `touch`(`gentle`) | — | **Manque** (O30) : lois `contagion`, `illness_course` ; table `[[illness]]` (schéma fait par T07) |
-| 63 | Aider une naissance | `touch` ; `take`(nouveau-né, `in_arms`) | — | **Question** : O39 (y a-t-il des naissances, et comment ?) |
+| 63 | Aider une naissance | `touch` ; `take`(nouveau-né, `in_arms`) | — | **Loi** : `gestate_birth` (P53, T08d) ; la sage-femme n'est qu'un `touch` et un `take` |
 | 64 | Sentir la fumée, le pain, la mort | `examine`(`smell`) ; réveil P3 | — | **Manque** (O30) : loi `smell_spread`, variable `pp_smell_seen` |
 
 ### Vie sociale (tout passe par la parole, le signe, la manière)
@@ -205,7 +205,7 @@ Deux **élargissements de pointeur** (T08c) : `put.where` accepte `animal` ; le 
 | `contagion` | `body.toml` | proximité, eau souillée, morsure | une maladie de `[[illness]]` passe (O30) |
 | `illness_course` | `body.toml` | temps | incubation, symptômes visibles, guérison ou mort ; immunités (O30) |
 
-**Retirés de la liste, en attente de Monsieur (O39)** : `conceive` et `gestate_birth`. D15 dit que le jeu ne porte pas sur le sexe ; une loi de conception liée à un acte intime n'est pas à écrire sans sa décision. Rien n'est implémenté (T34 bloquée).
+**Naissances levées (T08d, 15 oct., P53, décision de Monsieur ; O39 close)** : `conceive` et `gestate_birth` sont au catalogue (`body.toml`, processus 44 -> 46). Aucun geste ni valeur de manière nouveau (D28, D10) : `conceive` se branche sur `touch` de manière `intimate`, déjà marquée intime et déjà refusée à tout mineur possible, et ne s'ouvre que sur la RÉCIPROCITÉ (« si deux PNJ ont fait l'action ») : deux `touch` intimes croisés, A vers B et B vers A, à moins de 1 800 s de jeu l'un de l'autre, sans tierce personne, sans couple ni mariage exigé, chacun DÉJÀ autorisé par le gouverneur dans son sens (`Governor.conception_gate`, Python seulement, à porter avec T34 avec un test de parité ; le moteur DOIT passer par cette porte) : âge RÉEL, CRU et APPARENT de chacun adultes et connus, personnes perçues, dossiers résolus ; âge inconnu, vue absente, personne hors de vue = mineur possible = déclencheur fermé. Rien de l'acte n'est représenté (fondu au noir, hors champ, D15), aucun libellé explicite. `gestate_birth` tourne sur l'horloge de vie (nouvelle valeur `life` de `PROCESS_CLOCKS`) : 105 600 s de jeu = 1,22 jour de jeu = **1 h 50 réelle** (environ 0,98 an de vie, un peu plus que les 0,75 an de O39 ; D30 : 1 jour de jeu = 1 h 30 réelle, vie = 150 h), puis le moteur crée un agent (`infant`, `biological_parents` fixé) ; le nouveau-né n'a aucun dossier et chaque témoin forme ses croyances par la perception seule (âge apparent, parenté crue). Rien de vrai dans un jeton : `fecundity`, `pregnancy`, `biological_parents` restent `visibility = engine`, sans jeton ni écrivain du modèle ; une grossesse ne se perçoit que par des signes déjà au catalogue (carrure `round`, teint `pale`). Sondes `marriage_and_children` et `pregnancy_birth` : `gap` -> `expressible` (plus aucun trou du moteur dans les sondes). Tests : `catalogue/tests/test_t08d_births.py` (13, dont les refus d'un mineur réel, cru, apparent et d'un âge inconnu ou hors de vue ; ils ne génèrent aucun contenu). Faits MOTEUR que la porte ne voit pas, à vérifier en T34 : le sexe, la parenté proche (`biological_parents`) et la fécondité (`fecundity > 0` porte la grossesse). Démographie : la cible d'une naissance par couple et par 45 h suppose 150 couples féconds en permanence ; avec 70 % d'adultes en couple le calcul donne R ≈ 0,81 (décroissance) ; T34 règle la probabilité avec un retour de densité (`fecundity` sans profil d'âge encore défini) ; aucune valeur n'est fixée ici. Reste à T34 : le moteur d'exécution.
 
 Descriptions étendues, sans nouvel id : `cut` (une carcasse rend les produits espèce × partie), `extract` (les plantes enracinées), `absorb_evaporate` (laisse le soluté : le sel).
 

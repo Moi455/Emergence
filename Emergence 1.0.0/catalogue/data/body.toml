@@ -95,7 +95,7 @@ variable = [
 ]
 
 # ─── Trois lois du corps (T08a, docs/16 4.4, O30) ───────────────────────────────────────────────
-# Ni conceive ni gestate_birth : en attente de Monsieur (O39, D15).
+# Les naissances (P53, 15 oct. 2026, décision de Monsieur) sont les deux lois qui suivent illness_course : conceive et gestate_birth.
 # Rien de vrai dans un jeton : la maladie d'un corps reste au moteur (illnesses, visibility = engine) ;
 # les autres n'en voient que les SYMPTÔMES (symptoms, mots de santé) ; l'odeur n'est sentie que si elle arrive au nez.
 [[process]]
@@ -130,6 +130,39 @@ trigger = "temps écoulé depuis la contagion"
 clock = "calendar"
 nominal_game_s = 518400
 note = "nominal = 6 jours de jeu = 9 h réelles = la MÉDIANE des course_days de la table illness (3, 4, 5, 6, 6, 7, 8, 20 jours ; moyenne 7,4). Avant : 4 jours, qui ne correspondait à aucune maladie. Les cours sont en heures réelles (1 jour de jeu = 1 h 30, une vie de PNJ = 150 h = 100 jours de jeu) : rhume 3 j = 4,5 h ; fièvre d'hiver 4 j = 6 h ; flux de ventre 5 j = 7,5 h ; fièvre éruptive et fièvre des plaies 6 j = 9 h ; peste noire 7 j = 10,5 h (incubation 2 j = 3 h : assez longue pour que la contagion précède les signes, assez courte pour qu'une épidémie se joue en une séance, létalité 70 % sans soin) ; fièvre des marais 8 j = 12 h ; mal des poumons 20 j = 30 h réelles = 20 % d'une vie : c'est un mal chronique (phtisie), volontairement le seul à dépasser 10 % d'une vie ; il fait un malade de longue durée dont les proches s'occupent, et sa létalité de 40 % s'étale sur ce temps. Test : tests/test_t09_corrections.py (aucun cours au-delà de 10 jours sauf lung_rot)."
+consumes = []
+produces = []
+
+# ─── Deux lois de la vie (T08d, P53, docs/16 4.4) ────────────────────────────────────────────────
+# Aucun geste nouveau, aucune valeur de manière nouvelle (D28, D10) : conceive se branche sur le geste de contact
+# existant `touch` (manière `intimate`, déjà marquée intimate, déjà refusée à tout mineur possible), et ne s'ouvre
+# que sur la RÉCIPROCITÉ : deux touch intimate croisés (« si deux PNJ ont fait l'action », Monsieur). L'acte n'est
+# jamais représenté : fondu au noir, hors champ (D15). Rien de vrai dans un jeton : fecundity, pregnancy,
+# biological_parents restent au moteur ; les autres ne perçoivent que des signes visibles déjà au catalogue
+# (carrure `round`, santé `pale`) et ne CROIENT « elle attend un enfant » que par ces signes ou par sa parole.
+[[process]]
+id = "conceive"
+label_fr = "une grossesse peut commencer, hors champ"
+inputs = "deux agents ADULTES, chacun fécond (fecundity > 0), dont l'un porte une grossesse possible (pregnancy = none)"
+conditions = []
+effect = "après DEUX `touch` de manière intimate croisés (A vers B et B vers A, à moins de 1 800 s de jeu l'un de l'autre, sans tierce personne, aucun couple ni mariage exigé : l'émergence décide), chacun que le gouverneur a DÉJÀ autorisé dans son sens, le moteur tire (hash3, jamais rand) si une grossesse commence (pregnancy = early, biological_parents fixé) ; rien n'est montré ni simulé de l'acte, aucune animation, aucun texte, un fondu au noir ; l'événement perçu par les tiers est seulement « ils se sont isolés », sans mot de plus"
+trigger = "deux gestes touch, manner = intimate, croisés entre deux adultes dans la fenêtre CONCEIVE_WINDOW_S = 1 800 s de jeu (le niveau `a_while`, D30) : D10 vérifié à l'ouverture (âge RÉEL, CRU et APPARENT tous adultes et connus ; âge inconnu, dossier non résolu, personne absente ou hors de vue = mineur possible = jamais déclenché) ; Governor.conception_gate (Python seulement, à porter avec T34 avec un test de parité ; le moteur DOIT passer par cette porte)"
+clock = "real"
+nominal_game_s = 0
+note = "FAITS MOTEUR à vérifier en T34, que la porte ne voit pas : le sexe, la parenté proche (biological_parents : pas de grossesse entre proches) et la fécondité (fecundity > 0 porte la grossesse, un seul des deux ; le sexe apparent est un percept, le vrai sexe reste au moteur). Le moteur DOIT passer par Governor.conception_gate avant ces vérifications, jamais l'inverse, et ne contourne jamais un refus. Refus par défaut (D10) : le déclencheur ne s'ouvre JAMAIS (geste unilatéral, fenêtre dépassée, tierce personne) sur un partenaire dont l'âge réel, cru ou apparent est mineur ou inconnu. Tests de refus (aucun contenu généré) : tests/test_t08d_births.py. Probabilité de conception : à régler en T34 (voir gestate_birth pour la démographie), aucune valeur fixée ici."
+consumes = []
+produces = []
+
+[[process]]
+id = "gestate_birth"
+label_fr = "la grossesse suit son cours, puis un enfant naît"
+inputs = "un agent avec pregnancy ≠ none"
+conditions = []
+effect = "pregnancy passe de early (personne ne le sait, pas même elle) à visible puis late ; ses signes se perçoivent comme des signes ordinaires (carrure round, teint pale, ralentissement), et elle le CROIT par ses signes ; à terme le moteur CRÉE un nouvel agent (composants complets, life_clock = 0, life_stage = infant, biological_parents = les deux parents) avec des croyances initiales PAR OBSERVATEUR : le nouveau-né n'a aucun dossier ; chaque témoin présent forme ses propres croyances par la perception seule (âge apparent ≈ 0, lien de parenté CRU d'après ce qu'il croit des parents, jamais biological_parents) ; un enfant né d'un adultère peut donc croire son père autre que le vrai"
+trigger = "temps vécu depuis la conception sur l'horloge de vie"
+clock = "life"
+nominal_game_s = 105600
+note = "Unités D30 : 1 jour de jeu = 1 h 30 réelle = 86 400 s de jeu ; une vie ≈ 150 h réelles = 100 jours de jeu. La durée choisie est 1 h 50 réelle = 6 600 s réelles = 105 600 s de jeu = 1,22 jour de jeu, soit environ 0,98 an de vie (une vie de 150 h ≈ 80 ans d'âge équivalent, 1 h 53 par an) : un peu plus que les 9 mois (0,75 an, soit 1 h 24) de O39, choisie ainsi : assez longue pour que le ventre se voie et que l'entourage s'adapte avant la naissance, assez courte pour ne pas retarder les naissances. DÉMOGRAPHIE (à régler en T34, aucune valeur fixée ici) : la cible « une naissance par couple et par 45 h réelles » suppose 150 couples féconds EN PERMANENCE ; avec 70 % d'adultes en couple le calcul donne R ≈ 0,81 (la population DÉCROÎT) ; T34 doit régler la probabilité de conception avec un retour de densité (fecundity, sans profil d'âge encore défini). Sans naissance : 23 % de morts en 35 h (docs/14). Le nouveau-né est un infant (< 3 ans d'âge, soit environ 3 h réelles de vie, l'enfance entière faisant 15 h) : D10 le tient pour mineur dès le premier instant. La mère peut mourir en couches : cours des maladies, pas une loi à part."
 consumes = []
 produces = []
 

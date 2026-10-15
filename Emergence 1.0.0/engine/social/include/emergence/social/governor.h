@@ -2,6 +2,7 @@
 // decides. Port of catalogue/tools/governor.py (the oracle: tests/governor_vectors.inc are generated from it).
 // Values are TENTHS of the charter scale (the engine stores tenths). Hard rule D10 is deny-by-default: an
 // unknown or unresolved person, or an unknown age, counts as a possible minor.
+// conception_gate (P53, T08d): Python only (governor.py), to port with T34 with a parity test.
 #pragma once
 #include <array>
 #include <cstddef>

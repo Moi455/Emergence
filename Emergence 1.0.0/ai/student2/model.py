@@ -35,6 +35,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.checkpoint
 
 from .spec import MAX_ARITY, MAX_REFS, MAX_SLOTS, MAX_WRITES, NO_LABEL, NUM_BINS, STACK, OutputSpace, TargetKind, ValueKind
 
@@ -51,6 +52,7 @@ def compute_dtype(device: torch.device) -> torch.dtype:
 
 
 # ----------------------------------------------------------------------------------------------- configuration
+XL_D, XL_LAYERS = 768, 16
 @dataclass(frozen=True)
 class StudentConfig:
     name: str
@@ -62,6 +64,8 @@ class StudentConfig:
     prop_heads: int
     dec_layers: int             # inner-language decoder
     dec_ff: int
+    dropout: float = 0.0        # residual dropout of the trunk blocks (0 = none; only the training mode uses it)
+    checkpoint: bool = False    # gradient checkpointing of the trunk blocks (memory for time; training only)
 
     def to_dict(self) -> dict:
         return dict(self.__dict__)
@@ -71,6 +75,9 @@ SIZES = {
     "tiny": StudentConfig("tiny", 64, 2, 4, 128, 32, 2, 1, 128),                 # tests, CPU
     "small": StudentConfig("small", 256, 6, 8, 1024, 128, 4, 2, 1024),            # docs/09: d256 x 6
     "base": StudentConfig("base", 384, 8, 8, 1536, 192, 4, 3, 1536),              # docs/09: d384 x 8
+    # xl: a deliberately OVERSIZED yardstick (decision of 15 Oct.): too slow for the 25 % GPU budget on purpose, it is
+    # quantised and compared with the small unquantised models (student2/compare.py). Sized to train in float16 on 6 GB.
+    "xl": StudentConfig("xl", XL_D, XL_LAYERS, 12, 4 * XL_D, 256, 4, 4, 2048, dropout=0.1, checkpoint=True),
 }
 
 
@@ -162,9 +169,10 @@ class NumberEncoder(nn.Module):
 class Block(nn.Module):
     """Pre-LN Transformer block on scaled_dot_product_attention with an additive bias (already in the compute dtype)."""
 
-    def __init__(self, d: int, h: int, ff: int):
+    def __init__(self, d: int, h: int, ff: int, dropout: float = 0.0):
         super().__init__()
         self.h = h
+        self.drop = nn.Dropout(dropout)
         self.ln1, self.ln2 = nn.LayerNorm(d), nn.LayerNorm(d)
         self.qkv, self.o = nn.Linear(d, 3 * d), nn.Linear(d, d)
         self.ff = nn.Sequential(nn.Linear(d, ff), nn.GELU(), nn.Linear(ff, d))
@@ -173,8 +181,8 @@ class Block(nn.Module):
         B, N, D = x.shape
         q, k, v = self.qkv(self.ln1(x)).view(B, N, 3, self.h, D // self.h).permute(2, 0, 3, 1, 4)
         a = F.scaled_dot_product_attention(q, k, v, attn_mask=bias)
-        x = x + self.o(a.transpose(1, 2).reshape(B, N, D))
-        return x + self.ff(self.ln2(x))
+        x = x + self.drop(self.o(a.transpose(1, 2).reshape(B, N, D)))
+        return x + self.drop(self.ff(self.ln2(x)))
 
 
 class PropositionEncoder(nn.Module):
@@ -284,12 +292,16 @@ class PointerGraph(nn.Module):
 class Trunk(nn.Module):
     def __init__(self, cfg: StudentConfig):
         super().__init__()
-        self.blocks = nn.ModuleList(Block(cfg.d, cfg.heads, cfg.ff) for _ in range(cfg.layers))
+        self.blocks = nn.ModuleList(Block(cfg.d, cfg.heads, cfg.ff, cfg.dropout) for _ in range(cfg.layers))
         self.ln = nn.LayerNorm(cfg.d)
+        self.checkpoint = cfg.checkpoint
 
     def forward(self, x, bias):
         for b in self.blocks:
-            x = b(x, bias)
+            if self.checkpoint and self.training and torch.is_grad_enabled():
+                x = torch.utils.checkpoint.checkpoint(b, x, bias, use_reentrant=False)
+            else:
+                x = b(x, bias)
         return self.ln(x)
 
 

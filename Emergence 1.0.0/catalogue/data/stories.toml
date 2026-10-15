@@ -941,12 +941,12 @@ text_fr = "Le joueur achète une maison : il négocie avec le propriétaire, pai
 
 [[story]]
 id = "marriage_and_children"
-status = "gap"
-actions = ["speak", "go"]
+status = "expressible"
+actions = ["speak", "go", "touch"]
 variables = ["a_kind_label", "r_affection", "pregnancy"]
 interpretations = ["nothing_special"]
 utterances = ["(offer (future (link me spouse you)))", "(assert (link @E37 spouse @E38))"]
-note = "adultes ; RESTE UN TROU DU MOTEUR : les lois qui commencent une grossesse et font naître un enfant (conception, naissance entre adultes) ; le mariage et la parole sont exprimables"
+note = "adultes seulement (D10) ; le mariage et la parole sont exprimables ; l'enfant vient des lois conceive (déclenchée par touch de manière intime, déjà autorisé par le gouverneur, hors champ) puis gestate_birth (body.toml, P53)"
 charter = ["§13", "§25"]
 text_fr = "Deux adultes se marient au temple, ont un enfant l'année suivante ; les deux familles se rapprochent."
 
@@ -1406,10 +1406,10 @@ text_fr = "Un homme tombe malade ; sa sœur va chercher des herbes chez le guér
 
 [[story]]
 id = "pregnancy_birth"
-status = "gap"
+status = "expressible"
 actions = ["work", "take"]
 variables = ["pregnancy", "mobility"]
-note = "grossesse et ralentissement exprimables ; RESTE UN TROU DU MOTEUR : la loi de naissance (un nouvel agent, parents biologiques)"
+note = "grossesse et ralentissement exprimables (signes vus : carrure round, teint pale) ; la naissance est la loi gestate_birth (body.toml, P53) qui crée un nouvel agent avec des croyances par observateur"
 charter = ["§25"]
 text_fr = "Une femme mariée attend un enfant, ralentit son travail ; la sage-femme l'aide à accoucher."
 

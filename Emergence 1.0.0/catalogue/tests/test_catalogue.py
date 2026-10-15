@@ -199,9 +199,9 @@ class TestTimeFields(unittest.TestCase):
         self.assertEqual({d.id: d.game_s for d in cat["duration_level"].values()}, {"brief": 120, "a_while": 1800, "long": 7200})
         self.assertGreaterEqual(len(cat["illness"]), 8)
         self.assertTrue(all(p.trigger and p.clock for p in cat["process"].values()))
-        self.assertEqual(len(cat["process"]), 44)
-        self.assertNotIn("conceive", cat["process"])
-        self.assertNotIn("gestate_birth", cat["process"])
+        self.assertEqual(len(cat["process"]), 46)        # 44 + conceive, gestate_birth (T08d, P53)
+        self.assertIn("conceive", cat["process"])
+        self.assertIn("gestate_birth", cat["process"])
 
     def test_action_fields_accepted(self):
         row = {"id": "chop", "family": "force", "natural_end": False, "cadence_ms": 900, "productive": True}

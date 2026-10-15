@@ -9,6 +9,7 @@ It sits between the Transformer and the world. Whatever the model outputs, the g
     apparent age, an unknown age, or a person known only by name or description counts as a minor. D10 looks at
     the PARTICIPANTS of an intimate act or link; the hearers matter only when an intimate act or desire is SAID
     (P30). Every cited record (b:, m:, g:, h:, q:, c:, bare or in `that`) is unfolded and checked as said.
+  * conception_gate (P53, T08d): Python only, to port with T34 with a parity test (engine/social/.../governor.h).
 
 It never decides anything: it only clips or refuses. Values on the charter scale (-10..+10), computed in integer
 TENTHS like the C++ port (the engine stores tenths).
@@ -79,6 +80,16 @@ class Party:
 
 UNKNOWN = Party()
 THING = Party(resolved=True, person=False)
+
+
+@dataclass
+class CrossedTouch:
+    """One side of the reciprocity `conceive` requires: who touched whom (persistent ids), with which parameters,
+    when (game seconds, D30)."""
+    actor: str
+    target: str
+    params: dict
+    t: float
 
 
 @dataclass
@@ -323,6 +334,46 @@ class Governor:
             for pn, allowed in a.minor_whitelist.items():
                 if params.get(pn) not in allowed:
                     return no("d10_whitelist", f"D10: {pn}={params.get(pn)!r} missing or outside minor_whitelist")
+        return ok()
+
+    # ---- conception (P53, T08d): the trigger of the law `conceive` --------------------------------------
+    CONCEIVE_GESTURE = ("touch", "manner", "intimate")        # the existing contact gesture, the existing value
+    CONCEIVE_WINDOW_S = 1800      # game seconds (D30) between the two crossed gestures: the `a_while` duration level
+
+    def conception_gate(self, ab: "CrossedTouch | None", ba: "CrossedTouch | None", a: Party | None,
+                        b: Party | None, a_sees_b: Party | None = None, b_sees_a: Party | None = None,
+                        fertile: bool = False) -> Verdict:
+        """May the law `conceive` open? Monsieur's rule: TWO NPCs both did the act. So it needs RECIPROCITY: two
+        crossed touch(manner=intimate), A toward B and B toward A, each ALREADY allowed by the governor in its own
+        direction, less than CONCEIVE_WINDOW_S game seconds apart, with no third person (each one's target is the
+        other) and no couple or marriage required (emergence decides). Every age is a known PERCEIVED adult: REAL
+        (a, b), BELIEVED and APPARENT (what each believes and sees of the other). DENY BY DEFAULT: a missing
+        gesture or view, an unknown age, an unresolved file or a person out of sight counts as a possible minor and
+        the trigger stays closed. `fertile` is an engine fact (see body.toml: sex, close kinship and fecundity are
+        ENGINE facts this gate does not see; the engine MUST pass through this gate, then check them in T34).
+        Generates no content: it returns a verdict.
+        conception_gate: Python only, to port with T34 with a parity test."""
+        gesture, name, value = self.CONCEIVE_GESTURE
+        if ab is None or ba is None:
+            return no("not_reciprocal", "conceive needs two crossed gestures")
+        for t in (ab, ba):
+            if t.params.get(name) != value:
+                return no("not_conception_gesture", "conceive opens only on touch(manner=intimate)")
+        if not (ab.actor and ba.actor and ab.actor != ba.actor and ab.target == ba.actor and ba.target == ab.actor):
+            return no("not_reciprocal", "the gestures must cross between the same two persons, no third person")
+        if not (isinstance(ab.t, (int, float)) and isinstance(ba.t, (int, float))
+                and math.isfinite(ab.t) and math.isfinite(ba.t)) or abs(ab.t - ba.t) > self.CONCEIVE_WINDOW_S:
+            return no("window_exceeded", "the two gestures are too far apart in game time")
+        views = (a_sees_b or UNKNOWN, b_sees_a or UNKNOWN)
+        for who, other, view, t in ((a, b, views[0], ab), (b, a, views[1], ba)):
+            if (who or UNKNOWN).may_be_minor() or (other or UNKNOWN).may_be_minor() or view.may_be_minor() \
+                    or not view.perceived:                      # REAL and PERCEIVED adults only: out of sight = closed
+                return no("d10_intimate", "D10: conceive stays closed with a possible minor")
+            v = self.check_gesture(gesture, t.params, who, {"target": view})
+            if not v.allowed:
+                return v
+        if not fertile:
+            return no("not_fertile", "both must be fertile adults")
         return ok()
 
     # ---- utterances and records --------------------------------------------------------------------

@@ -105,6 +105,9 @@ class RecordIndex:
         return None
 
 
+NO_PLAN_LABEL = object()                       # sentinel: this decision says nothing about plans
+
+
 class LabelCodec:
     def __init__(self, space: OutputSpace):
         self.space = space
@@ -153,8 +156,9 @@ class LabelCodec:
         elif speech:
             raise LabelError(f"{gid} takes no speech")
         self._writes(d.get("writes") or [], enc, book, t)
-        if "plan" in d:                                  # labelled only when the teacher wrote (or refused to write) a plan
-            self._plan(d["plan"], enc, t)
+        plan = self.plan_of(d)
+        if plan is not NO_PLAN_LABEL:                    # labelled only when the teacher wrote (or refused to write) a plan
+            self._plan(plan, enc, t)
         if "stop" in d:
             self._stop(shape, d["stop"], enc, t)
         self.rounding = max(self.rounding, self.seq.rounding)
@@ -261,6 +265,23 @@ class LabelCodec:
             t.stop[...] = sp.conditions.cap
             return
         self._condition(value, enc, t, ("stop", "stop_ref", "stop_num", "stop_word"))
+
+    @staticmethod
+    def plan_of(d: dict):
+        """The plan label of a stored decision: its top-level `plan` (T11); else, when the answer carried a written trace
+        (`thoughts`, T36), the FIRST thought of kind `plan` converted to the student's plan (`serves` -> `parent`; a
+        goal that is only created by this very trace, `g:new`, has no record yet: no parent; `says` is not learned here),
+        or None (= explicitly no plan) when the trace has none; else NO_PLAN_LABEL (older data: say nothing)."""
+        if "plan" in d:
+            return d["plan"]
+        if "thoughts" not in d:
+            return NO_PLAN_LABEL
+        for th in d["thoughts"] or []:
+            if th.get("kind") == "plan":
+                serves = th.get("serves")
+                return {"steps": th.get("steps"), "repeat": th.get("repeat"), "repeat_period": th.get("repeat_period"),
+                        "parent": None if serves in (None, "", "g:new") else serves}
+        return None
 
     def _plan(self, plan, enc, t: Targets) -> None:
         """plan = None (no plan) or {"steps": [{"gesture", "target"}], "repeat", "repeat_period", "parent"}."""
