@@ -19,6 +19,7 @@ from .builders import (BeliefBuilder, EventBuilder, MemoryBuilder, PersonBuilder
                        SkillBuilder, SocialBuilder, StateBuilder, ThingBuilder, WakeBuilder)
 from .context import BuildContext
 from .planning import GoalBuilder, GroupBuilder, PlanBuilder
+from .violence import PlotSummary, ViolenceBuilder
 from .pools import Pools
 from .propositions import PropositionGrammar
 from .scene import Person, Scene
@@ -36,6 +37,7 @@ class Mind:
     people: dict[str, Person] = field(default_factory=dict)      # 'me', @E keys (filed, then ghosts) -> the true person
     extra_known: list[str] = field(default_factory=list)         # ghost keys
     structure: str = "ordinary"                                  # the family of structure it was built around
+    plot: PlotSummary | None = None                              # the plot of force it carries, if any (never shown to the model)
 
     def known_keys(self) -> list[str]:
         return [r.key for r in self.records] + self.extra_known
@@ -44,7 +46,7 @@ class Mind:
 class MindBuilder:
     # the order matters: SELF_STATE needs the events and the body, WAKE needs everything
     PIPELINE = (SelfBuilder, PersonBuilder, ThingBuilder, PlaceBuilder, EventBuilder, BeliefBuilder, MemoryBuilder,
-                SocialBuilder, GroupBuilder, GoalBuilder, PlanBuilder, SkillBuilder, StateBuilder, WakeBuilder)
+                SocialBuilder, GroupBuilder, ViolenceBuilder, GoalBuilder, PlanBuilder, SkillBuilder, StateBuilder, WakeBuilder)
 
     def __init__(self, pools: Pools, grammar: PropositionGrammar):
         self.pools, self.grammar = pools, grammar
@@ -54,4 +56,4 @@ class MindBuilder:
         c = BuildContext(rng, self.pools, self.grammar, scene, cause, structure)
         for b in self.builders:
             b.build(c)
-        return Mind(c.records.ordered(TYPE_ORDER), c.layout.people(scene.self_), [g.key for g in c.layout.ghosts], structure)
+        return Mind(c.records.ordered(TYPE_ORDER), c.layout.people(scene.self_), [g.key for g in c.layout.ghosts], structure, c.plot)

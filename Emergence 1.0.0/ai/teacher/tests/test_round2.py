@@ -140,7 +140,7 @@ class CapsTests(unittest.TestCase):
         t0 = pt(2026, 10, 13, 10)
         b.on_quota_error(t0, QuotaError("day", "requests", 0.0, 0.0))
         self.assertEqual(b.limits().rpd, 0)
-        self.assertGreater(b.available_at(t0 + 1, 10), t0 + 3600)
+        self.assertGreater(b.available_at(t0 + 1, 10), t0 + 3600)                      # (a limit of ZERO is final for the day)
 
 
 # ------------------------------------------------------------------------------------------------ 5. monotone day
@@ -187,14 +187,14 @@ class QuotaFileTests(unittest.TestCase):
 
     def test_save_is_atomic_and_fsynced(self):
         desk = QuotaDesk(self.cfg, self.dir / "quota.json", now=self.now)
-        desk.books["a"].begin(self.now, 10)
         calls = []
         real = os.fsync
         with mock.patch("teacher.quota.os.fsync", side_effect=lambda fd: (calls.append(fd), real(fd))[1]):
-            desk.save()
+            with desk.transaction(self.now):
+                desk.books["a"].begin(self.now, 10)
         self.assertGreaterEqual(len(calls), 2)                                               # the file, then its folder
-        self.assertEqual(sorted(p.name for p in self.dir.iterdir()), ["quota.json"])         # no temp file left
-        self.assertEqual(json.loads((self.dir / "quota.json").read_text())["models"]["a"]["day_requests"], 1)
+        self.assertEqual(sorted(p.name for p in self.dir.iterdir()), ["quota.json", "quota.json.lock"])   # no temp file left
+        self.assertEqual(json.loads((self.dir / "quota.json").read_text())["pools"]["a"]["day_requests"], 1)
 
     def test_corrupt_file_is_rebuilt_from_the_journal(self):
         self.journal()
@@ -209,12 +209,12 @@ class QuotaFileTests(unittest.TestCase):
     def test_badly_typed_field_rebuilds_that_book_only(self):
         self.journal()
         desk = QuotaDesk(self.cfg, self.dir / "quota.json", self.dir / "journal.jsonl", self.now)
-        desk.books["a"].day_requests = 77
-        desk.books["b"].day_requests = 5
-        desk.save()
+        with desk.transaction(self.now):
+            desk.books["a"].day_requests = 77
+            desk.books["b"].day_requests = 5
         doc = json.loads((self.dir / "quota.json").read_text())
         for bad in ("many", True, None, [1], {"x": 1}, float("inf")):
-            doc["models"]["a"]["day_requests"] = bad
+            doc["pools"]["a"]["day_requests"] = bad
             (self.dir / "quota.json").write_text(json.dumps(doc) if bad != float("inf") else json.dumps(doc).replace("Infinity", "1e999"))
             again = QuotaDesk(self.cfg, self.dir / "quota.json", self.dir / "journal.jsonl", self.now)
             self.assertEqual(again.books["a"].day_requests, 3, bad)                          # rebuilt from the journal
@@ -253,7 +253,7 @@ class CountedBeforeSentTests(unittest.TestCase):
             seen = []
 
             def handler(model, n):
-                doc = json.loads(path.read_text())["models"][model]
+                doc = json.loads(path.read_text())["pools"][model]
                 seen.append((doc["day_requests"], doc["day_tokens"] > 0))
                 return ok_result()
             desk = QuotaDesk(config(spec("a", rpm=60, rpd=500)), path)

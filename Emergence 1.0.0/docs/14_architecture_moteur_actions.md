@@ -177,6 +177,7 @@ Règles du moteur ; aucune ne choisit un geste ni ne tire de conclusion :
 - **Interruption** : seul le corps interrompt physiquement un geste (un coup reçu déclenche `hit_react`, une chute, l'inconscience, une prise par autrui). Un réveil P0 n'arrête rien : il appelle le modèle (≤ 0,1 s au p95 en simulation), dont la décision remplace ou non le geste.
 - **Échec perçu** : `WAKE.outcome` (nouveau) vaut `done`, `failed`, `blocked`, `interrupted` ou `limit_reached`, avec une cause perçue (« la porte ne s'ouvre pas »), jamais une cause invisible (« il faut la clé n° 42 »).
 - **Masque de faisabilité** : calculé sur les percepts et les croyances ; ce que le monde refuse échoue physiquement, sur place.
+  Règles du masque (T28, `engine/social/tokenizer/mask.h`, lit seulement les tableaux du tokeniseur) : (1) un pointeur n'accepte que les types de dossier que ses `accepts` désignent, et « personne » seulement s'il est optionnel ; (2) un objet que le dossier dit **sans** la propriété demandée par `requires` (drapeau connu, valeur 0) est écarté, une propriété inconnue n'écarte rien ; (3) la partie touchée d'un geste de contact (`party_params`) n'est pas une personne **connue absente** ; (4) elle n'est pas **soi-même** pour `take`, `grab`, `strike`, `push`, `pull` seulement : se toucher, s'examiner, se fouiller, s'attacher (se bander avec un tissu) et se vêtir restent possibles ; soigner un blessé ou un enfant présent n'est jamais masqué ; (5) un geste est faisable si chacun de ses pointeurs obligatoires a un candidat (ou une direction/forme).
 
 ### 4.4 Le temps des gestes (P37)
 
@@ -321,6 +322,12 @@ On choisit son chemin sur sa **connaissance**, jamais sur la grille vraie.
 - `CandidateSelector` : candidats bornés (64 croyances, 32 souvenirs, 24 personnes, docs/10) ; saillance simple d'amorce, en attendant la tête « sélecteur ».
 - **API C** (`engine/capi/emergence_capi.h`) et liaison Python par `ctypes` : `em_world_create`, `em_world_step`, `em_world_apply`, `em_world_save`, `em_world_load`, `em_tokenize`. Un seul tokeniseur, en jeu et pendant DAgger.
 - **DecisionRecord v1** : une ligne au format de `ai/teacher/dataset.py`, avec `source = "engine"`, le tick, la cause du réveil, les sorties et les verdicts du gouverneur.
+
+### 6.3 La parole entre les esprits (`SpeechRouter`, T24)
+
+- **Traduction d'une personne** : un pointeur du locuteur est traduit par le **nom que le locuteur donne à son dossier**, jamais par `r_true_entity`. L'auditeur reçoit son propre dossier du même nom (le plus ancien), sinon un nouveau référent « celui qu'il appelle Aldric » (`r_known_by = name_only`, `r_true_entity = 0`). Un locuteur qui se trompe de personne transmet donc sa croyance, pas la personne. C'est la lettre voulue de docs/15 T24 : le nom sert à retrouver le dossier de l'auditeur, la vérité n'entre jamais.
+- **Référents sans nom** : le routeur garde, par auditeur, le dernier dossier créé par locuteur et par pointeur (32 au plus, cache non sauvé) et le réutilise ; un inconnu qui parle à chaque pas ne recrée pas de dossier.
+- **Refus D10** : `d10_hearer` et `d10_intimate` trahissent qu'un auditeur peut être mineur. Ils restent dans le **journal du moteur** (`SpeechRefusal`) ; ils ne sont **jamais** renvoyés au modèle ni écrits dans une mémoire. Un test vérifie qu'une parole refusée ne modifie aucun esprit.
 
 ---
 

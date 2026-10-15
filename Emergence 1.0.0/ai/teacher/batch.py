@@ -79,15 +79,40 @@ class BatchInstructionBuilder(InstructionBuilder):
         return head + self.phrasebook.section() + "\n\n" + marker + tail
 
 
-class BatchInstructions:
-    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None = None, vocabulary: str = "full", thoughts: bool = False):
-        self.builder = BatchInstructionBuilder(tk, phrasebook, vocabulary, thoughts)
-        self._text: str | None = None
+class VariantText(str):
+    """The fixed instructions (the str itself) with a `compact` variant for the models that are flagged `compact` in
+    quota.toml; the model caller picks one once it knows which model answers."""
+    compact: str | None = None
 
-    def text(self) -> str:
+
+class BatchInstructions:
+    """The fixed system text. `compact_phrasebook` (fewer sample sentences) makes the COMPACT variant, for a model whose
+    per-minute token limit leaves room for one or two situations only (Gemma, 16 000): same instructions, same words, same
+    format and rules; only the sample sentences are fewer. The schema text sent to such a model is compact too (gemini.SchemaText)."""
+
+    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None = None, vocabulary: str = "full", thoughts: bool = False,
+                 compact_phrasebook: PhraseBook | None = None):
+        self.builder = BatchInstructionBuilder(tk, phrasebook, vocabulary, thoughts)
+        self.compact_builder = (BatchInstructionBuilder(tk, compact_phrasebook, vocabulary, thoughts)
+                                if compact_phrasebook is not None else None)
+        self._text: str | None = None
+        self._compact: str | None = None
+
+    def text(self, compact: bool = False) -> str:
+        """The instructions; `compact=True` the compact variant (the full one when none was asked for)."""
+        if compact and self.compact_builder is not None:
+            if self._compact is None:
+                self._compact = self.compact_builder.build()
+            return self._compact
         if self._text is None:
             self._text = self.builder.build()
         return self._text
+
+    def variants(self) -> VariantText:
+        """The full text, carrying the compact one: what GroupedRound hands to the caller."""
+        out = VariantText(self.text())
+        out.compact = self.text(True) if self.compact_builder is not None else None
+        return out
 
 
 # ---------------------------------------------------------------------------------------------------- schema
@@ -258,14 +283,15 @@ class GroupedRound:
         return out
 
     def _request(self, kind: str, slots: list[Slot], user: str) -> RequestRecord | None:
-        system = self.instructions.text()
+        system = self.instructions.variants()
         schema = self.schema.response_schema(len(slots))
         got = self.caller(system, user, schema)
         if got is None:
             return None
         model, result = got
         labels = [s.label for s in slots]
-        return RequestRecord(kind, model, result, labels, len(system) + len(user), BatchAnswer.parse(result, labels))
+        chars = getattr(self.caller, "last_prompt_chars", 0) or len(system) + len(user)       # what really left (compact variant?)
+        return RequestRecord(kind, model, result, labels, chars, BatchAnswer.parse(result, labels))
 
     def _judge(self, slots: list[Slot], rec: RequestRecord, first: bool) -> None:
         for s in slots:

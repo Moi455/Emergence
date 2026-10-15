@@ -331,6 +331,8 @@ class TestBeliefsAndObjects(unittest.TestCase):
         for sit in SITS:
             for rec, root in props(sit):
                 for m in nodes(root):
+                    if m.head == "state" and m.args[0] != "me" and m.args[0].startswith("@T"):
+                        continue                                          # a property of a thing (burning), not a trait of a person
                     if m.head == "state" and m.args[1] not in ("age_years",) + tuple(SAMPLER.grammar.conditions):
                         n += 1
                         self.assertFalse(m.args[1].startswith("r_"), rec.fields["prop"])
@@ -413,10 +415,12 @@ class TestDemography(unittest.TestCase):
 
 
 class TestPlans(unittest.TestCase):
+    FORCE_STEPS = {"go", "look", "wait", "search", "take", "speak", "strike", "push", "throw"}      # a goal of force (T12b)
     SERVES = {"has": {"go", "take", "examine", "search", "wait", "look"}, "at": {"go", "wait", "rest", "set_posture", "look", "search", "speak"},
-              "owns": {"go", "take", "examine", "look"}, "works_as": {"go", "work", "examine", "rest", "look"},
+              "owns": {"go", "take", "examine", "look", "wait", "search"}, "works_as": {"go", "work", "examine", "rest", "look"},
               "knows_how": {"examine", "work", "go"}, "link": {"go", "look", "wait", "speak"},
-              "did": {"go", "give", "speak", "look"}}
+              "did": {"go", "give", "speak", "look", "wait", "search", "take", "strike", "push", "throw"},
+              "dead": FORCE_STEPS, "not": FORCE_STEPS, "and": FORCE_STEPS, "leads": FORCE_STEPS}
     NEED = {"thirst": {"drink", "go", "rest", "look"}, "hunger": {"eat", "go", "rest", "look"}, "exhaustion": {"set_posture", "rest", "go", "sleep"},
             "pain": {"rest", "set_posture"}}
 
@@ -431,7 +435,10 @@ class TestPlans(unittest.TestCase):
                 while goal.head in ("at_time", "before", "after"):             # a time mark does not change what serves the goal
                     goal = goal.args[-1]
                 n[goal.head] += 1
-                allowed = self.NEED[goal.args[1]] if goal.head == "state" else self.SERVES[goal.head]
+                if goal.head == "state" and goal.args[0] != "me":           # to hurt another, to burn a thing
+                    allowed = self.FORCE_STEPS
+                else:
+                    allowed = self.NEED[goal.args[1]] if goal.head == "state" else self.SERVES[goal.head]
                 self.assertTrue(set(r.fields["steps"]) <= allowed,
                                 (goal.head, r.fields["steps"]))
                 self.assertTrue({r.fields["step"], r.fields["next"]} <= set(r.fields["steps"]))

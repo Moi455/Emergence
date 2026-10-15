@@ -80,7 +80,7 @@ class TestPointers(unittest.TestCase):
             for rec, root in props(sit):
                 for n in nodes(root):
                     slots = SLOTS.get(n.head)
-                    if not slots:
+                    if not slots or (n.head == "state" and n.args[0].startswith("@T")):     # a thing can burn (T12b)
                         continue
                     for want, arg in zip(slots, n.args):
                         if isinstance(arg, str) and (arg[:1] == "@" or arg == "me"):

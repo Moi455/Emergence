@@ -69,3 +69,71 @@ target_link_libraries(test_social_npc_laws PRIVATE emergence_social)
 target_include_directories(test_social_npc_laws PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
 emergence_strict_target(test_social_npc_laws)
 add_test(NAME test_social_npc_laws COMMAND test_social_npc_laws)
+
+# T24: the speech between minds (SpeechRouter) and the bounded writes of the model (MindWriter).
+target_sources(emergence_social PRIVATE src/mind_writer.cpp src/speech_router.cpp)
+
+# T28: the tok-2 tokenizer in C++ (engine/social/tokenizer): same arrays as the Python oracle ai/tok2, feasibility mask,
+# candidates, and a C interface for training (one tokenizer, in the game and in the training).
+find_package(Threads REQUIRED)
+add_library(emergence_tok2 STATIC
+  tokenizer/src/value.cpp tokenizer/src/tokenizer.cpp tokenizer/src/mask.cpp tokenizer/src/candidates.cpp)
+target_include_directories(emergence_tok2 PUBLIC tokenizer/include tokenizer/generated)
+target_link_libraries(emergence_tok2 PUBLIC emergence_social)
+emergence_strict_target(emergence_tok2)
+
+add_executable(test_tok2_parity tokenizer/tests/test_parity.cpp)
+target_link_libraries(test_tok2_parity PRIVATE emergence_tok2)
+emergence_strict_target(test_tok2_parity)
+add_test(NAME test_tok2_golden COMMAND test_tok2_parity ${CMAKE_CURRENT_SOURCE_DIR}/../../ai/tok2/golden/cases.jsonl)
+
+add_executable(test_social_speech tests/test_speech_router.cpp)
+target_link_libraries(test_social_speech PRIVATE emergence_social)
+target_include_directories(test_social_speech PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+emergence_strict_target(test_social_speech)
+add_test(NAME test_social_speech COMMAND test_social_speech)
+add_executable(bench_tok2 tokenizer/tests/bench_tok2.cpp)
+target_link_libraries(bench_tok2 PRIVATE emergence_tok2 Threads::Threads)
+emergence_strict_target(bench_tok2)
+
+add_executable(test_social_mind_writer tests/test_mind_writer.cpp)
+target_link_libraries(test_social_mind_writer PRIVATE emergence_social)
+target_include_directories(test_social_mind_writer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
+emergence_strict_target(test_social_mind_writer)
+add_test(NAME test_social_mind_writer COMMAND test_social_mind_writer)
+
+foreach(t mask candidates half)
+  add_executable(test_tok2_${t} tokenizer/tests/test_${t}.cpp)
+  target_link_libraries(test_tok2_${t} PRIVATE emergence_tok2)
+  target_include_directories(test_tok2_${t} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
+  emergence_strict_target(test_tok2_${t})
+  add_test(NAME test_tok2_${t} COMMAND test_tok2_${t})
+endforeach()
+target_include_directories(test_tok2_parity PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../core/testing/include)
+
+# C interface for the training (ctypes): a shared library with the same code as the game (ai/tok2/native.py loads it).
+add_library(emergence_tok2_capi SHARED tokenizer/src/tokenizer_capi.cpp)
+target_link_libraries(emergence_tok2_capi PRIVATE emergence_tok2)
+set_target_properties(emergence_social emergence_tok2 emergence_tok2_capi PROPERTIES POSITION_INDEPENDENT_CODE ON)
+emergence_strict_target(emergence_tok2_capi)
+
+# T28 parity on the shared corpus (5000 sampler situations + 3000 faulty copies, expectations from the Python oracle) and
+# the Python<->C++ tests through the C interface. They need python3 (the oracle); without it only the golden test runs.
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+  set(TOK2_CORPUS ${CMAKE_BINARY_DIR}/tok2_corpus.jsonl)
+  add_test(NAME tok2_corpus_build COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tokenizer/make_corpus.py --out ${TOK2_CORPUS} --reuse)
+  set_tests_properties(tok2_corpus_build PROPERTIES FIXTURES_SETUP tok2_corpus TIMEOUT 900)
+  add_test(NAME tok2_corpus_pin COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tokenizer/make_corpus.py --out ${TOK2_CORPUS} --reuse --check-pin)
+  set_tests_properties(tok2_corpus_pin PROPERTIES DEPENDS tok2_corpus_build)
+  add_test(NAME test_tok2_corpus COMMAND test_tok2_parity ${TOK2_CORPUS})
+  set_tests_properties(test_tok2_corpus PROPERTIES FIXTURES_REQUIRED tok2_corpus)
+  add_test(NAME test_tok2_python COMMAND ${Python3_EXECUTABLE} -m unittest discover -s ${CMAKE_CURRENT_SOURCE_DIR}/tokenizer/tests -t ${CMAKE_CURRENT_SOURCE_DIR}/tokenizer/tests)
+  set_tests_properties(test_tok2_python PROPERTIES ENVIRONMENT "EM_TOK2_LIB=$<TARGET_FILE:emergence_tok2_capi>" DEPENDS tok2_corpus_build)
+endif()
+
+# T24: the shared speech vectors are exactly what the Python oracle writes (reads the file, writes nothing).
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_Interpreter_FOUND)
+  add_test(NAME speech_vectors_up_to_date COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../catalogue/tools/speech_vectors.py --check)
+endif()

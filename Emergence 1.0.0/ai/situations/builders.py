@@ -658,6 +658,9 @@ class StateBuilder(RecordBuilder):
         s["mood.energy"] = d.gauss(8.0 - 0.5 * body["need.sleep"] - 0.15 * body["need.exhaustion"], 1.2)
         base = c.of("SELF_MIND")[0].fields.get("temper.baseline_mood", 0.0)
         s["mood.valence"] = d.gauss(base * 0.6 - 0.5 * body["body.pain"] - 0.2 * body["need.hunger"], 1.5, -10.0, 10.0)
+        for name, (lo, hi) in c.mood.items():                                # what a plot of force stirs in him
+            if name in s or name in c.filler.types["SELF_STATE"]["fields"]:
+                s[name] = d.clip(max(s.get(name, 0.0), d.rng.uniform(lo, hi)))
         for ev in c.directed:
             fam = c.pools.cat["action"][ev.fields["gesture"]].family
             for emo, (lo, hi) in REACTION.get(fam, {}).items():

@@ -201,7 +201,7 @@ class RoundTests(GeneratorCase):
         self.assertEqual([x["id"] for x in j[0]["results"]], ["S1", "S2", "S3", "S4"])
         st = SeriesState.load_or_new(Path(self.tmp.name) / "s" / "state.json", "s", 0, 4, 0)
         self.assertEqual((st.next_index, st.valid, st.batches, st.requests), (12, 12, 3, 3))
-        self.assertTrue((Path(self.tmp.name) / "s" / "quota.json").exists())
+        self.assertTrue((Path(self.tmp.name) / "quota_global.json").exists())          # ONE ledger next to the series folders
         # the key never reaches the journal; the system text is the same in every request (implicit prompt cache)
         self.assertEqual(len({r["system"] for r in t.requests}), 1)
 
@@ -315,7 +315,15 @@ class ResumeTests(GeneratorCase):
         clock = self.clock
         clock.t = pt(2026, 10, 13, 22, 30)
         qc = config(spec("a", rpm=60, rpd=1))
-        gen = self.generator(FakeTeacher(), k=4, qc=qc)
+
+        class Wall(FakeTeacher):                                                                  # Google refuses after the first request
+            def generate(self, *a, **k):
+                if self.requests:
+                    return ApiResult(False, 429, error="RESOURCE_EXHAUSTED", quota_scope="day",
+                                     quota_violations=[{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+                                                        "quotaMetric": "x_requests", "quotaValue": "500"}])
+                return super().generate(*a, **k)
+        gen = self.generator(Wall(), k=4, qc=qc)
         n = {"w": 0}
         orig = gen.pacer._wait
 

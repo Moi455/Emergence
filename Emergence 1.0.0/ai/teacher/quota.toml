@@ -1,53 +1,52 @@
-# Limites GRATUITES connues, par modele (Monsieur, 11 oct. : Flash Lite 15 req/min et 500/jour ; Flash 5 req/min et 20/jour).
+# Limites GRATUITES, par modele. SOURCE : la console AI Studio de Monsieur (15 oct. 2026, "utilise / limite") ; les chiffres
+# ci-dessous sont les limites OBSERVEES, plus les suppositions de l'ancien fichier (14 oct.) qui etaient fausses.
 # L'ORDRE est la preference (a delai egal, le premier est choisi). Un champ ABSENT = limite inconnue : le generateur
-# l'apprend des reponses 429 (quotaValue) et la garde dans quota.json, dans le dossier de la serie.
-# rpm = requetes/minute, rpd = requetes/jour, tpm = jetons d'ENTREE/minute, tpd = jetons d'entree/jour.
-# tpm et tpd : PLAFONDS LOCAUX PRUDENTS, des ESTIMATIONS (Google ne publie pas ces chiffres pour le palier gratuit ; 250 000 jetons/min
-# est la valeur observee par un 429 le 13 oct. sur gemini-3.1-flash-lite). Lite : tpd 20 000 000 ; Flash : tpd 2 000 000 (estimations
-# de prudence, pas des mesures). Un 429 qui donne un `quotaValue` plus bas les ABAISSE (min(fichier, appris)), jamais plus haut.
-# Le jour de quota se remet a zero a minuit, heure du Pacifique.
+# l'apprend des reponses 429 (quotaValue) et la garde dans le carnet global.
+# rpm = requetes/minute, rpd = requetes/jour, tpm = jetons d'ENTREE/minute, tpd = jetons/jour.
+# tpm : valeur de la console (250 000 pour Flash et Flash Lite, 16 000 pour Gemma, 100 000 pour Antigravity). tpd : PLAFONDS LOCAUX
+# PRUDENTS, des ESTIMATIONS (la console n'en affiche pas) : Lite 20 000 000, Flash 2 000 000 ; un 429 qui donne un `quotaValue`
+# plus bas les ABAISSE (min(fichier, appris)), jamais plus haut. Le jour de quota se remet a zero a minuit, heure du Pacifique.
+#
+# LE CARNET EST GLOBAL : un seul fichier, ~/.local/share/emergence/dataset/quota_global.json (verrou flock, jour du Pacifique),
+# partage par toutes les series et tous les outils (generateur, probe, bench, pilote). Google compte par CLE et par MODELE, pas
+# par serie ni par nom.
+# pool = "<modele>" : ce nom PARTAGE le quota de ce modele (ses compteurs sont ceux du pool, ses limites aussi). Mesure le 15 oct. :
+#   gemini-flash-lite-latest = gemini-3.5-flash-lite (le 500e appel du jour refuse aux deux a la meme seconde : 407 + 93) ;
+#   gemini-3.1-flash-lite-preview = gemini-3.1-flash-lite (429 jour et 429 jetons simultanes sur les deux) ;
+#   gemini-pro-latest et gemini-3.1-pro-preview = gemini-3.1-pro (le 429 le DIT : quotaDimensions.model).
+# Un alias dont on ne connait pas la cible reste hors chaine ; le premier 429 la revele (quotaDimensions.model) et le carnet la retient.
+# tpm_target : fraction de la limite de jetons/minute visee (0,80 : avec 100 %, la minute reelle a atteint 110 % le 15 oct.).
+# tpm_counts : "all" (defaut) compte entree + sortie + reflexion ; "input" l'entree seule (la metrique de Google est
+#   `...InputTokensPerModelPerMinute` : pour Gemma, dont la reflexion pese 2 a 4 000 jetons sur 16 000, on ne compte que l'entree).
 # thinking_budget : 0 coupe la reflexion interne (modeles 2.5) ; absent = laisse le defaut du modele.
-# system_instruction / json_schema : false = le modele refuse systemInstruction / le schema JSON structure (valeur OBSERVEE par la sonde
-#   ou par une vraie requete) ; absent = ce que sa famille accepte. Un modele sans l'un des deux est interroge par PromptOnlyStrategy
-#   (consignes et schema ecrits dans le texte, JSON pur demande puis extrait).
-# max_k : le modele ne prend que de PETITS lots (au plus max_k situations par requete) ; le generateur lui reserve alors des tours a part.
+# system_instruction / json_schema : false = le modele refuse systemInstruction / le schema JSON structure (valeur OBSERVEE) ;
+#   absent = ce que sa famille accepte. Un modele sans l'un des deux est interroge par PromptOnlyStrategy.
+# max_k : le modele ne prend que de PETITS lots ; le generateur le traite alors comme une VOIE de secours (voir generator.py).
+# compact : le modele recoit le texte fixe COMPACT (12 phrases d'exemple au lieu de 30, schema sans les listes deja ecrites dans les
+#   consignes) : meme consigne, meme vocabulaire, memes regles.
 # enabled = false : le modele reste LISTE (avec `note`, la raison) mais n'entre pas dans la chaine ; `--models` peut le nommer.
 # Les mesures de ces notes sont dans README.md, section "Modeles" ; sonde : python3 -m teacher.probe ; qualite : python3 -m teacher.bench.
 
-margin = 1.05          # l'intervalle entre deux requetes d'un modele est 60/rpm x margin (jamais de rafale)
+margin = 1.05          # l'intervalle entre deux requetes d'un pool est 60/rpm x margin (jamais de rafale)
+tpm_target = 0.80
 
 [[model]]
 name = "gemini-3.5-flash-lite"
-rpm = 15
+rpm = 15               # console : 15 / 250 000 / 500
 rpd = 500
 tpm = 250000
 tpd = 20000000
 
 [[model]]
 name = "gemini-3.1-flash-lite"
-rpm = 15
-rpd = 500
-tpm = 250000
-tpd = 20000000
-
-[[model]]
-name = "gemini-2.5-flash-lite"
-rpm = 15
-rpd = 500
-tpm = 250000
-tpd = 20000000
-thinking_budget = 0
-
-[[model]]
-name = "gemini-3.1-flash-lite-preview"
-rpm = 15
+rpm = 15               # console : 15 / 250 000 / 500
 rpd = 500
 tpm = 250000
 tpd = 20000000
 
 [[model]]
 name = "gemini-3.8-flash"
-rpm = 5
+rpm = 5                # console : 5 / 250 000 / 20
 rpd = 20
 tpm = 250000
 tpd = 2000000
@@ -68,64 +67,107 @@ tpd = 2000000
 
 [[model]]
 name = "gemini-3.5-flash"
-rpm = 5
+rpm = 5                # absent de la console du 15 oct. ; 429 "limit 20" le 15 oct.
 rpd = 20
 tpm = 250000
 tpd = 2000000
-
-[[model]]
-name = "gemini-2.5-flash"
-enabled = false
-note = "404 le 14 oct. : plus disponible aux nouveaux utilisateurs (sonde et banc)"
-thinking_budget = 0
 
 [[model]]
 name = "gemini-3-flash-preview"
-rpm = 5
+rpm = 5                # console ("Gemini 3 Flash") : 5 / 250 000 / 20
 rpd = 20
 tpm = 250000
 tpd = 2000000
 
-# ---- 14 oct. : modeles ajoutes apres la sonde (teacher.probe) et le banc de qualite (teacher.bench) ; limites inconnues = champs absents.
-
-[[model]]
-name = "gemini-flash-lite-latest"       # alias ; limites inconnues (le generateur les apprend des 429)
+# ---- Gemma : peu de jetons par minute, enormement de requetes par jour (console du 15 oct. : 30 / 16 000 / 14 400, 6 et 8 utilisees).
+# Le goulot est le TPM : texte fixe ~8 900 jetons + schema ~1 070 + ~2 600 par situation => un lot de 1 a 2 situations, ~1 requete par minute.
 
 [[model]]
 name = "gemma-4-31b-it"
 enabled = false
-note = "67 % valides au premier coup (4/6 ; 2 variables inconnues du gouverneur), 196 s pour 6 situations (3 requetes de 2, ~2 200 jetons de reflexion chacune), 0 % de passifs, <70 % : ecarte"
-tpm = 16000                            # OBSERVE : 429 "GenerateContentInputTokensPerModelPerMinute-FreeTier", quotaValue 16000
+note = "essai du 15 oct. (serie essai_gemma) : voir README.md, section Modeles ; activable par --models gemma-4-31b-it"
+rpm = 30
+rpd = 14400
+tpm = 16000
 json_schema = false                    # OBSERVE : 400 "invalid argument" avec le vrai schema (le petit schema de la sonde passait)
-max_k = 2                              # 2 situations = ~15 000 jetons Gemma d'entree (OBSERVE) : un lot de 6 depasse les 16 000/min
+max_k = 2                              # 2 situations ~ 14 000 jetons (texte compact) : 1 a 2 par requete
+compact = true
+tpm_counts = "input"                   # OBSERVE : 429 "GenerateContentInputTokensPerModelPerMinute-FreeTier", quotaValue 16000
 
 [[model]]
 name = "gemma-4-26b-a4b-it"
 enabled = false
-note = "67 % valides au premier coup (4/6 ; bad_param, engine_owned), 243 s pour 6 situations (reflexion ~3 700 jetons par requete) : ecarte, <70 %"
+note = "essai du 15 oct. (serie essai_gemma) : voir README.md, section Modeles ; activable par --models gemma-4-26b-a4b-it"
+rpm = 30
+rpd = 14400
 tpm = 16000
 json_schema = false
 max_k = 2
+compact = true
+tpm_counts = "input"
+
+# ---- alias et doublons : listes pour memoire, HORS chaine (ils partagent le quota d'un autre nom : ils n'ajoutent rien).
 
 [[model]]
-name = "gemini-flash-latest"            # alias ; reflechit beaucoup (OBSERVE : ~3 500 jetons de reflexion, 46 s pour 6 situations)
+name = "gemini-flash-lite-latest"
+enabled = false
+pool = "gemini-3.5-flash-lite"
+note = "alias de gemini-3.5-flash-lite (meme quota, mesure le 15 oct.) : le compter a part faisait depasser les 500 par jour"
 
-# ---- modeles interroges et ECARTES (sonde du 14 oct., teacher.probe) : listes pour memoire, hors chaine.
+[[model]]
+name = "gemini-3.1-flash-lite-preview"
+enabled = false
+pool = "gemini-3.1-flash-lite"
+note = "meme quota que gemini-3.1-flash-lite (429 simultanes le 15 oct.) : le compter a part faisait depasser 500 par jour et 250 000 jetons/minute"
+
+[[model]]
+name = "gemini-flash-latest"
+enabled = false
+note = "alias dont la cible n'est pas donnee par l'API (models.list n'a pas de champ cible) : hors chaine par defaut ; un 429 la revelera (quotaDimensions.model). Reflechit beaucoup (~3 500 jetons)."
+
+# ---- modeles interroges et ECARTES : listes pour memoire, hors chaine.
+
+[[model]]
+name = "gemini-2.5-flash-lite"
+enabled = false
+note = "404 le 14 oct. : plus disponible aux nouveaux utilisateurs ; console : 10 req/min, 250 000 jetons/min, 20 req/jour (et NON 500 par jour)"
+rpm = 10
+rpd = 20
+tpm = 250000
+thinking_budget = 0
+
+[[model]]
+name = "gemini-2.5-flash"
+enabled = false
+note = "404 le 14 oct. : plus disponible aux nouveaux utilisateurs ; console : 5 req/min, 250 000 jetons/min, 20 req/jour"
+rpm = 5
+rpd = 20
+tpm = 250000
+thinking_budget = 0
+
+[[model]]
+name = "gemini-robotics-er-2-preview"
+enabled = false
+note = "console : 5 req/min, 250 000 jetons/min, 20 req/jour ; modele de raisonnement incarne, pas un etiqueteur : non essaye"
+rpm = 5
+rpd = 20
+tpm = 250000
 
 [[model]]
 name = "gemini-2.5-pro"
 enabled = false
-note = "404 : plus disponible aux nouveaux utilisateurs"
+note = "404 : plus disponible aux nouveaux utilisateurs ; console : 0 (non gratuit)"
 
 [[model]]
 name = "gemini-3.1-pro-preview"
 enabled = false
-note = "429 : limite gratuite 0 (requetes et jetons) = facturation requise"
+note = "429 : limite gratuite 0 (requetes et jetons) = facturation requise ; son quota est celui de gemini-3.1-pro (quotaDimensions.model)"
 
 [[model]]
 name = "gemini-pro-latest"
 enabled = false
-note = "429 : limite gratuite 0 = facturation requise"
+pool = "gemini-3.1-pro-preview"
+note = "429 : limite gratuite 0 = facturation requise ; alias du meme quota que gemini-3.1-pro-preview (le 429 nomme gemini-3.1-pro)"
 
 [[model]]
 name = "gemini-4-argon"
@@ -145,14 +187,19 @@ note = "429 : limite gratuite 0 = facturation requise"
 [[model]]
 name = "antigravity-preview-latest"
 enabled = false
-note = "400 : agent, 'This model only supports Interactions API' (pas generateContent)"
+note = "400 : agent, 'This model only supports Interactions API' (pas generateContent) ; console : 60 req/min, 100 000 jetons/min, 100 req/jour"
+rpm = 60
+rpd = 100
+tpm = 100000
 
 [[model]]
 name = "antigravity-preview-05-2026"
 enabled = false
+pool = "antigravity-preview-latest"
 note = "400 : agent, Interactions API seulement"
 
 [[model]]
 name = "antigravity-preview-09-2026"
 enabled = false
+pool = "antigravity-preview-latest"
 note = "400 : agent, Interactions API seulement"

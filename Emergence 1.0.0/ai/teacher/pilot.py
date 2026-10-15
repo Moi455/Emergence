@@ -24,6 +24,7 @@ from pathlib import Path
 from situations.sampler import SituationSampler
 
 from .dataset import FILE_NAME as DATASET_FILE, LabelRecord
+from .quota import LedgerGate
 from .gemini import (ApiKeyError, ApiKeyLoader, ApiResult, GeminiClient, ModelCatalog, QuotaBook, QuotaTable,
                      RateLimiter, Redactor)
 from .render import SituationRenderer
@@ -319,6 +320,7 @@ def main(argv=None) -> int:
         print(f"countTokens ({chain[0]}): system + first situation = {total} tokens (measured)")
     except RuntimeError as e:
         print(f"countTokens failed: {Redactor(key).clean(str(e))}")
+    client = LedgerGate.for_tool(client, chain)                  # every request is counted in the ledger shared with the generators
     run = PilotRun(client, tk, schema, renderer, sampler, AnswerValidator(tk), ModelPool(chain), out, a.temperature,
                    a.thinking_budget, a.max_output_tokens, log=lambda s: print(Redactor(key).clean(s), flush=True))
     out.write("system.txt", system)

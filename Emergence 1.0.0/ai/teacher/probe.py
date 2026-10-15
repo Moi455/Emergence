@@ -25,11 +25,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .gemini import ApiKeyError, ApiKeyLoader, GeminiClient, ModelCatalog
+from .quota import LedgerGate
 from .toolkit import ROOT
 
 DEFAULT_OUT = Path.home() / ".local" / "share" / "emergence" / "dataset"
 REPORT_NAME = "probe_models.json"
-DEFAULT_QUOTA_FILE = DEFAULT_OUT / "serie1" / "quota.json"
+DEFAULT_QUOTA_FILE = DEFAULT_OUT / "quota_global.json"          # the ledger shared by every series and tool (quota.py)
 DEFAULT_CANDIDATES = (
     "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-2.5-pro", "gemini-3.1-pro-preview", "gemini-pro-latest",
     "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-4-argon", "gemini-omni-1.1-flash", "gemini-omni-flash-preview",
@@ -55,7 +56,8 @@ class CandidateList:
             return set()
         try:
             doc = json.loads(Path(self.quota_file).read_text(encoding="utf-8"))
-            return {n for n, b in doc.get("models", {}).items() if b.get("exhausted_why") == "not found"}
+            books = doc.get("pools") or doc.get("models") or {}          # the global ledger ("pools"), or an old <series>/quota.json ("models")
+            return {n for n, b in books.items() if b.get("exhausted_why") == "not found"}
         except (OSError, ValueError, AttributeError):
             return set()
 
@@ -311,7 +313,7 @@ def main(argv=None) -> int:
         return 2
     client = GeminiClient(key)
     keep, skipped = CandidateList(client.list_models(), a.quota_json).select([m.strip() for m in a.models.split(",") if m.strip()])
-    rows = ModelProbe(client, max(5.0, a.pause)).run(keep)
+    rows = ModelProbe(LedgerGate.for_tool(client, keep, ledger=a.quota_json), max(5.0, a.pause)).run(keep)      # counted in the shared ledger
     report = ProbeReport(rows, skipped)
     print(report.text())
     print(f"written to {report.write(a.out)}")

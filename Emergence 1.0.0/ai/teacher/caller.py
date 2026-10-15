@@ -12,6 +12,11 @@
                         (a wrong key or a broken schema must not eat the quota nor loop for ever)
 
 The client, the desk and the clock are injected, so every branch is tested without the network.
+
+The accounting goes through the desk's ledger (quota.py): every change of a book is one transaction (lock, fresh read,
+change, write), so a second process on the same key sees each request the moment it is counted. A model that must keep the
+whole round (`only`, a small-batch lane) keeps it for the repair request too (`sticky`): the repair waits for its turn
+instead of going to a model that has a daily quota to protect.
 """
 from __future__ import annotations
 
@@ -23,6 +28,8 @@ from typing import Callable
 
 from .gemini import ApiResult
 from .quota import PacificDay, QuotaDesk, QuotaError
+
+STICKY_MAX_WAIT = 150.0         # a repair waits at most this long for the lane model that answered the batch
 
 IDLE_SLICE = 30.0               # longest sleep without looking at the stop flag and the idle task
 
@@ -83,6 +90,8 @@ class ModelCaller:
         self.temperature, self.max_output_tokens, self.max_requests = temperature, max_output_tokens, max_requests
         self.stats = CallStats()
         self.only: str | None = None        # reserve the NEXT request for this model (a small-batch lane); consumed by its answer
+        self.sticky: str | None = None      # the model that answered a lane request: its repair goes to it too, and waits for it
+        self.last_prompt_chars = 0          # system + user characters of the request that was last sent
         self._transient = 0
         self._client_error_models: set = set()
 
@@ -91,25 +100,43 @@ class ModelCaller:
         return self.max_requests is None or self.stats.requests < self.max_requests
 
     # ---- one request
+    @staticmethod
+    def system_for(system, spec) -> str:
+        """The fixed instructions this model gets: the compact variant (`system.compact`) for a model flagged `compact`."""
+        compact = getattr(system, "compact", None)
+        return compact if (compact is not None and getattr(spec, "compact", False)) else str(system)
+
     def __call__(self, system: str, user: str, schema: dict):
         """-> (model, ApiResult) for an answer with HTTP 200 (even without text), None when stopped or capped."""
-        chars = len(system) + len(user) + len(json.dumps(schema))
+        extra = len(user) + len(json.dumps(schema))
+        chars_for = lambda name: len(self.system_for(system, self.desk.spec(name))) + extra          # noqa: E731
         while not self.pacer.stopped:
             if not self.can_call():
                 return None
             now = self.pacer.clock()
-            choice = self.desk.choose(now, chars, self.only)
+            lane = self.only or self.sticky
+            choice = self.desk.choose(now, 0, lane, chars_for)
             if self.only and (choice.model is None or choice.at > now + 1.0):
                 raise LaneBusy(self.only)
+            if lane and not self.only and (choice.model is None or choice.at > now + STICKY_MAX_WAIT):
+                self.sticky = None                         # the lane model cannot take the repair soon: anyone may
+                continue
             if choice.at > now:
                 self.wait_for(choice, now)
                 continue
-            r = self.send(choice.model, system, user, schema, chars)
+            text = self.system_for(system, self.desk.spec(choice.model))
+            r = self.send(choice.model, text, user, schema, len(text) + extra)
             if r is None:
                 continue
+            if self.only:
+                self.sticky = self.only
             self.only = None
             return choice.model, r
         return None
+
+    def end_round(self) -> None:
+        """The round is over (written, abandoned or failed): no model is held for it any more."""
+        self.only = self.sticky = None
 
     def wait_for(self, choice, now: float) -> None:
         seconds = choice.at - now
@@ -123,24 +150,34 @@ class ModelCaller:
         """Send one request; returns the result on HTTP 200, None when the error was handled and the choice must be redone."""
         book, spec = self.desk.books[model], self.desk.spec(model)
         now = self.pacer.clock()
-        entry = book.begin(now, book.estimate_input(chars))
+        with self.desk.transaction(now):
+            spent_at, step = book.spent_at, book.probe_step      # > 0: this request is the retry of a pool refused for the day
+            entry = book.begin(now, book.estimate_input(chars))   # counted and on disk BEFORE it leaves: a crash cannot hide a spent request
         self.stats.requests += 1
-        self.desk.save()                                 # counted and on disk BEFORE it leaves: a crash cannot hide a spent request
+        self.last_prompt_chars = len(system) + len(user)
         r = self.client.generate(model, system, user, schema, self.temperature, self.max_output_tokens, spec.thinking_budget)
         now = self.pacer.clock()
-        try:
+        pause = 0.0
+        if spent_at:                                         # when does the daily quota really reopen? every retry is journaled
+            self.event({"kind": "probe", "model": model, "http": r.status, "step": step, "refused_for_s": round(now - spent_at)})
+        with self.desk.transaction(now):
             if r.status == 200:
                 self._transient = 0
                 self._client_error_models.clear()
-                book.settle(entry, r.usage.get("promptTokenCount"), chars)
+                u = r.usage
+                book.settle(entry, u.get("promptTokenCount"), chars,
+                            int(u.get("candidatesTokenCount", 0) or 0) + int(u.get("thoughtsTokenCount", 0) or 0))
                 book.client_errors = 0
                 return r
             book.settle(entry, 0)
             self.event({"kind": "error", "model": model, "http": r.status, "scope": r.quota_scope, "error": r.error[:300]})
             if r.status == 429:
                 self.stats.errors_429 += 1
+                real = self.desk.learn_from_violations(model, r.quota_violations)       # an alias joins the pool the 429 names
+                if real:
+                    self.log(f"{model}: its quota is that of {real} (named by the 429), counted together from now on")
                 err = QuotaError.parse(r.quota_violations, r.error, r.quota_scope, r.retry_after)
-                self.log(f"{model}: 429 {book.on_quota_error(now, err)}")
+                self.log(f"{model}: 429 {self.desk.books[model].on_quota_error(now, err)}")
             elif r.status == 404:
                 book.exhaust(now, "not found", until=now + 24 * 3600)
                 self.log(f"{model}: 404, set aside for a day")
@@ -153,10 +190,9 @@ class ModelCaller:
                 pause = min(300.0, 5.0 * 2 ** (self._transient - 1))
                 self.log(f"{model}: HTTP {r.status} {r.error[:100]}; pause {pause:.0f} s")
                 book.block(now, pause)
-                self.pacer.sleep(pause)
-            return None
-        finally:
-            self.desk.save()
+        if pause:
+            self.pacer.sleep(pause)                      # outside the ledger lock: the other processes go on meanwhile
+        return None
 
     def _client_error(self, model: str, book, now: float, r: ApiResult) -> None:
         book.client_errors += 1

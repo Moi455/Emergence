@@ -18,7 +18,10 @@ records (apparent age, beliefs about ages, how well each person is known), and a
     possible minor;
   * the table key -> person is consistent with the file (the apparent age is within a few years of the true one),
     and a person known by description carries no name;
-  * no physical quality (beautiful, ugly) said of a possible minor.
+  * no physical quality (beautiful, ugly) said of a possible minor;
+  * PRUDENCE (T12b, a decision to be validated with the project owner, not a D10 rule): no goal, no group aim, no plan
+    of force (kill, hurt, strike, push, grab, pull) is aimed at a person who is not an adult in truth and in the
+    governor's eyes (`_prudence`).
 The age of majority is the governor's (hard_rules.toml); the intimate links are read from the concept flags.
 """
 from __future__ import annotations
@@ -36,6 +39,7 @@ PHYSICAL = ("w_beautiful", "w_ugly")
 ATTENTION_DRIVE_CAP = 2.0
 AGE_TOLERANCE = 5.0                 # years between the apparent age in a file and the true age of the person
 PROP_KINDS = {"BELIEF": "belief", "HEARD": "belief", "MEMORY": "memory", "GOAL": "goal", "COMMIT": "agreement"}
+FORCE = ("strike", "push", "grab", "pull")      # the gestures of force a goal or a plan must not aim at a minor
 
 
 class D10Violation(AssertionError):
@@ -129,15 +133,15 @@ class D10Audit:
             if rec.type in PROP_KINDS and f.get("prop"):
                 problems += self._proposition(rec, PROP_KINDS[rec.type], parties, expand)
                 if rec.type == "GOAL":
-                    problems += self._parent(rec, by_key)
+                    problems += self._parent(rec, by_key) + self._prudence(rec, f["prop"], people, parties)
             elif rec.type == "GROUP" and f.get("goal"):
-                problems += self._proposition(rec, "belief", parties, expand, field="goal")
+                problems += self._proposition(rec, "belief", parties, expand, field="goal") + self._prudence(rec, f["goal"], people, parties)
             elif rec.type == "REQUEST" and f.get("prop"):
                 problems += self._proposition(rec, "goal", parties, expand, utterance=True)
             elif rec.type == "EVENT":
                 problems += self._event(rec, parties)
             elif rec.type == "PLAN":
-                problems += self._plan(rec, parties, expand)
+                problems += self._plan(rec, parties, expand) + self._prudence_plan(rec, people, parties)
             elif rec.type == "SELF_MIND":
                 problems += self._own_intimate_fields(rec, self_adult)
             elif rec.type == "SELF_STATE":
@@ -212,6 +216,40 @@ class D10Audit:
             if n.head == "quality" and len(n.args) == 3 and n.args[1] in PHYSICAL and \
                     self._party(parties, n.args[0]).may_be_minor():
                 out.append(f"{rec.key}: a physical quality said of a possible minor")
+        return out
+
+    def _minor(self, key, people, parties) -> bool:
+        """A person of the mind who is not an adult in truth, or whom the governor may take for a minor."""
+        if key in ("me", "us", "anyone", "someone", "everyone") or not key.startswith("@E"):
+            return False
+        truth = people.get(key)
+        return truth is None or truth.age < self.adult or self._party(parties, key).may_be_minor()
+
+    def _prudence(self, rec, text, people, parties) -> list[str]:
+        """No aim of force at a minor: `(dead X)`, `(state X pain _)`, a gesture of force with X for target."""
+        out = []
+        for n in self._nodes(self.parser.parse(text)):
+            a = n.args
+            hit = None
+            if n.head == "dead" and a:
+                hit = a[0]
+            elif n.head == "state" and len(a) == 3 and a[1] == "pain" and a[2] in ("high", "very_high"):
+                hit = a[0]
+            elif n.head == "did" and len(a) >= 3 and a[1] in FORCE:
+                hit = a[2]
+            if isinstance(hit, str) and self._minor(hit, people, parties):
+                out.append(f"{rec.key}: an aim of force ({n.head}) at {hit}, who is not a clear adult")
+        return out
+
+    def _prudence_plan(self, rec, people, parties) -> list[str]:
+        f, out = rec.fields, []
+        targets = iter(f.get("step_targets") or [])
+        for g in f.get("steps") or []:
+            a = self.cat["action"].get(g)
+            takes = a is not None and any(p.type == "ref" for p in a.params)
+            t = next(targets, None) if takes else None
+            if g in FORCE and t and self._minor(t, people, parties):
+                out.append(f"{rec.key}: a step of force ({g}) at {t}, who is not a clear adult")
         return out
 
     def _gesture(self, rec, name, g, params, target, parties) -> list[str]:

@@ -24,6 +24,7 @@ from .mind import MindBuilder
 from .planning import STRUCTURES
 from .pools import Pools
 from .propositions import PropositionGrammar
+from .violence import PlotSummary
 from .scene import Person, Scene, SceneFactory
 
 
@@ -39,6 +40,7 @@ class Situation:
     encoded: Encoded
     people: dict[str, Person] = field(default_factory=dict)    # key ('me', @E1…, ghosts) -> the TRUE person behind it
     structure: str = "ordinary"                                # the family of structure (docs/14 10.2) it was built around
+    plot: PlotSummary | None = None                            # the plot of force it was built around, if any (statistics, tests)
 
 
 class SituationSampler:
@@ -51,6 +53,13 @@ class SituationSampler:
         self.minds = MindBuilder(self.pools, self.grammar)          # builders are built once and reused
         self.stats = self.grammar.stats
 
+    @staticmethod
+    def structure_of(seed: int, index: int) -> str:
+        """The family of structure of situation (seed, index), without building it (the first two draws of `sample`)."""
+        rng = random.Random(f"situation:{seed}:{index}")
+        Draw(rng).weighted(WAKE_CAUSES)
+        return Draw(rng).weighted(STRUCTURES)
+
     def sample(self, index: int) -> Situation:
         rng = random.Random(f"situation:{self.seed}:{index}")
         cause = Draw(rng).weighted(WAKE_CAUSES)                      # why he wakes comes first; the rest justifies it
@@ -61,7 +70,7 @@ class SituationSampler:
         mind = self.minds.build(scene, rng, cause, structure)
         self.audit.check(scene.self_, mind.records, mind.people)
         ctx = DecisionContext(mind.records, known_keys=mind.known_keys())
-        return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx), mind.people, structure)
+        return Situation(self.seed, index, scene, ctx, self.tokenizer.encode(ctx), mind.people, structure, mind.plot)
 
 
 def main(argv=None):

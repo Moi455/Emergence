@@ -1,0 +1,7 @@
+{
+ "seed": 1,
+ "situations": 5000,
+ "mutants": 3000,
+ "lines": 8000,
+ "expectations_crc32": "e3d81500"
+}

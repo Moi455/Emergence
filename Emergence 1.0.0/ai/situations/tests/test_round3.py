@@ -4,6 +4,8 @@ test_situations."""
 from __future__ import annotations
 
 import collections
+
+import language
 import re
 import statistics
 import unittest
@@ -20,8 +22,19 @@ MOBILE = {"go", "climb", "jump", "swim", "mount"}
 NEEDS = ("need.hunger", "need.thirst", "need.sleep", "need.exhaustion", "body.pain")
 
 
+def _dead_nodes(node):
+    """`(dead X)` said as a fact; not one that somebody only means to bring about (intends, wants)."""
+    if isinstance(node, language.Node):
+        if node.head in ("intends", "wants"):
+            return
+        if node.head == "dead":
+            yield node
+        for a in node.args:
+            yield from _dead_nodes(a)
+
+
 def dead_of(sit):
-    return {m.args[0] for _, root in props(sit, ("BELIEF", "HEARD", "MEMORY")) for m in nodes(root) if m.head == "dead"}
+    return {m.args[0] for _, root in props(sit, ("BELIEF", "HEARD", "MEMORY")) for m in _dead_nodes(root)}
 
 
 def zone_params(g):

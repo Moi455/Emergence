@@ -56,8 +56,9 @@ def config(*specs, margin=1.0):
     return QuotaConfig(tuple(specs), margin)
 
 
-def spec(name, rpm=None, rpd=None, tpm=None, tpd=None):
-    return ModelSpec(name, Limits(rpm, rpd, tpm, tpd))
+def spec(name, rpm=None, rpd=None, tpm=None, tpd=None, **kw):
+    """tpm_counts "input" and no target here: the older tests count the input tokens against the whole limit."""
+    return ModelSpec(name, Limits(rpm, rpd, tpm, tpd), **{"tpm_counts": "input", **kw})
 
 
 # ------------------------------------------------------------------------------------------------ the Pacific day
@@ -118,17 +119,45 @@ class QuotaBookTests(unittest.TestCase):
         self.assertTrue(b.exhausted_until)
         self.assertEqual(b.exhausted_why, "tpd")
 
-    def test_rpd_then_reset_at_midnight(self):
+    def test_the_local_daily_count_is_not_a_wall_and_the_new_day_starts_at_zero(self):
         b = QuotaBook(spec("m", rpd=3), margin=1.0)
         t0 = pt(2026, 10, 13, 23, 50)
-        for i in range(3):
+        for i in range(5):                                                       # Google may accept more than the limit: only its 429 closes
             b.settle(b.begin(t0 + i, 10), 10)
+        self.assertEqual(b.available_at(t0 + 100, 10), t0 + 100)
+        self.assertEqual(b.day_requests, 5)                                       # counted beyond the limit, not blocked on it
+        b.on_quota_error(t0 + 100, QuotaError("day", "requests", 500.0, 0.0))
         reset = PacificDay.next_reset(t0)
-        self.assertAlmostEqual(b.available_at(t0 + 100, 10), reset)
-        self.assertEqual(b.day_requests, 3)
+        self.assertAlmostEqual(b.available_at(t0 + 101, 10), t0 + 100 + 600)      # tried again in 10 minutes, not at midnight
         self.assertEqual(b.available_at(reset + 1, 10), reset + 1)               # a new Pacific day: counters at zero
-        self.assertEqual((b.day, b.day_requests, b.exhausted_until), ("2026-10-14", 0, 0.0))
-        self.assertEqual(b.history["2026-10-13"]["requests"], 3)
+        self.assertEqual((b.day, b.day_requests, b.exhausted_until, b.spent_at), ("2026-10-14", 0, 0.0, 0.0))
+        self.assertEqual(b.history["2026-10-13"]["requests"], 5)
+
+    def test_a_refused_pool_is_tried_again_after_10_20_30_then_60_minutes_and_reopens_on_success(self):
+        b = QuotaBook(spec("m", rpd=500), margin=1.0)
+        t = pt(2026, 10, 13, 10)
+        waits = []
+        for _ in range(6):
+            b.on_quota_error(t, QuotaError("day", "requests", 500.0, 0.0))
+            waits.append(round((b.available_at(t, 10) - t) / 60))
+            t = b.available_at(t, 10)
+        self.assertEqual(waits, [10, 20, 30, 60, 60, 60])
+        self.assertEqual(b.limits().rpd, 500)                                     # the limit Google names is never learned as a wall
+        e = b.begin(t, 10)
+        b.settle(e, 10)                                                           # the retry went through: the pool is open
+        self.assertEqual((b.spent_at, b.probe_step, b.exhausted_until), (0.0, 0, 0.0))
+        self.assertEqual(b.available_at(t + 1, 10), t + 1)
+        self.assertEqual([r[1] for r in b.probe_log][-2:], [429, 200])            # the reopening is on record
+        again = QuotaBook(spec("m", rpd=500), margin=1.0)
+        again.load(json.loads(json.dumps(b.to_dict())))
+        self.assertEqual(again.probe_log, b.probe_log)
+
+    def test_an_old_midnight_exhaustion_that_no_429_backs_up_is_reopened(self):
+        b = QuotaBook(spec("m", rpd=500), margin=1.0)
+        t = pt(2026, 10, 13, 10)
+        b.day = PacificDay.key(t)
+        b.exhaust(t - 5, "requests/day", until=PacificDay.next_reset(t))          # as the first ledger migration found it
+        self.assertEqual(b.available_at(t, 10), t)
 
     def test_measured_tokens_replace_the_estimate(self):
         b = QuotaBook(spec("m", tpd=10 ** 9), margin=1.0)
@@ -186,12 +215,12 @@ class QuotaErrorTests(unittest.TestCase):
             b.on_quota_error(t0 + i, QuotaError("minute", "requests", None, 5.0))
         self.assertGreaterEqual(b.available_at(t0 + 3, 1), t0 + 2 + 600)
 
-    def test_day_429_exhausts_until_reset_and_learns_the_limit(self):
+    def test_day_429_closes_the_pool_for_a_retry_delay_not_until_midnight(self):
         b = QuotaBook(spec("m", rpd=500), margin=1.0)
         t0 = pt(2026, 10, 13, 10)
         b.on_quota_error(t0, QuotaError("day", "tokens", 1000000.0, 0.0))
-        self.assertEqual(b.limits().tpd, 1000000)
-        self.assertAlmostEqual(b.available_at(t0 + 5, 1), PacificDay.next_reset(t0))
+        self.assertIsNone(b.limits().tpd)                                          # not learned as a wall
+        self.assertAlmostEqual(b.available_at(t0 + 5, 1), t0 + 600)
 
     def test_gemini_client_exposes_the_violations(self):
         err = {"code": 429, "status": "RESOURCE_EXHAUSTED", "message": "quota",
@@ -213,7 +242,7 @@ class QuotaDeskTests(unittest.TestCase):
         self.assertEqual([s.name for s in qc.models if s.limits.rpd == 20][:2], ["gemini-3.8-flash", "gemini-3.7-flash"])
         self.assertEqual(qc.only(["a-flash-lite", "gemini-2.5-flash"]).models[0].limits, Limits(15, 500))
         for m in qc.models:                    # the models with known limits have a local token cap (estimates); added models may have none
-            if m.limits.rpm is None:
+            if m.limits.rpm is None or m.max_k:
                 continue
             self.assertEqual(m.limits.tpm, 250000, m.name)
             self.assertEqual(m.limits.tpd, 20_000_000 if "lite" in m.name else 2_000_000, m.name)
@@ -230,23 +259,23 @@ class QuotaDeskTests(unittest.TestCase):
         self.assertEqual(c.model, "a")
         self.assertAlmostEqual(c.at, t0 + 4.0)
 
-    def test_all_exhausted_is_reported_and_the_wait_is_the_earliest_reset(self):
+    def test_all_exhausted_is_reported_and_the_wait_is_the_earliest_retry(self):
         desk = QuotaDesk(config(spec("a", rpd=1), spec("b", rpd=1)))
         t0 = pt(2026, 10, 13, 22)
-        for n in ("a", "b"):
-            desk.books[n].settle(desk.books[n].begin(t0, 10), 10)
+        desk.books["a"].spend_day(t0, "requests/day")
+        desk.books["b"].spend_day(t0 - 300, "requests/day")
         c = desk.choose(t0 + 1, 10)
         self.assertTrue(c.all_exhausted)
-        self.assertAlmostEqual(c.at, PacificDay.next_reset(t0))
+        self.assertAlmostEqual(c.at, t0 - 300 + 600)
 
     def test_file_round_trip(self):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "quota.json"
             desk = QuotaDesk(config(spec("a", rpm=15, rpd=500)), path)
             t0 = pt(2026, 10, 13, 10)
-            desk.books["a"].settle(desk.books["a"].begin(t0, 100), 90)
-            desk.books["a"].on_quota_error(t0, QuotaError("minute", "tokens", 250000.0, 3.0))
-            desk.save()
+            with desk.transaction():
+                desk.books["a"].settle(desk.books["a"].begin(t0, 100), 90)
+                desk.books["a"].on_quota_error(t0, QuotaError("minute", "tokens", 250000.0, 3.0))
             again = QuotaDesk(config(spec("a", rpm=15, rpd=500)), path)
             b = again.books["a"]
             self.assertEqual((b.day_requests, b.day_tokens, b.learned.tpm), (1, 90, 250000))
@@ -318,19 +347,27 @@ class CallerTests(unittest.TestCase):
         gaps = [b - a for a, b in zip(times, times[1:])]
         self.assertTrue(all(abs(g - 4.0) < 0.01 for g in gaps), gaps)        # 60 / 15 s between two requests
 
-    def test_all_models_out_sleeps_to_the_pacific_midnight_and_resumes(self):
+    def test_all_models_refused_for_the_day_retry_by_steps_and_resume_when_google_reopens(self):
         clock = FakeClock(pt(2026, 10, 13, 22, 30))
-        caller, client, desk, _, _ = make_caller(lambda m, n: ok_result(), spec("a", rpm=60, rpd=2), spec("b", rpm=60, rpd=1),
-                                                 clock=clock)
-        for _ in range(3):
+        opens = pt(2026, 10, 13, 22, 30) + 2400                              # Google reopens 40 minutes later (not at midnight)
+        count = {}
+
+        def handler(model, n):
+            count[model] = count.get(model, 0) + 1
+            if clock.t < opens and count[model] > 1:
+                return limited("GenerateRequestsPerDayPerProjectPerModel-FreeTier", 500)
+            return ok_result()
+        caller, client, desk, _, _ = make_caller(handler, spec("a", rpm=60, rpd=2), spec("b", rpm=60, rpd=1), clock=clock)
+        for _ in range(2):
             caller(*CALL)
-        self.assertEqual(client.calls, ["a", "b", "a"])
-        got = caller(*CALL)                                                   # everything is spent: must sleep past midnight
-        self.assertEqual(client.calls[-1], "a")
-        self.assertGreaterEqual(clock.t, PacificDay.next_reset(pt(2026, 10, 13, 22, 30)))
-        self.assertEqual(PacificDay.key(clock.t), "2026-10-14")
+        self.assertEqual(client.calls, ["a", "b"])
+        got = caller(*CALL)                                                   # both refused: retries at +10, +30 min ... until it opens
+        self.assertGreaterEqual(clock.t, opens)
+        self.assertLess(clock.t, opens + 3600)                                # reopened within one retry interval, long before midnight
+        self.assertEqual(PacificDay.key(clock.t), "2026-10-13")
         self.assertEqual(got[0], "a")
-        self.assertEqual(desk.books["a"].day_requests, 1)                    # counters restarted with the new day
+        self.assertEqual(desk.books["a"].spent_at, 0.0)
+        self.assertEqual(desk.books["a"].probe_log[-1][1], 200)
 
     def test_tpm_counted_from_the_measured_tokens(self):
         caller, client, desk, clock, _ = make_caller(lambda m, n: ok_result(prompt=9000), spec("a", tpm=20000))
@@ -383,7 +420,9 @@ class CallerTests(unittest.TestCase):
 
     def test_stop_interrupts_a_long_sleep(self):
         clock = FakeClock(pt(2026, 10, 13, 22, 30))
-        caller, client, desk, _, _ = make_caller(lambda m, n: ok_result(), spec("a", rpd=1), clock=clock)
+        caller, client, desk, _, _ = make_caller(
+            lambda m, n: ok_result() if n == 1 else limited("GenerateRequestsPerDayPerProjectPerModel-FreeTier", 500),
+            spec("a", rpd=1), clock=clock)
         caller(*CALL)
         seen = []
         orig = clock.wait

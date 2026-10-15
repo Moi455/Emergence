@@ -96,11 +96,15 @@ class BuildContext:
         self.focus = ""                                  # the goal the plan that wakes him serves (a builder sets it)
         self.keep: set[str] = set()                      # goals that a later goal must not take the place of
         self.routine_wake = False                        # the timer that wakes him is the period of a repeating plan
+        self.violent: list[str] = []                     # his goals of force (violence.py): a plan for them comes first
+        self.allies: list[str] = []                      # the persons he may win over to what he means to do
+        self.mood: dict[str, tuple[float, float]] = {}   # SELF_STATE field -> (low, high): what the situation stirs in him
+        self.plot = None                                 # violence.PlotSummary of the situation, if there is one
         self.d = Draw(rng)
         self.me = scene.self_
         self.filler = Filler(pools, self.d, UNEQUAL_INFO_RATES if structure == "unequal_info" else None)
         self.cap = {t: spec["count"] for t, spec in pools.interface.token_types.items()}
-        self.layout = Layout(scene, self.cap, self.count("LOCUS", 0), self.count("GROUP", 1 if structure in ("cooperation", "authority") else 0))
+        self.layout = Layout(scene, self.cap, self.count("LOCUS", 0), self.count("GROUP", 1 if structure in ("cooperation", "authority", "conflict") else 0))
         self._somebody_dies()
         self.records = RecordBook()
         self.parties = PartyBook(self.me)
@@ -148,7 +152,7 @@ class BuildContext:
     def scene_view(self) -> SceneView:
         lay = self.layout
         return SceneView(self.pools, self.refs.thing_kinds, self.refs.animals, set(lay.ikeys), frozenset(lay.here),
-                         lay.loci, self.leaders)
+                         lay.loci, self.leaders, tuple(self.allies))
 
     # ---- shared draws --------------------------------------------------------------------------------------
     def count(self, typ: str, lo: int, hi: int | None = None) -> int:

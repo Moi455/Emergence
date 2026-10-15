@@ -207,17 +207,22 @@ class ModelCatalog:
 class SchemaText:
     """A Gemini response schema (upper-case types) as the plain JSON Schema a model can read in a prompt."""
 
+    LISTED_ELSEWHERE = ("enum", "propertyOrdering")      # the compact text drops them: the instructions list the same values
+
     @classmethod
-    def plain(cls, schema):
+    def plain(cls, schema, compact: bool = False):
         if isinstance(schema, dict):
-            return {k: (v.lower() if k == "type" and isinstance(v, str) else cls.plain(v)) for k, v in schema.items()}
+            return {k: (v.lower() if k == "type" and isinstance(v, str) else cls.plain(v, compact)) for k, v in schema.items()
+                    if not (compact and k in cls.LISTED_ELSEWHERE and isinstance(v, list))}
         if isinstance(schema, list):
-            return [cls.plain(x) for x in schema]
+            return [cls.plain(x, compact) for x in schema]
         return schema
 
     @classmethod
-    def text(cls, schema: dict) -> str:
-        return json.dumps(cls.plain(schema), separators=(",", ":"), ensure_ascii=False)
+    def text(cls, schema: dict, compact: bool = False) -> str:
+        """`compact`: without the `enum` lists and the `propertyOrdering` (the gesture ids, parameter names, variables and
+        kinds are all written in the instructions; the validator stays the judge of every value)."""
+        return json.dumps(cls.plain(schema, compact), separators=(",", ":"), ensure_ascii=False)
 
 
 class JsonExtractor:
@@ -291,8 +296,10 @@ class PromptOnlyStrategy(RequestStrategy):
 
     name = "prompt_only"
 
-    def __init__(self, fold_system: bool = True, fold_schema: bool = True, thinking_config: bool = False):
+    def __init__(self, fold_system: bool = True, fold_schema: bool = True, thinking_config: bool = False,
+                 compact_schema: bool = False):
         self.fold_system, self.fold_schema, self.thinking_config = fold_system, fold_schema, thinking_config
+        self.compact_schema = compact_schema
 
     def prompt(self, system: str, user: str, schema: dict) -> str:
         parts = []
@@ -300,7 +307,9 @@ class PromptOnlyStrategy(RequestStrategy):
             parts.append("=== INSTRUCTIONS (follow them exactly) ===\n" + system.strip())
         if self.fold_schema:
             parts.append("=== REPLY FORMAT ===\nReply with ONE JSON object and nothing else: no sentence before or after it, "
-                         "no Markdown fence, no comment. It must follow this JSON Schema exactly:\n" + SchemaText.text(schema))
+                         "no Markdown fence, no comment. It must follow this JSON Schema"
+                         + (" (the allowed values are those listed in the instructions)" if self.compact_schema else " exactly")
+                         + ":\n" + SchemaText.text(schema, self.compact_schema))
         parts.append(("=== TASK ===\n" if parts else "") + user.strip())
         return "\n\n".join(parts) + ("\n\nReply now with the JSON object only." if self.fold_schema else "")
 

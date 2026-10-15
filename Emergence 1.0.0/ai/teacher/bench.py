@@ -22,7 +22,7 @@ from pathlib import Path
 from .batch import BatchInstructions, BatchPrompt, BatchSchema, GroupedRound, RoundResult
 from .gemini import ApiKeyError, ApiKeyLoader, ApiResult, GeminiClient
 from .phrasebook import PhraseBook
-from .quota import DEFAULT_CONFIG, QuotaConfig
+from .quota import DEFAULT_CONFIG, LedgerGate, QuotaConfig
 from .render import SituationRenderer
 from .schema import DecisionSchema
 from .spec import PASSIVE_GESTURES
@@ -172,6 +172,7 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--pause", type=float, default=13.0)
     ap.add_argument("--quota-file", type=Path, default=DEFAULT_CONFIG)
+    ap.add_argument("--ledger", type=Path, default=None, help="the shared quota ledger (default ~/.local/share/emergence/dataset/quota_global.json)")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--key-file", type=Path, default=None)
     a = ap.parse_args(argv)
@@ -186,7 +187,9 @@ def main(argv=None) -> int:
     client = GeminiClient(key)
     qc = QuotaConfig.load(a.quota_file).only([m.strip() for m in a.models.split(",") if m.strip()])
     qc.install(client)
-    scores = QualityBench(client, qc, k=a.k, seed=a.seed, pause=a.pause).run([s.name for s in qc.models])
+    names = [s.name for s in qc.models]
+    scores = QualityBench(LedgerGate.for_tool(client, names, a.quota_file, a.ledger), qc, k=a.k, seed=a.seed,
+                          pause=a.pause).run(names)                        # every request is counted in the shared ledger
     print(f"written to {write_report(scores, a.out, a.seed, a.k)}")
     return 0
 

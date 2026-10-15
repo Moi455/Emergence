@@ -22,6 +22,7 @@ The key is read by the existing loader and never printed, logged or written.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import json
 import os
@@ -37,7 +38,7 @@ from .caller import FatalError, LaneBusy, ModelCaller, Pacer
 from .dataset import LabelRecord
 from .gemini import ApiKeyError, ApiKeyLoader, GeminiClient, Redactor
 from .phrasebook import DEFAULT_COUNT, PhraseBook
-from .quota import DEFAULT_CONFIG, PacificDay, QuotaConfig, QuotaDesk
+from .quota import DEFAULT_CONFIG, FAR, LEDGER_NAME, PacificDay, QuotaConfig, QuotaDesk
 from .render import SituationRenderer
 from .schema import DecisionSchema
 from .series import DEFAULT_BASE, AppendFile, SeriesDirectory, SeriesLock, SeriesState, SituationCursor
@@ -52,6 +53,9 @@ UNUSABLE_ASIDE = 3600.0         # a model whose batch gave no valid decision at 
 PERMANENT = ("not found", "HTTP 400", "HTTP 401", "HTTP 403")      # exhausted_why of a model that is out for good
 MAX_SAMPLE_ERRORS = 50
 LANE_PAUSE = 120.0              # a small-batch model that could not answer when its turn came waits this long before the next try
+LANE_DEFER = 20.0               # a small-batch model takes a round only when no other model can answer within this many seconds
+LANE_WAIT = 90.0                # ... and the round waits for it at most this long (unless it is the only kind of model there is)
+COMPACT_PHRASES = 12            # sample sentences in the compact instructions (30 in the full ones)
 SITUATION_CHARS = 6500          # first guess of the rendered size of one situation (the real mean is learned from the rounds)
 MAX_CRASHES = 5                 # rounds in a row that raised an unexpected exception: stop
 
@@ -134,7 +138,7 @@ class Generator:
                  days: float | None = None, max_requests: int | None = None, temperature: float = 0.9, repair: bool = True,
                  phrases: int = DEFAULT_COUNT, tk: Toolkit | None = None, pacer: Pacer | None = None, log=None,
                  watcher: RestartWatcher | None = None, restarter=None, argv: list[str] | None = None,
-                 sampler_factory=None, selfcheck=None, planner: bool = False, max_items: bool = True):
+                 sampler_factory=None, selfcheck=None, planner: bool = False, max_items: bool = True, ledger: Path | None = None):
         self.series, self.k, self.days, self.argv = series, k, days, list(argv or [])
         self.log = log or Log(getattr(client, "redactor", None))
         self.tk = tk or Toolkit()
@@ -147,15 +151,20 @@ class Generator:
         self.state = SeriesState.load_or_new(series.state, series.name, seed, k, now)
         self.cursor = SituationCursor(self.state)
         self._floor_cursor()
-        self.desk = QuotaDesk(quota_config, series.quota, series.journal, now)
+        self.ledger = Path(ledger) if ledger else series.path.parent / LEDGER_NAME      # ONE ledger for every series and tool of the key
+        self.desk = QuotaDesk(quota_config, self.ledger, series.journal, now, journals=sorted(series.path.parent.glob("*/journal.jsonl")),
+                              clock=self.pacer.clock)
+        if self.desk.migrated:
+            self.log(f"quota ledger {self.ledger}: counters taken from {len(self.desk.migrated)} old quota.json file(s)")
         if self.desk.rebuilt:
-            self.log(f"quota.json was damaged: today's counters of {', '.join(self.desk.rebuilt)} rebuilt from journal.jsonl")
+            self.log(f"the quota ledger was damaged: today's counters of {', '.join(self.desk.rebuilt)} rebuilt from the journals")
         self.caller = ModelCaller(client, self.desk, self.pacer, self.log, self._event, temperature, 8192, max_requests)
         self.planner = planner                          # T36: the "human planner" instructions and the trace of thoughts (off by default)
         self.schema_single = DecisionSchema(self.tk, "full", thoughts=planner, max_items=max_items)
         self._check_mode()
         self.phrasebook = PhraseBook(self.tk, phrases)
-        self.instructions = BatchInstructions(self.tk, self.phrasebook, thoughts=planner)
+        self.instructions = BatchInstructions(self.tk, self.phrasebook, thoughts=planner, compact_phrasebook=(
+            PhraseBook(self.tk, COMPACT_PHRASES) if any(s.compact for s in quota_config.models) else None))
         self.renderer = SituationRenderer(self.tk)
         self.round = GroupedRound(self.instructions, BatchSchema(self.schema_single), BatchPrompt(self.renderer),
                                   AnswerValidator(self.tk), self.caller, self.caller.can_call, repair,
@@ -275,30 +284,75 @@ class Generator:
             code = EXIT_FATAL
         finally:
             self.state.save(self.series.state)
-            self.desk.save()
         if self.pacer.stopped and not code:
             self.log("stopped on request; state saved")
         return code
 
-    def small_lane(self) -> str | None:
-        """A model that only takes small batches (quota.toml `max_k`) and may answer right now: this round is for it. The
-        size of its prompt is estimated from the last rounds (characters per situation)."""
-        now = self.pacer.clock()
-        fixed = len(self.instructions.text()) + 1500
-        best, best_sent = None, float("inf")
+    # ---- small-batch models (quota.toml `max_k`, e.g. Gemma: 16 000 tokens a minute)
+    def _lane_names(self) -> list:
+        return [n for n in self.desk.order if self.desk.spec(n).max_k]
+
+    def lane_k(self, name: str) -> int:
+        """How many situations the small-batch model `name` takes in one request: as many as its per-minute token limit allows
+        for a request alone in the minute (fixed instructions + schema + K x one situation), at most its `max_k` and `--k`."""
+        spec, book = self.desk.spec(name), self.desk.books[name]
+        alone = book.tpm_alone()
+        k = min(self.k, spec.max_k or self.k)
+        if not alone:
+            return k
+        fixed = (len(self.instructions.text(spec.compact)) + len(json.dumps(self.round.schema.response_schema(k))) + 200) * book.tokens_per_char
+        per = self._situation_chars * book.tokens_per_char
+        return max(1, min(k, int((alone - book.out_estimate - fixed) / per)))
+
+    def lane_chars(self, name: str) -> int:
+        k = self.lane_k(name)
+        return (len(self.instructions.text(self.desk.spec(name).compact)) + len(json.dumps(self.round.schema.response_schema(k)))
+                + 200 + k * int(self._situation_chars))
+
+    def _earliest(self, now: float, lane: bool) -> tuple:
+        """(epoch second, model) of the model of that kind (small-batch or normal) that can answer first."""
+        best = (FAR, None)
         for name in self.desk.order:
-            spec = self.desk.spec(name)
-            book = self.desk.books[name]
-            if not spec.max_k or self._lane_until.get(name, 0.0) > now:
+            if bool(self.desk.spec(name).max_k) != lane or (lane and self._lane_until.get(name, 0.0) > now):
                 continue
-            chars = fixed + spec.max_k * self._situation_chars
-            if book.available_at(now, book.estimate_input(chars)) <= now + 0.25 and book.last_sent < best_sent:
-                best, best_sent = name, book.last_sent
+            book = self.desk.books[name]
+            chars = self.lane_chars(name) if lane else len(self.instructions.text(self.desk.spec(name).compact)) + self.k * int(self._situation_chars) + 1500
+            at = book.available_at(now, book.estimate_input(chars))
+            if at < best[0] - 0.25 or (at == best[0] and lane and book.last_sent < self.desk.books[best[1]].last_sent):
+                best = (at, name)
         return best
+
+    def small_lane(self) -> str | None:
+        """The small-batch model whose turn it is, or None for a normal round. It is the FALLBACK of the normal models: a Gemma
+        request takes a minute to come back, so while a Flash Lite can answer within LANE_DEFER seconds it keeps the round (its
+        daily quota is the scarce one); when only Gemma-like models are in the chain, they always have it."""
+        now = self.pacer.clock()
+        with self.desk.transaction(now):
+            lane_at, lane = self._earliest(now, True)
+            if lane is None or lane_at == FAR:
+                return None
+            normal_at, normal = self._earliest(now, False)
+            if normal is None or (normal_at > now + LANE_DEFER and lane_at < normal_at):
+                return lane
+        return None
+
+    def _wait_lane(self, lane: str) -> bool:
+        """Sleep until the small-batch model can answer (at most LANE_WAIT when other models exist). False when stopped."""
+        now = self.pacer.clock()
+        with self.desk.transaction(now):
+            book = self.desk.books[lane]
+            at = book.available_at(now, book.estimate_input(self.lane_chars(lane)))
+        if at <= now or at == FAR:
+            return True
+        if at - now > LANE_WAIT and any(not self.desk.spec(n).max_k for n in self.desk.order):
+            return True                                   # the caller will find it busy and the round will be given up
+        return self.pacer.wait_until(at)
 
     def one_round(self) -> bool:
         lane = self.small_lane()
-        k = min(self.k, self.desk.spec(lane).max_k) if lane else self.k
+        if lane and not self._wait_lane(lane):
+            return False
+        k = self.lane_k(lane) if lane else self.k
         pairs = self.cursor.take(k)
         sits = self.build_situations(pairs)
         if not sits:
@@ -314,11 +368,12 @@ class Generator:
             self.commit(res, time.monotonic() - t0)
         except LaneBusy:                                  # the small-batch model could not answer: nothing was held, try the normal way
             self.cursor.rewind()
-            self._lane_until[lane] = self.pacer.clock() + LANE_PAUSE
+            if any(not self.desk.spec(n).max_k for n in self.desk.order):
+                self._lane_until[lane] = self.pacer.clock() + LANE_PAUSE
             return True
         finally:
             self.holding = False
-            self.caller.only = None
+            self.caller.end_round()
         return True
 
     def _hold(self) -> None:
@@ -346,7 +401,7 @@ class Generator:
             valid += 1
         first = res.requests[0]
         if first.labels:
-            seen = (first.prompt_chars - len(self.instructions.text())) / len(first.labels)
+            seen = (first.prompt_chars - len(self.instructions.text(self.desk.spec(first.model).compact))) / len(first.labels)
             if seen > 0:
                 self._situation_chars = 0.8 * self._situation_chars + 0.2 * seen
         self.dataset.append(lines)
@@ -359,7 +414,6 @@ class Generator:
         st.valid += valid
         st.refused += len(res.slots) - valid
         st.save(self.series.state)
-        self.desk.save()
         usage = [rq.result.usage for rq in res.requests]
         tin, tout = sum(u.get("promptTokenCount", 0) for u in usage), sum(u.get("candidatesTokenCount", 0) for u in usage)
         rep = sum(1 for s in res.slots if s.repaired and s.ok)
@@ -375,13 +429,13 @@ class Generator:
         """No valid decision at all, even after the repair: the models that answered are set aside for an hour (the
         others go on). Fatal only when EVERY model has failed that way (or is out for good): the prompt is then broken."""
         now = self.pacer.clock()
-        for rq in res.requests:
-            self.desk.books[rq.model].exhaust(now, "unusable", until=now + UNUSABLE_ASIDE)
-            self._unusable_models.add(rq.model)
-            self.log(f"{rq.model}: no usable decision, set aside for {UNUSABLE_ASIDE / 3600:g} h")
-        self.desk.save()
-        left = [n for n in self.desk.order
-                if n not in self._unusable_models and self.desk.books[n].exhausted_why not in PERMANENT]
+        with self.desk.transaction(now):
+            for rq in res.requests:
+                self.desk.books[rq.model].exhaust(now, "unusable", until=now + UNUSABLE_ASIDE)
+                self._unusable_models.add(rq.model)
+                self.log(f"{rq.model}: no usable decision, set aside for {UNUSABLE_ASIDE / 3600:g} h")
+            left = [n for n in self.desk.order
+                    if n not in self._unusable_models and self.desk.books[n].exhausted_why not in PERMANENT]
         if not left:
             raise FatalError(f"every model failed to give a usable decision ({', '.join(sorted(self._unusable_models))}): "
                              "stopped to protect the quota")
@@ -403,12 +457,15 @@ class Generator:
             if o.ok and o.decision.thoughts:                 # T36: only planner lines carry the key; default journals are unchanged
                 results[-1]["traced"] = len(o.decision.thoughts)
         r = rq.result
-        return {"t": _iso(now), "ts": round(now, 1), "pday": PacificDay.key(now), "kind": rq.kind, "model": rq.model,
-                "http": r.status, "finish": r.finish, "latency_s": round(r.latency, 2), "usage": _usage(r.usage),
-                "prompt_chars": rq.prompt_chars, "asked": len(rq.labels), "answered": len(rq.answer.items),
-                "problem": rq.answer.problem, "duplicates": rq.answer.duplicates, "unknown_ids": rq.answer.unknown,
-                "fp": self._fp(), "cursor": [self.cursor.seed, self.cursor.index], "results": results,
-                "raw": Redactor(getattr(self.caller.client, "key", "")).clean(r.text)}
+        rec = {"t": _iso(now), "ts": round(now, 1), "pday": PacificDay.key(now), "kind": rq.kind, "model": rq.model,
+               "http": r.status, "finish": r.finish, "latency_s": round(r.latency, 2), "usage": _usage(r.usage),
+               "prompt_chars": rq.prompt_chars, "asked": len(rq.labels), "answered": len(rq.answer.items),
+               "problem": rq.answer.problem, "duplicates": rq.answer.duplicates, "unknown_ids": rq.answer.unknown,
+               "fp": self._fp(), "cursor": [self.cursor.seed, self.cursor.index], "results": results,
+               "raw": Redactor(getattr(self.caller.client, "key", "")).clean(r.text)}
+        if self.desk.spec(rq.model).compact:             # only a compact request carries the key: the other journals are unchanged
+            rec["compact"] = True
+        return rec
 
     def _family(self, gesture: str) -> str:
         g = self.tk.spec.gestures.get(gesture)
@@ -431,7 +488,6 @@ class Generator:
             return
         self.state.restarts += 1
         self.state.save(self.series.state)
-        self.desk.save()
         self.log("restarting on the new version")
         self.restarter(self.argv)
 
@@ -486,6 +542,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--max-requests", type=int, default=None, help="hard cap of requests in this process (repairs included)")
     ap.add_argument("--models", default="", help="comma-separated models, in order of preference (default: quota.toml)")
     ap.add_argument("--quota-file", type=Path, default=DEFAULT_CONFIG, help="known free-tier limits")
+    ap.add_argument("--ledger", type=Path, default=None,
+                    help=f"the quota ledger shared by every series and tool of the key (default <base folder>/{LEDGER_NAME})")
     ap.add_argument("--temperature", type=float, default=0.9)
     ap.add_argument("--phrases", type=int, default=DEFAULT_COUNT, help="valid sentences listed in the instructions")
     ap.add_argument("--planner", action="store_true",
@@ -494,6 +552,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--no-max-items", action="store_true",
                     help="planner mode: leave maxItems off the thoughts and steps arrays (if the API answers 400 'invalid argument')")
     ap.add_argument("--no-repair", action="store_true", help="no repair request for the refused decisions")
+    ap.add_argument("--no-compact", action="store_true",
+                    help="every model gets the FULL instructions, even those flagged compact in quota.toml (A/B measures)")
     ap.add_argument("--no-restart", action="store_true", help="do not restart when the code or the catalogue changes")
     ap.add_argument("--key-file", type=Path, default=None, help="key file (default ~/.config/emergence/API_Keys)")
     ap.add_argument("--status", action="store_true", help="print what the series did, and exit")
@@ -513,8 +573,11 @@ def selfcheck() -> int:
         n += len(renderer.render(sampler.sample(i)))
     QuotaConfig.load()
     problems = []
-    if len(BatchInstructions(tk, pb, thoughts=True).text()) < 5000:        # T36 planner mode loads too (not run)
+    planner = BatchInstructions(tk, pb, thoughts=True, compact_phrasebook=PhraseBook(tk, COMPACT_PHRASES))   # T36 planner mode loads too (not run)
+    if len(planner.text()) < 5000:
         problems.append("the planner instructions are suspiciously short")
+    if not 5000 < len(planner.text(True)) < len(planner.text()):
+        problems.append("the compact instructions are not shorter than the full ones")
     if len(phrases) < 10:
         problems.append(f"only {len(phrases)} valid sentences in the phrasebook")
     if len(text) < 5000:
@@ -545,6 +608,9 @@ def dry_run(a, series: SeriesDirectory, qc: QuotaConfig) -> int:
     print(f"instructions: {len(inst.text())} characters (about {est(inst.text())} tokens, estimate), {len(pb.select())} sentences")
     print(f"batch of {a.k}: user text {len(user)} characters (about {est(user)} tokens, estimate); "
           f"schema {len(json.dumps(schema.response_schema(a.k)))} characters")
+    if any(s.compact for s in qc.models):
+        compact = BatchInstructions(tk, pb, thoughts=a.planner, compact_phrasebook=PhraseBook(tk, COMPACT_PHRASES)).text(True)
+        print(f"compact instructions (models flagged compact): {len(compact)} characters (about {est(compact)} tokens, estimate)")
     print(f"models: {', '.join(s.name for s in qc.models)}")
     return 0
 
@@ -558,6 +624,8 @@ def main(argv=None) -> int:
     qc = QuotaConfig.load(a.quota_file)
     if a.models:
         qc = qc.only([m.strip() for m in a.models.split(",") if m.strip()])
+    if a.no_compact:
+        qc = dataclasses.replace(qc, models=tuple(dataclasses.replace(s, compact=False) for s in qc.models))
     if a.status:
         from .status import StatusReport
         print(StatusReport(series, qc).text())
@@ -578,7 +646,7 @@ def main(argv=None) -> int:
     log = Log(Redactor(key))
     watcher = None if a.no_restart else RestartWatcher(CodeFingerprint())
     gen = Generator(series, client, qc, a.k, a.seed, a.days, a.max_requests, a.temperature, not a.no_repair, a.phrases, log=log,
-                    watcher=watcher, argv=argv, planner=a.planner, max_items=not a.no_max_items)
+                    watcher=watcher, argv=argv, planner=a.planner, max_items=not a.no_max_items, ledger=a.ledger)
     for sig in (signal.SIGTERM, signal.SIGINT):
         signal.signal(sig, lambda *_: gen.pacer.request_stop())
     return gen.run()

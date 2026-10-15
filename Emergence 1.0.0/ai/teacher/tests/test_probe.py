@@ -343,12 +343,25 @@ class LaneTests(GeneratorCase):
         caller.only = "g"
         clock.wait(61)
         self.assertEqual(caller(*CALL)[0], "g")
-        self.assertIsNone(caller.only)                                       # consumed by the answer: the repair goes to anyone
+        self.assertIsNone(caller.only)                                       # consumed by the answer ...
+        self.assertEqual(caller.sticky, "g")                                 # ... but the repair of that round stays with the lane model
+        caller.end_round()
+        self.assertIsNone(caller.sticky)
+
+    def test_a_normal_model_that_can_answer_keeps_the_round(self):
+        qc = config(spec("a", rpm=600, rpd=100000), ModelSpec("g", Limits(600, 100000), max_k=2))
+        fake = FakeTeacher()
+        gen = self.generator(fake, k=6, qc=qc)
+        gen.one_round()
+        self.assertEqual([r["model"] for r in fake.requests], ["a"])                          # a small-batch model is the FALLBACK
+        self.assertEqual(len(fake.requests[0]["user"].split("=== SITUATION")) - 1, 6)
 
     def test_generator_gives_a_small_round_to_the_small_model_and_labels_carry_its_name(self):
         qc = config(spec("a", rpm=600, rpd=100000), ModelSpec("g", Limits(600, 100000), max_k=2))
         fake = FakeTeacher()
         gen = self.generator(fake, k=6, qc=qc)
+        with gen.desk.transaction():
+            gen.desk.books["a"].exhaust(gen.pacer.clock(), "test", until=gen.pacer.clock() + 3600)   # no normal model can answer now
         gen.one_round()
         self.assertEqual([r["model"] for r in fake.requests], ["g"])
         self.assertEqual(len(fake.requests[0]["user"].split("=== SITUATION")) - 1, 2)         # max_k situations, not 6
@@ -358,7 +371,8 @@ class LaneTests(GeneratorCase):
         qc = config(spec("a", rpm=600, rpd=100000), ModelSpec("g", Limits(600, 100000, tpm=1_000_000), max_k=2))
         fake = FakeTeacher()
         gen = self.generator(fake, k=4, qc=qc)
-        gen.desk.books["g"].block(gen.pacer.clock(), 300)                    # the lane is blocked: no lane round at all
+        with gen.desk.transaction():
+            gen.desk.books["g"].block(gen.pacer.clock(), 300)                # the lane is blocked: no lane round at all
         gen.one_round()
         self.assertEqual({r["model"] for r in fake.requests}, {"a"})
         self.assertEqual(len(fake.requests[0]["user"].split("=== SITUATION")) - 1, 4)
@@ -369,7 +383,8 @@ class LaneTests(GeneratorCase):
         gen = self.generator(fake, k=4, qc=qc)
         before = (gen.cursor.seed, gen.cursor.index)
         gen.small_lane = lambda: "g"
-        gen.desk.books["g"].block(gen.pacer.clock(), 300)
+        with gen.desk.transaction():
+            gen.desk.books["g"].block(gen.pacer.clock(), 300)
         self.assertTrue(gen.one_round())
         self.assertEqual((gen.cursor.seed, gen.cursor.index), before)
         self.assertEqual(fake.requests, [])

@@ -46,6 +46,21 @@ MEMBER_RATE = {"cooperation": 0.85, "authority": 0.7}                  # any oth
 DEFAULT_MEMBER_RATE = 0.4
 
 
+def _call_to_act(c: BuildContext, against: str) -> str | None:
+    """`(request (did you strike X …))`: the words that win an accomplice over, with a manner the governor lets through
+    (asked silently: `you` is unknown to it, so only some manners pass; a few draws)."""
+    s = c.session
+    for _ in range(8):
+        got = s.deed("me", against, only=("strike",))
+        if not got:
+            return None
+        text = f"(request {got[0].replace('(did me ', '(did you ', 1)})"
+        e = language.Expression(text, s.g.vocab, bare=False)
+        if e.ok and s.g.gov.check_record("goal", e, s.book.party("me"), s.book.content_parties()).allowed:
+            return text
+    return None
+
+
 class GroupBuilder(RecordBuilder):
     """GROUP: what he believes of the groups he knows. A group known by name or by description is a kind and
     perhaps a size; one he has seen gets members (at most 4, himself included if he belongs), a leader, an aim, his
@@ -244,8 +259,8 @@ class GoalBuilder(RecordBuilder):
         sources = c.of("BELIEF") + c.of("MEMORY")
         asked = [r.key for r in c.of("REQUEST")]
         deals = [r.key for r in c.of("COMMIT")]
-        k = 0
-        for _ in range(c.count("GOAL", 1)):
+        k = len(c.of("GOAL"))                                       # goals of force (violence.py) may already be there
+        for _ in range(min(c.count("GOAL", 1), c.cap["GOAL"] - k)):
             got = c.session.goal()
             if got is None or got[0] in c.said:
                 continue
@@ -307,7 +322,7 @@ class GoalBuilder(RecordBuilder):
         if not d.chance(LADDER_RATE.get(c.structure, 0.25)):
             return
         parents = [g for g in c.of("GOAL") if g.fields["status"] in ("active", "paused") and g.fields["mode"] == "achieve"
-                   and "parent" not in g.fields]
+                   and "parent" not in g.fields and g.key not in c.violent]
         d.rng.shuffle(parents)
         pursuit = Pursuit(c)
         for parent in parents[:2 if c.structure == "far_goal" else 1]:
@@ -372,6 +387,9 @@ class GoalBuilder(RecordBuilder):
 
     def _any_active(self, c: BuildContext) -> Record | None:
         goals = self._active(c)
+        forceful = [g for g in goals if g.key in c.violent]
+        if forceful and c.d.chance(0.6):                              # what he has most at heart wakes him more often
+            return c.d.pick(forceful)
         return c.d.pick(goals) if goals else self._need_goal(c)
 
     def _cause(self, c: BuildContext) -> None:
@@ -453,6 +471,8 @@ class PlanBuilder(RecordBuilder):
         if not goals and needed:
             goals = [g for g in (GoalBuilder._need_goal(c),) if g is not None]
         want = max(d.weighted(PLAN_COUNT), 1 if needed or c.cause == "goal_check" and d.chance(0.7) else 0)
+        if c.violent and c.d.chance(0.8):
+            want = max(want, 1)                                     # a man set on something has a plan for it
         want = min(want, cap)
         order = self._order(c, goals)
         table = PlanTable(c.pools, c.grammar.chooser)
@@ -464,7 +484,7 @@ class PlanBuilder(RecordBuilder):
                     break
                 if any(g is x for x, _ in sketches):
                     continue
-                got = table.make(d, g.fields["prop"], view, c.parties)
+                got = table.make(d, g.fields["prop"], view, c.parties, g.fields["mode"])
                 if got is not None:
                     sketches.append((g, got))
             if sketches or not needed or attempt:
@@ -483,7 +503,7 @@ class PlanBuilder(RecordBuilder):
         """The goal that wakes him first, then the sub-goals (the leaves of a pursuit), then the rest."""
         c.rng.shuffle(goals)
         parents = {g.fields.get("parent") for g in c.of("GOAL")}
-        goals.sort(key=lambda g: (g.key != c.focus, g.fields["status"] != "active", g.key in parents))
+        goals.sort(key=lambda g: (g.key != c.focus, g.key not in c.violent, g.fields["status"] != "active", g.key in parents))
         return goals
 
     def _write(self, c: BuildContext, i: int, goal: Record, sketch: PlanSketch, first: bool, running: bool) -> bool:
@@ -506,7 +526,7 @@ class PlanBuilder(RecordBuilder):
         if period is not None:
             fields["repeat_period"] = period
         if sketch.speaks_to is not None:
-            said = self._says(c, sketch.speaks_to)
+            said = self._says(c, sketch.speaks_to, sketch.incites)
             if said is not None:
                 fields["says"] = said
         c.add(Record("PLAN", f"p:{i + 1}", c.fill("PLAN", fields)))
@@ -546,13 +566,21 @@ class PlanBuilder(RecordBuilder):
         return repeat, (d.pick(PERIODS_H) if repeat == "every" else None)
 
     @staticmethod
-    def _says(c: BuildContext, to: str) -> str | None:
-        """What he means to say when he gets to the step `speak`: a full utterance in his own terms."""
+    def _says(c: BuildContext, to: str, against: str | None = None) -> str | None:
+        """What he means to say when he gets to the step `speak`: a full utterance in his own terms. To win an
+        accomplice over (`against` is the person they would go for) it is a call to come, or to act, or a question
+        about where the man is; to warn somebody, what he knows of a plan."""
         d, s = c.d, c.session
         makers = [lambda: f"(offer (did me give {s.kind(gift=True)} (to {to})))",
                   lambda: f"(ask (at {s.someone() or to} where))",
                   lambda: f"(request (did you go {d.pick(c.refs.loci)}))" if c.refs.loci else None,
                   lambda: f"(request (did you give {s.kind(gift=True)} (to me)))"]
+        if against is not None:
+            makers = makers[1:3] + [lambda: f"(ask (at {against} where))", lambda: f"(request (did you go {d.pick(c.refs.loci)}))"
+                                    if c.refs.loci else None, lambda: _call_to_act(c, against)]
+        elif c.plot is not None and c.plot.kind == "witness" and c.plot.aggressor:
+            makers.append(lambda: f"(assert (intends {c.plot.aggressor} (dead {c.plot.target})))")
+            makers.append(lambda: f"(assert (intends {c.plot.aggressor} (dead {c.plot.target})))")
         d.rng.shuffle(makers)
         for m in makers:
             text = m()

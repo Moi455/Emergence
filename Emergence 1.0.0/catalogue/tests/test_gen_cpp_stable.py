@@ -270,3 +270,13 @@ class TestGenCppStable(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Tok2TablesUpToDate(unittest.TestCase):
+    """engine/social/tokenizer/generated/tok2_gen.h comes from ai/tok2 and the catalogue: a stale header is a failure here, not only in CTest."""
+
+    def test_tok2_gen_check(self):
+        import subprocess
+        script = ROOT.parent / "engine" / "social" / "tokenizer" / "gen_tok2.py"
+        r = subprocess.run([sys.executable, str(script), "--check"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)

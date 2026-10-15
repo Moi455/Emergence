@@ -8,13 +8,32 @@ passive gestures.
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 import time
 from collections import Counter, defaultdict
 
 from .dataset import LineMeta
-from .quota import PacificDay, QuotaConfig, QuotaDesk
+from .quota import LEDGER_NAME, PacificDay, QuotaConfig, QuotaDesk
 from .series import AppendFile, SeriesDirectory
 from .spec import PASSIVE_GESTURES
+
+# finishReason values (or the "NO_CANDIDATE:" prefix of gemini.py) that mean the model refused on content
+BLOCKED_FINISH = ("SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "IMAGE_SAFETY", "RECITATION", "NO_CANDIDATE")
+
+
+def structure_family(seed, index) -> str:
+    """The family of structure (docs/14 10.2) of situation (seed, index): conflict, loss, debt... ("?" if unknown)."""
+    try:
+        from situations.sampler import SituationSampler
+        return SituationSampler.structure_of(int(seed), int(index))
+    except Exception:    # noqa: BLE001  (a status report never breaks the generator)
+        return "?"
+
+
+def content_refused(record: dict) -> bool:
+    """A request the model refused on content: finishReason SAFETY and the like, or an empty reply."""
+    finish = str(record.get("finish") or "")
+    return finish.startswith(BLOCKED_FINISH) or not str(record.get("raw") or "").strip()
 
 
 class StatusReport:
@@ -39,7 +58,7 @@ class StatusReport:
         days: dict = defaultdict(lambda: defaultdict(lambda: {
             "batches": 0, "repairs": 0, "errors": 0, "prompt": 0, "output": 0, "thoughts": 0, "latency": 0.0, "asked": 0,
             "valid_first": 0, "valid_repair": 0, "sent_to_repair": 0, "codes": Counter(), "families": defaultdict(Counter),
-            "gestures": Counter(), "traced": 0}))
+            "gestures": Counter(), "traced": 0, "content": defaultdict(Counter)}))
         for r in self.records():
             day, model = r.get("pday", "?"), r.get("model", "?")
             m = days[day][model]
@@ -54,6 +73,13 @@ class StatusReport:
             m["thoughts"] += u.get("thoughts", 0)
             m["latency"] += r.get("latency_s", 0.0)
             first = r["kind"] == "batch"
+            if first:                                       # content refusals (SAFETY, empty reply) by family of structure
+                refused = content_refused(r)
+                seed = (r.get("cursor") or [0])[0]
+                for x in r.get("results", []):
+                    fam = structure_family(seed, x["index"]) if "index" in x else "?"
+                    m["content"][fam]["asked"] += 1
+                    m["content"][fam]["refused"] += refused
             m["batches" if first else "repairs"] += 1
             for x in r.get("results", []):
                 ok = x.get("code") == "ok"
@@ -106,6 +132,10 @@ class StatusReport:
                     out.append(f"    planner: {m['traced']} valid first-pass decisions with a non-empty trace"
                                f"{f' ({m['traced'] / okn:.0%} of the valid)' if okn else ''}; incoherent_trace refusals "
                                f"{m['codes'].get('incoherent_trace', 0)}")
+                blocked = {f: c for f, c in sorted(m["content"].items()) if c["refused"]}
+                if blocked:
+                    out.append("    content refusals (finishReason SAFETY or empty reply) by family: " + ", ".join(
+                        f"{f} {c['refused']}/{c['asked']}" for f, c in blocked.items()))
                 if m["codes"]:
                     out.append("    first-pass codes: " + json.dumps(dict(m["codes"].most_common())))
                 for fam, c in sorted(m["families"].items()):
@@ -116,7 +146,7 @@ class StatusReport:
             out.append(f"  day total: {tot['req']} requests, {tot['in']} tokens in, {tot['out']} out, {tot['valid']} valid decisions "
                        f"of {tot['asked']} asked")
         if self.qc is not None:
-            desk = QuotaDesk(self.qc, self.series.quota)
+            desk = QuotaDesk(self.qc, self.series.path.parent / LEDGER_NAME)
             out.append("\n== quota now")
             for row in desk.table(self.now):
                 lim = " ".join(f"{k}={v:g}" for k, v in row["limits"].items()) or "unknown"
@@ -127,7 +157,12 @@ class StatusReport:
                     until = f", OUT ({row['why']}) for {wait:.1f} h more, until {PacificDay.key(row['exhausted_until'])} Pacific"
                 elif row["blocked_for_s"]:
                     until = f", cooling down {row['blocked_for_s']:.0f} s"
-                out.append(f"  {row['model']}: {row['requests']} requests / {row['input_tokens']} input tokens today; limits {lim}{learned}{until}")
+                shared = f" [pool {row['pool']}]" if row["pool"] != row["model"] else ""
+                out.append(f"  {row['model']}{shared}: {row['requests']} requests / {row['input_tokens']} tokens today (all series); "
+                           f"limits {lim}{learned}{until}")
+                if row["probe_log"]:                       # when does the daily quota really reopen? (429 = refused, 200 = reopened)
+                    stamp = lambda t: datetime.fromtimestamp(t, timezone.utc).strftime("%H:%M")      # noqa: E731
+                    out.append("      daily-quota tries (UTC): " + ", ".join(f"{stamp(t)} {code}" for t, code, _ in row["probe_log"][-8:]))
         return "\n".join(out)
 
     def _headers(self) -> str:
