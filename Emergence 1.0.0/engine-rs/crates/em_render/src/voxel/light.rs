@@ -1,9 +1,10 @@
-//! `LightingPass` v0 : soleil lambertien et ciel de Hillaire sur le G-buffer, sans ombres (L11), sans occlusion
-//! (L14), sans indirect (L15). Écrit dans la cible HDR du fond de ciel, là où le tracé a touché un voxel.
+//! `LightingPass` : soleil lambertien (avec les ombres en cascades de L11 si `ShadowCascades` précède) et ciel de
+//! Hillaire sur le G-buffer, sans occlusion (L14), sans indirect (L15). Écrit dans la cible HDR du fond de ciel, là où le tracé a touché un voxel.
 
 use super::gbuffer::{self, noms};
-use super::gpu::{LightUniform, VoxelFrame};
+use super::gpu::{LightUniform, ShadowUniform, VoxelFrame};
 use super::shaders;
+use super::shadow::noms as ombres;
 use crate::error::ParamError;
 use crate::gpu::GpuContext;
 use crate::graph::{PassContext, PassName, PassSetup, RenderPass, Resources};
@@ -26,6 +27,10 @@ pub enum DebugView {
     Distance,
     /// Masque : blanc là où le tracé a touché un voxel (silhouette) ; lancer avec `--bloom 0` pour un bord net.
     Mask,
+    /// Visibilité du soleil seule (blanc = éclairé, noir = dans l'ombre) sur les surfaces tournées vers lui.
+    Shadow,
+    /// Cascade d'ombre qui sert chaque pixel (teinte par cascade ; gris : aucune).
+    Cascades,
 }
 
 impl DebugView {
@@ -36,6 +41,8 @@ impl DebugView {
             Self::Normals => 2.0,
             Self::Distance => 3.0,
             Self::Mask => 4.0,
+            Self::Shadow => 5.0,
+            Self::Cascades => 6.0,
         }
     }
 
@@ -47,6 +54,8 @@ impl DebugView {
             "normales" | "normals" => Self::Normals,
             "distance" => Self::Distance,
             "masque" | "mask" => Self::Mask,
+            "ombre" | "ombres" | "shadow" => Self::Shadow,
+            "cascades" => Self::Cascades,
             _ => return None,
         })
     }
@@ -94,6 +103,7 @@ struct Gpu {
     pipeline: wgpu::RenderPipeline,
     groupe_ciel: wgpu::BindGroup,
     groupe_gbuffer: wgpu::BindGroup,
+    groupe_ombres: wgpu::BindGroup,
     uniforme: wgpu::Buffer,
     hdr: wgpu::TextureView,
 }
@@ -187,6 +197,74 @@ impl RenderPass for LightingPass {
                 entree(5, wgpu::BindingResource::TextureView(&dist)),
             ],
         });
+        // Ombres : les cascades de `ShadowCascades` si la passe précède, sinon un uniforme « inactif » et une texture
+        // factice (la lumière reste celle de L09, sans ombres).
+        let (uniforme_ombres, vue_ombres) =
+            match (res.buffer(ombres::UNIFORME).cloned(), res.view(ombres::CASCADES)) {
+                (Some(u), Some(v)) => (u, v),
+                _ => {
+                    let u = dev.create_buffer(&wgpu::BufferDescriptor {
+                        label: Some("ombres uniforme factice"),
+                        size: size_of::<ShadowUniform>() as u64,
+                        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                        mapped_at_creation: false,
+                    });
+                    g.queue()
+                        .write_buffer(&u, 0, bytemuck::bytes_of(&ShadowUniform::default()));
+                    let t = dev.create_texture(&wgpu::TextureDescriptor {
+                        label: Some("ombres texture factice"),
+                        size: wgpu::Extent3d {
+                            width: 1,
+                            height: 1,
+                            depth_or_array_layers: 2,
+                        },
+                        mip_level_count: 1,
+                        sample_count: 1,
+                        dimension: wgpu::TextureDimension::D2,
+                        format: wgpu::TextureFormat::R32Float,
+                        usage: wgpu::TextureUsages::TEXTURE_BINDING,
+                        view_formats: &[],
+                    });
+                    let v = t.create_view(&wgpu::TextureViewDescriptor {
+                        dimension: Some(wgpu::TextureViewDimension::D2Array),
+                        ..Default::default()
+                    });
+                    (u, v)
+                }
+            };
+        let bgl_ombres = dev.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("lumière ombres bgl"),
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: f,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: f,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: false },
+                        view_dimension: wgpu::TextureViewDimension::D2Array,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+            ],
+        });
+        let groupe_ombres = dev.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("lumière ombres groupe"),
+            layout: &bgl_ombres,
+            entries: &[
+                entree(0, uniforme_ombres.as_entire_binding()),
+                entree(1, wgpu::BindingResource::TextureView(&vue_ombres)),
+            ],
+        });
         let module = shaders::lumiere();
         let shader = dev.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some(module.nom()),
@@ -194,7 +272,7 @@ impl RenderPass for LightingPass {
         });
         let layout = dev.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("voxel lumière layout"),
-            bind_group_layouts: &[Some(&bgl_ciel), Some(&bgl_gb)],
+            bind_group_layouts: &[Some(&bgl_ciel), Some(&bgl_gb), Some(&bgl_ombres)],
             immediate_size: 0,
         });
         let pipeline = dev.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -235,6 +313,7 @@ impl RenderPass for LightingPass {
             pipeline,
             groupe_ciel,
             groupe_gbuffer,
+            groupe_ombres,
             uniforme,
             hdr,
         });
@@ -253,6 +332,7 @@ impl RenderPass for LightingPass {
         pass.set_pipeline(&gpu.pipeline);
         pass.set_bind_group(0, &gpu.groupe_ciel, &[]);
         pass.set_bind_group(1, &gpu.groupe_gbuffer, &[]);
+        pass.set_bind_group(2, &gpu.groupe_ombres, &[]);
         pass.draw(0..3, 0..1);
     }
 }

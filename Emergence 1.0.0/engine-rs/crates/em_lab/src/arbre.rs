@@ -16,8 +16,9 @@ use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
     AdapterReport, BloomPass, ClipmapConfig, ClipmapStreamer, CloudParams, DebugView, DepthMergePass,
     FrameContext, FrameTarget, GpuContext, GpuMaterials, GpuProfiler, LightSettings, LightingPass, Partage,
-    PostParams, Projection, RenderGraph, SkyBackgroundPass, SkyParams, SkyPass, SunModel, TonemapPass,
-    VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
+    PostParams, Projection, Regeneration, RenderGraph, ShadowCascades, ShadowControl, ShadowParams,
+    SkyBackgroundPass, SkyParams, SkyPass, SunModel, TonemapPass, VoxelCamera, VoxelGpuWorld,
+    VoxelMaterialPass, VoxelTracePass,
 };
 use serde::Deserialize;
 
@@ -55,6 +56,73 @@ pub struct ArgsArbre {
     /// Fichier de scène (relatif à engine-rs/).
     #[arg(long, default_value = "lab/scenes/arbre.toml")]
     pub scene_fichier: String,
+    /// Scène « materiaux » (L23p) : mode de matière `continu`, `voxel`, ou `ab` (capture : les deux côte à côte).
+    #[arg(long, default_value = "continu")]
+    pub mode: String,
+    /// Scène « materiaux » : écrit « A » / « B » et le mode sur l'image (forcé par `--mode ab`).
+    #[arg(long)]
+    pub etiquette: bool,
+    /// Désactive les ombres du soleil (comparaison A/B, mesure du coût de l'éclairage seul).
+    #[arg(long)]
+    pub sans_ombres: bool,
+    /// Banc : refait les cascades en continu (coût soutenu d'une génération permanente) au lieu du coût au repos.
+    #[arg(long)]
+    pub ombres_continu: bool,
+    /// Tuiles de 128 × 128 texels remplies par image (défaut du préréglage `haut`).
+    #[arg(long)]
+    pub ombres_tuiles: Option<u32>,
+    /// Nombre de cascades, 3 ou 4.
+    #[arg(long)]
+    pub ombres_cascades: Option<u32>,
+    /// Côté des cascades en texels (puissance de 2, 256 à 2048).
+    #[arg(long)]
+    pub ombres_taille: Option<u32>,
+    /// Texel de la cascade 0 en centimètres (défaut 1,25).
+    #[arg(long)]
+    pub ombres_texel_cm: Option<f32>,
+    /// Rayon maximal de la pénombre en centimètres (0 = ombre dure).
+    #[arg(long)]
+    pub ombres_penombre_cm: Option<f32>,
+    /// Échelle de la pénombre physique (0 à 1).
+    #[arg(long)]
+    pub ombres_echelle: Option<f32>,
+    /// Décalage selon la normale, en texels.
+    #[arg(long)]
+    pub ombres_decalage: Option<f32>,
+    /// Biais de profondeur constant en millimètres.
+    #[arg(long)]
+    pub ombres_biais_mm: Option<f32>,
+    /// Biais de pente (texels × tangente).
+    #[arg(long)]
+    pub ombres_pente: Option<f32>,
+}
+
+impl ArgsArbre {
+    /// Réglages d'ombre : préréglage `haut` modifié par les options de la ligne de commande, validés.
+    pub fn parametres_ombres(&self) -> anyhow::Result<ShadowParams> {
+        let d = ShadowParams::default();
+        let mut p = ShadowParams::new(
+            self.ombres_cascades.unwrap_or(d.cascades()),
+            self.ombres_texel_cm.map_or(d.first_texel_m(), |cm| cm * 0.01),
+            self.ombres_taille.unwrap_or(d.size()),
+        )?;
+        if let Some(n) = self.ombres_tuiles {
+            p = p.with_tiles_per_frame(n)?;
+        }
+        p = p.with_bias(
+            self.ombres_biais_mm.map_or(d.depth_bias_m(), |mm| mm * 0.001),
+            self.ombres_pente.unwrap_or(d.slope_bias()),
+        )?;
+        p = p.with_normal_offset(self.ombres_decalage.unwrap_or(d.normal_offset()))?;
+        p = p.with_penumbra(
+            self.ombres_echelle.unwrap_or(d.penumbra_scale()),
+            self.ombres_penombre_cm.map_or(d.penumbra_max_m(), |cm| cm * 0.01),
+        )?;
+        if self.ombres_continu {
+            p = p.with_regeneration(Regeneration::Continue);
+        }
+        Ok(p)
+    }
 }
 
 /// Une prise de vue de `[[shot]]` (docs/19a § 6.4).
@@ -113,6 +181,7 @@ pub struct ArbreScene {
     camera: VoxelCamera,
     monde: VoxelGpuWorld,
     streamer: ClipmapStreamer,
+    ombres: Option<ShadowControl>,
     source: SceneStatique,
     reglages: serde_json::Value,
     texte: Option<OverlayText>,
@@ -222,10 +291,20 @@ impl ArbreScene {
         })?;
         let lumiere = Partage::new(LightSettings::new(vue, a.ambiance)?);
 
+        let params_ombres = a.parametres_ombres()?;
         let monde = VoxelGpuWorld::new(gpu, ClipmapConfig::laboratoire())?;
         let mut graphe = RenderGraph::new();
-        graphe.add(Box::new(SkyPass::new(partage_ciel)))?;
+        graphe.add(Box::new(SkyPass::new(partage_ciel.clone())))?;
         graphe.add(Box::new(SkyBackgroundPass::new()))?;
+        // Ombres du soleil : cascades remplies par la traversée de la grille voxel, avant le tracé primaire.
+        let ombres = if a.sans_ombres {
+            None
+        } else {
+            let pass = ShadowCascades::new(params_ombres, partage_ciel.clone(), monde.bindings());
+            let controle = pass.control();
+            graphe.add(Box::new(pass))?;
+            Some(controle)
+        };
         graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
         graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
         graphe.add(Box::new(DepthMergePass::new()))?;
@@ -235,7 +314,7 @@ impl ArbreScene {
         let texte = if ciel.overlay {
             let t = OverlayText::new();
             t.set_lines(vec![
-                "EMERGENCE - ARBRE (L09)".to_owned(),
+                "EMERGENCE - ARBRE (L11)".to_owned(),
                 format!("GPU: {}", info.name),
                 format!("SOLEIL: {elevation:.1} / {azimut:.1} DEG ({heure:.1} H)"),
             ]);
@@ -261,6 +340,18 @@ impl ArbreScene {
             "exposure": ciel.exposure,
             "bloom": ciel.bloom,
             "ambient": a.ambiance,
+            "shadows": if a.sans_ombres { serde_json::Value::Null } else { serde_json::json!({
+                "cascades": params_ombres.cascades(),
+                "size": params_ombres.size(),
+                "first_texel_m": params_ombres.first_texel_m(),
+                "far_m": (0..params_ombres.cascades()).map(|c| params_ombres.far_m(c)).collect::<Vec<_>>(),
+                "penumbra_max_m": params_ombres.penumbra_max_m(),
+                "penumbra_scale": params_ombres.penumbra_scale(),
+                "normal_offset_texels": params_ombres.normal_offset(),
+                "depth_bias_m": params_ombres.depth_bias_m(),
+                "slope_bias": params_ombres.slope_bias(),
+                "continuous": a.ombres_continu,
+            }) },
             "view": a.vue,
             "voxel_mm": VOXEL_MM,
             "material_packet_fingerprint": format!("{:#018x}", materiaux.fingerprint()),
@@ -270,6 +361,7 @@ impl ArbreScene {
             camera,
             monde,
             streamer: ClipmapStreamer::new(1, ClipmapStreamer::BUDGET_PAR_DEFAUT),
+            ombres,
             source,
             reglages,
             texte,
@@ -325,7 +417,7 @@ impl Scene for ArbreScene {
 
     fn set_lignes_supplementaires(&self, extra: &[String]) {
         if let Some(t) = &self.texte {
-            let mut l = vec!["EMERGENCE - ARBRE (L09)".to_owned()];
+            let mut l = vec!["EMERGENCE - ARBRE (L11)".to_owned()];
             l.extend_from_slice(extra);
             t.set_lines(l);
         }
@@ -341,8 +433,15 @@ impl Scene for ArbreScene {
     ) -> anyhow::Result<()> {
         // La clipmap suit la caméra : tout se charge avant la première image (capture reproductible), puis
         // seules les fenêtres qui glissent travaillent.
-        self.streamer
-            .update_until_complete(&self.camera, self.source.scene(), &mut self.monde, gpu)?;
+        let flux =
+            self.streamer
+                .update_until_complete(&self.camera, self.source.scene(), &mut self.monde, gpu)?;
+        // Des chunks sont arrivés ou partis : leurs ombres ne sont pas dans les cascades, on les refait.
+        if let Some(o) = &self.ombres
+            && (flux.uploaded > 0 || flux.evicted > 0)
+        {
+            o.invalidate();
+        }
         let (l, h) = cible.size();
         let image = FrameContext::new_voxel(index, temps_s, l, h, self.camera)?;
         self.graphe.render(gpu, &image, cible, profileur)?;

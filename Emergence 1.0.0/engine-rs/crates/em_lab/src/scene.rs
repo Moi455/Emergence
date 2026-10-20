@@ -3,6 +3,7 @@
 
 use crate::arbre::{ArbreScene, ArgsArbre};
 use crate::ciel::{ArgsCiel, CielScene};
+use crate::materiaux::{MateriauxScene, ModeDemande};
 use anyhow::bail;
 use em_render::hello::{OverlayText, SkyGradientPass, TextOverlayPass};
 use em_render::{AdapterReport, Camera, FrameContext, FrameTarget, GpuContext, GpuProfiler, RenderGraph};
@@ -35,7 +36,7 @@ pub trait Scene {
 }
 
 /// Noms des scènes connues, pour les messages d'erreur.
-pub const SCENES: &str = "hello, ciel, arbre";
+pub const SCENES: &str = "hello, ciel, arbre, materiaux";
 
 /// Construit la scène nommée ; refuse un nom inconnu en listant les scènes disponibles.
 pub fn creer(
@@ -49,6 +50,12 @@ pub fn creer(
         HelloScene::NOM => Ok(Box::new(HelloScene::new(info)?)),
         CielScene::NOM => Ok(Box::new(CielScene::new(info, ciel)?)),
         ArbreScene::NOM => Ok(Box::new(ArbreScene::new(gpu, info, ciel, arbre)?)),
+        MateriauxScene::NOM => match ModeDemande::lire(&arbre.mode)? {
+            ModeDemande::Seul(mode) => Ok(Box::new(MateriauxScene::new(gpu, info, ciel, arbre, mode)?)),
+            ModeDemande::Comparaison => {
+                bail!("--mode ab ne se capture qu'avec la commande `capture` (deux rendus côte à côte)")
+            }
+        },
         autre => bail!("scène inconnue « {autre} » (disponibles : {SCENES})"),
     }
 }

@@ -9,7 +9,8 @@ use em_material::{CLASS_COUNT, GpuMaterialPacket, MaterialGpu, VegetationRamps};
 
 /// Empreinte épinglée du paquet des vraies données + rampes de `vegetation_test`.
 /// Si elle change : soit une donnée d'aspect a changé exprès (mettre à jour), soit c'est un bug de déterminisme.
-const EMPREINTE_PAQUET: u64 = 0xd446_0f47_e8c9_ae23;
+/// L23p : classe 36 « moss » ajoutée (ancienne empreinte `0xd4460f47e8c9ae23`).
+const EMPREINTE_PAQUET: u64 = 0xc4f4_9913_4de3_133d;
 
 #[test]
 fn disposition_64_octets() {

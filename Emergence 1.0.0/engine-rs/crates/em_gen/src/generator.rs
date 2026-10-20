@@ -16,6 +16,14 @@ pub struct GeneratorId(u16);
 impl GeneratorId {
     /// Le chargeur de modèles `.vxm` (pont avec les générateurs Python).
     pub const VXM: GeneratorId = GeneratorId(1);
+    /// Recette du mur de pierre (L23p).
+    pub const STONE_WALL: GeneratorId = GeneratorId(2);
+    /// Recette de la poutre (L23p).
+    pub const BEAM: GeneratorId = GeneratorId(3);
+    /// Recette du poteau (L23p).
+    pub const POST: GeneratorId = GeneratorId(4);
+    /// Recette du toit de bardeaux (L23p).
+    pub const ROOF: GeneratorId = GeneratorId(5);
 
     /// Valeur brute (pour les paquets et les journaux).
     pub const fn raw(self) -> u16 {
@@ -48,6 +56,29 @@ impl GenParams {
             return Err(GenError::UnknownSpecies(species_slot));
         }
         Ok(Self::new(GeneratorId::VXM, 1, vec![species_slot]))
+    }
+
+    /// Paramètres d'une recette : une configuration sérialisée en JSON (champs dans l'ordre de la structure :
+    /// mêmes paramètres, mêmes octets).
+    pub fn json<T: serde::Serialize>(
+        generator: GeneratorId,
+        version: u32,
+        config: &T,
+    ) -> Result<Self, GenError> {
+        let bytes = serde_json::to_vec(config).map_err(|e| GenError::BadParams(e.to_string()))?;
+        Ok(Self::new(generator, version, bytes))
+    }
+
+    /// Décode la configuration JSON d'une recette ; refuse des paramètres destinés à un autre générateur.
+    pub fn decode_json<T: serde::de::DeserializeOwned>(&self, attendu: GeneratorId) -> Result<T, GenError> {
+        if self.generator != attendu {
+            return Err(GenError::BadParams(format!(
+                "paramètres du générateur {} donnés au générateur {}",
+                self.generator.raw(),
+                attendu.raw()
+            )));
+        }
+        serde_json::from_slice(&self.bytes).map_err(|e| GenError::BadParams(e.to_string()))
     }
 
     /// Générateur visé.

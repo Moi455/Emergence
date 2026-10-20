@@ -16,6 +16,7 @@
 @group(1) @binding(3) var<storage, read> veg_seeds: array<u32>;
 @group(1) @binding(4) var<storage, read> class_extra: array<vec4<u32>>;
 @group(1) @binding(5) var<storage, read> veg_counts: array<u32>;
+@group(1) @binding(6) var<storage, read> pixel_params: array<vec4<f32>>;       // mode VoxelPixel (L23p), 2 vec4 par classe
 
 fn linear_to_srgb(c: vec3<f32>) -> vec3<f32> {
   let x = clamp(c, vec3<f32>(0.0), vec3<f32>(1.0));

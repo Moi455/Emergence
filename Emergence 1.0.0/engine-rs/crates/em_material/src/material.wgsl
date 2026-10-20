@@ -176,10 +176,86 @@ const FQ_12_0: u32 = 786432u;
 
 fn unit_of(raw: i32) -> f32 { return f32(raw) / 65536.0; }
 
+// ---------------------------------------------------------------------------------------------------------------
+// Mode VoxelPixel (L23p) : PORT EXACT de `em_material::pixel` et de `MaterialEvaluator::eval_pixel`. AUCUN bruit
+// continu : tout vient de hachages d'ENTIERS (numéro de pièce, colonne et troncon de fibre, voxel). La classe est
+// en mode VoxelPixel quand `class_extra[cls].w == 1` ; `pixel_params` (2 vec4 par classe, déclaré par la passe) :
+//   [cls*2]   = (block_spread, hue_spread, voxel_jitter, joint_tone)
+//   [cls*2+1] = (ring_contrast, run_contrast, 0, 0)
+// ---------------------------------------------------------------------------------------------------------------
+
+fn unit_hi(h: vec2<u32>) -> f32 { return f32(h.y >> 16u) / 65536.0; }
+
+fn eval_pixel_albedo(value: u32, voxel: vec3<i32>, lod: u32) -> vec3<f32> {
+  let cls = voxel_class(value);
+  let tint = voxel_tint(value);
+  let ex = class_extra[cls];
+  let cseed = vec2<u32>(ex.x, ex.y);
+  let p0 = pixel_params[cls * 2u];
+  let p1 = pixel_params[cls * 2u + 1u];
+  let mode = materials[cls].tint_mode;
+
+  // gigue par voxel (même tirage que le mode continu)
+  var hj = hash_combine(cseed, u64_of_u32(lod));
+  hj = hash_combine(hj, u64_of_i32(voxel.x));
+  hj = hash_combine(hj, u64_of_i32(voxel.y));
+  hj = hash_combine(hj, u64_of_i32(voxel.z));
+  let vu = unit_hi(hj);
+
+  var t = 0.5;
+  var warm = 0.0;
+  if (mode == TINT_STONE_PIECE) {
+    if (tint == 0u) {                       // mortier : ton sombre posé par la recette
+      t = p0.w;
+      warm = p0.y * 0.5;
+    } else {                                // une pierre : SON ton et SA chaleur
+      let gs = hash_combine(cseed, u64_of_u32(0x200u + tint));
+      let ton = unit_hi(mix64(gs));
+      let chaleur = unit_hi(hash_combine(gs, u64_of_u32(0x77u)));
+      t = 0.5 + (ton - 0.5) * 2.0 * p0.x;
+      warm = (chaleur - 0.5) * 2.0 * p0.y;
+    }
+  } else if (mode == TINT_WOOD_AXIS) {
+    let axe = wood_axis(tint);
+    let variante = wood_variant(tint);
+    let fs = hash_combine(cseed, u64_of_u32(0x300u + axe));
+    var hf = vec2<u32>(0u, 0u);
+    var run = 0.5;
+    if (axe == 3u) {                        // bois de bout : un ton par voxel
+      hf = hash_combine(hash_combine(hash_combine(fs, u64_of_i32(voxel.x)), u64_of_i32(voxel.y)), u64_of_i32(voxel.z));
+    } else {
+      var s = voxel.x;
+      var c1 = voxel.y;
+      var c2 = voxel.z;
+      if (axe == 1u) { s = voxel.y; c1 = voxel.x; c2 = voxel.z; }
+      else if (axe == 2u) { s = voxel.z; c1 = voxel.x; c2 = voxel.y; }
+      hf = hash_combine(hash_combine(fs, u64_of_i32(c1)), u64_of_i32(c2));   // colonne de fibre
+      let decalage = i32((hf.y >> 8u) & 7u);
+      let troncon = (s + decalage) >> 3u;                                      // 8 voxels par troncon
+      run = unit_hi(hash_combine(hf, u64_of_i32(troncon)));
+    }
+    let fibre = unit_hi(hf);
+    let anneau = f32(variante & 15u) / 15.0;
+    let noeud = f32((variante >> 4u) & 1u);
+    t = 0.5 + (fibre - 0.5) * 2.0 * p0.x + (run - 0.5) * 2.0 * p1.y + (anneau - 0.5) * 2.0 * p1.x - noeud * p0.w;
+    warm = (fibre - 0.5) * 2.0 * p0.y;
+  } else {
+    t = f32(tint) / 127.0;
+  }
+  t = t + (vu - 0.5) * 2.0 * p0.z;
+
+  let dark = class_ramps[cls * 3u].xyz;
+  let mid = class_ramps[cls * 3u + 1u].xyz;
+  let light = class_ramps[cls * 3u + 2u].xyz;
+  let c = ramp3(dark, mid, light, t);
+  return clamp(vec3<f32>(c.x + c.x * warm, c.y, c.z - c.z * warm), vec3<f32>(0.0), vec3<f32>(1.0));
+}
+
 // Albédo linéaire du voxel `voxel` (coordonnées du niveau `lod`) de valeur `value` : référence CPU
 // `em_material::eval_albedo_cpu` (sans les voisins de pierre : pas de joint avant L23).
 fn eval_voxel_albedo(value: u32, voxel: vec3<i32>, lod: u32) -> vec3<f32> {
   let cls = voxel_class(value);
+  if (class_extra[cls].w == 1u) { return eval_pixel_albedo(value, voxel, lod); }   // VoxelPixel (L23p)
   let tint = voxel_tint(value);
   let m = materials[cls];
   let ex = class_extra[cls];

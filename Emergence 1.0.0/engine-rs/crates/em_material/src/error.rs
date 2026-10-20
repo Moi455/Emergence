@@ -33,4 +33,20 @@ pub enum MaterialError {
     /// Trop de rampes pour un rôle (4 au plus, 2 pour les fruits).
     #[error("essence « {cle} » : {demande} rampes demandées pour ce rôle, au plus {max}")]
     TropDeRampes { cle: String, demande: usize, max: usize },
+    /// `[style]` : une classe nommée n'existe pas dans la table.
+    #[error("style : la classe « {0} » n'existe pas dans la table des matières")]
+    StyleClasseInconnue(String),
+    /// `[style]` : une classe est citée deux fois.
+    #[error("style : la classe « {0} » est citée deux fois")]
+    StyleDoublon(String),
+    /// `[style]` : le mode voxel ne s'applique pas à cette classe.
+    #[error("style : le mode voxel ne convient pas à « {classe} » : {raison}")]
+    StyleNonSupporte { classe: String, raison: String },
+    /// `[style]` : un réglage hors des bornes.
+    #[error("style : classe « {classe} », réglage « {champ} » : {raison}")]
+    StyleValeur {
+        classe: String,
+        champ: &'static str,
+        raison: String,
+    },
 }

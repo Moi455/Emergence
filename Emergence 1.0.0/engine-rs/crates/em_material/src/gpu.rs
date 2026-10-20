@@ -110,6 +110,38 @@ impl MaterialTable {
     }
 }
 
+impl MaterialTable {
+    /// Comme `gpu_class_extra`, avec le MODE de matière de chaque classe dans le mot `w` (0 continu, 1 VoxelPixel).
+    pub fn gpu_class_extra_styled(&self, style: &crate::style::StyleSheet) -> Vec<[u32; 4]> {
+        let mut extra = self.gpu_class_extra();
+        for (e, mode) in extra.iter_mut().zip(style.gpu_modes()) {
+            e[3] = mode;
+        }
+        extra
+    }
+}
+
+impl crate::style::StyleSheet {
+    /// Le tampon `pixel_params` : deux `vec4` par classe, `[block_spread, hue_spread, voxel_jitter, joint_tone]`
+    /// puis `[ring_contrast, run_contrast, 0, 0]` (Q16 / 65 536, exact).
+    pub fn gpu_pixel_params(&self) -> Vec<[f32; 4]> {
+        (0..CLASS_COUNT as u16)
+            .flat_map(|c| {
+                let p = self.params_of(em_core::ids::MaterialId::new(c));
+                [
+                    [
+                        f(p.block_spread),
+                        f(p.hue_spread),
+                        f(p.voxel_jitter),
+                        f(p.joint_tone),
+                    ],
+                    [f(p.ring_contrast), f(p.run_contrast), 0.0, 0.0],
+                ]
+            })
+            .collect()
+    }
+}
+
 impl VegetationRamps {
     /// Nombre de rampes par (essence, rôle), indice `essence × 4 + rôle` (32 × 4 `u32`) : le shader en a besoin
     /// pour convertir le tirage continu des feuilles en numéro de rampe, et pour borner un numéro explicite.

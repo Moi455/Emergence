@@ -1,0 +1,140 @@
+# Scène « materiaux » (L23p) : un auvent de bâti pour juger la matière du bois et de la pierre.
+#   mur de pierre au fond (3,6 m de long, 3 m de haut), deux poteaux ronds devant, une poutre de 3 m sur les poteaux,
+#   un petit toit de bardeaux en pente qui s'appuie sur la poutre et monte vers le mur.
+# Les recettes sont des générateurs déterministes (graine -> voxels de 5 cm) ; le mode de matière (continu A ou
+# variation par voxel B) est choisi par `--mode`, jamais dans la recette : les voxels sont les mêmes dans les deux cas.
+# Repère : x est, y haut, z nord ; la caméra regarde vers +z (lacet 0) depuis le sud. Tout est en mètres, multiples de 5 cm.
+name = "materiaux"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+# Classes qui passent en mode voxel quand `--mode voxel` : la pierre (et son mortier), les deux bois, l'ardoise, la
+# mousse. Les réglages par classe se surchargent ici (`[style.params.cut_stone]`), validés au chargement.
+[style]
+pixel_classes = ["cut_stone", "oak_raw", "wood_trim", "slate", "moss"]
+
+# ---- Mur de pierre : appareil irrégulier, joints d'un voxel, pierres saillantes, mousse au pied et dessus ----
+[[recipe]]
+generator = "stone_wall"
+seed = 7
+at_m = [0.0, 0.0, 0.0]
+[recipe.params]
+length = 72
+height = 60
+thickness = 6
+
+# ---- Deux poteaux ronds de 40 cm avec socle et chapiteau (hauteur 2,4 m) ----
+[[recipe]]
+generator = "post"
+seed = 11
+at_m = [0.1, 0.0, -1.6]
+[recipe.params]
+shape = "round"
+diameter = 8
+height = 44
+
+[[recipe]]
+generator = "post"
+seed = 12
+at_m = [2.3, 0.0, -1.6]
+[recipe.params]
+shape = "round"
+diameter = 8
+height = 44
+
+# ---- Poutre de 3 m, section 20 cm, posée sur les chapiteaux ----
+[[recipe]]
+generator = "beam"
+seed = 5
+at_m = [0.0, 2.4, -1.4]
+[recipe.params]
+length = 60
+section = 4
+axis = "x"
+knots = 4
+
+# ---- Toit de bardeaux en gradins (9 rangées), posé sur la poutre, montant vers le mur ----
+[[recipe]]
+generator = "roof"
+seed = 3
+at_m = [-0.2, 2.6, -1.4]
+[recipe.params]
+width = 68
+rows = 9
+run = 3
+
+# Prises de vue. Tous les `pos_m` sont à moins de 25 m de l'auvent (une seule clipmap de 25 m).
+# De près (1 à 2 m) : les voxels se voient.
+[[shot]]
+name = "pierre_pres"
+pos_m = [1.8, 1.5, -1.0]
+look_at_m = [1.8, 1.3, 0.0]
+fov_deg = 50.0
+hours = [10.0, 18.4]
+
+[[shot]]
+name = "pied_mur"
+pos_m = [1.2, 0.6, -0.9]
+look_at_m = [1.2, 0.35, 0.0]
+fov_deg = 55.0
+hours = [10.0, 18.4]
+
+[[shot]]
+name = "bois_pres"
+pos_m = [1.0, 2.0, -3.0]
+look_at_m = [0.5, 2.2, -1.4]
+fov_deg = 45.0
+hours = [10.0, 18.4]
+
+[[shot]]
+name = "toit_haut"
+pos_m = [1.5, 4.4, -4.2]
+look_at_m = [1.5, 2.8, -0.8]
+fov_deg = 50.0
+hours = [10.0, 18.4]
+
+# Moyenne distance (5 à 8 m).
+[[shot]]
+name = "ensemble_moyen"
+pos_m = [1.5, 1.8, -7.0]
+look_at_m = [1.6, 1.6, 0.0]
+fov_deg = 50.0
+hours = [10.0, 18.4]
+
+[[shot]]
+name = "contrejour_moyen"
+pos_m = [6.5, 1.8, -5.0]
+look_at_m = [1.6, 1.6, -0.5]
+fov_deg = 50.0
+hours = [18.4]
+
+# De loin (20 m) : la lisibilité.
+[[shot]]
+name = "ensemble_loin"
+pos_m = [1.5, 2.2, -20.0]
+look_at_m = [1.6, 1.6, 0.0]
+fov_deg = 40.0
+hours = [10.0, 18.4]
+
+# Golden hour (18 h 24 de l'horloge du labo) : le soleil est au nord-ouest, la face avant du mur (au sud) est à l'ombre ;
+# on regarde donc le dos du mur (au nord) et l'auvent par l'ouest. Les ombres portées viendront avec L11.
+[[shot]]
+name = "dos_pres"
+pos_m = [1.8, 1.5, 1.4]
+look_at_m = [1.8, 1.3, 0.3]
+fov_deg = 50.0
+hours = [18.4]
+
+[[shot]]
+name = "ensemble_ouest"
+pos_m = [-6.5, 1.8, -3.0]
+look_at_m = [1.6, 1.6, -0.7]
+fov_deg = 50.0
+hours = [18.4]
+
+[[shot]]
+name = "loin_ouest"
+pos_m = [-19.0, 2.2, -3.0]
+look_at_m = [1.6, 1.6, -0.7]
+fov_deg = 40.0
+hours = [18.4]

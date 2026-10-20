@@ -33,6 +33,33 @@ impl RgbaImage {
         &self.pixels
     }
 
+    /// Juxtapose deux images de même hauteur (celle-ci à gauche, `autre` à droite) séparées par une bande noire de
+    /// `separation` pixels : la comparaison A/B d'une même prise. Refuse deux hauteurs différentes.
+    pub fn juxtaposer(&self, autre: &RgbaImage, separation: u32) -> Result<RgbaImage, CaptureError> {
+        if self.height != autre.height {
+            return Err(CaptureError::Format(format!(
+                "juxtaposition de deux hauteurs différentes ({} et {})",
+                self.height, autre.height
+            )));
+        }
+        let largeur = self.width + separation + autre.width;
+        let mut pixels = Vec::with_capacity(largeur as usize * self.height as usize * 4);
+        for y in 0..self.height as usize {
+            let ligne = |im: &RgbaImage| {
+                let debut = y * im.width as usize * 4;
+                debut..debut + im.width as usize * 4
+            };
+            pixels.extend_from_slice(&self.pixels[ligne(self)]);
+            pixels.extend((0..separation).flat_map(|_| [0_u8, 0, 0, 255]));
+            pixels.extend_from_slice(&autre.pixels[ligne(autre)]);
+        }
+        Ok(RgbaImage {
+            width: largeur,
+            height: self.height,
+            pixels,
+        })
+    }
+
     /// Encode en PNG (RGBA 8 bits, marqué sRGB) dans un tampon : octets reproductibles.
     pub fn encoder_png(&self) -> Result<Vec<u8>, CaptureError> {
         let mut sortie = Vec::new();

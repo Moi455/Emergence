@@ -6,6 +6,8 @@
 
 use crate::color::LinearRgb;
 use crate::noise::{Frequency, ValueNoise, WorldPoint};
+use crate::pixel::{PixelInput, PixelRule};
+use crate::style::{MaterialMode, StyleSheet};
 use crate::table::MaterialTable;
 use crate::tint::{RampSelect, Shade, ShadeInput, TintMode, TintRule};
 use crate::vegetation::VegetationRamps;
@@ -85,26 +87,83 @@ impl VoxelSample {
     }
 }
 
-/// Évalue la matière d'un voxel : possède les règles de teinte (une par mode) et emprunte la table et les rampes.
+/// Évalue la matière d'un voxel : possède les règles de teinte (une par mode, continues et VoxelPixel), la feuille
+/// de style (mode par classe) et emprunte la table et les rampes.
 pub struct MaterialEvaluator<'a> {
     table: &'a MaterialTable,
     vegetation: &'a VegetationRamps,
     regles: Vec<Box<dyn TintRule>>,
+    regles_pixel: Vec<Box<dyn PixelRule>>,
+    style: StyleSheet,
 }
 
 impl<'a> MaterialEvaluator<'a> {
-    /// Crée l'évaluateur avec ses collaborateurs.
+    /// Crée l'évaluateur avec ses collaborateurs ; toutes les classes en mode continu.
     pub fn new(table: &'a MaterialTable, vegetation: &'a VegetationRamps) -> Self {
+        Self::with_style(table, vegetation, StyleSheet::continuous())
+    }
+
+    /// Crée l'évaluateur avec une feuille de style (mode continu ou VoxelPixel par classe).
+    pub fn with_style(table: &'a MaterialTable, vegetation: &'a VegetationRamps, style: StyleSheet) -> Self {
         MaterialEvaluator {
             table,
             vegetation,
             regles: TintMode::ALL.iter().map(|m| m.rule()).collect(),
+            regles_pixel: TintMode::ALL.iter().map(|m| m.pixel_rule()).collect(),
+            style,
+        }
+    }
+
+    /// Feuille de style de l'évaluateur.
+    pub fn style(&self) -> &StyleSheet {
+        &self.style
+    }
+
+    /// Mode VoxelPixel (L23p) : la couleur ne vient d'AUCUN champ continu. Teinte -> ton par une règle entière
+    /// (numéro de pièce, colonne de fibre, nuance de la recette), puis gigue par voxel ; port exact en WGSL
+    /// (`eval_pixel_albedo`).
+    fn eval_pixel(&self, ctx: &EvalContext) -> VoxelSample {
+        let value = ctx.value;
+        let def = self.table.get(value.material());
+        let r = def.render();
+        let class_seed = def.class_seed();
+        let params = self.style.params_of(value.material());
+        let h = hash3(
+            hash_combine(class_seed, u64::from(ctx.lod)),
+            i64::from(ctx.voxel.x),
+            i64::from(ctx.voxel.y),
+            i64::from(ctx.voxel.z),
+        );
+        let voxel_unit = Q16::from_raw((h >> 48) as i64);
+        let ton = self.regles_pixel[r.tint_mode().code() as usize].tone(&PixelInput {
+            class_seed,
+            tint: value.tint(),
+            voxel: ctx.voxel,
+            params,
+        });
+        let gigue = (voxel_unit.raw() - 32_768) * 2 * params.voxel_jitter.raw() / 65_536;
+        let couleur = def.ramp().sample(Q16::from_raw(ton.t.raw() + gigue));
+        let [cr, cg, cb] = couleur.channels();
+        let k = ton.warmth.raw();
+        let albedo = LinearRgb::new(
+            Q16::from_raw(cr.raw() + cr.raw() * k / 65_536),
+            cg,
+            Q16::from_raw(cb.raw() - cb.raw() * k / 65_536),
+        );
+        VoxelSample {
+            albedo,
+            roughness: r.roughness(),
+            translucency: r.translucency(),
+            emission: r.emission(),
         }
     }
 
     /// Couleur et propriétés du voxel. L'air donne un échantillon nul.
     pub fn eval(&self, ctx: &EvalContext) -> VoxelSample {
         let value = ctx.value;
+        if !value.is_air() && self.style.mode_of(value.material()) == MaterialMode::VoxelPixel {
+            return self.eval_pixel(ctx);
+        }
         let def = self.table.get(value.material());
         let r = def.render();
         let point = WorldPoint::from_mm(ctx.center_mm());

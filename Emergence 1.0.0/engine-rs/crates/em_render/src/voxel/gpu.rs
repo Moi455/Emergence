@@ -72,6 +72,67 @@ pub struct LightUniform {
     pub vue: [f32; 4],
 }
 
+/// Une cascade d'ombre vue par l'éclairage (miroir de `struct ShadowCascadeU` de `voxel_shadow_sample.wgsl`).
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
+pub struct ShadowCascadeUniform {
+    /// xyz : point du plan de départ au centre du texel (0, 0), en mètres RELATIFS à la caméra ; w : texel (m).
+    pub origin: [f32; 4],
+    /// xyz : axe u des texels ; w : couche de la génération avant dans le tableau de textures.
+    pub right: [f32; 4],
+    /// xyz : axe v des texels ; w : côté en texels.
+    pub up: [f32; 4],
+    /// xyz : direction vers le soleil ; w : 1 si la cascade est prête.
+    pub sun: [f32; 4],
+    /// x : portée pleine (m) ; yzw réservés.
+    pub limits: [f32; 4],
+}
+
+/// Uniforme des ombres lu par l'éclairage (miroir de `struct ShadowU`).
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
+pub struct ShadowUniform {
+    /// x : nombre de cascades ; y : 1 si les ombres sont actives ; z : fraction de fondu ; w : tangente du
+    /// demi-angle du soleil.
+    pub cfg0: [f32; 4],
+    /// x : décalage normal (texels) ; y : biais de profondeur (m) ; z : biais de pente ; w : échelle de pénombre.
+    pub cfg1: [f32; 4],
+    /// x : rayon maximal de pénombre (m) ; yzw réservés.
+    pub cfg2: [f32; 4],
+    /// Les cascades.
+    pub cascades: [ShadowCascadeUniform; 4],
+}
+
+/// Une cascade en construction, vue par le remplissage (miroir de `struct FillCascade` de `voxel_shadow_fill.wgsl`).
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
+pub struct ShadowFillCascade {
+    /// Voxel entier du texel (0, 0) sur le plan de départ.
+    pub base: [i32; 4],
+    /// Position dans ce voxel, en voxels.
+    pub frac: [f32; 4],
+    /// Pas d'un texel selon u, en voxels.
+    pub du: [f32; 4],
+    /// Pas d'un texel selon v, en voxels.
+    pub dv: [f32; 4],
+    /// Direction des rayons (du soleil vers la scène).
+    pub dir: [f32; 4],
+    /// x : couche écrite ; y : côté en texels ; zw réservés.
+    pub meta: [u32; 4],
+}
+
+/// Une tuile à remplir : cascade, colonne, ligne de tuile.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
+pub struct ShadowTileGpu {
+    /// x : cascade ; y : colonne ; z : ligne ; w réservé.
+    pub tuile: [u32; 4],
+}
+
 const _: () = assert!(size_of::<ClipLevel>() == 32);
 const _: () = assert!(size_of::<VoxelFrame>() == 7 * 16);
 const _: () = assert!(size_of::<LightUniform>() == 16);
+const _: () = assert!(size_of::<ShadowCascadeUniform>() == 80);
+const _: () = assert!(size_of::<ShadowUniform>() == 48 + 4 * 80);
+const _: () = assert!(size_of::<ShadowFillCascade>() == 96);
+const _: () = assert!(size_of::<ShadowTileGpu>() == 16);

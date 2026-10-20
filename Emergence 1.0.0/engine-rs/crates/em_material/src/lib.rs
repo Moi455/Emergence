@@ -14,6 +14,8 @@ pub mod color;
 pub mod error;
 pub mod eval;
 pub mod noise;
+pub mod pixel;
+pub mod style;
 pub mod table;
 pub mod tint;
 pub mod vegetation;
@@ -25,6 +27,10 @@ pub use color::{LinearRgb, Ramp3, SrgbTable};
 pub use error::MaterialError;
 pub use eval::{EvalContext, MaterialEvaluator, VoxelSample, eval_albedo_cpu};
 pub use noise::{Frequency, ValueNoise, WorldPoint};
+pub use pixel::{
+    DirectPixelRule, PixelInput, PixelRule, PixelTone, RUN_SHIFT, StonePixelRule, WoodPixelRule,
+};
+pub use style::{MaterialMode, PixelOverride, PixelParams, StyleConfig, StyleSheet};
 pub use table::{CLASS_COUNT, MaterialDef, MaterialFlags, MaterialTable, RenderProps};
 pub use tint::{
     GrainAxis, RampSelect, Shade, ShadeInput, TintMode, TintRule, tint_stone, tint_vegetation, tint_wood,

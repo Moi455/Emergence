@@ -6,6 +6,7 @@ use std::sync::Arc;
 use em_core::{ChunkKey, Lod, VoxelBox, VoxelCoord, VoxelValue, hash_combine};
 use em_voxel::{Chunk, ChunkHint, CompositeLayer, CompositeMode, CompositeSource, FlatSource, VoxelSource};
 
+use crate::bati::PlacedPlan;
 use crate::error::GenError;
 use crate::vxm::PlacedModel;
 
@@ -14,6 +15,7 @@ use crate::vxm::PlacedModel;
 pub struct StaticSceneBuilder {
     ground: Option<FlatSource>,
     models: Vec<Arc<PlacedModel>>,
+    plans: Vec<Arc<PlacedPlan>>,
 }
 
 impl StaticSceneBuilder {
@@ -35,6 +37,12 @@ impl StaticSceneBuilder {
         self
     }
 
+    /// Pose un plan de générateur (recette du bâti), après les modèles déjà posés.
+    pub fn place_plan(mut self, plan: PlacedPlan) -> Self {
+        self.plans.push(Arc::new(plan));
+        self
+    }
+
     /// Termine ; refuse une scène sans aucune couche.
     pub fn build(self) -> Result<StaticScene, GenError> {
         let mut layers: Vec<CompositeLayer> = Vec::new();
@@ -44,10 +52,14 @@ impl StaticSceneBuilder {
         for m in &self.models {
             layers.push(CompositeLayer::new(m.clone(), CompositeMode::Overlay));
         }
+        for p in &self.plans {
+            layers.push(CompositeLayer::new(p.clone(), CompositeMode::Overlay));
+        }
         let composite = CompositeSource::new(layers).map_err(|e| GenError::BadParams(e.to_string()))?;
         Ok(StaticScene {
             ground: self.ground,
             models: self.models,
+            plans: self.plans,
             composite,
         })
     }
@@ -57,6 +69,7 @@ impl StaticSceneBuilder {
 pub struct StaticScene {
     ground: Option<FlatSource>,
     models: Vec<Arc<PlacedModel>>,
+    plans: Vec<Arc<PlacedPlan>>,
     composite: CompositeSource,
 }
 
@@ -79,6 +92,11 @@ impl StaticScene {
     /// Modèles posés, dans l'ordre de pose.
     pub fn models(&self) -> impl Iterator<Item = &PlacedModel> + '_ {
         self.models.iter().map(Arc::as_ref)
+    }
+
+    /// Plans de générateur posés, dans l'ordre de pose.
+    pub fn plans(&self) -> impl Iterator<Item = &PlacedPlan> + '_ {
+        self.plans.iter().map(Arc::as_ref)
     }
 
     /// Union des boîtes des modèles au niveau `lod`, `None` sans modèle.
@@ -110,6 +128,6 @@ impl VoxelSource for StaticScene {
     fn version_tag(&self) -> u64 {
         let mut h = hash_combine(0x5354_5343, self.composite.version_tag());
         h = hash_combine(h, self.models.len() as u64);
-        h
+        hash_combine(h, self.plans.len() as u64)
     }
 }

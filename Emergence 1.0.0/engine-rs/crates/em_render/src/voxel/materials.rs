@@ -4,7 +4,7 @@
 
 use crate::gpu::GpuContext;
 use crate::liaisons::{MiseEnPage, entree_tampon};
-use em_material::{GpuMaterialPacket, MaterialTable, VegetationRamps};
+use em_material::{GpuMaterialPacket, MaterialTable, StyleSheet, VegetationRamps};
 use wgpu::ShaderStages as Etage;
 
 /// Liaisons des matières pour une passe (copie bon marché).
@@ -34,13 +34,26 @@ pub struct GpuMaterials {
     veg_seeds: wgpu::Buffer,
     class_extra: wgpu::Buffer,
     veg_counts: wgpu::Buffer,
+    pixel_params: wgpu::Buffer,
     liaisons: MaterialBindings,
     empreinte: u64,
+    style: StyleSheet,
 }
 
 impl GpuMaterials {
-    /// Construit et téléverse les tampons depuis la table et les rampes de la saison courante.
+    /// Construit et téléverse les tampons depuis la table et les rampes de la saison courante (toutes les classes
+    /// en matière continue).
     pub fn new(gpu: &GpuContext, table: &MaterialTable, veg: &VegetationRamps) -> Self {
+        Self::with_style(gpu, table, veg, StyleSheet::continuous())
+    }
+
+    /// Comme `new`, avec une feuille de style (mode de matière par classe : continu ou VoxelPixel, L23p).
+    pub fn with_style(
+        gpu: &GpuContext,
+        table: &MaterialTable,
+        veg: &VegetationRamps,
+        style: StyleSheet,
+    ) -> Self {
         let paquet = GpuMaterialPacket::new(table, veg);
         let dev = gpu.device();
         let cree = |nom: &str, octets: &[u8]| {
@@ -53,7 +66,8 @@ impl GpuMaterials {
             gpu.queue().write_buffer(&b, 0, octets);
             b
         };
-        let extra = table.gpu_class_extra();
+        let extra = table.gpu_class_extra_styled(&style);
+        let pixel = style.gpu_pixel_params();
         let counts = veg.gpu_counts();
         let materials = cree("matières", paquet.material_bytes());
         let class_ramps = cree("rampes de classe", paquet.class_ramp_bytes());
@@ -61,8 +75,10 @@ impl GpuMaterials {
         let veg_seeds = cree("graines d'essence", paquet.veg_seed_bytes());
         let class_extra = cree("graines et rôles de classe", bytemuck::cast_slice(&extra));
         let veg_counts = cree("rampes par essence", bytemuck::cast_slice(&counts));
+        let pixel_params = cree("réglages VoxelPixel", bytemuck::cast_slice(&pixel));
         let c = Etage::COMPUTE;
         let layout = MiseEnPage::new()
+            .stockage_tampon_lecture(c)
             .stockage_tampon_lecture(c)
             .stockage_tampon_lecture(c)
             .stockage_tampon_lecture(c)
@@ -80,6 +96,7 @@ impl GpuMaterials {
                 entree_tampon(3, &veg_seeds),
                 entree_tampon(4, &class_extra),
                 entree_tampon(5, &veg_counts),
+                entree_tampon(6, &pixel_params),
             ],
         });
         Self {
@@ -89,8 +106,10 @@ impl GpuMaterials {
             veg_seeds,
             class_extra,
             veg_counts,
+            pixel_params,
             liaisons: MaterialBindings { layout, group },
             empreinte: paquet.fingerprint(),
+            style,
         }
     }
 
@@ -106,9 +125,30 @@ impl GpuMaterials {
         q.write_buffer(
             &self.class_extra,
             0,
-            bytemuck::cast_slice(&table.gpu_class_extra()),
+            bytemuck::cast_slice(&table.gpu_class_extra_styled(&self.style)),
         );
         self.empreinte = paquet.fingerprint();
+    }
+
+    /// Change le mode de matière des classes (bascule A/B à chaud) : seuls deux petits tampons sont réécrits.
+    pub fn set_style(&mut self, gpu: &GpuContext, table: &MaterialTable, style: StyleSheet) {
+        let q = gpu.queue();
+        q.write_buffer(
+            &self.class_extra,
+            0,
+            bytemuck::cast_slice(&table.gpu_class_extra_styled(&style)),
+        );
+        q.write_buffer(
+            &self.pixel_params,
+            0,
+            bytemuck::cast_slice(&style.gpu_pixel_params()),
+        );
+        self.style = style;
+    }
+
+    /// Feuille de style téléversée.
+    pub fn style(&self) -> &StyleSheet {
+        &self.style
     }
 
     /// Liaisons à confier à la passe de matière.

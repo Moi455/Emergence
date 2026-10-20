@@ -36,6 +36,7 @@ pub use sky::{CloudParams, SkyBackgroundPass, SkyParams, SkyPass, SunModel};
 pub use target::{FrameTarget, OffscreenTarget, TargetFrame, WindowTarget};
 pub use voxel::{
     ChunkFlags, ClipmapConfig, ClipmapStreamer, DebugView, DepthMergePass, GpuMaterials, LightSettings,
-    LightingPass, Projection, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
+    LightingPass, Projection, Regeneration, ShadowCascades, ShadowControl, ShadowParams, VoxelCamera,
+    VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
 };
 pub use wgpu;

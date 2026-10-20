@@ -47,7 +47,7 @@ const NOMS_20_OCT: [&str; 34] = [
 #[test]
 fn trente_six_lignes_et_numeros_figes() {
     let t = table_reelle();
-    assert_eq!(t.len(), 36);
+    assert_eq!(t.len(), 37); // 36 + la mousse (classe 36, L23p)
     for (i, nom) in NOMS_20_OCT.iter().enumerate() {
         let id = MaterialId::new(i as u16);
         assert_eq!(t.get(id).name(), *nom, "classe {i}");
@@ -55,6 +55,7 @@ fn trente_six_lignes_et_numeros_figes() {
     }
     assert_eq!(t.by_name("petal"), Some(MaterialId::new(34)));
     assert_eq!(t.by_name("fruit"), Some(MaterialId::new(35)));
+    assert_eq!(t.by_name("moss"), Some(MaterialId::new(36)));
     assert_eq!(t.get(MaterialId::new(34)).category(), "plant");
     assert_eq!(t.get(MaterialId::new(35)).category(), "plant");
     // les valeurs physiques lues

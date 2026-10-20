@@ -3,6 +3,7 @@
 use crate::arbre::ArgsArbre;
 use crate::chemins::dossier_captures;
 use crate::ciel::ArgsCiel;
+use crate::materiaux::{self, MateriauxScene, ModeDemande};
 use crate::scene::{self, HelloScene};
 use anyhow::Context;
 use clap::Args;
@@ -39,6 +40,19 @@ pub struct ArgsCapture {
 /// Exécute la capture.
 pub fn executer(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
     let debut = Instant::now();
+    if a.scene == MateriauxScene::NOM && ModeDemande::lire(&a.arbre.mode)? == ModeDemande::Comparaison {
+        let sortie = a
+            .out
+            .clone()
+            .unwrap_or_else(|| dossier_captures().join("materiaux_ab.png"));
+        let chemins =
+            materiaux::capturer_ab(gpu, &a.ciel, &a.arbre, a.largeur, a.hauteur, a.frames, &sortie)?;
+        log::info!("comparaison A/B écrite en {:.2} s", debut.elapsed().as_secs_f64());
+        for c in chemins {
+            println!("{}", c.display());
+        }
+        return Ok(());
+    }
     let mut cible = OffscreenTarget::new(gpu, a.largeur, a.hauteur)?;
     let mut scene = scene::creer(&a.scene, &a.ciel, &a.arbre, gpu)?;
     let mut profil = GpuProfiler::new(gpu, 32);

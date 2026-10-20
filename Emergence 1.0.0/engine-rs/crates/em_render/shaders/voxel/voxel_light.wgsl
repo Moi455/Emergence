@@ -1,6 +1,6 @@
-// Éclairage différé v0 (docs/19b L09) : soleil lambertien + ciel (LUT de Hillaire), SANS ombres (L11) ni
+// Éclairage différé (docs/19b L09, L11) : soleil lambertien avec ombres en cascades + ciel (LUT de Hillaire), SANS
 // occlusion (L14) ni indirect (L15). Assemblé après : frame (ciel), atmo_core, sky_render_funcs, aerial,
-// voxel_frame. Groupe 0 = ciel (comme le fond), groupe 1 = G-buffer.
+// voxel_frame, voxel_shadow_sample. Groupe 0 = ciel (comme le fond), groupe 1 = G-buffer, groupe 2 = ombres.
 @group(0) @binding(0) var<uniform> F: Frame;
 @group(0) @binding(1) var transLUT: texture_2d<f32>;
 @group(0) @binding(2) var skyLUT: texture_2d<f32>;
@@ -55,9 +55,28 @@ fn oct_decode(packed: u32) -> vec3<f32> {
   let dir = pixel_dir(ndc, VF);
   let sun = normalize(F.sunDir.xyz);
   let ndl = max(dot(n, sun), 0.0);
+  // Point éclairé en mètres relatifs à la caméra (en orthographique, l'origine du rayon dépend du pixel).
+  let p_rel = (pixel_origin(ndc, VF) - VF.cam_frac.xyz) * VOXEL_M + dir * dist;
+  var visibilite = 1.0;
+  if (ndl > 0.0) { visibilite = shadow_visibility(p_rel, n); }
+  // Vue « ombre » : visibilité en gris ; pourpre (0,25 ; 0 ; 0,25) sur les faces tournées à l'opposé du soleil.
+  if (view == 5u) {
+    if (ndl <= 0.0) { return vec4<f32>(0.25, 0.0, 0.25, 1.0); }
+    return vec4<f32>(visibilite, visibilite, visibilite, 1.0);
+  }
+  if (view == 6u) {
+    var teinte = vec3<f32>(0.45);
+    let c = sh_pick(p_rel, length(p_rel));
+    if (c == 0u) { teinte = vec3<f32>(1.0, 0.25, 0.25); }
+    if (c == 1u) { teinte = vec3<f32>(0.25, 1.0, 0.25); }
+    if (c == 2u) { teinte = vec3<f32>(0.3, 0.4, 1.0); }
+    if (c == 3u) { teinte = vec3<f32>(1.0, 1.0, 0.25); }
+    return vec4<f32>(teinte * (0.35 + 0.65 * visibilite), 1.0);
+  }
   // Soleil : transmittance de l'atmosphère jusqu'à la caméra (approximation : même rayon pour toute la scène),
   // éteint sous l'horizon de la planète.
-  let direct = sunIlluminance() * planetShadow(camR(), F.sunDir.y) * ndl / PI;
+  let direct_plein = sunIlluminance() * planetShadow(camR(), F.sunDir.y) * ndl / PI;
+  let direct = direct_plein * visibilite;
 
   // Ciel : radiance de la LUT dans la direction de la normale (relevée au-dessus de l'horizon), plus le rebond
   // du sol, mélangés selon l'orientation de la face. Aucune occlusion : une face sous le houppier reçoit
@@ -65,7 +84,7 @@ fn oct_decode(packed: u32) -> vec3<f32> {
   let n_haut = normalize(vec3<f32>(n.x, max(n.y, 0.12), n.z) + vec3<f32>(0.0, 0.0005, 0.0));
   let ciel_n = skyAtmo(n_haut);
   let ciel_haut = skyAtmo(vec3<f32>(0.0, 1.0, 0.0));
-  let rebond = 0.18 * (direct * 0.35 + ciel_haut * 0.6);
+  let rebond = 0.18 * (direct_plein * 0.35 + ciel_haut * 0.6);
   let w_haut = clamp(0.5 + 0.5 * n.y, 0.0, 1.0);
   let ambiant = mix(rebond, ciel_n * 0.85, w_haut) * LU.y;
 

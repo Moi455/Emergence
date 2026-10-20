@@ -10,6 +10,8 @@ const TRACE: &str = include_str!("../../shaders/voxel/voxel_trace.wgsl");
 const MATIERE: &str = include_str!("../../shaders/voxel/voxel_material.wgsl");
 const PROFONDEUR: &str = include_str!("../../shaders/voxel/voxel_depth.wgsl");
 const LUMIERE: &str = include_str!("../../shaders/voxel/voxel_light.wgsl");
+const OMBRES_REMPLISSAGE: &str = include_str!("../../shaders/voxel/voxel_shadow_fill.wgsl");
+const OMBRES_ECHANTILLON: &str = include_str!("../../shaders/voxel/voxel_shadow_sample.wgsl");
 const AERIAL: &str = include_str!("../../shaders/sky/aerial.wgsl");
 
 fn assemble(nom: &'static str, morceaux: &[&str]) -> ModuleWgsl {
@@ -34,12 +36,20 @@ pub fn profondeur() -> ModuleWgsl {
 /// Éclairage différé : ciel de Hillaire (struct `Frame`, atmosphère, fonctions du ciel, perspective aérienne) puis éclairage.
 pub fn lumiere() -> ModuleWgsl {
     let base = ciel::base_pour_eclairage();
-    assemble("voxel_light", &[&base, AERIAL, FRAME, LUMIERE])
+    assemble(
+        "voxel_light",
+        &[&base, AERIAL, FRAME, OMBRES_ECHANTILLON, LUMIERE],
+    )
+}
+
+/// Remplissage des cascades d'ombre : uniforme d'image (constantes), monde, DDA partagé, point d'entrée.
+pub fn ombres_remplissage() -> ModuleWgsl {
+    assemble("voxel_shadow_fill", &[FRAME, MONDE, OMBRES_REMPLISSAGE])
 }
 
 /// Tous les modules du rendu voxel (le test `shaders_voxel_validate` les passe à `naga`).
 pub fn tous() -> Vec<ModuleWgsl> {
-    vec![trace(), matiere(), profondeur(), lumiere()]
+    vec![trace(), matiere(), profondeur(), lumiere(), ombres_remplissage()]
 }
 
 #[cfg(test)]

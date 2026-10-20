@@ -7,7 +7,9 @@ use em_core::{Fnv64, VoxelCoord, VoxelValue};
 use em_material::{EvalContext, MaterialEvaluator, eval_albedo_cpu, tint_stone, tint_vegetation, tint_wood};
 
 /// Empreinte épinglée de l'évaluation de 4 096 voxels de chaque classe (albédo, rugosité, translucidité, émission).
-const EMPREINTE_EVALUATION: u64 = 0x4b20_51d3_d4d4_da37;
+/// L23p a ajouté la classe 36 « moss » : sans elle, les 35 autres classes redonnent l'ancienne empreinte
+/// `0x4b2051d3d4d4da37` à la rampe de `cut_stone` près (L23p : rampe à joints bruns) ; le code du mode continu n'a pas bougé.
+const EMPREINTE_EVALUATION: u64 = 0x44cb_4759_4b40_0546;
 
 fn empreinte() -> u64 {
     let table = table_reelle();

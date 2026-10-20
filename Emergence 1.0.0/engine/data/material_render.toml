@@ -26,6 +26,16 @@ hardness = 2
 flammability = 20
 color = "c8402a"
 
+# Mousse du bâti (L23p) : posée par les recettes de mur sur les faces du pied et du dessus. Numéro 36.
+[[extra_class]]
+id = 36
+name = "moss"
+category = "plant"
+density_kg_m3 = 250
+hardness = 1
+flammability = 30
+color = "5e8a34"
+
 [default]
 albedo_var = 0.08
 hue_var = 0.02
@@ -140,6 +150,8 @@ relief = 0.5
 [material.cut_stone]
 tint_mode = "stone_piece"
 detail = "stone_fine"
+# L23p : rampe à joints bruns (sombre = mortier et pierres ombrées), comme `bon pierre.png`
+ramp = ["#4a3a2c", "#b9b09c", "#e6dcc2"]
 [material.rock_trim]
 tint_mode = "stone_piece"
 detail = "stone_fine"
@@ -171,6 +183,13 @@ relief = 0.0
 [material.cloth]
 roughness = 0.95
 detail = "cloth_fine"
+# Mousse (L23p) : la teinte est directement la nuance de vert (ramp128), posée par la recette voxel par voxel.
+[material.moss]
+tint_mode = "ramp128"
+roughness = 0.97
+voxel_jitter = 0.06
+albedo_var = 0.06
+ramp = ["#2f4a1c", "#5e8a34", "#9bb858"]
 
 # ---- Végétation : le sens de la teinte vient des rampes d'essence ----
 [material.vine]
