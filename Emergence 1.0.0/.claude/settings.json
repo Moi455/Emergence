@@ -19,6 +19,7 @@
       "Read(**/*.vxb3)",
       "Read(**/*.vxi)",
       "Read(**/*.vxp)",
+      "Read(**/*.vxm)",
       "Read(**/*.gz)",
       "Read(**/*.zip)",
       "Read(**/*.pt)",

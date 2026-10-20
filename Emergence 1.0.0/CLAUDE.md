@@ -73,6 +73,7 @@ ai/situations/     situations d'amorçage plausibles (avec audit D10)
 ai/teacher/        professeur LLM : rendu, schéma de réponse, validation, pilote et générateur de données
 ai/student2/       l'élève : modèle, étiquettes, entraînement en float16
 ai/research/       bancs d'essai et sondes mesurés (docs/07, docs/09)
+engine-rs/         monde physique en Rust (wgpu, winit) : laboratoire de style, début du moteur du monde (docs/19, 19a, 19b)
 
 Ignorés pour cette session (présents, lisibles sur demande, voir `.claudeignore`) :
 engine/core/{base,world,mesh}, gdext, terrain, em_water   moteur voxel, extension Godot, eau (Rust)

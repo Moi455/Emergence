@@ -30,6 +30,7 @@ out/
 **/*.vxb3
 **/*.vxi
 **/*.vxp
+**/*.vxm
 **/*.gz
 **/*.zip
 **/*.pt
@@ -102,3 +103,9 @@ ai/ETAT.md
 
 # Ancienne simulation à règles (9 oct.) : à remplacer par la boucle Transformer
 sim/
+
+# ---------------------------------------------------------------------------
+# E. À NE PAS ignorer (aucune règle ci-dessus ne doit les couvrir)
+# engine-rs/ : monde physique en Rust, laboratoire de style (docs/19, 19a, 19b), lisible par Claude.
+# Seuls ses binaires et sorties restent ignorés par les règles de A (**/target/, **/captures/, **/*.png, **/*.vxm).
+# ---------------------------------------------------------------------------
