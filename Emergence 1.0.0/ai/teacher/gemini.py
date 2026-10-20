@@ -38,18 +38,19 @@ class ApiKeyLoader:
     """The key comes from the environment, else from a file outside the repository. Accepted file contents: a single
     key, or a line GEMINI_API_KEY=... (optionally 'export ' and quotes). Other lines are ignored."""
 
-    def __init__(self, env: dict | None = None, path: Path | None = None):
+    def __init__(self, env: dict | None = None, path: Path | None = None, env_var: str = ENV_VAR):
         self.env = os.environ if env is None else env
         self.path = Path(path) if path is not None else DEFAULT_KEY_FILE
+        self.env_var = env_var                      # another provider: GROQ_API_KEY, OPENROUTER_API_KEY
 
     def load(self) -> str:
-        k = self.env.get(ENV_VAR, "").strip()
+        k = self.env.get(self.env_var, "").strip()
         if k:
             return k
         if not self.path.exists():
-            raise ApiKeyError(f"no key: set {ENV_VAR} or put it in {self.path} (permissions 600)")
+            raise ApiKeyError(f"no key: set {self.env_var} or put it in {self.path} (permissions 600)")
         self.check_permissions()
-        key = self.parse(self.path.read_text())
+        key = self.parse(self.path.read_text(), self.env_var)
         if not key:
             raise ApiKeyError(f"no key found in {self.path}")
         return key
@@ -60,13 +61,13 @@ class ApiKeyLoader:
             raise ApiKeyError(f"{self.path} is readable by others (mode {mode:o}); run: chmod 600 {self.path}")
 
     @staticmethod
-    def parse(text: str) -> str:
+    def parse(text: str, env_var: str = ENV_VAR) -> str:
         loose = []
         for line in text.splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            m = re.match(rf"^(?:export\s+)?{ENV_VAR}\s*=\s*(.+)$", line)
+            m = re.match(rf"^(?:export\s+)?{re.escape(env_var)}\s*=\s*(.+)$", line)
             if m:
                 return m.group(1).strip().strip("'\"")
             if "=" not in line and " " not in line:
@@ -83,7 +84,7 @@ class Redactor:
     def clean(self, text: str) -> str:
         if self.secret and len(self.secret) >= 8:
             text = text.replace(self.secret, "<key>")
-        return re.sub(r"AIza[0-9A-Za-z_\-]{20,}", "<key>", text)
+        return re.sub(r"(?:AIza|gsk_|sk-or-(?:v1-)?)[0-9A-Za-z_\-]{20,}", "<key>", text)     # Google, Groq, OpenRouter key shapes
 
 
 # ---------------------------------------------------------------------------------------------------- limits
@@ -347,6 +348,8 @@ class ApiResult:
     quota_scope: str = ""          # "day" | "minute" | "" (for a 429)
     retry_after: float = 0.0
     quota_violations: list = field(default_factory=list)   # QuotaFailure violations of a 429 (quotaMetric, quotaId, quotaValue...)
+    rate_limit: dict = field(default_factory=dict)         # X-RateLimit-* / Retry-After headers of other providers (providers.py)
+    refusal: str = ""                                      # the model's own refusal text (providers.py), counted, never worked around
 
 
 class GeminiClient:

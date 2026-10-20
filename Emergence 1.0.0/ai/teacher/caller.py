@@ -103,8 +103,8 @@ class ModelCaller:
     @staticmethod
     def system_for(system, spec) -> str:
         """The fixed instructions this model gets: the compact variant (`system.compact`) for a model flagged `compact`."""
-        compact = getattr(system, "compact", None)
-        return compact if (compact is not None and getattr(spec, "compact", False)) else str(system)
+        pick = getattr(system, "pick", None)
+        return pick(spec) if pick is not None else str(system)
 
     def __call__(self, system: str, user: str, schema: dict):
         """-> (model, ApiResult) for an answer with HTTP 200 (even without text), None when stopped or capped."""
@@ -155,7 +155,8 @@ class ModelCaller:
             entry = book.begin(now, book.estimate_input(chars))   # counted and on disk BEFORE it leaves: a crash cannot hide a spent request
         self.stats.requests += 1
         self.last_prompt_chars = len(system) + len(user)
-        r = self.client.generate(model, system, user, schema, self.temperature, self.max_output_tokens, spec.thinking_budget)
+        r = self.client.generate(model, system, user, schema, self.temperature, spec.max_output or self.max_output_tokens,
+                                 spec.thinking_budget)
         now = self.pacer.clock()
         pause = 0.0
         if spent_at:                                         # when does the daily quota really reopen? every retry is journaled
@@ -170,7 +171,8 @@ class ModelCaller:
                 book.client_errors = 0
                 return r
             book.settle(entry, 0)
-            self.event({"kind": "error", "model": model, "http": r.status, "scope": r.quota_scope, "error": r.error[:300]})
+            self.event({"kind": "error", "model": model, "http": r.status, "scope": r.quota_scope, "error": r.error[:300],
+                        **({"rate_limit": r.rate_limit} if r.rate_limit else {})})
             if r.status == 429:
                 self.stats.errors_429 += 1
                 real = self.desk.learn_from_violations(model, r.quota_violations)       # an alias joins the pool the 429 names
@@ -181,7 +183,7 @@ class ModelCaller:
             elif r.status == 404:
                 book.exhaust(now, "not found", until=now + 24 * 3600)
                 self.log(f"{model}: 404, set aside for a day")
-            elif r.status in (400, 401, 403):
+            elif r.status in (400, 401, 402, 403, 413, 422):       # 402 payment/credits required, 413 request too large: never retried blindly
                 self.stats.errors_other += 1
                 self._client_error(model, book, now, r)
             else:                                        # 5xx, network (0): stays COUNTED (a timeout may have reached Google); only the pause differs

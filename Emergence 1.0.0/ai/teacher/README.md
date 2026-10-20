@@ -175,3 +175,27 @@ Cadre de Monsieur : le professeur est l'occasion de **distiller la psychologie h
 - TPM : visée 80 % de la limite, entrée + sortie + réflexion (`tpm_counts = "input"` pour Gemma, dont la métrique Google est l'entrée seule) ; une requête seule peut aller à 92 %.
 - Gemma (30 req/min, 16 000 jetons/min, 14 400/jour) : texte compact (`compact = true`, 12 phrases d'exemple, schéma sans énumérations répétées) : 13 997 jetons pour 2 situations (plein : 15 115 > 92 % de 16 000, donc 1 situation). Voie de secours (`max_k`), réparation conservée sur le même modèle. Désactivés par défaut : essai du 15 oct. non concluant (API Gemma en erreur 500/503, même pour une requête de 2 jetons). Activables : `--models gemma-4-26b-a4b-it,gemma-4-31b-it`, un processus par modèle pour le parallèle.
 - Quota JOURNALIER (15 oct., soir) : un 429 « par jour » ne ferme plus le pool jusqu'à minuit (des pools ont répondu 200 après leur 500e requête). Le pool est retenté après 10, 20, 30 puis toutes les 60 min (la requête réelle sert de sonde) et rouvre dès qu'elle passe ; le compteur local de requêtes n'est plus un mur ; seul un `quotaValue` de 0 ferme pour la journée. Chaque essai (429/200) est dans `probe_log` du carnet, dans le journal (`kind: probe`) et dans `--status` : on lit QUAND le quota se rouvre.
+
+## Autres professeurs : Groq et OpenRouter (16 oct.)
+
+Code : `providers.py` (`OpenAICompatClient`, `ProviderRouter`, `LimitReader`, `RefusalDetector`, `JsonObjectStrategy`), champs `provider`, `max_output`, `reasoning_effort`, `minimal`, `json_object` de `quota.toml`, texte de consignes MAIGRE (`BatchInstructions(lean_phrasebook=...)`, sans WRITES ni WORDS), `--provider groq|openrouter` du générateur (la chaîne d'une exécution est celle d'UN fournisseur ; le défaut `gemini` laisse les séries en cours inchangées ; Groq/OpenRouter tournent dans leur propre processus et série, sur le même carnet global), `probe --provider`, `bench --planner --repair --name`. Clés : `~/.config/emergence/Groq_Key`, `OpenRouter_Key` (600), seulement dans `Authorization: Bearer`, toutes nettoyées par le `Redactor`. Le champ `teacher` est `provider/modèle`. Un refus de contenu du modèle est COMPTÉ et la réparation n'est jamais demandée après lui.
+
+**[Mesuré 16 oct.]** mêmes 6 situations, mode planificateur, réparation permise (`essai_providers/bench.json`, réponses brutes dans `bench_raw*.jsonl`) :
+
+| Modèle | Valides 1er coup / après réparation | Pensées non vides | Latence | Décision |
+|---|---|---|---|---|
+| openrouter nemotron-3-super-120b | 6/6 / 6/6 (K=15 : 15/15) | 1/6 (K=15 : 0/15) | 284 s (K=15 : 245 s) | **actif** |
+| openrouter cohere/north-mini-code | 6/6 / 6/6 | 0/6 | 300 s | actif (secours) |
+| nemotron-3.5-lightning / laguna-s / dots-3-note / lfm-2.5-2.6b | 0/6 / 0/6 | 0 | 49 à 1 043 s | écartés |
+| nemotron-3-ultra | 504 après 300 s | - | - | écarté |
+| laguna-xs | pas de décision, puis 429 amont | - | - | écarté |
+| inkling, inkling-small | 403 « agentic harnesses only » | - | - | écartés |
+| groq gpt-oss-20b / 120b | 4/6 / 3/6 (2 situations sur 6 : 413 trop gros pour 8 000 jetons/min) | 0 | 1 à 6 s | écartés |
+| groq qwen3.8-27b | 0/6 (6 x 413) | - | - | écarté |
+| groq gpt-oss-safeguard-20b | non envoyé (2 000 jetons/min < consignes) | - | - | écarté |
+
+Aucun refus de contenu (violence) observé. Limites confirmées : Groq 1 000 requêtes/jour et 8 000 jetons/min (en-têtes `x-ratelimit-*`) ; OpenRouter : `GET /api/v1/key` donne `free_model_daily_requests.limit = 50` par jour pour TOUS les `:free` (un seul pool `openrouter/free-pool`), pas d'en-têtes X-RateLimit sur les 200.
+
+**Étiquettes/jour réalisables.** Groq : texte maigre ~5 300 jetons + situation 1 800 à 3 300 + sortie ~250 = 7 100 à 8 400 par requête, K=1, donc au plus 200 000 / 7 300 ≈ 27 étiquettes/jour/modèle, et seules ~2/3 des situations passent (biais vers les courtes) : ≈ 54 par jour pour deux modèles, de qualité faible (0 pensée) : non activé. OpenRouter : 50 requêtes/jour x K=15 = **750 étiquettes/jour** (jusqu'à 1 000 avec K=20 si la sortie ne tronque pas), en ~4 h de calcul (245 s par requête) ; à comparer aux ~3 000 de Gemini Flash Lite. Lancer : `python3 -m teacher.generator --name serie_planner_openrouter --provider openrouter --planner --no-max-items --k 15 --call`.
+
+**Faiblesse connue** : les pensées écrites sont presque toujours vides chez ces modèles (le planificateur « paresseux ») : à surveiller avant de mélanger ces lignes au corpus.

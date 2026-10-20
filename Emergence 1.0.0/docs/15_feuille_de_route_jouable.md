@@ -384,6 +384,12 @@ Chemins critiques : jusqu'à J2, **T08a → T08c → T09 → T26 → T27 → T29
 - Taille : L.
 - Piège : les arrondis des codecs numériques.
 
+**T28b : ContextBuilder, de l'état d'un PNJ aux dossiers (livré 16 oct.)**
+- Dossiers : `engine/social/tokenizer/` (`context_builder.*`, `gen_tok2.py` écrit aussi `context_map_gen.h`, `make_context_corpus.py`).
+- Interface : `NpcBundle` (état, table annexe, arène) + liens de perception + cause de réveil -> `DecisionContext` -> `Tokenizer` de T28 ; sélection par saillance entière (64/32/24 candidats, puis budget par type), fantômes, `WAKE`.
+- Acceptation mesurée : sur 3 000 et 6 000 situations du sampler (quantifiées sur la grille de l'état), 0 écart avec l'oracle Python (empreinte, nombre de jetons, fantômes) quand le dossier garde le choix du sampler ; avec la saillance, mêmes ensembles de dossiers (100 %), mêmes jetons à l'ordre près (l'ordre du sampler est son numérotage, pas une saillance) ; plus de 4 000 contextes/s à 1 fil (construction + mise en jetons) ; un test réécrit toute variable sans jeton (la vérité) et exige le même contexte.
+- Conventions que le catalogue ne fixe pas encore (voir l'en-tête de `context_builder.h`) : marqueurs « inconnu » dans l'état, étiquette de genre dans les pointeurs, listes d'enregistrements (`inv_seen`, `commitments_seen`, `tastes`, `heard_unprocessed`), cible du plan en tête de `i_step_targets`. À figer au catalogue (variable `i_target`, listes typées) avec T23 (la perception écrit encore `0` pour « inconnu » et des mots pour `pc_props_seen`).
+
 **T29 : API C et liaison Python**
 - Dossiers : `engine/capi/`, `ai/enginepy/`.
 - Dépendances : T27, T28.

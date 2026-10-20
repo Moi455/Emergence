@@ -203,3 +203,183 @@ name = "antigravity-preview-09-2026"
 enabled = false
 pool = "antigravity-preview-latest"
 note = "400 : agent, Interactions API seulement"
+
+# ======================================================================================================================
+# AUTRES FOURNISSEURS (16 oct. 2026) : Groq et OpenRouter, quota GRATUIT, cles hors du depot (~/.config/emergence/Groq_Key,
+# OpenRouter_Key, droits 600). Un modele s'appelle `<fournisseur>/<id de l'API>` et ce nom entier est le `teacher` des lignes
+# du dataset. `provider` est obligatoire ; la CHAINE d'une execution est celle d'UN fournisseur (`--provider groq|openrouter`,
+# defaut gemini) : leurs reponses sont lentes, elles tournent dans leur propre processus et leur propre serie, sur le meme carnet
+# global. Champs propres : max_output (jetons demandes pour la reponse ; Groq les compte dans le TPM), reasoning_effort,
+# minimal (texte de consignes MAIGRE : ni WRITES ni WORDS, 8 phrases), json_object (response_format json_object).
+# TOUS sont enabled = false jusqu'a preuve (essai du 16 oct. : README.md, section "Autres professeurs") ; la raison est dans `note`.
+#
+# GROQ (console de Monsieur) : 30 req/min, 1 000 req/jour, 8 000 jetons/min, 200 000 jetons/jour par modele ; safeguard : 3 / 1 000 /
+# 2 000 / 200 000. Le TPM de 8 000 interdit les consignes pleines (~8 000 jetons) : texte `minimal`, 1 situation par requete.
+# ======================================================================================================================
+
+[[model]]
+name = "groq/openai/gpt-oss-120b"
+provider = "groq"
+enabled = false
+note = "essai 16 oct. (6 situations, K=1, texte maigre) : 3 valides sur 6, 2 situations trop grosses pour 8 000 jetons/min (413), pensees vides 0/3 ; NON viable"
+rpm = 30
+rpd = 1000
+tpm = 8000
+tpd = 200000
+max_k = 1
+minimal = true
+json_object = true
+json_schema = false                    # le schema complet (4 300 caracteres) ne tient pas dans 8 000 jetons/min : texte compact dans le prompt
+compact = true
+max_output = 2000
+reasoning_effort = "low"
+
+[[model]]
+name = "groq/openai/gpt-oss-20b"
+provider = "groq"
+enabled = false
+note = "essai 16 oct. : 4 valides sur 6 (67 %), 2 situations 413 (trop grosses), pensees vides 0/4, ~27 etiquettes/jour (TPD 200 000 / ~7 400) ; NON viable"
+rpm = 30
+rpd = 1000
+tpm = 8000
+tpd = 200000
+max_k = 1
+minimal = true
+json_object = true
+json_schema = false                    # le schema complet (4 300 caracteres) ne tient pas dans 8 000 jetons/min : texte compact dans le prompt
+compact = true
+max_output = 2000
+reasoning_effort = "low"
+
+[[model]]
+name = "groq/qwen/qwen3.8-27b"
+provider = "groq"
+enabled = false
+note = "essai 16 oct. : 0/6, toutes 413 (son tokeniseur pese plus : >8 000 jetons) ; NON viable"
+rpm = 30
+rpd = 1000
+tpm = 8000
+tpd = 200000
+max_k = 1
+minimal = true
+json_object = true
+json_schema = false                    # le schema complet (4 300 caracteres) ne tient pas dans 8 000 jetons/min : texte compact dans le prompt
+compact = true
+max_output = 2000
+reasoning_effort = "none"
+
+[[model]]
+name = "groq/openai/gpt-oss-safeguard-20b"
+provider = "groq"
+enabled = false
+note = "2 000 jetons/min : les consignes maigres (~7 000 jetons) ne passent jamais ; classificateur de securite, pas un etiqueteur ; NON viable (non envoye)"
+rpm = 3
+rpd = 1000
+tpm = 2000
+tpd = 200000
+max_k = 1
+minimal = true
+json_object = true
+json_schema = false                    # le schema complet (4 300 caracteres) ne tient pas dans 8 000 jetons/min : texte compact dans le prompt
+compact = true
+max_output = 1000
+reasoning_effort = "low"
+
+# OPENROUTER : modeles `:free` (pricing prompt = completion = 0 dans GET /api/v1/models). La limite est celle du COMPTE, pas du
+# modele : `GET /api/v1/key` donne free_model_daily_requests = 50 par jour (mesure du 16 oct.), un seul POOL pour tous les `:free`.
+# rpm : environ 20 (a confirmer par les en-tetes X-RateLimit-* et les 429). Contextes de 256 000 a 1 000 000 jetons : lots K de 15 a 30.
+
+[[model]]
+name = "openrouter/free-pool"
+provider = "openrouter"
+enabled = false
+note = "ancre du pool unique des modeles :free (50 requetes par jour pour le compte) ; jamais interroge"
+rpm = 20
+rpd = 50
+
+[[model]]
+name = "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "essai 16 oct. : 504 timeout apres 300 s (1 requete depensee) ; ecarte"
+json_schema = false                    # GET /models : pas de response_format pour ce modele : schema dans le prompt
+max_output = 32000
+
+[[model]]
+name = "openrouter/nvidia/nemotron-3.5-lightning:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "essai 16 oct. : 0/6 (reponse vide puis vide apres reparation), 1 043 s, 2 requetes ; ecarte"
+json_schema = false                    # GET /models : pas de response_format pour ce modele : schema dans le prompt
+max_output = 32000
+
+[[model]]
+name = "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = true
+note = "ACTIF. essai 16 oct. : K=6 6/6 valides au 1er coup (284 s, 1 pensee non vide sur 6) ; K=15 15/15 (245 s, 1 requete, 0 pensee non vide, 7 % passifs) ; aucun refus de contenu. Lancer : --provider openrouter --k 15 --planner"
+max_output = 64000
+
+[[model]]
+name = "openrouter/poolside/laguna-s-2.1:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "essai 16 oct. : 0/6 (bad_shape), reflexion jusqu'a MAX_TOKENS (32 000), 588 s ; ecarte"
+json_schema = false                    # GET /models : pas de response_format pour ce modele : schema dans le prompt
+max_output = 32000
+
+[[model]]
+name = "openrouter/poolside/laguna-xs-2.1:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "essai 16 oct. : 1re reponse sans decision exploitable puis 429 amont ; ecarte"
+json_schema = false                    # GET /models : pas de response_format pour ce modele : schema dans le prompt
+max_output = 32000
+
+[[model]]
+name = "openrouter/thinkingmachines/inkling:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "403 : 'only available on agentic harnesses' (pas un chat completions) ; ecarte"
+json_schema = false                    # GET /models : pas de response_format pour ce modele : schema dans le prompt
+max_output = 32000
+
+[[model]]
+name = "openrouter/thinkingmachines/inkling-small:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "403 : 'only available on agentic harnesses' ; ecarte"
+json_schema = false                    # GET /models : pas de response_format pour ce modele : schema dans le prompt
+max_output = 32000
+
+[[model]]
+name = "openrouter/dots-studio/dots-3-note-preview:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "essai 16 oct. : 0/6 meme apres reparation (bad_thought 4, bad_plan 2), 186 s ; ecarte"
+max_output = 32000
+
+[[model]]
+name = "openrouter/cohere/north-mini-code:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = true
+note = "ACTIF (secours de nemotron-3-super, meme pool). essai 16 oct. : 6/6 valides au 1er coup, 300 s, 0 pensee non vide ; aucun refus de contenu"
+json_schema = false                    # GET /models : pas de response_format pour ce modele : schema dans le prompt
+max_output = 32000
+
+[[model]]
+name = "openrouter/liquid/lfm-2.5-2.6b:free"
+provider = "openrouter"
+pool = "openrouter/free-pool"
+enabled = false
+note = "essai 16 oct. : 0/6, sortie tronquee (MAX_TOKENS 8 000), 5 decisions manquantes ; ecarte"
+max_output = 8000

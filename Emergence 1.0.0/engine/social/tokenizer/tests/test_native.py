@@ -67,10 +67,33 @@ class Firewall(unittest.TestCase):
 
     def test_tokenizer_never_includes_the_state(self):
         for p in self.sources:
-            if p.name in ("candidates.cpp", "candidates.h"):
+            if p.name in ("candidates.cpp", "candidates.h", "context_builder.cpp", "context_builder.h"):
                 continue
             self.assertNotIn("npc_state_gen", p.read_text(), p.name)
             self.assertNotIn("npc_store.h", p.read_text(), p.name)
+
+
+class ContextBuilderFirewall(unittest.TestCase):
+    """T28b: the ContextBuilder reads the NPC's state through the variables of the generated list only, and every one of them
+    has a token (or is a derived source declared in gen_tok2.py): never an objective variable, never a variable without token."""
+
+    def test_variables_named_in_the_builder(self):
+        from schema import Catalogue
+        vs = Catalogue.load().entries["variable"]
+        text = re.sub(r"//.*", "", (TOK / "src" / "context_builder.cpp").read_text())
+        gen = (TOK / "generated" / "context_map_gen.h").read_text()
+        listed = set(re.findall(r'SourceDef\{"[A-Z_]*", "[^"]*", "([a-z_0-9]+)"\}', gen))
+        named = {w for w in re.findall(r'"([a-z][a-z_0-9]*)"', text) if w in vs}
+        engine = {v.id for v in vs.values() if v.visibility == "engine"}
+        self.assertEqual(sorted(named & engine), [], "the builder names an objective variable")
+        self.assertEqual(sorted(named - listed), [], "variables read by the builder but absent from the generated list")
+        for v in listed:
+            if v in vs:
+                self.assertNotEqual(vs[v].visibility, "engine", v)
+
+    def test_map_is_up_to_date(self):
+        r = subprocess.run([sys.executable, str(TOK / "gen_tok2.py"), "--check"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
 
 
 @unittest.skipIf(NATIVE is None, "libemergence_tok2_capi.so not built")

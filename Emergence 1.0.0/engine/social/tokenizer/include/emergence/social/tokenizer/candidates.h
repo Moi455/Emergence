@@ -13,7 +13,7 @@
 
 namespace em::social::tok2 {
 
-inline constexpr int kMaxBeliefCandidates = 64, kMaxMemoryCandidates = 32, kMaxPersonCandidates = 24;
+inline constexpr int kMaxBeliefCandidates = 64, kMaxMemoryCandidates = 32, kMaxPersonCandidates = 24, kMaxGroupCandidates = 8;
 
 struct Candidate {
   MRef ref;                  // the NPC's own record (serial): the key of the dossier is b:<serial>, m:<serial>, @E<serial>
@@ -21,14 +21,14 @@ struct Candidate {
 };
 
 struct Candidates {
-  std::vector<Candidate> beliefs, memories, persons;   // most salient first; at most 64, 32, 24
-  void clear() { beliefs.clear(); memories.clear(); persons.clear(); }
+  std::vector<Candidate> beliefs, memories, persons, groups;   // most salient first; at most 64, 32, 24, 8 (groups are files with a group kind)
+  void clear() { beliefs.clear(); memories.clear(); persons.clear(); groups.clear(); }
 };
 
 class CandidateSelector {
  public:
   // `now`: game seconds. Reads nothing but the token views.
-  void select(const gen::NpcState& npc, GameTime now, Candidates& out) const;
+  void select(const em::social::gen::NpcState& npc, GameTime now, Candidates& out) const;
 };
 
 }  // namespace em::social::tok2

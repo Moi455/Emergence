@@ -83,6 +83,9 @@ template <class T, int N>
 class RecordPool {
  public:
   static constexpr int kCapacity = N;
+  // Serials stay below 2^23: the top byte of an MRef carries the kind of record (context_builder.h) and bit 23 keeps a group
+  // file apart from a person file. Serials are never recycled: at the limit add() refuses (MRef{0}, counted), it never wraps.
+  static constexpr std::uint32_t kSerialMax = 0x7FFFFFu;
   using value_type = T;
 
   // The law of the catalogue: found by ADL on the generated record type T (forgetting_kind/score/protected).
@@ -100,6 +103,7 @@ class RecordPool {
   }
   template <class Score, class Protected>
   MRef add(const T& rec, Score&& score, Protected&& is_protected) {
+    if (next_serial_ >= kSerialMax) { ++serial_refused_; return MRef{}; }
     int slot = -1;
     for (int i = 0; i < N; ++i)
       if (serial_[i] == 0) { slot = i; break; }
@@ -123,6 +127,7 @@ class RecordPool {
     ++count_;
     return MRef{serial_[slot]};
   }
+  int serial_refused() const { return serial_refused_; }         // additions refused because the serials are used up
   int forgotten() const { return forgotten_; }                    // records dropped by the law (protected ones included)
   int evicted_protected() const { return evicted_protected_; }   // of which protected, because every record was
 
@@ -193,6 +198,7 @@ class RecordPool {
   int count_ = 0;
   int evicted_protected_ = 0;
   int forgotten_ = 0;
+  int serial_refused_ = 0;
 };
 
 }  // namespace em::social

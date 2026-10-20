@@ -24,6 +24,7 @@ from typing import Callable
 
 from .gemini import ApiResult
 from .phrasebook import PhraseBook
+from .providers import RefusalDetector
 from .render import SituationRenderer
 from .schema import EXAMPLES, MAX_WHY_WORDS, PLANNER_EXAMPLE, DecisionSchema, InstructionBuilder
 from .toolkit import Toolkit
@@ -36,8 +37,9 @@ NOT_REPAIRED = ("governor:d10", "truth_error")        # D10 is never negotiated;
 class BatchInstructionBuilder(InstructionBuilder):
     """The single-situation instructions, with the answer format of a batch and the phrasebook before the examples."""
 
-    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None, vocabulary: str = "full", thoughts: bool = False):
-        super().__init__(tk, vocabulary, thoughts=thoughts)
+    def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None, vocabulary: str = "full", thoughts: bool = False,
+                 lean: bool = False):
+        super().__init__(tk, vocabulary, thoughts=thoughts, lean=lean)
         self.phrasebook = phrasebook
 
     def answer_format(self) -> str:
@@ -83,6 +85,15 @@ class VariantText(str):
     """The fixed instructions (the str itself) with a `compact` variant for the models that are flagged `compact` in
     quota.toml; the model caller picks one once it knows which model answers."""
     compact: str | None = None
+    minimal: str | None = None
+
+    def pick(self, spec) -> str:
+        """The text a model of quota.toml gets: the lean one (`minimal`), the compact one (`compact`) or the full one."""
+        if getattr(spec, "minimal", False) and self.minimal is not None:
+            return self.minimal
+        if getattr(spec, "compact", False) and self.compact is not None:
+            return self.compact
+        return str(self)
 
 
 class BatchInstructions:
@@ -91,15 +102,22 @@ class BatchInstructions:
     format and rules; only the sample sentences are fewer. The schema text sent to such a model is compact too (gemini.SchemaText)."""
 
     def __init__(self, tk: Toolkit, phrasebook: PhraseBook | None = None, vocabulary: str = "full", thoughts: bool = False,
-                 compact_phrasebook: PhraseBook | None = None):
+                 compact_phrasebook: PhraseBook | None = None, lean_phrasebook: PhraseBook | None = None):
         self.builder = BatchInstructionBuilder(tk, phrasebook, vocabulary, thoughts)
+        self.lean_builder = (BatchInstructionBuilder(tk, lean_phrasebook, "none", thoughts, lean=True)
+                             if lean_phrasebook is not None else None)
+        self._lean: str | None = None
         self.compact_builder = (BatchInstructionBuilder(tk, compact_phrasebook, vocabulary, thoughts)
                                 if compact_phrasebook is not None else None)
         self._text: str | None = None
         self._compact: str | None = None
 
-    def text(self, compact: bool = False) -> str:
-        """The instructions; `compact=True` the compact variant (the full one when none was asked for)."""
+    def text(self, compact: bool = False, minimal: bool = False) -> str:
+        """The instructions; `compact=True` the compact variant, `minimal=True` the lean one (the full one when none was asked for)."""
+        if minimal and self.lean_builder is not None:
+            if self._lean is None:
+                self._lean = self.lean_builder.build()
+            return self._lean
         if compact and self.compact_builder is not None:
             if self._compact is None:
                 self._compact = self.compact_builder.build()
@@ -112,7 +130,12 @@ class BatchInstructions:
         """The full text, carrying the compact one: what GroupedRound hands to the caller."""
         out = VariantText(self.text())
         out.compact = self.text(True) if self.compact_builder is not None else None
+        out.minimal = self.text(minimal=True) if self.lean_builder is not None else None
         return out
+
+    def for_spec(self, spec) -> str:
+        """The text this quota.toml model gets (see VariantText.pick)."""
+        return self.text(bool(getattr(spec, "compact", False)), bool(getattr(spec, "minimal", False)))
 
 
 # ---------------------------------------------------------------------------------------------------- schema
@@ -270,7 +293,11 @@ class GroupedRound:
         self._judge(slots, rec, first=True)
         todo = [s for s in slots if s.repairable]
         if todo and self.repair:
-            if not self.can_call():
+            if rec.result.status != 200:
+                out.skipped_repair = "no reply"                # an error answer (bench only: the generator's caller returns 200s)
+            elif RefusalDetector.of(rec.result):
+                out.skipped_repair = "content refusal"         # the model refused the content: never asked again, never worked around
+            elif not self.can_call():
                 out.skipped_repair = "request cap reached"
             else:
                 again = self._request("repair", todo, self.prompt.render_repair(todo))

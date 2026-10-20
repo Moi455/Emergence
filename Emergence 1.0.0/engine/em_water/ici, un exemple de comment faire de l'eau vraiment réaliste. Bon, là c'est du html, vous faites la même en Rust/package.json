@@ -1,0 +1,15 @@
+{
+  "name": "web-ocean",
+  "version": "1.0.0",
+  "description": "Real-time WebGPU ocean renderer: FFT waves, whitecaps, physically based sunset sky.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

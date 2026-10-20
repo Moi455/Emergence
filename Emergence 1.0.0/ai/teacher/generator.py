@@ -36,7 +36,8 @@ from pathlib import Path
 from .batch import BatchInstructions, BatchPrompt, BatchSchema, GroupedRound, RoundResult
 from .caller import FatalError, LaneBusy, ModelCaller, Pacer
 from .dataset import LabelRecord
-from .gemini import ApiKeyError, ApiKeyLoader, GeminiClient, Redactor
+from .gemini import ApiKeyError, Redactor
+from .providers import ProviderRouter, Providers
 from .phrasebook import DEFAULT_COUNT, PhraseBook
 from .quota import DEFAULT_CONFIG, FAR, LEDGER_NAME, PacificDay, QuotaConfig, QuotaDesk
 from .render import SituationRenderer
@@ -56,6 +57,7 @@ LANE_PAUSE = 120.0              # a small-batch model that could not answer when
 LANE_DEFER = 20.0               # a small-batch model takes a round only when no other model can answer within this many seconds
 LANE_WAIT = 90.0                # ... and the round waits for it at most this long (unless it is the only kind of model there is)
 COMPACT_PHRASES = 12            # sample sentences in the compact instructions (30 in the full ones)
+LEAN_PHRASES = 8                # ... and in the lean ones (models flagged `minimal`: ~8 000 tokens a minute)
 SITUATION_CHARS = 6500          # first guess of the rendered size of one situation (the real mean is learned from the rounds)
 MAX_CRASHES = 5                 # rounds in a row that raised an unexpected exception: stop
 
@@ -164,7 +166,8 @@ class Generator:
         self._check_mode()
         self.phrasebook = PhraseBook(self.tk, phrases)
         self.instructions = BatchInstructions(self.tk, self.phrasebook, thoughts=planner, compact_phrasebook=(
-            PhraseBook(self.tk, COMPACT_PHRASES) if any(s.compact for s in quota_config.models) else None))
+            PhraseBook(self.tk, COMPACT_PHRASES) if any(s.compact for s in quota_config.models) else None),
+            lean_phrasebook=PhraseBook(self.tk, LEAN_PHRASES) if any(s.minimal for s in quota_config.models) else None)
         self.renderer = SituationRenderer(self.tk)
         self.round = GroupedRound(self.instructions, BatchSchema(self.schema_single), BatchPrompt(self.renderer),
                                   AnswerValidator(self.tk), self.caller, self.caller.can_call, repair,
@@ -300,13 +303,13 @@ class Generator:
         k = min(self.k, spec.max_k or self.k)
         if not alone:
             return k
-        fixed = (len(self.instructions.text(spec.compact)) + len(json.dumps(self.round.schema.response_schema(k))) + 200) * book.tokens_per_char
+        fixed = (len(self.instructions.for_spec(spec)) + len(json.dumps(self.round.schema.response_schema(k))) + 200) * book.tokens_per_char
         per = self._situation_chars * book.tokens_per_char
         return max(1, min(k, int((alone - book.out_estimate - fixed) / per)))
 
     def lane_chars(self, name: str) -> int:
         k = self.lane_k(name)
-        return (len(self.instructions.text(self.desk.spec(name).compact)) + len(json.dumps(self.round.schema.response_schema(k)))
+        return (len(self.instructions.for_spec(self.desk.spec(name))) + len(json.dumps(self.round.schema.response_schema(k)))
                 + 200 + k * int(self._situation_chars))
 
     def _earliest(self, now: float, lane: bool) -> tuple:
@@ -316,7 +319,7 @@ class Generator:
             if bool(self.desk.spec(name).max_k) != lane or (lane and self._lane_until.get(name, 0.0) > now):
                 continue
             book = self.desk.books[name]
-            chars = self.lane_chars(name) if lane else len(self.instructions.text(self.desk.spec(name).compact)) + self.k * int(self._situation_chars) + 1500
+            chars = self.lane_chars(name) if lane else len(self.instructions.for_spec(self.desk.spec(name))) + self.k * int(self._situation_chars) + 1500
             at = book.available_at(now, book.estimate_input(chars))
             if at < best[0] - 0.25 or (at == best[0] and lane and book.last_sent < self.desk.books[best[1]].last_sent):
                 best = (at, name)
@@ -401,7 +404,7 @@ class Generator:
             valid += 1
         first = res.requests[0]
         if first.labels:
-            seen = (first.prompt_chars - len(self.instructions.text(self.desk.spec(first.model).compact))) / len(first.labels)
+            seen = (first.prompt_chars - len(self.instructions.for_spec(self.desk.spec(first.model)))) / len(first.labels)
             if seen > 0:
                 self._situation_chars = 0.8 * self._situation_chars + 0.2 * seen
         self.dataset.append(lines)
@@ -462,9 +465,13 @@ class Generator:
                "prompt_chars": rq.prompt_chars, "asked": len(rq.labels), "answered": len(rq.answer.items),
                "problem": rq.answer.problem, "duplicates": rq.answer.duplicates, "unknown_ids": rq.answer.unknown,
                "fp": self._fp(), "cursor": [self.cursor.seed, self.cursor.index], "results": results,
-               "raw": Redactor(getattr(self.caller.client, "key", "")).clean(r.text)}
+               "raw": getattr(self.caller.client, "redactor", Redactor("")).clean(r.text)}
         if self.desk.spec(rq.model).compact:             # only a compact request carries the key: the other journals are unchanged
             rec["compact"] = True
+        if r.rate_limit:                                 # other providers: the limits they announce (X-RateLimit-*), to confirm quota.toml
+            rec["rate_limit"] = r.rate_limit
+        if r.refusal:                                    # the model's own refusal of the content: counted, never worked around
+            rec["refusal"] = getattr(self.caller.client, "redactor", Redactor("")).clean(r.refusal)
         return rec
 
     def _family(self, gesture: str) -> str:
@@ -540,6 +547,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--seed", type=int, default=0, help="first seed of a NEW series (a resumed series keeps its own)")
     ap.add_argument("--days", type=float, default=None, help="stop after this many days since the series began (default: no end)")
     ap.add_argument("--max-requests", type=int, default=None, help="hard cap of requests in this process (repairs included)")
+    ap.add_argument("--provider", choices=("gemini", "groq", "openrouter"), default="gemini",
+                    help="the chain of this run: the enabled models of ONE provider (default gemini: the running series are unchanged). "
+                         "Groq / OpenRouter run in their own process and series (their replies are slow), on the same shared ledger")
     ap.add_argument("--models", default="", help="comma-separated models, in order of preference (default: quota.toml)")
     ap.add_argument("--quota-file", type=Path, default=DEFAULT_CONFIG, help="known free-tier limits")
     ap.add_argument("--ledger", type=Path, default=None,
@@ -578,6 +588,9 @@ def selfcheck() -> int:
         problems.append("the planner instructions are suspiciously short")
     if not 5000 < len(planner.text(True)) < len(planner.text()):
         problems.append("the compact instructions are not shorter than the full ones")
+    lean = BatchInstructions(tk, pb, thoughts=True, lean_phrasebook=PhraseBook(tk, LEAN_PHRASES)).text(minimal=True)    # lean text (Groq) loads too
+    if not 3000 < len(lean) < len(planner.text(True)) - 4000:
+        problems.append("the lean instructions are not much shorter than the compact ones")
     if len(phrases) < 10:
         problems.append(f"only {len(phrases)} valid sentences in the phrasebook")
     if len(text) < 5000:
@@ -621,7 +634,7 @@ def main(argv=None) -> int:
     if a.selfcheck:
         return selfcheck()
     series = SeriesDirectory(a.name, a.out)
-    qc = QuotaConfig.load(a.quota_file)
+    qc = QuotaConfig.load(a.quota_file, a.provider)
     if a.models:
         qc = qc.only([m.strip() for m in a.models.split(",") if m.strip()])
     if a.no_compact:
@@ -633,7 +646,8 @@ def main(argv=None) -> int:
     if not a.call:
         return dry_run(a, series, qc)
     try:
-        key = ApiKeyLoader(path=a.key_file).load()
+        used = list(dict.fromkeys(Providers.of(s.name) for s in qc.models))
+        client = ProviderRouter.build(used, a.key_file)            # one key per provider, each from its own file outside the repository
     except ApiKeyError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
@@ -641,9 +655,8 @@ def main(argv=None) -> int:
     if not lock.acquire(wait=10.0 if os.environ.pop(REEXEC, "") else 0.0):
         print(f"error: series {series.name} is already running (lock {lock.path} is held)", file=sys.stderr)
         return EXIT_LOCKED
-    client = GeminiClient(key)
     qc.install(client)                       # how to ask each model: structured JSON, or the prompt-only way
-    log = Log(Redactor(key))
+    log = Log(client.redactor)
     watcher = None if a.no_restart else RestartWatcher(CodeFingerprint())
     gen = Generator(series, client, qc, a.k, a.seed, a.days, a.max_requests, a.temperature, not a.no_repair, a.phrases, log=log,
                     watcher=watcher, argv=argv, planner=a.planner, max_items=not a.no_max_items, ledger=a.ledger)

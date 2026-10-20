@@ -53,6 +53,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .gemini import STRUCTURED, ModelFamilies, ModelFamily, PromptOnlyStrategy, RequestStrategy
+from .providers import JsonObjectStrategy, Providers
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 DEFAULT_CONFIG = Path(__file__).with_name("quota.toml")
@@ -131,6 +132,12 @@ class ModelSpec:
     compact: bool = False
     tpm_counts: str = "all"
     tpm_target: float | None = None
+    # other providers (providers.py): the model is named `<provider>/<id>`; "" = Gemini
+    provider: str = ""
+    max_output: int | None = None       # tokens asked for the answer (a provider that counts the request against a per-minute limit)
+    reasoning_effort: str = ""          # "low" / "none"... sent when set
+    minimal: bool = False               # the LEAN instructions (batch.py): no WRITES, no WORDS, 8 sample sentences
+    json_object: bool = False           # response_format json_object (a model without json_schema)
 
     @property
     def family(self) -> ModelFamily:
@@ -147,6 +154,8 @@ class ModelSpec:
         schema = fam.json_schema if self.json_schema is None else self.json_schema
         if system and schema:
             return STRUCTURED
+        if self.json_object:
+            return JsonObjectStrategy(fold_system=not system, fold_schema=True, thinking_config=False, compact_schema=self.compact)
         return PromptOnlyStrategy(fold_system=not system, fold_schema=not schema, thinking_config=fam.thinking_config,
                                   compact_schema=self.compact)
 
@@ -160,12 +169,16 @@ class QuotaConfig:
     catalogue: tuple = ()                           # every listed model (to find the spec of a pool target); () = models + disabled
 
     @classmethod
-    def load(cls, path: Path | str = DEFAULT_CONFIG) -> "QuotaConfig":
+    def load(cls, path: Path | str = DEFAULT_CONFIG, provider: str = "gemini") -> "QuotaConfig":
+        """`provider` picks the CHAIN of the run: the enabled models of that provider ("gemini" = those without a `provider`).
+        Every model of every provider stays in `catalogue` (pools, tools). A run of one provider never waits for another's
+        replies: Groq / OpenRouter models are slow, so they run in their own process, on the same shared ledger."""
         raw = tomllib.loads(Path(path).read_text(encoding="utf-8"))
         specs = [ModelSpec(m["name"], Limits.from_dict(m), m.get("thinking_budget"), m.get("system_instruction"),
                            m.get("json_schema"), bool(m.get("enabled", True)), str(m.get("note", "")), m.get("max_k"),
                            str(m.get("pool", "")), bool(m.get("compact", False)), str(m.get("tpm_counts", "all")),
-                           m.get("tpm_target")) for m in raw.get("model", [])]
+                           m.get("tpm_target"), str(m.get("provider", "")), m.get("max_output"), str(m.get("reasoning_effort", "")),
+                           bool(m.get("minimal", False)), bool(m.get("json_object", False))) for m in raw.get("model", [])]
         names = [s.name for s in specs]
         if len(set(names)) != len(names):
             raise ValueError(f"{path}: a model is listed twice")
@@ -174,10 +187,15 @@ class QuotaConfig:
                 raise ValueError(f"{path}: {s.name}: tpm_counts is 'input' or 'all'")
             if s.pool and s.pool not in names:
                 raise ValueError(f"{path}: {s.name}: pool {s.pool!r} is not a listed model")
-        on = tuple(s for s in specs if s.enabled)
+            if s.provider and (s.provider not in Providers.ALL or Providers.of(s.name) != s.provider):
+                raise ValueError(f"{path}: {s.name}: provider {s.provider!r} must be groq or openrouter and prefix the name")
+            if not s.provider and Providers.of(s.name) != "gemini":
+                raise ValueError(f"{path}: {s.name}: a model named after a provider needs provider = \"{Providers.of(s.name)}\"")
+        want = "" if provider == "gemini" else provider
+        on = tuple(s for s in specs if s.enabled and s.provider == want)
         if not on:
-            raise ValueError(f"{path}: no enabled [[model]]")
-        return cls(on, float(raw.get("margin", 1.05)), tuple(s for s in specs if not s.enabled),
+            raise ValueError(f"{path}: no enabled [[model]] for provider {provider}")
+        return cls(on, float(raw.get("margin", 1.05)), tuple(s for s in specs if not s.enabled and s.provider == want),
                    float(raw.get("tpm_target", TPM_TARGET)), tuple(specs))
 
     # ---- who shares whose quota
@@ -212,8 +230,10 @@ class QuotaConfig:
 
     def install(self, client) -> None:
         """Teach the client how to ask each model (structured, or prompt-only)."""
-        for s in (*self.models, *self.disabled):
+        for s in self.everything():
             client.strategies[s.name] = s.strategy()
+            if hasattr(client, "configure"):
+                client.configure(s)
 
 
 # ---------------------------------------------------------------------------------------------------- a 429
@@ -224,6 +244,7 @@ class QuotaError:
     limit: float | None         # quotaValue, when Google says it
     retry_after: float          # seconds asked for (0 = not said)
     metric: str = ""
+    reset_after: float = 0.0    # a day-quota whose reopening the provider states (Groq, OpenRouter: violation `resetAfter`); Gemini never does
 
     @classmethod
     def parse(cls, violations: list, message: str = "", scope_hint: str = "", retry_after: float = 0.0) -> "QuotaError":
@@ -237,7 +258,11 @@ class QuotaError:
                 limit = float(v.get("quotaValue")) if v.get("quotaValue") not in (None, "") else None
             except (TypeError, ValueError):
                 limit = None
-            found.append((scope, kind, limit, str(v.get("quotaMetric", "") or v.get("quotaId", ""))))
+            try:
+                reset = float(v.get("resetAfter") or 0.0)
+            except (TypeError, ValueError):
+                reset = 0.0
+            found.append((scope, kind, limit, str(v.get("quotaMetric", "") or v.get("quotaId", "")), reset))
         m = message or ""
         msg_scope = "day" if re.search(r"per ?day|daily", m, re.I) else "minute" if re.search(r"per ?minute", m, re.I) else ""
         msg_kind = "tokens" if re.search(r"token", m, re.I) else "requests" if re.search(r"request", m, re.I) else ""
@@ -246,12 +271,12 @@ class QuotaError:
             retry_after = float(r.group(1)) if r else 0.0
         if found:
             found.sort(key=lambda f: (f[0] != "day", f[0] == ""))
-            scope, kind, limit, metric = found[0]
+            scope, kind, limit, metric, reset_after = found[0]
         else:
-            scope, kind, limit, metric = "", "", None, ""
+            scope, kind, limit, metric, reset_after = "", "", None, "", 0.0
         scope = scope or msg_scope or scope_hint or "minute"
         kind = kind or msg_kind or "requests"
-        return cls(scope, kind, limit, retry_after, metric)
+        return cls(scope, kind, limit, retry_after, metric, reset_after if scope == "day" else 0.0)
 
 
 # ---------------------------------------------------------------------------------------------------- one model
@@ -263,7 +288,9 @@ class QuotaBook:
         self.spec, self.margin = spec, margin
         self.target = spec.tpm_target if spec.tpm_target is not None else tpm_target
         self.counts_output = spec.tpm_counts == "all"
-        self.out_estimate = float(OUT_ESTIMATE) if self.counts_output else 0.0   # mean output + thinking tokens of one request
+        # mean output + thinking tokens of one request; a model with a small `max_output` (Groq: the request counts against 8 000 tokens a
+        # minute) starts from a quarter of it, then learns the real mean
+        self.out_estimate = float(min(OUT_ESTIMATE, spec.max_output // 4 if spec.max_output else OUT_ESTIMATE)) if self.counts_output else 0.0
         self.learned = Limits()
         self.window: deque = deque()            # [time, input tokens] of the requests of the last minute
         self.last_sent = 0.0
@@ -395,12 +422,13 @@ class QuotaBook:
         self.exhausted_until = until if until is not None else PacificDay.next_reset(now)
         self.exhausted_why = why
 
-    def spend_day(self, now: float, why: str) -> float:
+    def spend_day(self, now: float, why: str, delay: float | None = None) -> float:
         """Google refused this pool for the day. It is not shut until midnight (a pool answered after its 500th request on
         15 Oct.): it is tried again after 10, 20, 30, then every 60 minutes, and reopens as soon as a request goes through.
         Each refusal is logged in `probe_log`, so the real reopening time can be read. -> the delay."""
         self.roll(now)
-        delay = PROBE_STEPS[min(self.probe_step, len(PROBE_STEPS) - 1)]
+        if delay is None:
+            delay = PROBE_STEPS[min(self.probe_step, len(PROBE_STEPS) - 1)]
         if not self.spent_at:
             self.spent_at = now
         self.probe_log = (self.probe_log + [[round(now, 1), 429, self.probe_step]])[-40:]
@@ -431,7 +459,7 @@ class QuotaBook:
             self.spent_at = self.spent_at or now                # (so that the old-state rule in roll() does not reopen it)
             return f"{err.kind} per day: limit 0 (not free), until the Pacific midnight"
         if err.scope == "day":
-            delay = self.spend_day(now, f"{err.kind}/day")      # the limit Google names is shown, never trusted as a wall
+            delay = self.spend_day(now, f"{err.kind}/day", err.reset_after + 5.0 if err.reset_after else None)   # the limit Google names is shown, never trusted as a wall
             return f"{err.kind} per day refused (limit {said}); tried again in {delay / 60:.0f} min"
         self.minute_429 += 1
         self.learn("rpm" if err.kind == "requests" else "tpm", err.limit)

@@ -57,12 +57,13 @@ PLANNER_EXAMPLE = {
 class InstructionBuilder:
     """The system text, section by section. Every list comes from the spec or the catalogue."""
 
-    def __init__(self, tk: Toolkit, vocabulary: str = "full", plans: bool = False, thoughts: bool = False):
+    def __init__(self, tk: Toolkit, vocabulary: str = "full", plans: bool = False, thoughts: bool = False, lean: bool = False):
         self.tk, self.spec, self.vocabulary, self.plans, self.thoughts = tk, tk.spec, vocabulary, plans, thoughts
+        self.lean = lean            # the LEAN text (a model with ~8 000 tokens a minute): no WRITES section, no WORDS; same format and rules
 
     def build(self) -> str:
         parts = [self.role(), self.answer_format(), self.gestures(), self.manners(), self.conditions(), self.language(),
-                 self.writes()]
+                 self.writes_lean() if self.lean else self.writes()]
         if self.thoughts:
             parts.append(self.thoughts_section())
         elif self.plans:
@@ -286,6 +287,9 @@ class InstructionBuilder:
                 "words; a social act (a threat, a promise, a theft) is not a gesture.\n"
                 "3. You know only your records. What a person really is, owns or intends is not known to you.\n"
                 "4. One gesture per answer. Leave speech empty unless the gesture takes it.")
+
+    def writes_lean(self) -> str:
+        return ('== WRITES ==\nLeave "writes" as an empty list [] (changes of your own variables are not asked of you here).')
 
     # ---- vocabulary
     def words(self) -> str:
