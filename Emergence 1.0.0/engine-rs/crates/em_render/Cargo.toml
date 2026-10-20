@@ -1,0 +1,30 @@
+[package]
+name = "em_render"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Rendu wgpu : contexte GPU, cibles, graphe de passes, profileur, captures, passes de lumière."
+
+[dependencies]
+em_core.workspace = true
+em_voxel.workspace = true
+em_material = { workspace = true, features = ["gpu"] }
+em_mesh.workspace = true
+wgpu.workspace = true
+winit.workspace = true
+naga.workspace = true
+bytemuck.workspace = true
+glam.workspace = true
+png.workspace = true
+image.workspace = true
+rayon.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+thiserror.workspace = true
+log.workspace = true
+
+[dev-dependencies]
+# Essais GPU du rendu voxel : le chêne de référence posé sur un sol (em_gen ne dépend pas d'em_render).
+em_gen.workspace = true

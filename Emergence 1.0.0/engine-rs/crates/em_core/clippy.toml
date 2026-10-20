@@ -1,0 +1,6 @@
+# Crate de vérité (docs/19 § 2.4) : HashMap et HashSet interdits.
+msrv = "1.99"
+disallowed-types = [
+  { path = "std::collections::HashMap", reason = "ordre non déterministe : utiliser BTreeMap ou un vecteur trié" },
+  { path = "std::collections::HashSet", reason = "ordre non déterministe : utiliser BTreeSet ou un vecteur trié" },
+]

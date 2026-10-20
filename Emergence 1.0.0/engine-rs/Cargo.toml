@@ -1,0 +1,56 @@
+# Espace de travail Cargo du laboratoire de style d'Emergence (docs/19 § 2).
+# Les versions des dépendances sont fixées ICI, une fois pour toutes : les tâches
+# suivantes n'ont pas à toucher à ce fichier (elles ajoutent seulement du code dans leur crate).
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+publish = false
+
+[workspace.dependencies]
+# Crates du dépôt
+em_core = { path = "crates/em_core" }
+em_voxel = { path = "crates/em_voxel" }
+em_material = { path = "crates/em_material" }
+em_ops = { path = "crates/em_ops" }
+em_mesh = { path = "crates/em_mesh" }
+em_gen = { path = "crates/em_gen" }
+em_terrain = { path = "crates/em_terrain" }
+em_assembly = { path = "crates/em_assembly" }
+em_world = { path = "crates/em_world" }
+em_render = { path = "crates/em_render" }
+em_veg = { path = "crates/em_veg" }
+em_water_render = { path = "crates/em_water_render" }
+
+# Rendu (présentation seulement : jamais dans une crate de vérité)
+wgpu = "30.0.1"
+winit = "0.30.13"
+naga = "30.0.1"
+bytemuck = { version = "1", features = ["derive"] }
+glam = "0.30"
+png = "0.17"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+rayon = "1.10"
+
+# Communs
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+flate2 = "1"
+zstd = "0.13"
+thiserror = "2"
+anyhow = "1"
+log = "0.4"
+env_logger = "0.11"
+clap = { version = "4", features = ["derive"] }
+
+[profile.release]
+opt-level = 3
+debug = "line-tables-only"
+
+[profile.dev]
+opt-level = 1

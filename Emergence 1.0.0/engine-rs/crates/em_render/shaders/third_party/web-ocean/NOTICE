@@ -1,0 +1,14 @@
+Shaders tirés de « web-ocean » (dossier de téléchargement web-ocean-main), licence MIT.
+
+  MIT License, Copyright (c) 2026 Maksymilian Dendura
+  (texte complet : fichier LICENSE à côté de celui-ci)
+
+Les fichiers *.wgsl de ce dossier sont GÉNÉRÉS par engine-rs/scripts/extract_web_ocean.py à partir de
+js/wgsl/{common,sky,post}.js ; chacun porte la notice d'origine en tête. MANIFEST.toml donne, par module, le
+fichier source, l'export, les SHA-256 et le nombre de rustines appliquées. Les adaptations du moteur (liste
+dans l'en-tête du script) sont au nombre de quatre : struct `Frame` réécrite (shaders/sky/frame.wgsl),
+sortie linéaire de COMPOSITE (cible sRGB), ombre de la planète pour les nuages, sortie anticipée de `cloudFbm`.
+
+Le fond de ciel du labo (engine-rs/crates/em_render/shaders/sky/fond.wgsl) est dérivé de `SKY_BG` de
+js/wgsl/ocean.js (même dépôt, même licence) : ciel, nuages et disque solaire inchangés ; ajoutés par le moteur :
+crêtes, sol, étoiles, perspective aérienne, rendu en deux étages.

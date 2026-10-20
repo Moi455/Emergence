@@ -1,0 +1,258 @@
+//! `LightingPass` v0 : soleil lambertien et ciel de Hillaire sur le G-buffer, sans ombres (L11), sans occlusion
+//! (L14), sans indirect (L15). Écrit dans la cible HDR du fond de ciel, là où le tracé a touché un voxel.
+
+use super::gbuffer::{self, noms};
+use super::gpu::{LightUniform, VoxelFrame};
+use super::shaders;
+use crate::error::ParamError;
+use crate::gpu::GpuContext;
+use crate::graph::{PassContext, PassName, PassSetup, RenderPass, Resources};
+use crate::liaisons::{HDR_FORMAT, MiseEnPage, echantillonneur_lineaire};
+use crate::partage::Partage;
+use crate::sky::noms as noms_ciel;
+use wgpu::ShaderStages as Etage;
+
+/// Vue affichée par la passe d'éclairage (débogage et captures de contrôle).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum DebugView {
+    /// Image éclairée.
+    #[default]
+    Beauty,
+    /// Albédo seul (sans lumière).
+    Albedo,
+    /// Normales de face (couleur = normale × 0,5 + 0,5).
+    Normals,
+    /// Distance en niveaux de gris (blanc à 40 m).
+    Distance,
+    /// Masque : blanc là où le tracé a touché un voxel (silhouette) ; lancer avec `--bloom 0` pour un bord net.
+    Mask,
+}
+
+impl DebugView {
+    fn code(self) -> f32 {
+        match self {
+            Self::Beauty => 0.0,
+            Self::Albedo => 1.0,
+            Self::Normals => 2.0,
+            Self::Distance => 3.0,
+            Self::Mask => 4.0,
+        }
+    }
+
+    /// Lit un nom de vue de la ligne de commande.
+    pub fn from_name(nom: &str) -> Option<Self> {
+        Some(match nom {
+            "image" | "beauty" => Self::Beauty,
+            "albedo" => Self::Albedo,
+            "normales" | "normals" => Self::Normals,
+            "distance" => Self::Distance,
+            "masque" | "mask" => Self::Mask,
+            _ => return None,
+        })
+    }
+}
+
+/// Réglages de l'éclairage, validés à la construction.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LightSettings {
+    view: DebugView,
+    ambient: f32,
+}
+
+impl LightSettings {
+    /// `ambient` : échelle de la lumière du ciel, dans [0, 4] (1 = physique).
+    pub fn new(view: DebugView, ambient: f32) -> Result<Self, ParamError> {
+        if !(ambient.is_finite() && (0.0..=4.0).contains(&ambient)) {
+            return Err(ParamError::Invalide(format!(
+                "ambiance = {ambient} hors de [0, 4]"
+            )));
+        }
+        Ok(Self { view, ambient })
+    }
+
+    /// Vue affichée.
+    pub fn view(&self) -> DebugView {
+        self.view
+    }
+
+    /// Échelle de la lumière du ciel.
+    pub fn ambient(&self) -> f32 {
+        self.ambient
+    }
+}
+
+impl Default for LightSettings {
+    fn default() -> Self {
+        Self {
+            view: DebugView::Beauty,
+            ambient: 1.0,
+        }
+    }
+}
+
+struct Gpu {
+    pipeline: wgpu::RenderPipeline,
+    groupe_ciel: wgpu::BindGroup,
+    groupe_gbuffer: wgpu::BindGroup,
+    uniforme: wgpu::Buffer,
+    hdr: wgpu::TextureView,
+}
+
+/// Éclairage différé v0.
+pub struct LightingPass {
+    reglages: Partage<LightSettings>,
+    gpu: Option<Gpu>,
+}
+
+impl LightingPass {
+    /// Nom de la passe dans le profil.
+    pub const NOM: PassName = PassName::new("voxel_lumiere");
+
+    /// Crée la passe sur des réglages partagés avec la scène. Le soleil vient de la ressource `ciel_frame`.
+    pub fn new(reglages: Partage<LightSettings>) -> Self {
+        Self { reglages, gpu: None }
+    }
+}
+
+impl RenderPass for LightingPass {
+    fn name(&self) -> PassName {
+        Self::NOM
+    }
+
+    fn prepare(&mut self, g: &GpuContext, _setup: &PassSetup, res: &mut Resources) {
+        self.gpu = None;
+        let (Some(frame_ciel), Some(vf), Some(trans), Some(vue_ciel), Some(hdr)) = (
+            res.buffer(noms_ciel::FRAME).cloned(),
+            res.buffer(noms::FRAME).cloned(),
+            res.view(noms_ciel::TRANSMITTANCE),
+            res.view(noms_ciel::VUE_DU_CIEL),
+            res.view(noms_ciel::HDR),
+        ) else {
+            log::error!(
+                "voxel_lumiere : le ciel ou le G-buffer manquent (SkyPass, fond de ciel et tracé doivent précéder)"
+            );
+            return;
+        };
+        let (Some(gb0), Some(gb1), Some(gb2), Some(dist)) = (
+            res.view(noms::GB0),
+            res.view(noms::GB1),
+            res.view(noms::GB2),
+            res.view(noms::DIST),
+        ) else {
+            return;
+        };
+        let dev = g.device();
+        let f = Etage::FRAGMENT;
+        let bgl_ciel = MiseEnPage::new()
+            .uniforme(f)
+            .texture(f)
+            .texture(f)
+            .echantillonneur(f)
+            .creer(dev, "lumière ciel bgl");
+        let bgl_gb = MiseEnPage::new()
+            .uniforme(f)
+            .uniforme(f)
+            .texture(f)
+            .texture_uint(f)
+            .texture(f)
+            .texture_float_brute(f)
+            .creer(dev, "lumière gbuffer bgl");
+        let uniforme = dev.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("lumière uniforme"),
+            size: size_of::<LightUniform>() as u64,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+        let ech = echantillonneur_lineaire(dev);
+        let entree = |binding: u32, resource| wgpu::BindGroupEntry { binding, resource };
+        let groupe_ciel = dev.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("lumière ciel groupe"),
+            layout: &bgl_ciel,
+            entries: &[
+                entree(0, frame_ciel.as_entire_binding()),
+                entree(1, wgpu::BindingResource::TextureView(&trans)),
+                entree(2, wgpu::BindingResource::TextureView(&vue_ciel)),
+                entree(3, wgpu::BindingResource::Sampler(&ech)),
+            ],
+        });
+        let groupe_gbuffer = dev.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("lumière gbuffer groupe"),
+            layout: &bgl_gb,
+            entries: &[
+                entree(0, vf.as_entire_binding()),
+                entree(1, uniforme.as_entire_binding()),
+                entree(2, wgpu::BindingResource::TextureView(&gb0)),
+                entree(3, wgpu::BindingResource::TextureView(&gb1)),
+                entree(4, wgpu::BindingResource::TextureView(&gb2)),
+                entree(5, wgpu::BindingResource::TextureView(&dist)),
+            ],
+        });
+        let module = shaders::lumiere();
+        let shader = dev.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some(module.nom()),
+            source: wgpu::ShaderSource::Wgsl(module.source().into()),
+        });
+        let layout = dev.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("voxel lumière layout"),
+            bind_group_layouts: &[Some(&bgl_ciel), Some(&bgl_gb)],
+            immediate_size: 0,
+        });
+        let pipeline = dev.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("voxel lumière"),
+            layout: Some(&layout),
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: Some("vs"),
+                compilation_options: Default::default(),
+                buffers: &[],
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &shader,
+                entry_point: Some("fs"),
+                compilation_options: Default::default(),
+                targets: &[Some(wgpu::ColorTargetState {
+                    format: HDR_FORMAT,
+                    // le fondu du sol au bord de la clipmap passe par la transparence de sortie
+                    blend: Some(wgpu::BlendState {
+                        color: wgpu::BlendComponent {
+                            src_factor: wgpu::BlendFactor::SrcAlpha,
+                            dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
+                            operation: wgpu::BlendOperation::Add,
+                        },
+                        alpha: wgpu::BlendComponent::REPLACE,
+                    }),
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+            }),
+            primitive: wgpu::PrimitiveState::default(),
+            depth_stencil: None,
+            multisample: wgpu::MultisampleState::default(),
+            multiview_mask: None,
+            cache: None,
+        });
+        let _ = (gbuffer::FORMAT_GB0, size_of::<VoxelFrame>());
+        self.gpu = Some(Gpu {
+            pipeline,
+            groupe_ciel,
+            groupe_gbuffer,
+            uniforme,
+            hdr,
+        });
+    }
+
+    fn encode(&mut self, ctx: &mut PassContext<'_>) {
+        let Some(gpu) = &self.gpu else { return };
+        let (r, _) = self.reglages.lire();
+        let u = LightUniform {
+            vue: [r.view().code(), r.ambient(), 0.0, 0.0],
+        };
+        ctx.gpu()
+            .queue()
+            .write_buffer(&gpu.uniforme, 0, bytemuck::bytes_of(&u));
+        let mut pass = ctx.render_pass_to("voxel lumière", &gpu.hdr, wgpu::LoadOp::Load);
+        pass.set_pipeline(&gpu.pipeline);
+        pass.set_bind_group(0, &gpu.groupe_ciel, &[]);
+        pass.set_bind_group(1, &gpu.groupe_gbuffer, &[]);
+        pass.draw(0..3, 0..1);
+    }
+}

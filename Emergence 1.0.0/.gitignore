@@ -2,3 +2,6 @@ build/
 __pycache__/
 *.pyc
 .venv/
+
+# Laboratoire de style en Rust (engine-rs)
+engine-rs/target/

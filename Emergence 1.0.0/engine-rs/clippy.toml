@@ -1,0 +1,3 @@
+# Règles communes (docs/19 § 2.4). Les crates de vérité ont leur propre clippy.toml
+# (Clippy n'en lit qu'un seul par crate : il répète ces lignes).
+msrv = "1.99"

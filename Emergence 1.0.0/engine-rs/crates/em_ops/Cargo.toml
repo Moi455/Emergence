@@ -1,0 +1,12 @@
+[package]
+name = "em_ops"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Opérations v1 compatibles octet par octet avec engine/ops, bus local, journal EMOPLG, paquet EMPK."
+
+[dependencies]
+em_core.workspace = true
+thiserror.workspace = true
+zstd.workspace = true

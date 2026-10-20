@@ -1,0 +1,13 @@
+[package]
+name = "em_core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Noyau déterministe : Q16, hachage, empreintes, coordonnées, repères, identifiants, entrées-sorties petit-boutistes."
+
+[dependencies]
+thiserror.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

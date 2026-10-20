@@ -1,0 +1,15 @@
+[package]
+name = "em_assembly"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Recettes, assemblages, table des entités, opérations d'entité."
+
+[dependencies]
+em_core.workspace = true
+em_voxel.workspace = true
+em_material.workspace = true
+em_gen.workspace = true
+em_ops.workspace = true
+thiserror.workspace = true

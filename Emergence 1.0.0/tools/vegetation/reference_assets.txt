@@ -1,0 +1,9 @@
+# Arbres de référence du laboratoire (L04). Fichiers hors dépôt : ~/.local/share/emergence/lab_assets/trees/<nom>.vxm
+# Colonnes (tabulations) : nom, graine, essence, hauteur_m, saison, topiaire, lods, voxels_lod0, octets, sha256_fichier, sha256_contenu
+# sha256_contenu = tableaux décompressés (stable) ; sha256_fichier dépend aussi de zlib.
+chene_42	42	chene	14	summer	-	0,1,2,3,4,5	607784	935393	4696fd3403ed19bc3f69e0b1a55062c12d6701912c4f075491c6820880ac9caa	723a0893476e105b8913cdfb4601fff49737d8e2130618d66067ec3050c0b655
+epicea_7	7	epicea	16	summer	-	0,1,2,3,4,5	315585	520337	981f8d9e366f83ebd191ce3bce9302956067d77628e47425f60f52109a043afc	fc06bffc48d21463d90b755983d6d38ef3038b0290da38ffb8e379856b38db22
+bouleau_3	3	bouleau	10	summer	-	0,1,2,3,4,5	24029	54469	b0cc741c4a25039a7b48576c3d6884a3b87084cc02bcc3b3f98d1e23e0f83d7e	d54aff981f3769b397cf1d35dd626d5c55b8a4f6fdba6b3455107c4529c3c362
+peuplier_5	5	peuplier	15	summer	-	0,1,2,3,4,5	118752	146315	1dd43d9087c6eddc87f4d12b56cc9b88646286274ffe82dfd611dcd360c8f764	cc1d59bc61cfa97457078f920c9d623631366df5a30beb734a0aec1ffb1cc003
+buis_sphere_7	7	buis	1.2	summer	sphere	0,1,2,3,4	8545	17044	ab4bfbe82f4182bad8659d7a1b636a3caee1ee0a42e5df251ba52da41ce13a4e	31320a18f5b8dd22aa2a4e1dca6868351aca7ce2b8ca013bb9124f91183e1196
+rosier_4	4	rosier	1.2	summer	-	0,1,2,3,4	3845	12286	2aa9d93878e163f2007a6bd8d1f4f3f814907dafb656345b8c0c2dcf39a5d8cb	b94fc3dd66b54078da9a8cea70097039b21186c59450e8c5fcdffcfe06270383

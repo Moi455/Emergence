@@ -1,0 +1,199 @@
+# Aspect des classes de matière (docs/19a § 6.2, docs/19 § 4.6). La physique reste dans materials.csv.
+# Toute classe sans entrée [material.<nom>] hérite de [default]. Les nombres sont lus en virgule fixe Q16.
+# Champs : albedo_var, hue_var, voxel_jitter, roughness, roughness_var, relief, detail_strength,
+#          translucency (0..1), emission (0..16, HDR), detail_scale_m (mètres), detail (nom de couche, vide = aucune),
+#          tint_mode (ramp128 | wood_axis | stone_piece | vegetation | terrain), flags (foliage | moss | skin | flicker),
+#          veg_role (bark | leaves | flowers | fruits : rôle de rampe pour tint_mode = vegetation),
+#          ramp = ["#sombre", "#moyen", "#clair"] (sinon dérivée de la couleur de base du CSV).
+schema_version = 1
+
+# Classes propres au rendu : ajoutées après materials.csv (catalogue du jeu, lecture seule). Numéros 34 et suivants.
+[[extra_class]]
+id = 34
+name = "petal"
+category = "plant"
+density_kg_m3 = 60
+hardness = 1
+flammability = 80
+color = "e8a0b8"
+
+[[extra_class]]
+id = 35
+name = "fruit"
+category = "plant"
+density_kg_m3 = 800
+hardness = 2
+flammability = 20
+color = "c8402a"
+
+[default]
+albedo_var = 0.08
+hue_var = 0.02
+voxel_jitter = 0.03
+roughness = 0.8
+roughness_var = 0.1
+relief = 0.3
+detail = ""
+detail_strength = 0.12
+detail_scale_m = 0.5
+translucency = 0.0
+emission = 0.0
+tint_mode = "ramp128"
+flags = []
+
+# ---- Terrain : rampe de 128 nuances, variante lente ----
+[material.turf]
+tint_mode = "terrain"
+flags = ["skin"]
+roughness = 0.95
+[material.dirt]
+tint_mode = "terrain"
+flags = ["skin"]
+roughness = 0.95
+[material.clay]
+tint_mode = "terrain"
+flags = ["skin"]
+roughness = 0.85
+[material.sand]
+tint_mode = "terrain"
+flags = ["skin"]
+roughness = 0.95
+voxel_jitter = 0.05
+[material.gravel]
+tint_mode = "terrain"
+flags = ["skin"]
+voxel_jitter = 0.06
+[material.forest_floor]
+tint_mode = "terrain"
+flags = ["skin", "moss"]
+roughness = 0.95
+[material.snow]
+tint_mode = "terrain"
+flags = ["skin"]
+roughness = 0.6
+albedo_var = 0.03
+relief = 0.1
+
+# ---- Roches naturelles ----
+[material.limestone]
+tint_mode = "terrain"
+detail = "rock_fine"
+[material.sandstone]
+tint_mode = "terrain"
+detail = "rock_fine"
+[material.granite]
+tint_mode = "terrain"
+detail = "rock_fine"
+voxel_jitter = 0.05
+[material.slate]
+tint_mode = "terrain"
+detail = "rock_fine"
+roughness = 0.6
+[material.basalt]
+tint_mode = "terrain"
+detail = "rock_fine"
+roughness = 0.65
+[material.salt]
+tint_mode = "terrain"
+roughness = 0.5
+[material.iron_ore]
+tint_mode = "terrain"
+detail = "rock_fine"
+roughness = 0.6
+
+# ---- Bois ----
+[material.oak_raw]
+tint_mode = "wood_axis"
+detail = "wood_fine"
+[material.oak_planks]
+tint_mode = "wood_axis"
+detail = "wood_fine"
+roughness = 0.7
+[material.wood_trim]
+tint_mode = "wood_axis"
+detail = "wood_fine"
+[material.wood_trim_worn]
+tint_mode = "wood_axis"
+detail = "wood_fine"
+albedo_var = 0.12
+roughness = 0.9
+[material.bark]
+tint_mode = "vegetation"
+veg_role = "bark"
+detail = "bark_fine"
+relief = 0.6
+roughness = 0.95
+voxel_jitter = 0.0
+
+# ---- Bâti ----
+[material.plaster]
+albedo_var = 0.05
+roughness = 0.9
+detail = "plaster_fine"
+[material.roof_tile]
+roughness = 0.75
+albedo_var = 0.1
+[material.thatch]
+albedo_var = 0.12
+roughness = 0.95
+relief = 0.5
+[material.cut_stone]
+tint_mode = "stone_piece"
+detail = "stone_fine"
+[material.rock_trim]
+tint_mode = "stone_piece"
+detail = "stone_fine"
+[material.brick]
+tint_mode = "stone_piece"
+detail = "brick_fine"
+[material.red_brick]
+tint_mode = "stone_piece"
+detail = "brick_fine"
+[material.rubble_masonry]
+tint_mode = "stone_piece"
+detail = "stone_fine"
+relief = 0.5
+[material.cobblestone]
+tint_mode = "stone_piece"
+detail = "stone_fine"
+relief = 0.5
+[material.iron]
+roughness = 0.35
+roughness_var = 0.15
+albedo_var = 0.05
+[material.glass]
+roughness = 0.05
+roughness_var = 0.02
+translucency = 0.8
+albedo_var = 0.02
+voxel_jitter = 0.0
+relief = 0.0
+[material.cloth]
+roughness = 0.95
+detail = "cloth_fine"
+
+# ---- Végétation : le sens de la teinte vient des rampes d'essence ----
+[material.vine]
+tint_mode = "vegetation"
+veg_role = "leaves"
+translucency = 0.35
+flags = ["foliage"]
+voxel_jitter = 0.0
+[material.leaves]
+tint_mode = "vegetation"
+veg_role = "leaves"
+translucency = 0.45
+flags = ["foliage"]
+voxel_jitter = 0.0
+relief = 0.1
+[material.petal]
+tint_mode = "vegetation"
+veg_role = "flowers"
+translucency = 0.4
+flags = ["foliage"]
+voxel_jitter = 0.0
+[material.fruit]
+tint_mode = "vegetation"
+veg_role = "fruits"
+roughness = 0.5
+voxel_jitter = 0.0

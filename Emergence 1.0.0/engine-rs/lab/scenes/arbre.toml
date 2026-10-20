@@ -1,0 +1,49 @@
+# Scène « arbre » (docs/19a § 6.4) : le chêne 42 de 14 m sur un sol plat de turf. Le modèle est cherché dans
+# lab/models/, à défaut dans ~/.local/share/emergence/lab_assets/trees/ (arbres de référence de L04).
+name = "arbre"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[[model]]
+path = "lab/models/chene_42.vxm"
+at_m = [0.0, 0.0, 0.0]
+quarter_turns = 0
+species_slot = 0
+
+# Prises de vue (L09). La clipmap n'a qu'un niveau (25 m autour de la caméra, L26 en ajoute cinq) : l'arbre
+# entier doit tenir dans cette fenêtre, d'où des caméras à moins de 20 m. Positions relatives à `origin_m`, en mètres ; l'arbre occupe x -5 à 4,3, y 0 à 14, z -3,9 à 5,9.
+# `look_at_m` fixe lacet et tangage (lacet 0 = nord +z, 90 = est +x, horaire vu d'en haut).
+[[shot]]
+name = "face"
+pos_m = [0.0, 2.0, -19.0]
+look_at_m = [0.0, 7.0, 0.0]
+fov_deg = 50.0
+hours = [10.0, 17.5, 19.0]
+
+[[shot]]
+name = "trois_quarts"
+pos_m = [13.0, 2.0, -13.0]
+look_at_m = [0.0, 6.5, 0.0]
+fov_deg = 50.0
+hours = [10.0, 17.5, 19.0]
+
+[[shot]]
+name = "contrejour"
+pos_m = [19.0, 1.8, 3.0]
+look_at_m = [0.0, 7.0, 0.0]
+fov_deg = 45.0
+hours = [19.0]
+
+[[shot]]
+name = "feuillage"
+pos_m = [0.0, 7.0, -9.5]
+look_at_m = [0.0, 9.0, -3.9]
+fov_deg = 50.0
+hours = [10.0, 17.5, 19.0]
+
+[[shot]]
+name = "tronc"
+pos_m = [0.5, 1.6, -3.0]
+look_at_m = [0.0, 1.4, 0.0]
+fov_deg = 55.0
+hours = [10.0, 17.5, 19.0]

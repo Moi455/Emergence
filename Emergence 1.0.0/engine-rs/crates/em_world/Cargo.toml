@@ -1,0 +1,15 @@
+[package]
+name = "em_world"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Le monde : manifeste, composition, appliqueurs, journal, paquet, instantanés, rejeu."
+
+[dependencies]
+em_core.workspace = true
+em_voxel.workspace = true
+em_ops.workspace = true
+em_terrain.workspace = true
+em_assembly.workspace = true
+thiserror.workspace = true

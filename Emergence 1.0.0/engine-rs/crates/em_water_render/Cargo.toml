@@ -1,0 +1,12 @@
+[package]
+name = "em_water_render"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Rendu de l'eau : surface, écoulement, réfraction, réflexions, trait WaterSurfaceSource."
+
+[dependencies]
+em_core.workspace = true
+em_render.workspace = true
+thiserror.workspace = true

@@ -1,0 +1,118 @@
+# Généré par engine-rs/scripts/extract_web_ocean.py. Source : web-ocean (MIT, © 2026 Maksymilian Dendura).
+
+[[module]]
+fichier_source = "common.js"
+export = "ATMO_CORE_WGSL"
+module = "atmo_core.wgsl"
+sha256_source = "d759a8d1c5d52ad93c46b92d274af5dc8afbe7da349cf63c1330a54cd2c13bff"
+sha256_module = "cadba5951b2aab698c7ca21f634d9f4831ddc3ae2428cac49dd1dc90ce72f939"
+utilise_frame = false
+rustines = 0
+
+[[module]]
+fichier_source = "common.js"
+export = "NOISE_WGSL"
+module = "noise.wgsl"
+sha256_source = "d759a8d1c5d52ad93c46b92d274af5dc8afbe7da349cf63c1330a54cd2c13bff"
+sha256_module = "27848e5576faa6525dcef7bd347be3fd3af6bfca5cff84eb0586135e09eb748d"
+utilise_frame = false
+rustines = 0
+
+[[module]]
+fichier_source = "sky.js"
+export = "TRANS_LUT"
+module = "trans_lut.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "c0f66253049fcec661c794b9c7053194dfb989d50cf84b7d466e260eff1af9aa"
+utilise_frame = false
+rustines = 0
+
+[[module]]
+fichier_source = "sky.js"
+export = "MS_LUT"
+module = "ms_lut.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "69940659fb9aa5934d29a8ce765cc37407a383b081972d2c0c839cd3bb494d82"
+utilise_frame = false
+rustines = 0
+
+[[module]]
+fichier_source = "sky.js"
+export = "SKYVIEW_LUT"
+module = "skyview_lut.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "47c8a6282b3c0ef0d5e4db53e9cdedfe8c26f517aecdc0094a835c85fd89dd2a"
+utilise_frame = true
+rustines = 0
+
+[[module]]
+fichier_source = "sky.js"
+export = "SKY_RENDER_FUNCS"
+module = "sky_render_funcs.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "89334698ac20b5b8522b31e8e9f8c57e9b8bbb6e895c8c481f1d324b715b3225"
+utilise_frame = false
+rustines = 1
+
+[[module]]
+fichier_source = "sky.js"
+export = "SKY_CLOUD_FUNCS"
+module = "sky_cloud_funcs.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "0db950d12233b42a3db3111a95ca057cb4e8cc7f26cf57962363a4101d6cbdc9"
+utilise_frame = false
+rustines = 2
+
+[[module]]
+fichier_source = "sky.js"
+export = "ENV_CUBE"
+module = "env_cube.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "e4b924d3da0a79ce8e56a0a1fc1456ae4e7e251bfc466b75f15ebe70bd9f1982"
+utilise_frame = true
+rustines = 0
+
+[[module]]
+fichier_source = "sky.js"
+export = "CUBE_MIPS"
+module = "cube_mips.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "56e6727bd6570ba2f9309b19ebc7387553e623fd5b65f7f36f2f7dd44c0dbadc"
+utilise_frame = false
+rustines = 0
+
+[[module]]
+fichier_source = "sky.js"
+export = "SUN_VIS"
+module = "sun_vis.wgsl"
+sha256_source = "23a43cdc394b41e0b1e3610c76139b1bc2e6b7b4ffd3249c68cb08a4b7e9d45f"
+sha256_module = "4878756ab7a9805c0bc064e93bea6824467313afc27ef383d44626465869085c"
+utilise_frame = true
+rustines = 0
+
+[[module]]
+fichier_source = "post.js"
+export = "BLOOM_DOWN"
+module = "bloom_down.wgsl"
+sha256_source = "d19d7ad8301a4eb236d8bfec8ad1fd15bf736738c2501ca5695a7c65664df0ef"
+sha256_module = "05638e9c61db5e93c7542fed83fc8ad22b13b8d56e34b948c3735d7ffdfc738a"
+utilise_frame = false
+rustines = 0
+
+[[module]]
+fichier_source = "post.js"
+export = "BLOOM_UP"
+module = "bloom_up.wgsl"
+sha256_source = "d19d7ad8301a4eb236d8bfec8ad1fd15bf736738c2501ca5695a7c65664df0ef"
+sha256_module = "125288ebdbca84f2d35a7e0475daf0ab68acaf919eef1c4b3d4aa610a3bb6fdd"
+utilise_frame = false
+rustines = 0
+
+[[module]]
+fichier_source = "post.js"
+export = "COMPOSITE"
+module = "composite.wgsl"
+sha256_source = "d19d7ad8301a4eb236d8bfec8ad1fd15bf736738c2501ca5695a7c65664df0ef"
+sha256_module = "4f2c5f0376ab2600f1e303dad540a9cb703a7deb9471f52874d95bf6f591e239"
+utilise_frame = false
+rustines = 1
