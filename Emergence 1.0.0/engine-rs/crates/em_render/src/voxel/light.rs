@@ -1,8 +1,9 @@
 //! `LightingPass` : soleil lambertien (couleur de la transmittance de l'atmosphère de Hillaire, ombres en cascades de
 //! L11 si `ShadowCascades` précède), ambiance de l'hémisphère du ciel, translucidité et liseré du feuillage (L10 étendue,
-//! épaisseur de `FoliageThicknessPass` si elle précède), sans occlusion (L14), sans indirect (L15). Écrit dans la cible
+//! épaisseur de `FoliageThicknessPass` si elle précède), occlusion ambiante de `AmbientOcclusionPass` (L14) si elle précède (elle n'assombrit que l'ambiance, jamais le soleil), sans indirect (L15). Écrit dans la cible
 //! HDR du fond de ciel, là où le tracé a touché un voxel.
 
+use super::ao::noms as noms_ao;
 use super::foliage::{FoliageLightParams, noms as noms_feuillage};
 use super::gbuffer::{self, noms};
 use super::gpu::{LightUniform, ShadowUniform, VoxelFrame};
@@ -34,6 +35,8 @@ pub enum DebugView {
     Shadow,
     /// Cascade d'ombre qui sert chaque pixel (teinte par cascade ; gris : aucune).
     Cascades,
+    /// Visibilité de l'ambiance (occlusion ambiante de L14) en niveaux de gris : blanc libre, noir enfermé.
+    Occlusion,
 }
 
 impl DebugView {
@@ -46,6 +49,7 @@ impl DebugView {
             Self::Mask => 4.0,
             Self::Shadow => 5.0,
             Self::Cascades => 6.0,
+            Self::Occlusion => 7.0,
         }
     }
 
@@ -59,6 +63,7 @@ impl DebugView {
             "masque" | "mask" => Self::Mask,
             "ombre" | "ombres" | "shadow" => Self::Shadow,
             "cascades" => Self::Cascades,
+            "ao" | "occlusion" => Self::Occlusion,
             _ => return None,
         })
     }
@@ -128,6 +133,8 @@ struct Gpu {
     hdr: wgpu::TextureView,
     /// `true` si `FoliageThicknessPass` a publié l'épaisseur (sinon la translucidité est éteinte).
     epaisseur_active: bool,
+    /// `true` si `AmbientOcclusionPass` a publié l'occlusion (sinon l'ambiance n'est pas assombrie).
+    ao_active: bool,
 }
 
 /// Éclairage différé v0.
@@ -191,6 +198,7 @@ impl RenderPass for LightingPass {
             .texture(f)
             .texture_float_brute(f)
             .texture_float_brute(f)
+            .texture_float_brute(f)
             .creer(dev, "lumière gbuffer bgl");
         let uniforme = dev.create_buffer(&wgpu::BufferDescriptor {
             label: Some("lumière uniforme"),
@@ -200,25 +208,31 @@ impl RenderPass for LightingPass {
         });
         // Épaisseur du feuillage : celle de `FoliageThicknessPass` si elle précède, sinon une texture factice et la
         // translucidité éteinte.
+        let factice = |nom: &str| {
+            let t = dev.create_texture(&wgpu::TextureDescriptor {
+                label: Some(nom),
+                size: wgpu::Extent3d {
+                    width: 1,
+                    height: 1,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: wgpu::TextureFormat::R32Float,
+                usage: wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[],
+            });
+            t.create_view(&wgpu::TextureViewDescriptor::default())
+        };
         let (vue_epaisseur, epaisseur_active) = match res.view(noms_feuillage::EPAISSEUR) {
             Some(v) => (v, true),
-            None => {
-                let t = dev.create_texture(&wgpu::TextureDescriptor {
-                    label: Some("épaisseur factice"),
-                    size: wgpu::Extent3d {
-                        width: 1,
-                        height: 1,
-                        depth_or_array_layers: 1,
-                    },
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::R32Float,
-                    usage: wgpu::TextureUsages::TEXTURE_BINDING,
-                    view_formats: &[],
-                });
-                (t.create_view(&wgpu::TextureViewDescriptor::default()), false)
-            }
+            None => (factice("épaisseur factice"), false),
+        };
+        // Occlusion ambiante : celle de `AmbientOcclusionPass` si elle précède, sinon une texture factice.
+        let (vue_ao, ao_active) = match res.view(noms_ao::OCCLUSION) {
+            Some(v) => (v, true),
+            None => (factice("occlusion factice"), false),
         };
         let ech = echantillonneur_lineaire(dev);
         let entree = |binding: u32, resource| wgpu::BindGroupEntry { binding, resource };
@@ -243,6 +257,7 @@ impl RenderPass for LightingPass {
                 entree(4, wgpu::BindingResource::TextureView(&gb2)),
                 entree(5, wgpu::BindingResource::TextureView(&dist)),
                 entree(6, wgpu::BindingResource::TextureView(&vue_epaisseur)),
+                entree(7, wgpu::BindingResource::TextureView(&vue_ao)),
             ],
         });
         // Ombres : les cascades de `ShadowCascades` si la passe précède, sinon un uniforme « inactif » et une texture
@@ -365,6 +380,7 @@ impl RenderPass for LightingPass {
             uniforme,
             hdr,
             epaisseur_active,
+            ao_active,
         });
     }
 
@@ -373,11 +389,12 @@ impl RenderPass for LightingPass {
         let (r, _) = self.reglages.lire();
         let f = r.foliage();
         let active = if gpu.epaisseur_active { 1.0 } else { 0.0 };
+        let ao = if gpu.ao_active { 1.0 } else { 0.0 };
         let u = LightUniform {
             vue: [r.view().code(), r.ambient(), active, f.zone_m()],
             feuillage_a: [f.translucency(), f.absorption_m(), f.forward(), f.rim()],
             feuillage_b: [f.tint()[0], f.tint()[1], f.tint()[2], f.rim_thickness_m()],
-            feuillage_c: [f.saturation(), f.shadow_lift(), 0.0, 0.0],
+            feuillage_c: [f.saturation(), f.shadow_lift(), ao, 0.0],
             feuillage_d: [f.shadow_tint()[0], f.shadow_tint()[1], f.shadow_tint()[2], 0.0],
         };
         ctx.gpu()

@@ -75,7 +75,7 @@ pub struct LightUniform {
     pub feuillage_a: [f32; 4],
     /// rgb = teinte de transmission, w = épaisseur du liseré (m).
     pub feuillage_b: [f32; 4],
-    /// x = saturation du feuillage, y = soulèvement des ombres, zw réservés.
+    /// x = saturation du feuillage, y = soulèvement des ombres, z = 1 si l'occlusion ambiante est disponible, w réservé.
     pub feuillage_c: [f32; 4],
     /// rgb = teinte du soulèvement des ombres, w réservé.
     pub feuillage_d: [f32; 4],

@@ -11,7 +11,7 @@
 //!
 //! Ordre des passes : ciel (LUT), fond de ciel, tracé primaire, matière, profondeur, éclairage, bloom, AgX.
 
-use crate::arbre::{ArgsArbre, Tir, regarder};
+use crate::arbre::{ArgsArbre, Tir, ao_json, regarder};
 use crate::chemins::{dossier_captures, dossier_racine};
 use crate::ciel::ArgsCiel;
 use crate::scene::Scene;
@@ -22,10 +22,11 @@ use em_gen::BuildingClasses;
 use em_material::{MaterialMode, MaterialTable, StyleSheet, VegetationRamps};
 use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
-    AdapterReport, BloomPass, ClipmapConfig, ClipmapStreamer, CloudParams, DebugView, DepthMergePass,
-    FrameContext, FrameTarget, GpuContext, GpuMaterials, GpuProfiler, LightSettings, LightingPass,
-    OffscreenTarget, Partage, PostParams, Projection, RenderGraph, SkyBackgroundPass, SkyParams, SkyPass,
-    SunModel, TonemapPass, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass, read_texture,
+    AdapterReport, AmbientOcclusionPass, BloomPass, ClipmapConfig, ClipmapStreamer, CloudParams, DebugView,
+    DepthMergePass, FrameContext, FrameTarget, GpuContext, GpuMaterials, GpuProfiler, LightSettings,
+    LightingPass, OffscreenTarget, Partage, PostParams, Projection, RenderGraph, SkyBackgroundPass,
+    SkyParams, SkyPass, SunModel, TonemapPass, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
+    read_texture,
 };
 use serde::Deserialize;
 use std::path::PathBuf;
@@ -189,6 +190,13 @@ impl MateriauxScene {
         graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
         graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
         graphe.add(Box::new(DepthMergePass::new()))?;
+        let params_ao = a.parametres_ao()?;
+        if !a.sans_ao {
+            graphe.add(Box::new(AmbientOcclusionPass::new(
+                Partage::new(params_ao),
+                monde.bindings(),
+            )))?;
+        }
         graphe.add(Box::new(LightingPass::new(lumiere)))?;
         graphe.add(Box::new(BloomPass::new()))?;
         graphe.add(Box::new(TonemapPass::new(post)))?;
@@ -229,6 +237,7 @@ impl MateriauxScene {
             "exposure": ciel.exposure,
             "bloom": ciel.bloom,
             "ambient": a.ambiance,
+            "ambient_occlusion": ao_json(a.sans_ao, &params_ao),
             "view": a.vue,
             "voxel_mm": VOXEL_MM,
             "material_packet_fingerprint": format!("{:#018x}", materiaux.fingerprint()),

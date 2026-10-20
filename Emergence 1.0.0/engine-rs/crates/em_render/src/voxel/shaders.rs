@@ -11,6 +11,8 @@ const MATIERE: &str = include_str!("../../shaders/voxel/voxel_material.wgsl");
 const PROFONDEUR: &str = include_str!("../../shaders/voxel/voxel_depth.wgsl");
 const LUMIERE: &str = include_str!("../../shaders/voxel/voxel_light.wgsl");
 const EPAISSEUR: &str = include_str!("../../shaders/voxel/voxel_foliage_thickness.wgsl");
+const OCCLUSION: &str = include_str!("../../shaders/voxel/voxel_ao.wgsl");
+const OCCLUSION_FILTRE: &str = include_str!("../../shaders/voxel/voxel_ao_filter.wgsl");
 const OMBRES_REMPLISSAGE: &str = include_str!("../../shaders/voxel/voxel_shadow_fill.wgsl");
 const OMBRES_ECHANTILLON: &str = include_str!("../../shaders/voxel/voxel_shadow_sample.wgsl");
 const AERIAL: &str = include_str!("../../shaders/sky/aerial.wgsl");
@@ -35,6 +37,16 @@ pub fn epaisseur() -> ModuleWgsl {
         "voxel_foliage_thickness",
         &[ciel::FRAME, FRAME, MONDE, MATERIAL_WGSL, EPAISSEUR],
     )
+}
+
+/// Occlusion ambiante tracée : uniforme d'image, monde, DDA partagé, point d'entrée.
+pub fn occlusion() -> ModuleWgsl {
+    assemble("voxel_ao", &[FRAME, MONDE, OCCLUSION])
+}
+
+/// Filtre bilatéral de l'occlusion ambiante.
+pub fn occlusion_filtre() -> ModuleWgsl {
+    assemble("voxel_ao_filter", &[FRAME, OCCLUSION_FILTRE])
 }
 
 /// Fusion des profondeurs.
@@ -65,6 +77,8 @@ pub fn tous() -> Vec<ModuleWgsl> {
         profondeur(),
         lumiere(),
         ombres_remplissage(),
+        occlusion(),
+        occlusion_filtre(),
     ]
 }
 

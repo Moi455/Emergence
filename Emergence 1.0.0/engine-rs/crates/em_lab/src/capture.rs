@@ -7,7 +7,7 @@ use crate::materiaux::{self, MateriauxScene, ModeDemande};
 use crate::scene::{self, HelloScene};
 use anyhow::Context;
 use clap::Args;
-use em_render::{GpuContext, GpuProfiler, OffscreenTarget, read_texture_png};
+use em_render::{GpuContext, GpuProfiler, OffscreenTarget, read_texture, read_texture_png};
 use std::path::PathBuf;
 use std::time::Instant;
 
@@ -53,6 +53,9 @@ pub fn executer(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
         }
         return Ok(());
     }
+    if a.arbre.ao_ab {
+        return capturer_ao_ab(gpu, a);
+    }
     let mut cible = OffscreenTarget::new(gpu, a.largeur, a.hauteur)?;
     let mut scene = scene::creer(&a.scene, &a.ciel, &a.arbre, gpu)?;
     let mut profil = GpuProfiler::new(gpu, 32);
@@ -88,5 +91,65 @@ pub fn executer(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
         debut.elapsed().as_secs_f64()
     );
     println!("{}", chemin.display());
+    Ok(())
+}
+
+/// Comparaison AVANT/APRÈS de l'occlusion ambiante (L14) : la même scène, le même soleil, la même caméra, rendue sans
+/// puis avec l'occlusion. Écrit trois PNG déterministes : `<nom>.png` (AVANT à gauche, APRÈS à droite), `<nom>_AVANT.png`
+/// et `<nom>_APRES.png`, et le JSON des deux réglages à côté.
+fn capturer_ao_ab(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
+    let sortie = a
+        .out
+        .clone()
+        .unwrap_or_else(|| dossier_captures().join(format!("{}_ao_ab.png", a.scene)));
+    let mut images = Vec::new();
+    let mut reglages = Vec::new();
+    for (sans_ao, etiquette) in [
+        (true, "AVANT : SANS OCCLUSION"),
+        (false, "APRES : AVEC OCCLUSION"),
+    ] {
+        let mut args = a.arbre.clone();
+        args.sans_ao = sans_ao;
+        let mut ciel = a.ciel.clone();
+        ciel.overlay = true;
+        let mut cible = OffscreenTarget::new(gpu, a.largeur, a.hauteur)?;
+        let mut scene = scene::creer(&a.scene, &ciel, &args, gpu)?;
+        scene.set_lignes_supplementaires(&[etiquette.to_owned()]);
+        let mut profil = GpuProfiler::new(gpu, 32);
+        for i in 0..=u64::from(a.frames) {
+            scene.dessiner(gpu, &mut cible, &mut profil, i, 0.0)?;
+        }
+        images.push(read_texture(gpu, cible.texture())?);
+        reglages.push(scene.reglages_json());
+    }
+    let stem = sortie
+        .file_stem()
+        .map_or_else(|| "ao_ab".into(), |s| s.to_string_lossy().into_owned());
+    let dossier = sortie
+        .parent()
+        .map_or_else(dossier_captures, std::path::Path::to_path_buf);
+    std::fs::create_dir_all(&dossier)?;
+    let (avant, apres) = (
+        dossier.join(format!("{stem}_AVANT.png")),
+        dossier.join(format!("{stem}_APRES.png")),
+    );
+    std::fs::write(&sortie, images[0].juxtaposer(&images[1], 6)?.encoder_png()?)?;
+    std::fs::write(&avant, images[0].encoder_png()?)?;
+    std::fs::write(&apres, images[1].encoder_png()?)?;
+    let json = serde_json::json!({
+        "scene": a.scene,
+        "resolution_each": [a.largeur, a.hauteur],
+        "warmup_frames": a.frames,
+        "adapter": gpu.info().name,
+        "AVANT": reglages[0],
+        "APRES": reglages[1],
+    });
+    std::fs::write(
+        sortie.with_extension("json"),
+        serde_json::to_string_pretty(&json)?,
+    )?;
+    for c in [&sortie, &avant, &apres] {
+        println!("{}", c.display());
+    }
     Ok(())
 }

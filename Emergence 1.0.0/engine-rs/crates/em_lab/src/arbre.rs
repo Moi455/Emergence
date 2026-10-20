@@ -14,11 +14,11 @@ use em_core::VOXEL_MM;
 use em_material::MaterialTable;
 use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
-    AdapterReport, BloomPass, ClipmapConfig, ClipmapStreamer, CloudParams, DebugView, DepthMergePass,
-    FoliageLightParams, FoliageThicknessPass, FrameContext, FrameTarget, GpuContext, GpuMaterials,
-    GpuProfiler, LightSettings, LightingPass, Partage, PostParams, Projection, Regeneration, RenderGraph,
-    ShadowCascades, ShadowControl, ShadowParams, SkyBackgroundPass, SkyParams, SkyPass, SunModel,
-    TonemapPass, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
+    AdapterReport, AmbientOcclusionParams, AmbientOcclusionPass, BloomPass, ClipmapConfig, ClipmapStreamer,
+    CloudParams, DebugView, DepthMergePass, FoliageLightParams, FoliageThicknessPass, FrameContext,
+    FrameTarget, GpuContext, GpuMaterials, GpuProfiler, LightSettings, LightingPass, Partage, PostParams,
+    Projection, Regeneration, RenderGraph, ShadowCascades, ShadowControl, ShadowParams, SkyBackgroundPass,
+    SkyParams, SkyPass, SunModel, TonemapPass, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
 };
 use serde::Deserialize;
 
@@ -95,6 +95,27 @@ pub struct ArgsArbre {
     /// Biais de pente (texels × tangente).
     #[arg(long)]
     pub ombres_pente: Option<f32>,
+    /// Désactive l'occlusion ambiante tracée (comparaison A/B, mesure du coût de l'éclairage seul).
+    #[arg(long)]
+    pub sans_ao: bool,
+    /// Capture : deux rendus côte à côte, AVANT (sans occlusion ambiante) à gauche et APRÈS à droite.
+    #[arg(long)]
+    pub ao_ab: bool,
+    /// Rayons d'occlusion par pixel (1 à 16 ; défaut 6).
+    #[arg(long)]
+    pub ao_rayons: Option<u32>,
+    /// Portée des rayons d'occlusion en mètres (0,1 à 4 ; défaut 1,0).
+    #[arg(long)]
+    pub ao_portee: Option<f32>,
+    /// Force de l'occlusion ambiante (0 à 2 ; défaut 1).
+    #[arg(long)]
+    pub ao_force: Option<f32>,
+    /// Rayon du filtre bilatéral de l'occlusion en pixels (0 à 3 ; défaut 2).
+    #[arg(long)]
+    pub ao_filtre: Option<u32>,
+    /// Diviseur de résolution du tracé des rayons d'occlusion : 1 ou 2 (défaut 2 : un jeu de rayons par bloc de 2 x 2 pixels).
+    #[arg(long)]
+    pub ao_diviseur: Option<u32>,
     /// Éteint la lumière du feuillage (translucidité, liseré, épaisseur) : comparaison A/B et mesure du coût.
     #[arg(long)]
     pub sans_feuillage: bool,
@@ -143,6 +164,18 @@ pub struct ArgsArbre {
 }
 
 impl ArgsArbre {
+    /// Occlusion ambiante : défauts de `AmbientOcclusionParams` modifiés par la ligne de commande, validés.
+    pub fn parametres_ao(&self) -> anyhow::Result<AmbientOcclusionParams> {
+        let d = AmbientOcclusionParams::default();
+        Ok(AmbientOcclusionParams::new(
+            self.ao_rayons.unwrap_or(d.rays()),
+            self.ao_portee.unwrap_or(d.range_m()),
+        )?
+        .with_strength(self.ao_force.unwrap_or(d.strength()))?
+        .with_filter(self.ao_filtre.unwrap_or(d.filter_px()))?
+        .with_resolution_divisor(self.ao_diviseur.unwrap_or(d.resolution_divisor()))?)
+    }
+
     /// Réglages d'ombre : préréglage `haut` modifié par les options de la ligne de commande, validés.
     pub fn parametres_ombres(&self) -> anyhow::Result<ShadowParams> {
         let d = ShadowParams::default();
@@ -418,6 +451,14 @@ impl ArbreScene {
         graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
         graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
         graphe.add(Box::new(DepthMergePass::new()))?;
+        // Occlusion ambiante tracée : lue par l'éclairage (elle n'assombrit que l'ambiance).
+        let params_ao = a.parametres_ao()?;
+        if !a.sans_ao {
+            graphe.add(Box::new(AmbientOcclusionPass::new(
+                Partage::new(params_ao),
+                monde.bindings(),
+            )))?;
+        }
         if !a.sans_feuillage {
             // Épaisseur du feuillage le long du soleil : lue par l'éclairage (translucidité, liseré).
             graphe.add(Box::new(FoliageThicknessPass::new(
@@ -488,6 +529,7 @@ impl ArbreScene {
                 "slope_bias": params_ombres.slope_bias(),
                 "continuous": a.ombres_continu,
             }) },
+            "ambient_occlusion": ao_json(a.sans_ao, &params_ao),
             "view": a.vue,
             "voxel_mm": VOXEL_MM,
             "material_packet_fingerprint": format!("{:#018x}", materiaux.fingerprint()),
@@ -503,6 +545,20 @@ impl ArbreScene {
             texte,
         })
     }
+}
+
+/// Réglages d'occlusion ambiante pour le JSON écrit à côté d'une capture (nul si elle est éteinte).
+pub fn ao_json(sans_ao: bool, p: &AmbientOcclusionParams) -> serde_json::Value {
+    if sans_ao {
+        return serde_json::Value::Null;
+    }
+    serde_json::json!({
+        "rays": p.rays(),
+        "range_m": p.range_m(),
+        "strength": p.strength(),
+        "filter_px": p.filter_px(),
+        "resolution_divisor": p.resolution_divisor(),
+    })
 }
 
 fn noms(tirs: &[Tir]) -> String {

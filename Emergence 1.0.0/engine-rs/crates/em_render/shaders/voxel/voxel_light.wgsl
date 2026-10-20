@@ -13,7 +13,7 @@ struct LightU {
   vue: vec4<f32>,   // x = vue (0 image, 1 albédo, 2 normales, 3 distance, 4 masque...), y = ambiance, z = épaisseur dispo, w = zone (m)
   fa: vec4<f32>,    // x = force de la translucidité, y = longueur d'absorption (m), z = lobe avant, w = force du liseré
   fb: vec4<f32>,    // rgb = teinte de transmission, w = épaisseur du liseré (m)
-  fc: vec4<f32>,    // x = saturation du feuillage, y = soulèvement des ombres
+  fc: vec4<f32>,    // x = saturation du feuillage, y = soulèvement des ombres, z = occlusion ambiante disponible
   fd: vec4<f32>,    // rgb = teinte du soulèvement des ombres
 };
 @group(1) @binding(1) var<uniform> LU: LightU;
@@ -22,6 +22,7 @@ struct LightU {
 @group(1) @binding(4) var gb2: texture_2d<f32>;
 @group(1) @binding(5) var dist_tex: texture_2d<f32>;
 @group(1) @binding(6) var thick_tex: texture_2d<f32>;   // épaisseur de feuillage le long du soleil (m), 1000 = barré
+@group(1) @binding(7) var ao_tex: texture_2d<f32>;      // visibilité de l'ambiance (L14) : 1 libre, 0 enfermé
 
 const LUMA: vec3<f32> = vec3<f32>(0.2126, 0.7152, 0.0722);
 const BLOQUE_M: f32 = 1000.0;
@@ -90,6 +91,17 @@ fn oct_decode(packed: u32) -> vec3<f32> {
     n = vec3<f32>(t.x, t.y, n.z);
   }
   return normalize(n);
+}
+
+// Occlusion de l'ambiance AVEC REBONDS (approximation de Jimenez et al., « Practical Real-Time Strategies for Accurate
+// Indirect Occlusion », 2016) : la lumière qui rebondit dans un creux prend la couleur de l'albédo, donc un creux de
+// feuillage reste vert profond (pas gris, pas noir) et un joint de pierre reste chaud. Égale `ao` pour un albédo moyen
+// de 0,5 environ, plus clair (plus de rebond) pour les albédos clairs.
+fn ao_couleur(ao: f32, albedo: vec3<f32>) -> vec3<f32> {
+  let a = 2.0404 * albedo - vec3<f32>(0.3324);
+  let b = -4.7951 * albedo + vec3<f32>(0.6417);
+  let c = 2.7552 * albedo + vec3<f32>(0.6903);
+  return max(vec3<f32>(ao), ((vec3<f32>(ao) * a + b) * ao + c) * ao);
 }
 
 // Visibilité du soleil EN UNE PRISE (sans pénombre) pour un point au-delà de la zone de feuillage : l'occulteur est loin,
@@ -195,7 +207,12 @@ fn sun_visible_hard(p: vec3<f32>) -> f32 {
     }
   }
 
-  let surface = alb * (direct + ambiant + soulevement) + extra;
+  // Occlusion ambiante (L14) : assombrit l'ambiance du ciel et le soulèvement bleu-violet (l'indirect), jamais le soleil
+  // direct (qui a ses ombres de L11). Aucune obscurité grise : le creux garde la couleur de l'albédo.
+  var ao = 1.0;
+  if (LU.fc.z > 0.5) { ao = textureLoad(ao_tex, px, 0).x; }
+  if (view == 7u) { return vec4<f32>(ao, ao, ao, 1.0); }
+  let surface = alb * (direct + ambiant * ao_couleur(ao, alb) + soulevement * ao) + extra;
   let lointain = applyAerial(surface, dir, dist);
 
   // Raccord provisoire du sol : la clipmap n'a qu'un niveau (25 m autour de la caméra, L26 ajoute les autres). Au

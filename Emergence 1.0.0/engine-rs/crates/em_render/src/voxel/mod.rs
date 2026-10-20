@@ -6,6 +6,7 @@
 //! les passes dessinent ; aucun ne fait le travail d'un autre.
 
 pub mod alloc;
+pub mod ao;
 pub mod camera;
 mod depth;
 pub mod foliage;
@@ -21,6 +22,7 @@ mod streamer;
 mod trace;
 mod world;
 
+pub use ao::{AmbientOcclusionParams, AmbientOcclusionPass};
 pub use camera::{Projection, VoxelCamera};
 pub use depth::DepthMergePass;
 pub use foliage::{FoliageLightParams, FoliageThicknessPass, LeafLightSample};
