@@ -10,12 +10,14 @@ mod fond;
 mod gpu;
 mod lut;
 mod params;
+mod reference;
 pub mod shaders;
 
 pub use fond::SkyBackgroundPass;
 pub use gpu::SkyFrame;
 pub use lut::SkyPass;
 pub use params::{CloudParams, SkyParams, SunModel};
+pub use reference::AtmosphereReference;
 
 /// Ressources que le ciel publie dans le graphe.
 pub mod noms {

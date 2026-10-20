@@ -1,6 +1,9 @@
-//! `LightingPass` : soleil lambertien (avec les ombres en cascades de L11 si `ShadowCascades` précède) et ciel de
-//! Hillaire sur le G-buffer, sans occlusion (L14), sans indirect (L15). Écrit dans la cible HDR du fond de ciel, là où le tracé a touché un voxel.
+//! `LightingPass` : soleil lambertien (couleur de la transmittance de l'atmosphère de Hillaire, ombres en cascades de
+//! L11 si `ShadowCascades` précède), ambiance de l'hémisphère du ciel, translucidité et liseré du feuillage (L10 étendue,
+//! épaisseur de `FoliageThicknessPass` si elle précède), sans occlusion (L14), sans indirect (L15). Écrit dans la cible
+//! HDR du fond de ciel, là où le tracé a touché un voxel.
 
+use super::foliage::{FoliageLightParams, noms as noms_feuillage};
 use super::gbuffer::{self, noms};
 use super::gpu::{LightUniform, ShadowUniform, VoxelFrame};
 use super::shaders;
@@ -66,6 +69,7 @@ impl DebugView {
 pub struct LightSettings {
     view: DebugView,
     ambient: f32,
+    foliage: FoliageLightParams,
 }
 
 impl LightSettings {
@@ -76,7 +80,22 @@ impl LightSettings {
                 "ambiance = {ambient} hors de [0, 4]"
             )));
         }
-        Ok(Self { view, ambient })
+        Ok(Self {
+            view,
+            ambient,
+            foliage: FoliageLightParams::default(),
+        })
+    }
+
+    /// Remplace les réglages de la lumière du feuillage.
+    pub fn with_foliage(mut self, foliage: FoliageLightParams) -> Self {
+        self.foliage = foliage;
+        self
+    }
+
+    /// Réglages de la lumière du feuillage.
+    pub fn foliage(&self) -> FoliageLightParams {
+        self.foliage
     }
 
     /// Vue affichée.
@@ -95,6 +114,7 @@ impl Default for LightSettings {
         Self {
             view: DebugView::Beauty,
             ambient: 1.0,
+            foliage: FoliageLightParams::default(),
         }
     }
 }
@@ -106,6 +126,8 @@ struct Gpu {
     groupe_ombres: wgpu::BindGroup,
     uniforme: wgpu::Buffer,
     hdr: wgpu::TextureView,
+    /// `true` si `FoliageThicknessPass` a publié l'épaisseur (sinon la translucidité est éteinte).
+    epaisseur_active: bool,
 }
 
 /// Éclairage différé v0.
@@ -153,18 +175,21 @@ impl RenderPass for LightingPass {
         };
         let dev = g.device();
         let f = Etage::FRAGMENT;
+        // Le sommet lit aussi le ciel et l'uniforme : il précalcule l'ambiance des six faces d'un voxel.
+        let vf_etage = Etage::VERTEX_FRAGMENT;
         let bgl_ciel = MiseEnPage::new()
-            .uniforme(f)
-            .texture(f)
-            .texture(f)
-            .echantillonneur(f)
+            .uniforme(vf_etage)
+            .texture(vf_etage)
+            .texture(vf_etage)
+            .echantillonneur(vf_etage)
             .creer(dev, "lumière ciel bgl");
         let bgl_gb = MiseEnPage::new()
             .uniforme(f)
-            .uniforme(f)
+            .uniforme(vf_etage)
             .texture(f)
             .texture_uint(f)
             .texture(f)
+            .texture_float_brute(f)
             .texture_float_brute(f)
             .creer(dev, "lumière gbuffer bgl");
         let uniforme = dev.create_buffer(&wgpu::BufferDescriptor {
@@ -173,6 +198,28 @@ impl RenderPass for LightingPass {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
+        // Épaisseur du feuillage : celle de `FoliageThicknessPass` si elle précède, sinon une texture factice et la
+        // translucidité éteinte.
+        let (vue_epaisseur, epaisseur_active) = match res.view(noms_feuillage::EPAISSEUR) {
+            Some(v) => (v, true),
+            None => {
+                let t = dev.create_texture(&wgpu::TextureDescriptor {
+                    label: Some("épaisseur factice"),
+                    size: wgpu::Extent3d {
+                        width: 1,
+                        height: 1,
+                        depth_or_array_layers: 1,
+                    },
+                    mip_level_count: 1,
+                    sample_count: 1,
+                    dimension: wgpu::TextureDimension::D2,
+                    format: wgpu::TextureFormat::R32Float,
+                    usage: wgpu::TextureUsages::TEXTURE_BINDING,
+                    view_formats: &[],
+                });
+                (t.create_view(&wgpu::TextureViewDescriptor::default()), false)
+            }
+        };
         let ech = echantillonneur_lineaire(dev);
         let entree = |binding: u32, resource| wgpu::BindGroupEntry { binding, resource };
         let groupe_ciel = dev.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -195,6 +242,7 @@ impl RenderPass for LightingPass {
                 entree(3, wgpu::BindingResource::TextureView(&gb1)),
                 entree(4, wgpu::BindingResource::TextureView(&gb2)),
                 entree(5, wgpu::BindingResource::TextureView(&dist)),
+                entree(6, wgpu::BindingResource::TextureView(&vue_epaisseur)),
             ],
         });
         // Ombres : les cascades de `ShadowCascades` si la passe précède, sinon un uniforme « inactif » et une texture
@@ -316,14 +364,21 @@ impl RenderPass for LightingPass {
             groupe_ombres,
             uniforme,
             hdr,
+            epaisseur_active,
         });
     }
 
     fn encode(&mut self, ctx: &mut PassContext<'_>) {
         let Some(gpu) = &self.gpu else { return };
         let (r, _) = self.reglages.lire();
+        let f = r.foliage();
+        let active = if gpu.epaisseur_active { 1.0 } else { 0.0 };
         let u = LightUniform {
-            vue: [r.view().code(), r.ambient(), 0.0, 0.0],
+            vue: [r.view().code(), r.ambient(), active, f.zone_m()],
+            feuillage_a: [f.translucency(), f.absorption_m(), f.forward(), f.rim()],
+            feuillage_b: [f.tint()[0], f.tint()[1], f.tint()[2], f.rim_thickness_m()],
+            feuillage_c: [f.saturation(), f.shadow_lift(), 0.0, 0.0],
+            feuillage_d: [f.shadow_tint()[0], f.shadow_tint()[1], f.shadow_tint()[2], 0.0],
         };
         ctx.gpu()
             .queue()

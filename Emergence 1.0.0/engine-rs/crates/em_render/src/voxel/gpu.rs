@@ -63,13 +63,22 @@ pub struct VoxelFrame {
     pub params: [f32; 4],
 }
 
-/// Uniforme de l'éclairage : soleil et vue de débogage.
+/// Uniforme de l'éclairage : vue de débogage, ambiance et lumière du feuillage (miroir de `struct LightU` de
+/// `voxel_light.wgsl`). Le soleil vient de l'uniforme du ciel : une seule source de vérité.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
 pub struct LightUniform {
-    /// x = vue (0 image, 1 albédo, 2 normales, 3 distance, 4 masque), y = échelle du ciel, z, w = réservés.
-    /// (Le soleil vient de l'uniforme du ciel : une seule source de vérité.)
+    /// x = vue (0 image, 1 albédo, 2 normales, 3 distance, 4 masque, 5 ombre, 6 cascades), y = échelle du ciel,
+    /// z = 1 si l'épaisseur du feuillage est disponible, w = longueur de la zone d'épaisseur (m).
     pub vue: [f32; 4],
+    /// x = force de la translucidité, y = longueur d'absorption (m), z = lobe avant, w = force du liseré.
+    pub feuillage_a: [f32; 4],
+    /// rgb = teinte de transmission, w = épaisseur du liseré (m).
+    pub feuillage_b: [f32; 4],
+    /// x = saturation du feuillage, y = soulèvement des ombres, zw réservés.
+    pub feuillage_c: [f32; 4],
+    /// rgb = teinte du soulèvement des ombres, w réservé.
+    pub feuillage_d: [f32; 4],
 }
 
 /// Une cascade d'ombre vue par l'éclairage (miroir de `struct ShadowCascadeU` de `voxel_shadow_sample.wgsl`).
@@ -131,7 +140,7 @@ pub struct ShadowTileGpu {
 
 const _: () = assert!(size_of::<ClipLevel>() == 32);
 const _: () = assert!(size_of::<VoxelFrame>() == 7 * 16);
-const _: () = assert!(size_of::<LightUniform>() == 16);
+const _: () = assert!(size_of::<LightUniform>() == 5 * 16);
 const _: () = assert!(size_of::<ShadowCascadeUniform>() == 80);
 const _: () = assert!(size_of::<ShadowUniform>() == 48 + 4 * 80);
 const _: () = assert!(size_of::<ShadowFillCascade>() == 96);

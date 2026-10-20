@@ -8,6 +8,7 @@
 pub mod alloc;
 pub mod camera;
 mod depth;
+pub mod foliage;
 pub mod gbuffer;
 pub mod gpu;
 mod light;
@@ -22,6 +23,7 @@ mod world;
 
 pub use camera::{Projection, VoxelCamera};
 pub use depth::DepthMergePass;
+pub use foliage::{FoliageLightParams, FoliageThicknessPass, LeafLightSample};
 pub use gbuffer::noms;
 pub use light::{DebugView, LightSettings, LightingPass};
 pub use material_pass::VoxelMaterialPass;

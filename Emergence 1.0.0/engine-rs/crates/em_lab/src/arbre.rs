@@ -15,10 +15,10 @@ use em_material::MaterialTable;
 use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
     AdapterReport, BloomPass, ClipmapConfig, ClipmapStreamer, CloudParams, DebugView, DepthMergePass,
-    FrameContext, FrameTarget, GpuContext, GpuMaterials, GpuProfiler, LightSettings, LightingPass, Partage,
-    PostParams, Projection, Regeneration, RenderGraph, ShadowCascades, ShadowControl, ShadowParams,
-    SkyBackgroundPass, SkyParams, SkyPass, SunModel, TonemapPass, VoxelCamera, VoxelGpuWorld,
-    VoxelMaterialPass, VoxelTracePass,
+    FoliageLightParams, FoliageThicknessPass, FrameContext, FrameTarget, GpuContext, GpuMaterials,
+    GpuProfiler, LightSettings, LightingPass, Partage, PostParams, Projection, Regeneration, RenderGraph,
+    ShadowCascades, ShadowControl, ShadowParams, SkyBackgroundPass, SkyParams, SkyPass, SunModel,
+    TonemapPass, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
 };
 use serde::Deserialize;
 
@@ -95,6 +95,51 @@ pub struct ArgsArbre {
     /// Biais de pente (texels × tangente).
     #[arg(long)]
     pub ombres_pente: Option<f32>,
+    /// Éteint la lumière du feuillage (translucidité, liseré, épaisseur) : comparaison A/B et mesure du coût.
+    #[arg(long)]
+    pub sans_feuillage: bool,
+    /// Force de la translucidité des feuilles (0 à 4 ; défaut 1,1).
+    #[arg(long)]
+    pub feuillage_translucidite: Option<f32>,
+    /// Longueur d'absorption du feuillage en mètres (0,05 à 2 ; défaut 1,0).
+    #[arg(long)]
+    pub feuillage_absorption: Option<f32>,
+    /// Lobe vers l'avant de la translucidité (0 à 1 ; défaut 0,5).
+    #[arg(long)]
+    pub feuillage_avant: Option<f32>,
+    /// Teinte de transmission `r,v,b` (chaque canal 0 à 2 ; défaut 0.7,1,0.2).
+    #[arg(long, value_delimiter = ',')]
+    pub feuillage_teinte: Option<Vec<f32>>,
+    /// Force du liseré de contre-jour (0 à 4 ; défaut 0,3).
+    #[arg(long)]
+    pub feuillage_lisere: Option<f32>,
+    /// Épaisseur de feuillage sous laquelle le liseré brille, en mètres (0,05 à 1 ; défaut 0,20).
+    #[arg(long)]
+    pub feuillage_lisere_epaisseur: Option<f32>,
+    /// Saturation du feuillage (0,5 à 2 ; défaut 1,05).
+    #[arg(long)]
+    pub feuillage_saturation: Option<f32>,
+    /// Soulèvement bleu-violet des ombres, part de l'éclairement du soleil (0 à 0,5 ; défaut 0,02).
+    #[arg(long)]
+    pub feuillage_ombres: Option<f32>,
+    /// Teinte du soulèvement des ombres `r,v,b` (défaut 0.45,0.55,1).
+    #[arg(long, value_delimiter = ',')]
+    pub feuillage_ombres_teinte: Option<Vec<f32>>,
+    /// Voxels comptés le long du soleil pour l'épaisseur (4 à 48 ; défaut 48).
+    #[arg(long)]
+    pub feuillage_zone: Option<u32>,
+    /// Gain d'exposition du regard, multiplie `--exposure` (0,25 à 4 ; défaut 0,8).
+    #[arg(long)]
+    pub regard_exposition: Option<f32>,
+    /// Saturation du regard AgX (0,5 à 2 ; défaut 1,1).
+    #[arg(long)]
+    pub regard_saturation: Option<f32>,
+    /// Contraste du regard AgX, puissance (0,5 à 2 ; défaut 1,2).
+    #[arg(long)]
+    pub regard_contraste: Option<f32>,
+    /// Chaleur du regard à la golden hour (0 à 0,3 ; défaut 0,10) : nulle au-dessus de 30° de soleil, pleine sous 5°.
+    #[arg(long)]
+    pub regard_chaleur: Option<f32>,
 }
 
 impl ArgsArbre {
@@ -122,6 +167,63 @@ impl ArgsArbre {
             p = p.with_regeneration(Regeneration::Continue);
         }
         Ok(p)
+    }
+}
+
+fn teinte(nom: &str, v: &Option<Vec<f32>>, defaut: [f32; 3]) -> anyhow::Result<[f32; 3]> {
+    match v {
+        Some(v) if v.len() == 3 => Ok([v[0], v[1], v[2]]),
+        Some(_) => bail!("{nom} attend trois nombres r,v,b"),
+        None => Ok(defaut),
+    }
+}
+
+impl ArgsArbre {
+    /// Lumière du feuillage : défauts de `FoliageLightParams` modifiés par la ligne de commande, validés.
+    pub fn parametres_feuillage(&self) -> anyhow::Result<FoliageLightParams> {
+        let d = FoliageLightParams::default();
+        let p = FoliageLightParams::new(
+            self.feuillage_translucidite.unwrap_or(d.translucency()),
+            self.feuillage_absorption.unwrap_or(d.absorption_m()),
+        )?
+        .with_transmission(
+            self.feuillage_avant.unwrap_or(d.forward()),
+            teinte("--feuillage-teinte", &self.feuillage_teinte, d.tint())?,
+        )?
+        .with_rim(
+            self.feuillage_lisere.unwrap_or(d.rim()),
+            self.feuillage_lisere_epaisseur.unwrap_or(d.rim_thickness_m()),
+        )?
+        .with_color(
+            self.feuillage_saturation.unwrap_or(d.saturation()),
+            self.feuillage_ombres.unwrap_or(d.shadow_lift()),
+            teinte(
+                "--feuillage-ombres-teinte",
+                &self.feuillage_ombres_teinte,
+                d.shadow_tint(),
+            )?,
+        )?
+        .with_zone(self.feuillage_zone.unwrap_or(d.zone_voxels()))?
+        .with_grade(
+            self.regard_exposition.unwrap_or(d.exposure_gain()),
+            self.regard_saturation.unwrap_or(d.grade_saturation()),
+            self.regard_contraste.unwrap_or(d.grade_contrast()),
+            self.regard_chaleur.unwrap_or(d.grade_warmth()),
+        )?;
+        Ok(if self.sans_feuillage {
+            // Éteint la translucidité et le liseré ; la saturation et le regard restent ceux demandés.
+            FoliageLightParams::new(0.0, p.absorption_m())?
+                .with_rim(0.0, p.rim_thickness_m())?
+                .with_color(p.saturation(), p.shadow_lift(), p.shadow_tint())?
+                .with_grade(
+                    p.exposure_gain(),
+                    p.grade_saturation(),
+                    p.grade_contrast(),
+                    p.grade_warmth(),
+                )?
+        } else {
+            p
+        })
     }
 }
 
@@ -282,14 +384,22 @@ impl ArbreScene {
         )?
         .with_clouds(nuages);
         let partage_ciel = Partage::new(params_ciel);
-        let post = Partage::new(PostParams::new(ciel.exposure, ciel.bloom)?);
+        let feuillage = a.parametres_feuillage()?;
+        let post = Partage::new(
+            PostParams::new(ciel.exposure * feuillage.exposure_gain(), ciel.bloom)?.with_look(
+                0.10,
+                feuillage.grade_saturation(),
+                feuillage.grade_contrast(),
+                feuillage.warmth_at(elevation),
+            )?,
+        );
         let vue = DebugView::from_name(&a.vue).with_context(|| {
             format!(
                 "vue « {} » inconnue (image, albedo, normales, distance, masque)",
                 a.vue
             )
         })?;
-        let lumiere = Partage::new(LightSettings::new(vue, a.ambiance)?);
+        let lumiere = Partage::new(LightSettings::new(vue, a.ambiance)?.with_foliage(feuillage));
 
         let params_ombres = a.parametres_ombres()?;
         let monde = VoxelGpuWorld::new(gpu, ClipmapConfig::laboratoire())?;
@@ -308,13 +418,21 @@ impl ArbreScene {
         graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
         graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
         graphe.add(Box::new(DepthMergePass::new()))?;
+        if !a.sans_feuillage {
+            // Épaisseur du feuillage le long du soleil : lue par l'éclairage (translucidité, liseré).
+            graphe.add(Box::new(FoliageThicknessPass::new(
+                lumiere.clone(),
+                monde.bindings(),
+                materiaux.bindings(),
+            )))?;
+        }
         graphe.add(Box::new(LightingPass::new(lumiere)))?;
         graphe.add(Box::new(BloomPass::new()))?;
         graphe.add(Box::new(TonemapPass::new(post)))?;
         let texte = if ciel.overlay {
             let t = OverlayText::new();
             t.set_lines(vec![
-                "EMERGENCE - ARBRE (L11)".to_owned(),
+                "EMERGENCE - ARBRE (L10)".to_owned(),
                 format!("GPU: {}", info.name),
                 format!("SOLEIL: {elevation:.1} / {azimut:.1} DEG ({heure:.1} H)"),
             ]);
@@ -340,6 +458,24 @@ impl ArbreScene {
             "exposure": ciel.exposure,
             "bloom": ciel.bloom,
             "ambient": a.ambiance,
+            "foliage": if a.sans_feuillage { serde_json::Value::Null } else { serde_json::json!({
+                "translucency": feuillage.translucency(),
+                "absorption_m": feuillage.absorption_m(),
+                "forward": feuillage.forward(),
+                "tint": feuillage.tint(),
+                "rim": feuillage.rim(),
+                "rim_thickness_m": feuillage.rim_thickness_m(),
+                "zone_voxels": feuillage.zone_voxels(),
+            }) },
+            "grade": {
+                "exposure_gain": feuillage.exposure_gain(),
+                "saturation": feuillage.grade_saturation(),
+                "contrast": feuillage.grade_contrast(),
+                "warmth": feuillage.warmth_at(elevation),
+                "leaf_saturation": feuillage.saturation(),
+                "shadow_lift": feuillage.shadow_lift(),
+                "shadow_tint": feuillage.shadow_tint(),
+            },
             "shadows": if a.sans_ombres { serde_json::Value::Null } else { serde_json::json!({
                 "cascades": params_ombres.cascades(),
                 "size": params_ombres.size(),
@@ -417,7 +553,7 @@ impl Scene for ArbreScene {
 
     fn set_lignes_supplementaires(&self, extra: &[String]) {
         if let Some(t) = &self.texte {
-            let mut l = vec!["EMERGENCE - ARBRE (L11)".to_owned()];
+            let mut l = vec!["EMERGENCE - ARBRE (L10)".to_owned()];
             l.extend_from_slice(extra);
             t.set_lines(l);
         }

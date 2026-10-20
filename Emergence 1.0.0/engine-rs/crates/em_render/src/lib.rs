@@ -32,11 +32,12 @@ pub use liaisons::HDR_FORMAT;
 pub use partage::Partage;
 pub use post::{BloomPass, PostParams, TonemapPass};
 pub use profiler::{GpuProfiler, PassTiming, ProfileReport};
-pub use sky::{CloudParams, SkyBackgroundPass, SkyParams, SkyPass, SunModel};
+pub use sky::{AtmosphereReference, CloudParams, SkyBackgroundPass, SkyParams, SkyPass, SunModel};
 pub use target::{FrameTarget, OffscreenTarget, TargetFrame, WindowTarget};
 pub use voxel::{
-    ChunkFlags, ClipmapConfig, ClipmapStreamer, DebugView, DepthMergePass, GpuMaterials, LightSettings,
-    LightingPass, Projection, Regeneration, ShadowCascades, ShadowControl, ShadowParams, VoxelCamera,
-    VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
+    ChunkFlags, ClipmapConfig, ClipmapStreamer, DebugView, DepthMergePass, FoliageLightParams,
+    FoliageThicknessPass, GpuMaterials, LeafLightSample, LightSettings, LightingPass, Projection,
+    Regeneration, ShadowCascades, ShadowControl, ShadowParams, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass,
+    VoxelTracePass,
 };
 pub use wgpu;

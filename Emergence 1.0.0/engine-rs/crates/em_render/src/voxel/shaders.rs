@@ -10,6 +10,7 @@ const TRACE: &str = include_str!("../../shaders/voxel/voxel_trace.wgsl");
 const MATIERE: &str = include_str!("../../shaders/voxel/voxel_material.wgsl");
 const PROFONDEUR: &str = include_str!("../../shaders/voxel/voxel_depth.wgsl");
 const LUMIERE: &str = include_str!("../../shaders/voxel/voxel_light.wgsl");
+const EPAISSEUR: &str = include_str!("../../shaders/voxel/voxel_foliage_thickness.wgsl");
 const OMBRES_REMPLISSAGE: &str = include_str!("../../shaders/voxel/voxel_shadow_fill.wgsl");
 const OMBRES_ECHANTILLON: &str = include_str!("../../shaders/voxel/voxel_shadow_sample.wgsl");
 const AERIAL: &str = include_str!("../../shaders/sky/aerial.wgsl");
@@ -26,6 +27,14 @@ pub fn trace() -> ModuleWgsl {
 /// Passe de matière : uniforme d'image, matières de `em_material`, évaluation, écriture du G-buffer.
 pub fn matiere() -> ModuleWgsl {
     assemble("voxel_material", &[FRAME, MATERIAL_WGSL, MATIERE])
+}
+
+/// Épaisseur de feuillage le long du soleil : struct `Frame` du ciel (soleil), uniforme d'image, monde, matières.
+pub fn epaisseur() -> ModuleWgsl {
+    assemble(
+        "voxel_foliage_thickness",
+        &[ciel::FRAME, FRAME, MONDE, MATERIAL_WGSL, EPAISSEUR],
+    )
 }
 
 /// Fusion des profondeurs.
@@ -49,7 +58,14 @@ pub fn ombres_remplissage() -> ModuleWgsl {
 
 /// Tous les modules du rendu voxel (le test `shaders_voxel_validate` les passe à `naga`).
 pub fn tous() -> Vec<ModuleWgsl> {
-    vec![trace(), matiere(), profondeur(), lumiere(), ombres_remplissage()]
+    vec![
+        trace(),
+        matiere(),
+        epaisseur(),
+        profondeur(),
+        lumiere(),
+        ombres_remplissage(),
+    ]
 }
 
 #[cfg(test)]
