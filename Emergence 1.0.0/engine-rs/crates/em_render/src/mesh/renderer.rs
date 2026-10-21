@@ -8,6 +8,7 @@ use super::ambient::AMBIANCE;
 use super::frustum::Frustum;
 use super::shaders;
 use super::shadow::noms as noms_ombres;
+use super::style::{MeshStyle, StyleUniform};
 use super::world::MeshWorld;
 use crate::gpu::GpuContext;
 use crate::graph::{PassContext, PassName, PassSetup, RenderPass, Resources};
@@ -54,6 +55,7 @@ pub struct MeshRenderer {
     monde: MeshWorld,
     reglages: Partage<LightSettings>,
     occlusion: bool,
+    style: MeshStyle,
     gpu: Option<Gpu>,
 }
 
@@ -67,8 +69,15 @@ impl MeshRenderer {
             monde,
             reglages,
             occlusion: true,
+            style: MeshStyle::new(),
             gpu: None,
         }
+    }
+
+    /// Style de L34 : relief froissé, occlusion creuse (tables), chaleur de l'ambiance.
+    pub fn with_style(mut self, style: MeshStyle) -> Self {
+        self.style = style;
+        self
     }
 
     /// Allume ou éteint l'occlusion ambiante BAKÉE dans les sommets (comparaisons A/B, essais contre le tracé).
@@ -122,6 +131,7 @@ impl RenderPass for MeshRenderer {
             .uniforme(vf)
             .uniforme(f)
             .texture(f)
+            .uniforme(vf)
             .creer(dev, "maillage image bgl");
         let uniforme_image = dev.create_buffer(&wgpu::BufferDescriptor {
             label: Some("maillage image uniforme"),
@@ -135,6 +145,14 @@ impl RenderPass for MeshRenderer {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
+        let uniforme_style = dev.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("maillage style uniforme"),
+            size: size_of::<StyleUniform>() as u64,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+        g.queue()
+            .write_buffer(&uniforme_style, 0, bytemuck::bytes_of(&self.style.uniform()));
         let ech = echantillonneur_lineaire(dev);
         let entree = |binding: u32, resource| wgpu::BindGroupEntry { binding, resource };
         let groupe_ciel = dev.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -154,6 +172,7 @@ impl RenderPass for MeshRenderer {
                 entree(0, uniforme_image.as_entire_binding()),
                 entree(1, uniforme_lumiere.as_entire_binding()),
                 entree(2, wgpu::BindingResource::TextureView(&ambiance)),
+                entree(3, uniforme_style.as_entire_binding()),
             ],
         });
         // Ombres : celles de `MeshShadowPass` si elle précède, sinon un uniforme « inactif » et une profondeur factice.

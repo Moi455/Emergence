@@ -14,10 +14,12 @@ mod frustum;
 mod renderer;
 pub mod shaders;
 mod shadow;
+mod style;
 mod world;
 
 pub use ambient::{AMBIANCE, MeshAmbientPass};
 pub use frustum::Frustum;
 pub use renderer::{MeshRenderer, noms as noms_rendu};
 pub use shadow::{MeshShadowPass, boite_dans_fenetre, matrice_cascade, noms as noms_ombres};
+pub use style::{MeshStyle, ReliefParams, StyleError};
 pub use world::{ChunkBox, ChunkGpu, DrawChunk, MeshWorld, MeshWorldState, MeshWorldStats};

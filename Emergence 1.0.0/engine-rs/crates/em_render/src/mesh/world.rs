@@ -156,8 +156,16 @@ impl MeshWorldState {
             let rel32 = [rel[0] as f32, rel[1] as f32, rel[2] as f32];
             self.origines.push(rel32);
             let u = [rel32[0], rel32[1], rel32[2], echelle as f32 * 0.001];
+            // origine du chunk en voxels du niveau 0 (entiers exacts : le relief ancre son bruit au monde)
+            let vox: [i32; 4] = [
+                (i64::from(o.x) << c.lod) as i32,
+                (i64::from(o.y) << c.lod) as i32,
+                (i64::from(o.z) << c.lod) as i32,
+                0,
+            ];
             let debut = i * PAS_UNIFORME as usize;
             octets[debut..debut + 16].copy_from_slice(bytemuck::bytes_of(&u));
+            octets[debut + 16..debut + 32].copy_from_slice(bytemuck::bytes_of(&vox));
         }
         if let Some(b) = &self.uniformes {
             queue.write_buffer(b, 0, &octets);
@@ -228,7 +236,7 @@ impl MeshWorld {
                     wgpu::BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: true,
-                        min_binding_size: wgpu::BufferSize::new(16),
+                        min_binding_size: wgpu::BufferSize::new(32),
                     },
                     wgpu::ShaderStages::VERTEX,
                 ),
@@ -318,7 +326,7 @@ impl MeshWorld {
                         resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
                             buffer: &tampon_uniformes,
                             offset: 0,
-                            size: wgpu::BufferSize::new(16),
+                            size: wgpu::BufferSize::new(32),
                         }),
                     },
                     wgpu::BindGroupEntry {

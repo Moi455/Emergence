@@ -71,6 +71,50 @@ fn main() -> anyhow_free::Result {
             med.0, med.1, max.0, max.1, max.2
         );
     }
+    // L34 : coût de l'occlusion creuse, le chunk de houppier le plus dense et la médiane, un cœur, portées 0 (éteint) à 3
+    {
+        let chunks = WorldMesher::new(&scene, &colorier, 0, MesherConfig::default()).charger(&cles);
+        let dense = *cles
+            .iter()
+            .max_by_key(|k| {
+                let m = ChunkMesher::new(&colorier, MesherConfig::default());
+                let cherche = |c: ChunkKey| chunks.get(&c);
+                m.mesh(**k, 0, &PaddedChunk::gather(**k, &cherche)).quad_count()
+            })
+            .expect("clés");
+        for portee in [None, Some(1), Some(2), Some(3)] {
+            let m = ChunkMesher::new(&colorier, MesherConfig::default().with_creux_reach(portee));
+            let cherche = |c: ChunkKey| chunks.get(&c);
+            let mut dts = Vec::new();
+            let mut quads = 0;
+            for _ in 0..7 {
+                let t = Instant::now();
+                let mesh = m.mesh(dense, 0, &PaddedChunk::gather(dense, &cherche));
+                dts.push(t.elapsed().as_secs_f64() * 1e3);
+                quads = mesh.quad_count();
+            }
+            dts.sort_by(f64::total_cmp);
+            println!(
+                "creux {portee:?} : chunk de houppier le plus dense {dense:?} : médiane {:.2} ms, {quads} quads",
+                dts[3]
+            );
+        }
+        for portee in [None, Some(2)] {
+            let wm = WorldMesher::new(
+                &scene,
+                &colorier,
+                0,
+                MesherConfig::default().with_creux_reach(portee),
+            );
+            let t = Instant::now();
+            let meshes = wm.mailler(&cles, &chunks);
+            println!(
+                "creux {portee:?} : chêne entier parallèle {:.1} ms, {} quads",
+                t.elapsed().as_secs_f64() * 1e3,
+                meshes.iter().map(|m| m.quad_count()).sum::<usize>()
+            );
+        }
+    }
     // re-maillage d'un chunk modifié : un voxel posé dans le chunk le plus chargé, puis maillage seul d'un cœur
     let (mut meilleur, mut cle) = (0_u32, cles[0]);
     let chunks = WorldMesher::new(&scene, &colorier, 0, MesherConfig::default()).charger(&cles);

@@ -1,5 +1,6 @@
-//! `PaddedChunk` : un chunk 64³ et sa bordure d'UN voxel (66³), lue dans les 26 chunks voisins. Le mailleur ne lit
-//! que ce tableau dense : visibilité des faces et occlusion ambiante restent exactes aux bords du chunk.
+//! `PaddedChunk` : un chunk 64³ et sa bordure de [`PAD`] voxels (70³), lue dans les 26 chunks voisins. Le mailleur ne
+//! lit que ce tableau dense : visibilité des faces, occlusion ambiante par sommet (1 voxel) et occlusion « creuse » à
+//! plus grande portée (jusqu'à [`PAD`] voxels, L34) restent exactes aux bords du chunk.
 //!
 //! Un voisin absent (chunk non chargé, bord du monde) est traité comme PLEIN et opaque : aucune face n'est dessinée
 //! contre un trou, aucune face de dessous n'apparaît au bord d'une région.
@@ -7,8 +8,10 @@
 use em_core::{ChunkKey, VoxelValue, brick_index, voxel_index};
 use em_voxel::{BRICK_VOLUME, Chunk, ChunkClass};
 
+/// Épaisseur de la bordure en voxels : la plus grande portée de l'occlusion creuse.
+pub const PAD: usize = 3;
 /// Arête du tableau avec sa bordure.
-pub const PADDED_EDGE: usize = 66;
+pub const PADDED_EDGE: usize = 64 + 2 * PAD;
 /// Voxels du tableau.
 const VOLUME: usize = PADDED_EDGE * PADDED_EDGE * PADDED_EDGE;
 /// Valeur d'un voisin absent : non nulle donc « solide ».
@@ -23,7 +26,8 @@ fn uniforme(chunk: &Chunk) -> Option<VoxelValue> {
     }
 }
 
-/// Chunk et sa bordure, en valeurs brutes de 16 bits. Indice `(x+1) + 66 (z+1) + 66² (y+1)`, `x, y, z` dans -1..=64.
+/// Chunk et sa bordure, en valeurs brutes de 16 bits. Indice `(x+PAD) + EDGE (z+PAD) + EDGE² (y+PAD)`, `x, y, z` dans
+/// -PAD..64+PAD.
 pub struct PaddedChunk {
     cells: Vec<u16>,
     non_air: u32,
@@ -33,9 +37,10 @@ impl PaddedChunk {
     /// Pas selon x, y, z dans le tableau.
     pub const STRIDE: [isize; 3] = [1, (PADDED_EDGE * PADDED_EDGE) as isize, PADDED_EDGE as isize];
 
-    /// Indice du voxel `(x, y, z)` (chacun dans -1..=64).
+    /// Indice du voxel `(x, y, z)` (chacun dans -PAD..64+PAD).
     pub const fn index(x: i32, y: i32, z: i32) -> usize {
-        (x + 1) as usize + PADDED_EDGE * (z + 1) as usize + PADDED_EDGE * PADDED_EDGE * (y + 1) as usize
+        let p = PAD as i32;
+        (x + p) as usize + PADDED_EDGE * (z + p) as usize + PADDED_EDGE * PADDED_EDGE * (y + p) as usize
     }
 
     /// Rassemble le chunk `key` et sa bordure ; `lookup` rend un chunk voisin, `None` s'il est absent. Le chunk du
@@ -61,12 +66,12 @@ impl PaddedChunk {
 
     /// Copie dans `cells` la partie du chunk voisin `d` (décalage en chunks) qui touche la zone 66³.
     fn copier(cells: &mut [u16], chunk: &Chunk, d: [i32; 3]) {
-        // plage locale à copier sur chaque axe : tout le chunk au centre, le voxel de bord 63 (ou 0) sinon
+        // plage locale à copier sur chaque axe : tout le chunk au centre, les PAD voxels de bord sinon
         let plage = |d: i32| -> (i32, i32) {
             match d {
                 0 => (0, 63),
-                -1 => (63, 63),
-                _ => (0, 0),
+                -1 => (64 - PAD as i32, 63),
+                _ => (0, PAD as i32 - 1),
             }
         };
         let ((x0, x1), (y0, y1), (z0, z1)) = (plage(d[0]), plage(d[1]), plage(d[2]));
@@ -118,8 +123,8 @@ impl PaddedChunk {
         }
     }
 
-    /// Occupation des rangées : pour chaque rangée `(y, z)` (indice `(y + 1) 66 + (z + 1)`), un mot de 128 bits dont le
-    /// bit `x + 1` dit si le voxel `(x, y, z)` est solide (x dans -1..=64).
+    /// Occupation des rangées : pour chaque rangée `(y, z)` (indice `(y + PAD) EDGE + (z + PAD)`), un mot de 128 bits
+    /// dont le bit `x + PAD` dit si le voxel `(x, y, z)` est solide (x dans -PAD..64+PAD).
     pub fn occupancy_rows(&self) -> Vec<u128> {
         let mut rangees = vec![0_u128; PADDED_EDGE * PADDED_EDGE];
         for (r, ligne) in self.cells.as_chunks::<PADDED_EDGE>().0.iter().enumerate() {
@@ -133,7 +138,7 @@ impl PaddedChunk {
         rangees
     }
 
-    /// Valeur brute du voxel `(x, y, z)` (chacun dans -1..=64).
+    /// Valeur brute du voxel `(x, y, z)` (chacun dans -PAD..64+PAD).
     pub fn raw(&self, x: i32, y: i32, z: i32) -> u16 {
         self.cells[Self::index(x, y, z)]
     }

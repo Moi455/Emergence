@@ -83,6 +83,7 @@ pub struct SurfaceSample {
     params: SurfaceParams,
     tone: Q16,
     wet: bool,
+    relief: u8,
 }
 
 impl SurfaceSample {
@@ -100,6 +101,11 @@ impl SurfaceSample {
     pub const fn is_wet(&self) -> bool {
         self.wet
     }
+
+    /// Force du relief sous-voxel de la classe, 0 (lisse : métal, verre) à 7 (froissé : pierre, bois).
+    pub const fn relief(&self) -> u8 {
+        self.relief
+    }
 }
 
 /// Ce qu'on sait d'une classe, calculé UNE fois depuis la table.
@@ -109,6 +115,8 @@ struct ClasseSurface {
     grain: u8,
     porosity: u8,
     reflection: u8,
+    /// Relief sous-voxel 0..7 (`relief` de `material_render.toml` : 0 lisse, 1 = 7).
+    relief: u8,
     /// Seuil (sur 65 536) sous lequel une cellule d'humidité est mouillée ; 0 = la classe ne se mouille pas.
     seuil_humide: u32,
 }
@@ -127,6 +135,7 @@ impl SurfaceModel {
             grain: 0,
             porosity: 0,
             reflection: 0,
+            relief: 0,
             seuil_humide: 0,
         };
         let mut classes = vec![defaut; CLASS_COUNT];
@@ -200,6 +209,7 @@ impl SurfaceModel {
             grain,
             porosity,
             reflection,
+            relief: ((r.relief().raw().clamp(0, 65_536) * 7 + 32_768) / 65_536) as u8,
             seuil_humide,
         }
     }
@@ -229,6 +239,7 @@ impl SurfaceModel {
             params: SurfaceParams::new(c.grain, c.porosity, reflection),
             tone,
             wet,
+            relief: c.relief,
         }
     }
 
@@ -263,5 +274,31 @@ mod tests {
         for octet in 0..=255_u8 {
             assert_eq!(SurfaceParams::unpack(octet).pack(), octet);
         }
+    }
+
+    #[test]
+    fn le_relief_par_classe_vient_de_la_table_et_le_metal_est_lisse() {
+        let racine = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../engine/data");
+        let table = MaterialTable::load(
+            &racine.join("materials.csv"),
+            &racine.join("material_render.toml"),
+        )
+        .unwrap();
+        let modele = SurfaceModel::new(&table, &StyleSheet::continuous());
+        let relief = |nom: &str| {
+            let id = table.by_name(nom).unwrap();
+            modele
+                .evaluate(VoxelValue::new(id, 0), VoxelCoord::new(0, 0, 0), 0)
+                .relief()
+        };
+        assert_eq!((relief("iron"), relief("glass")), (0, 0), "métal et verre lisses");
+        assert_eq!(
+            (relief("cut_stone"), relief("oak_raw")),
+            (7, 7),
+            "pierre et bois froissés"
+        );
+        assert!(relief("plaster") > 0 && relief("plaster") < relief("roof_tile"));
+        assert!(relief("roof_tile") < relief("cut_stone"));
+        assert!(relief("turf") <= 2, "l'herbe a peu de relief");
     }
 }

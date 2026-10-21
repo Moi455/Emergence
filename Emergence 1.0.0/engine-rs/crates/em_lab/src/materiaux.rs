@@ -230,6 +230,7 @@ impl MateriauxScene {
                         rayon_m: a.maillage_rayon,
                         glouton: !a.sans_fusion,
                         zone_feuillage: 48,
+                        creux: a.parametres_creux()?,
                     },
                 )?;
                 monde.ajouter_passes(
@@ -237,6 +238,7 @@ impl MateriauxScene {
                     partage_ciel.clone(),
                     lumiere.clone(),
                     (!a.sans_ombres).then_some(a.parametres_ombres()?),
+                    a.style_maillage()?,
                 )?;
                 Rendu::Maillage {
                     monde: Box::new(monde),

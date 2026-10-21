@@ -4,12 +4,11 @@
 // mètres) et tampon des quads.
 struct ChunkU {
   origin: vec4<f32>,
+  vox: vec4<i32>,     // origine du chunk en voxels du monde (entiers exacts)
 };
 @group(3) @binding(0) var<uniform> CU: ChunkU;
 @group(3) @binding(1) var<storage, read> QUADS: array<u32>;
 
-// Facteur d'ambiance de l'occlusion par sommet, niveaux 0 à 3 : ceux de la référence de Monsieur.
-const AO_F: vec4<f32> = vec4<f32>(0.5, 0.72, 0.88, 1.0);
 // Un quad se dessine en BANDE de 4 sommets (une instance par quad, pas de tampon d'indices ni de sommets). L'ordre des
 // coins de la bande fixe la diagonale (arête commune des deux triangles = les sommets 1 et 2 de la bande) et
 // l'enroulement : coins 0-2 si ao0 + ao2 > ao1 + ao3, sinon 1-3 ; face positive ou négative. Quatre bandes de quatre
@@ -25,7 +24,8 @@ struct QuadVertex {
   w0: u32,            // mot 0 brut (épaisseur de feuillage en bits 24..31)
   w1: u32,            // mot 1 brut (couleur sRGB8 et paramètres de matière)
   foliage: u32,       // 1 pour du feuillage
-  ao: f32,            // facteur d'ambiance de CE sommet
+  ao_l: u32,          // niveau d'occlusion de CE sommet (0 à 3, 3 = dégagé)
+  cx_l: u32,          // profondeur du creux de CE sommet (0 dégagé à 3)
 };
 
 fn quad_vertex(qi: u32, vi: u32) -> QuadVertex {
@@ -57,6 +57,7 @@ fn quad_vertex(qi: u32, vi: u32) -> QuadVertex {
   o.w0 = w0;
   o.w1 = w1;
   o.foliage = (w2 >> 20u) & 1u;
-  o.ao = AO_F[(w2 >> (12u + 2u * k)) & 3u];
+  o.ao_l = (w2 >> (12u + 2u * k)) & 3u;
+  o.cx_l = (w2 >> (21u + 2u * k)) & 3u;
   return o;
 }

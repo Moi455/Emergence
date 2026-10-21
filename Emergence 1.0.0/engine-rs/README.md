@@ -84,3 +84,10 @@ Rendu de base : `scripts/lab.sh capture|bench --scene arbre|materiaux --rendu ma
 compute ; `--rendu ab` (capture) AVANT tracé / APRÈS maillage ; `--granulometrie-ab` (matériaux, mode voxel) ; `--granulometrie F`.
 Essais : `cargo test -p em_mesh` (sans GPU), `cargo test -p em_render --test maillage_gpu` (contre le tracé),
 `cargo run --release -p em_mesh --example mesures` (temps de maillage).
+
+## La maison, le relief froissé, l'occlusion creuse (L34)
+
+`tools/maisons/cuire.sh` cuit les maisons de « nouvelle référence.html » en `.vxh` (hors dépôt, `~/.local/share/emergence/lab_assets/maisons/`).
+`scripts/lab.sh capture --scene maison --shot facade --hour 10 [--graine ferme] [--ambiance-chaleur 0.7]`.
+Réglages : `--relief-force`, `--relief-portee plein,nul`, `--sans-relief`, `--relief-ab`, `--ao-creux`, `--ao-creux-portee`, `--creux-ab`.
+Un voxel reste une couleur plate (pas de bruit de couleur sous-voxel). Essais : `cargo test -p em_gen --test vxh`.

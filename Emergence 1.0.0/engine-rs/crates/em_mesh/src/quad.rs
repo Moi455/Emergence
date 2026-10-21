@@ -2,9 +2,14 @@
 //!
 //! ```text
 //!  mot 0 : x (7 bits) | y (7) | z (7) | face (3) | épaisseur de feuillage (8)        position du coin 0 en voxels locaux 0..=64
-//!  mot 1 : r (8) | v (8) | b (8) | paramètres de matière (8)                         couleur sRGB8 PLATE + octet de surface
-//!  mot 2 : largeur-1 (6) | hauteur-1 (6) | occlusion des 4 coins (4 x 2 bits) | feuillage (1) | réservé (11)
+//!  mot 1 : r (8) | v (8) | b (8) | octet de rendu (8)                                couleur sRGB8 PLATE + octet de rendu
+//!  mot 2 : largeur-1 (6) | hauteur-1 (6) | occlusion des 4 coins (4 x 2 bits) | feuillage (1)
+//!          | creux des 4 coins (4 x 2 bits) | réservé (3)
 //! ```
+//!
+//! L'octet de rendu (L34) est celui que lit le shader : bits 0-2 réflexion (0..7), bits 3-5 relief sous-voxel (0 lisse
+//! à 7 froissé), bit 6 face intérieure (atténuée), bit 7 émissif. Le « creux » est l'occlusion à plus grande portée :
+//! PROFONDEUR 0 (dégagé, valeur par défaut d'un quad à zéro) à 3 (très encaissé).
 //!
 //! Un quad est lu par le GPU (tampon de stockage : le sommet reconstruit lui-même ses quatre coins, sans tampon
 //! d'indices) ; [`Quad::vertex`] donne la même chose côté CPU, pour les tests et les outils.
@@ -17,6 +22,49 @@ pub const CHUNK_EDGE: u8 = 64;
 
 /// Facteur d'ambiance de l'occlusion par sommet, par niveau 0..3 (3 = dégagé) : celui de la référence de Monsieur.
 pub const AO_FACTOR: [f32; 4] = [0.5, 0.72, 0.88, 1.0];
+
+/// L'octet de rendu d'un quad (voir le module) : réflexion, relief, intérieur, émissif.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct RenderByte(u8);
+
+impl RenderByte {
+    /// Assemble ; chaque champ est borné (réflexion et relief à 0..7).
+    pub const fn new(reflection: u8, relief: u8, interior: bool, emissive: bool) -> Self {
+        let r = if reflection > 7 { 7 } else { reflection };
+        let k = if relief > 7 { 7 } else { relief };
+        Self(r | k << 3 | (interior as u8) << 6 | (emissive as u8) << 7)
+    }
+
+    /// Lit un octet de quad (tout octet est valide).
+    pub const fn from_byte(b: u8) -> Self {
+        Self(b)
+    }
+
+    /// L'octet.
+    pub const fn byte(self) -> u8 {
+        self.0
+    }
+
+    /// Réflexion 0..7.
+    pub const fn reflection(self) -> u8 {
+        self.0 & 7
+    }
+
+    /// Relief sous-voxel 0..7.
+    pub const fn relief(self) -> u8 {
+        (self.0 >> 3) & 7
+    }
+
+    /// Face intérieure (éclairage ambiant atténué).
+    pub const fn interior(self) -> bool {
+        self.0 & 64 != 0
+    }
+
+    /// Émissif.
+    pub const fn emissive(self) -> bool {
+        self.0 & 128 != 0
+    }
+}
 
 /// Une des six faces d'un voxel : l'axe (x, y, z) et le sens.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -105,7 +153,7 @@ pub struct QuadSpec {
     pub height: u8,
     /// Couleur sRGB8 plate.
     pub color: [u8; 3],
-    /// Octet de paramètres de matière (`em_material::SurfaceParams`).
+    /// Octet de rendu (`RenderByte`).
     pub params: u8,
     /// Niveau d'occlusion des quatre coins (0..=3, 3 = dégagé).
     pub ao: [u8; 4],
@@ -126,7 +174,9 @@ pub struct Vertex {
     pub color: [u8; 3],
     /// Niveau d'occlusion 0..=3.
     pub ao: u8,
-    /// Octet de paramètres de matière.
+    /// Profondeur du creux (occlusion à grande portée) 0..=3, 0 = dégagé.
+    pub creux: u8,
+    /// Octet de rendu.
     pub params: u8,
 }
 
@@ -162,6 +212,16 @@ impl Quad {
             )));
         }
         Ok(Self::pack(s))
+    }
+
+    /// Pose la profondeur du creux des quatre coins (0..=3, bornée à 3).
+    pub fn with_creux(mut self, creux: [u8; 4]) -> Self {
+        let c = creux
+            .iter()
+            .enumerate()
+            .fold(0_u32, |a, (k, v)| a | u32::from((*v).min(3)) << (2 * k));
+        self.words[2] = (self.words[2] & !(0xFF << 21)) | c << 21;
+        self
     }
 
     /// Rangement sans validation (le mailleur ne produit que des champs valides, vérifiés en essais).
@@ -216,7 +276,7 @@ impl Quad {
         [w as u8, (w >> 8) as u8, (w >> 16) as u8]
     }
 
-    /// Octet de paramètres de matière.
+    /// Octet de rendu (voir [`RenderByte`]).
     pub const fn params(&self) -> u8 {
         (self.words[1] >> 24) as u8
     }
@@ -247,6 +307,22 @@ impl Quad {
         (self.words[2] >> 20) & 1 == 1
     }
 
+    /// Profondeur du creux (occlusion à grande portée) des quatre coins, 0 = dégagé.
+    pub const fn creux(&self) -> [u8; 4] {
+        let w = self.words[2] >> 21;
+        [
+            (w & 3) as u8,
+            ((w >> 2) & 3) as u8,
+            ((w >> 4) & 3) as u8,
+            ((w >> 6) & 3) as u8,
+        ]
+    }
+
+    /// L'octet de rendu décodé.
+    pub const fn render(&self) -> RenderByte {
+        RenderByte::from_byte(self.params())
+    }
+
     /// Nombre de faces de voxel que couvre le quad.
     pub const fn face_count(&self) -> u32 {
         self.width() as u32 * self.height() as u32
@@ -270,6 +346,7 @@ impl Quad {
             normal: [n[0] as i8, n[1] as i8, n[2] as i8],
             color: self.color(),
             ao: self.ao()[k],
+            creux: self.creux()[k],
             params: self.params(),
         }
     }

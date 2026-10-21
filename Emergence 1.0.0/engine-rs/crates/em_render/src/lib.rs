@@ -30,7 +30,9 @@ pub use glam;
 pub use gpu::{AdapterReport, DeviceRequirements, GpuContext, GpuRequest};
 pub use graph::{PassContext, PassName, PassSetup, RenderGraph, RenderPass, ResourceName, Resources};
 pub use liaisons::HDR_FORMAT;
-pub use mesh::{MeshAmbientPass, MeshRenderer, MeshShadowPass, MeshWorld};
+pub use mesh::{
+    MeshAmbientPass, MeshRenderer, MeshShadowPass, MeshStyle, MeshWorld, ReliefParams, StyleError,
+};
 pub use partage::Partage;
 pub use post::{BloomPass, PostParams, TonemapPass};
 pub use profiler::{GpuProfiler, PassTiming, ProfileReport};

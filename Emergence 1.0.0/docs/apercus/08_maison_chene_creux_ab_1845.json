@@ -1,0 +1,191 @@
+{
+  "APRES": {
+    "ambient": 1.0,
+    "ambient_occlusion": {
+      "filter_px": 2,
+      "range_m": 1.0,
+      "rays": 4,
+      "resolution_divisor": 2,
+      "strength": 1.600000023841858
+    },
+    "bloom": 0.10000000149011612,
+    "camera_m": [
+      6.0,
+      6.0,
+      -9.0
+    ],
+    "camera_mm_monde": [
+      10006000,
+      6000,
+      9991000
+    ],
+    "exposure": 1.350000023841858,
+    "foliage": {
+      "absorption_m": 1.0,
+      "forward": 0.5,
+      "rim": 0.30000001192092896,
+      "rim_thickness_m": 0.20000000298023224,
+      "tint": [
+        0.699999988079071,
+        1.0,
+        0.20000000298023224
+      ],
+      "translucency": 1.100000023841858,
+      "zone_voxels": 48
+    },
+    "fov_y_deg": 50.0,
+    "grade": {
+      "contrast": 1.2000000476837158,
+      "exposure_gain": 0.800000011920929,
+      "leaf_saturation": 1.0499999523162842,
+      "saturation": 1.100000023841858,
+      "shadow_lift": 0.019999999552965164,
+      "shadow_tint": [
+        0.44999998807907104,
+        0.550000011920929,
+        1.0
+      ],
+      "warmth": 0.09210254997015
+    },
+    "haze": 0.30000001192092896,
+    "hour": 18.75,
+    "material_packet_fingerprint": null,
+    "mesh": {
+      "chunks": 272,
+      "faces": 2090642,
+      "feuillage_ms": 109.959743,
+      "fils": 16,
+      "glouton": true,
+      "maillage_ms": 273.93176800000003,
+      "octets": 22552968,
+      "quads": 1879414,
+      "remplissage_ms": 26.663989
+    },
+    "ortho_height_m": null,
+    "pitch_deg": 15.501359939575195,
+    "rendu": "maillage",
+    "scene": "arbre",
+    "shadows": {
+      "cascades": 4,
+      "continuous": false,
+      "depth_bias_m": 0.0010000000474974513,
+      "far_m": [
+        5.600000083446503,
+        11.200000166893005,
+        22.40000033378601,
+        44.80000066757202
+      ],
+      "first_texel_m": 0.012500000186264515,
+      "normal_offset_texels": 1.0,
+      "penumbra_max_m": 0.03999999910593033,
+      "penumbra_scale": 1.0,
+      "size": 1024,
+      "slope_bias": 1.0
+    },
+    "shot": null,
+    "sun_azimuth_deg": 294.235595703125,
+    "sun_elevation_deg": 9.311674118041992,
+    "turbidity": 3.0,
+    "view": "image",
+    "voxel_mm": 50,
+    "yaw_deg": 326.3099365234375
+  },
+  "AVANT": {
+    "ambient": 1.0,
+    "ambient_occlusion": {
+      "filter_px": 2,
+      "range_m": 1.0,
+      "rays": 4,
+      "resolution_divisor": 2,
+      "strength": 1.600000023841858
+    },
+    "bloom": 0.10000000149011612,
+    "camera_m": [
+      6.0,
+      6.0,
+      -9.0
+    ],
+    "camera_mm_monde": [
+      10006000,
+      6000,
+      9991000
+    ],
+    "exposure": 1.350000023841858,
+    "foliage": {
+      "absorption_m": 1.0,
+      "forward": 0.5,
+      "rim": 0.30000001192092896,
+      "rim_thickness_m": 0.20000000298023224,
+      "tint": [
+        0.699999988079071,
+        1.0,
+        0.20000000298023224
+      ],
+      "translucency": 1.100000023841858,
+      "zone_voxels": 48
+    },
+    "fov_y_deg": 50.0,
+    "grade": {
+      "contrast": 1.2000000476837158,
+      "exposure_gain": 0.800000011920929,
+      "leaf_saturation": 1.0499999523162842,
+      "saturation": 1.100000023841858,
+      "shadow_lift": 0.019999999552965164,
+      "shadow_tint": [
+        0.44999998807907104,
+        0.550000011920929,
+        1.0
+      ],
+      "warmth": 0.09210254997015
+    },
+    "haze": 0.30000001192092896,
+    "hour": 18.75,
+    "material_packet_fingerprint": null,
+    "mesh": {
+      "chunks": 272,
+      "faces": 2090642,
+      "feuillage_ms": 114.375593,
+      "fils": 16,
+      "glouton": true,
+      "maillage_ms": 145.525814,
+      "octets": 22548360,
+      "quads": 1879030,
+      "remplissage_ms": 8.494679999999999
+    },
+    "ortho_height_m": null,
+    "pitch_deg": 15.501359939575195,
+    "rendu": "maillage",
+    "scene": "arbre",
+    "shadows": {
+      "cascades": 4,
+      "continuous": false,
+      "depth_bias_m": 0.0010000000474974513,
+      "far_m": [
+        5.600000083446503,
+        11.200000166893005,
+        22.40000033378601,
+        44.80000066757202
+      ],
+      "first_texel_m": 0.012500000186264515,
+      "normal_offset_texels": 1.0,
+      "penumbra_max_m": 0.03999999910593033,
+      "penumbra_scale": 1.0,
+      "size": 1024,
+      "slope_bias": 1.0
+    },
+    "shot": null,
+    "sun_azimuth_deg": 294.235595703125,
+    "sun_elevation_deg": 9.311674118041992,
+    "turbidity": 3.0,
+    "view": "image",
+    "voxel_mm": 50,
+    "yaw_deg": 326.3099365234375
+  },
+  "adapter": "Quadro RTX 3000",
+  "resolution_each": [
+    1920,
+    1080
+  ],
+  "scene": "arbre",
+  "warmup_frames": 4
+}

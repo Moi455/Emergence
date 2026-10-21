@@ -9,8 +9,9 @@
 //!    le feuillage ne fusionne jamais (son épaisseur de translucidité est propre à chaque voxel).
 
 use crate::appearance::{VoxelAppearance, VoxelColorer};
+use crate::creux::CreuxField;
 use crate::mesh::ChunkMesh;
-use crate::padded::{PADDED_EDGE, PaddedChunk};
+use crate::padded::{PAD, PADDED_EDGE, PaddedChunk};
 use crate::quad::{CHUNK_EDGE, Face, Quad, QuadSpec};
 use em_core::{ChunkKey, Lod, VoxelCoord, VoxelValue};
 
@@ -18,23 +19,42 @@ use em_core::{ChunkKey, Lod, VoxelCoord, VoxelValue};
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct MesherConfig {
     greedy: bool,
+    creux_reach: Option<u8>,
 }
 
 impl MesherConfig {
-    /// Réglages explicites.
+    /// Réglages explicites : sans occlusion creuse (le mailleur de L33, octet pour octet).
     pub const fn new(greedy: bool) -> Self {
-        Self { greedy }
+        Self {
+            greedy,
+            creux_reach: None,
+        }
+    }
+
+    /// Active l'occlusion creuse de portée `reach` voxels (1 à 3), `None` pour l'éteindre (voir `CreuxAoParams::mesher_reach`).
+    pub const fn with_creux_reach(mut self, reach: Option<u8>) -> Self {
+        self.creux_reach = match reach {
+            Some(r) if r >= 1 && r <= crate::creux::PORTEE_MAX => Some(r),
+            Some(_) => Some(crate::creux::PORTEE_MAX),
+            None => None,
+        };
+        self
     }
 
     /// Fusion gloutonne active ?
     pub const fn greedy(&self) -> bool {
         self.greedy
     }
+
+    /// Portée de l'occlusion creuse, `None` si elle est éteinte.
+    pub const fn creux_reach(&self) -> Option<u8> {
+        self.creux_reach
+    }
 }
 
 impl Default for MesherConfig {
     fn default() -> Self {
-        Self { greedy: true }
+        Self::new(true)
     }
 }
 
@@ -51,8 +71,11 @@ const FUSIONNABLE: u64 = 1 << 49;
 const BORD: usize = CHUNK_EDGE as usize;
 
 /// Clé de fusion : deux cellules de même clé ont même aspect ET même occlusion uniforme.
-fn cle(a: &VoxelAppearance, ao: [u8; 4], fusionnable: bool) -> u64 {
+fn cle(a: &VoxelAppearance, ao: [u8; 4], creux: [u8; 4], fusionnable: bool) -> u64 {
+    let rendu = a.render_byte();
     PRESENTE
+        | u64::from(rendu.byte() & !7) << 40
+        | u64::from(creux[0] | creux[1] << 2 | creux[2] << 4 | creux[3] << 6) << 50
         | u64::from(a.color[0])
         | u64::from(a.color[1]) << 8
         | u64::from(a.color[2]) << 16
@@ -64,6 +87,11 @@ fn cle(a: &VoxelAppearance, ao: [u8; 4], fusionnable: bool) -> u64 {
 
 fn ao_de(cle: u64) -> [u8; 4] {
     let o = (cle >> 32) as u8;
+    [o & 3, (o >> 2) & 3, (o >> 4) & 3, (o >> 6) & 3]
+}
+
+fn creux_de(cle: u64) -> [u8; 4] {
+    let o = (cle >> 50) as u8;
     [o & 3, (o >> 2) & 3, (o >> 4) & 3, (o >> 6) & 3]
 }
 
@@ -100,14 +128,17 @@ impl<'a> ChunkMesher<'a> {
             return ChunkMesh::empty(key, lod);
         }
         let origine = key.origin();
+        // occlusion creuse (L34) : somme cumulée du voisinage, bâtie une fois, seulement si elle est demandée
+        let creux_champ = self.config.creux_reach().map(|r| (CreuxField::new(padded), r));
         // Occupation par rangée (y, z) : un bit par voxel de x = -1 à 64 (bit x + 1). Les expositions de chaque face
         // se déduisent d'opérations de bits sur les rangées voisines : seuls les voxels exposés sont visités.
         let rangees = padded.occupancy_rows();
-        let rang = |y: i32, z: i32| rangees[(y + 1) as usize * PADDED_EDGE + (z + 1) as usize];
+        let rang =
+            |y: i32, z: i32| rangees[(y + PAD as i32) as usize * PADDED_EDGE + (z + PAD as i32) as usize];
         // les seaux : les cellules visibles de chaque (face, tranche), dans l'ordre de balayage des voxels
         let mut seaux: Vec<Vec<Cellule>> = vec![Vec::new(); 6 * BORD];
         let mut faces = 0_u32;
-        const INTERIEUR: u128 = ((1_u128 << BORD) - 1) << 1;
+        const INTERIEUR: u128 = ((1_u128 << BORD) - 1) << PAD;
         for y in 0..BORD as i32 {
             for z in 0..BORD as i32 {
                 let s = rang(y, z);
@@ -123,7 +154,7 @@ impl<'a> ChunkMesher<'a> {
                 while restant != 0 {
                     let bit = restant.trailing_zeros();
                     restant &= restant - 1;
-                    let x = bit as i32 - 1;
+                    let x = bit as i32 - PAD as i32;
                     let i = PaddedChunk::index(x, y, z);
                     let aspect = self.colorer.appearance(
                         VoxelValue::from_raw(padded.raw_at(i)),
@@ -136,12 +167,21 @@ impl<'a> ChunkMesher<'a> {
                             continue;
                         }
                         let ao = Self::occlusion(padded, i, f);
+                        let creux = creux_champ
+                            .as_ref()
+                            .map_or([0; 4], |(champ, r)| champ.depths(x, y, z, f, *r));
                         // le feuillage ne fusionne jamais : son épaisseur (cuite après coup) est celle de CHAQUE voxel
-                        let uniforme = ao[0] == ao[1] && ao[1] == ao[2] && ao[2] == ao[3] && !aspect.foliage;
+                        let uniforme = ao[0] == ao[1]
+                            && ao[1] == ao[2]
+                            && ao[2] == ao[3]
+                            && creux[0] == creux[1]
+                            && creux[1] == creux[2]
+                            && creux[2] == creux[3]
+                            && !aspect.foliage;
                         let cellule = Cellule {
                             u: p[f.u_axis()] as u8,
                             v: p[f.v_axis()] as u8,
-                            cle: cle(&aspect, ao, uniforme),
+                            cle: cle(&aspect, ao, creux, uniforme),
                         };
                         seaux[f.index() * BORD + p[f.axis()] as usize].push(cellule);
                         faces += 1;
@@ -188,17 +228,20 @@ impl<'a> ChunkMesher<'a> {
             origine[f.axis()] = plan;
             origine[f.u_axis()] = u;
             origine[f.v_axis()] = v;
-            quads.push(Quad::pack(QuadSpec {
-                origin: origine,
-                face: f,
-                width: w,
-                height: h,
-                color: [cle as u8, (cle >> 8) as u8, (cle >> 16) as u8],
-                params: (cle >> 24) as u8,
-                ao: ao_de(cle),
-                thickness: 0,
-                foliage: (cle >> 48) & 1 == 1,
-            }));
+            quads.push(
+                Quad::pack(QuadSpec {
+                    origin: origine,
+                    face: f,
+                    width: w,
+                    height: h,
+                    color: [cle as u8, (cle >> 8) as u8, (cle >> 16) as u8],
+                    params: (((cle >> 24) as u8) & 7) | ((cle >> 40) as u8 & !7),
+                    ao: ao_de(cle),
+                    thickness: 0,
+                    foliage: (cle >> 48) & 1 == 1,
+                })
+                .with_creux(creux_de(cle)),
+            );
         };
         if !self.config.greedy {
             for c in cellules {
@@ -243,4 +286,4 @@ impl<'a> ChunkMesher<'a> {
     }
 }
 
-const _: () = assert!(PADDED_EDGE == BORD + 2);
+const _: () = assert!(PADDED_EDGE == BORD + 2 * PAD);

@@ -4,6 +4,7 @@
 //! `em_material` (mode `VoxelPixel` compris, donc la granulométrie réglée par `granulometrie_force`) et le modèle de
 //! surface (octet de porosité, réflexion, grain ; assombrissement d'un voxel mouillé).
 
+use crate::quad::RenderByte;
 use em_core::{Lod, VoxelCoord, VoxelValue};
 use em_material::{
     EvalContext, MaterialEvaluator, MaterialFlags, MaterialTable, StyleSheet, SurfaceModel, VegetationRamps,
@@ -18,6 +19,19 @@ pub struct VoxelAppearance {
     pub params: u8,
     /// Vrai pour du feuillage (translucide en contre-jour).
     pub foliage: bool,
+    /// Relief sous-voxel de la classe, 0 (lisse : fer, verre) à 7 (froissé : pierre, bois) ; `relief` de `material_render.toml`.
+    pub relief: u8,
+    /// Face intérieure d'un volume habité (ambiance atténuée dans le shader).
+    pub interior: bool,
+    /// Voxel émissif (lampe, braise, fenêtre allumée).
+    pub emissive: bool,
+}
+
+impl VoxelAppearance {
+    /// Octet de rendu du quad : la réflexion de `params` (bits 0-2), le relief, l'intérieur et l'émissif.
+    pub const fn render_byte(&self) -> RenderByte {
+        RenderByte::new(self.params & 7, self.relief, self.interior, self.emissive)
+    }
 }
 
 /// Donne l'aspect d'un voxel à sa position (coordonnées du niveau `lod`). Pure : mêmes entrées, même sortie.
@@ -74,6 +88,9 @@ impl VoxelColorer for MaterialColorer<'_> {
             color: self.table.srgb().encode(albedo),
             params: surface.params().pack(),
             foliage: self.is_foliage(value),
+            relief: surface.relief(),
+            interior: false,
+            emissive: false,
         }
     }
 

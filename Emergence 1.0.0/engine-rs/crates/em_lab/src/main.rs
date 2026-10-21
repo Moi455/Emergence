@@ -12,6 +12,7 @@ mod ciel;
 mod fenetre;
 mod horloges;
 mod maillage;
+mod maison;
 mod materiaux;
 mod scene;
 // Scène statique de L08 (sol + modèles `.vxm`) : branchée à l'hôte de rendu par la scène « arbre » (L09).

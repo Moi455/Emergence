@@ -7,7 +7,10 @@ use std::sync::Arc;
 
 use anyhow::{Context, bail};
 use em_core::{VOXEL_MM, VoxelCoord, hash_combine};
-use em_gen::{BuildingClasses, GenParams, GeneratorRegistry, PlacedModel, PlacedPlan, StaticScene, VxmModel};
+use em_gen::{
+    BuildingClasses, GenParams, GeneratorRegistry, HouseClasses, PlacedHouse, PlacedModel, PlacedPlan,
+    StaticScene, VxmModel,
+};
 use em_material::StyleConfig;
 use serde::Deserialize;
 
@@ -42,6 +45,16 @@ pub struct RecipeConfig {
     pub params: toml::Table,
 }
 
+/// Une maison `.vxh` posée dans la scène (section `[[house]]`, L34) : le CENTRE de la maison est posé en `at_m`.
+#[derive(Debug, Deserialize)]
+pub struct HouseConfig {
+    /// Graine de la maison cuite (`maison_<graine>.vxh`).
+    pub seed: String,
+    /// Position du centre de la maison par rapport à l'origine de la scène, en mètres (multiple de 5 cm) ; `y` est le
+    /// plan du sol.
+    pub at_m: [f64; 3],
+}
+
 /// Contenu d'une scène (les sections `[[shot]]` appartiennent à l'hôte de captures et sont ignorées ici).
 #[derive(Debug, Deserialize)]
 pub struct SceneConfig {
@@ -57,6 +70,9 @@ pub struct SceneConfig {
     /// Recettes de générateur posées (L23p).
     #[serde(default)]
     pub recipe: Vec<RecipeConfig>,
+    /// Maisons `.vxh` posées (L34).
+    #[serde(default)]
+    pub house: Vec<HouseConfig>,
     /// Choix du mode de matière par classe (L23p).
     #[serde(default)]
     pub style: StyleConfig,
@@ -71,27 +87,37 @@ pub struct SceneStatique {
 }
 
 impl SceneStatique {
-    /// Charge `lab/scenes/<nom>.toml` ; `racine` est `engine-rs/`.
-    pub fn charger(fichier: &Path, racine: &Path) -> anyhow::Result<Self> {
-        Self::charger_avec(fichier, racine, BuildingClasses::standard())
+    /// Charge `lab/scenes/<nom>.toml` avec les classes de matière des recettes (celles de la vraie table des matières).
+    pub fn charger_avec(fichier: &Path, racine: &Path, classes: BuildingClasses) -> anyhow::Result<Self> {
+        Self::charger_maisons(fichier, racine, classes, None)
     }
 
-    /// Comme `charger`, avec les classes de matière des recettes (celles de la vraie table des matières).
-    pub fn charger_avec(fichier: &Path, racine: &Path, classes: BuildingClasses) -> anyhow::Result<Self> {
+    /// Comme `charger_avec`, avec une graine de maison qui remplace celle des sections `[[house]]` (`--graine`).
+    pub fn charger_maisons(
+        fichier: &Path,
+        racine: &Path,
+        classes: BuildingClasses,
+        graine: Option<&str>,
+    ) -> anyhow::Result<Self> {
         let texte =
             std::fs::read_to_string(fichier).with_context(|| format!("lecture de {}", fichier.display()))?;
-        Self::depuis_texte_avec(&texte, racine, classes)
+        Self::depuis_texte_complet(&texte, racine, classes, graine)
             .with_context(|| format!("scène {}", fichier.display()))
     }
 
     /// Construit la scène depuis le texte TOML (classes standard) ; sert aux essais.
     #[cfg(test)]
     pub fn depuis_texte(texte: &str, racine: &Path) -> anyhow::Result<Self> {
-        Self::depuis_texte_avec(texte, racine, BuildingClasses::standard())
+        Self::depuis_texte_complet(texte, racine, BuildingClasses::standard(), None)
     }
 
-    /// Construit la scène depuis le texte TOML avec les classes de matière des recettes.
-    pub fn depuis_texte_avec(texte: &str, racine: &Path, classes: BuildingClasses) -> anyhow::Result<Self> {
+    /// Construit la scène depuis le texte TOML ; `graine` remplace la graine des maisons.
+    pub fn depuis_texte_complet(
+        texte: &str,
+        racine: &Path,
+        classes: BuildingClasses,
+        graine: Option<&str>,
+    ) -> anyhow::Result<Self> {
         let cfg: SceneConfig = toml::from_str(texte).context("TOML de scène invalide")?;
         if cfg.landscape != "flat_turf" {
             bail!(
@@ -130,6 +156,14 @@ impl SceneStatique {
             }
             recettes.push(format!("{}#{}", r.generator, r.seed));
             builder = builder.place_plan(PlacedPlan::new(plan, pivot, tag));
+        }
+        // maisons : la grille du générateur est posée par son centre sur le sol, z inversé (voir `PlacedHouse`)
+        for h in &cfg.house {
+            let (modele, meta) = crate::maison::charger(graine.unwrap_or(&h.seed))?;
+            let at = voxels(h.at_m, "house.at_m")?;
+            let monde = VoxelCoord::new(origine.x + at.x, origine.y + at.y, origine.z + at.z);
+            let ancre = [meta.center_xz[0].round() as u32, meta.center_xz[1].round() as u32];
+            builder = builder.place_house(PlacedHouse::new(modele, HouseClasses::standard(), ancre, monde));
         }
         Ok(Self {
             nom: cfg.name,

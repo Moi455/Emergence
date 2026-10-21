@@ -8,6 +8,7 @@ use em_voxel::{Chunk, ChunkHint, CompositeLayer, CompositeMode, CompositeSource,
 
 use crate::bati::PlacedPlan;
 use crate::error::GenError;
+use crate::vxh::PlacedHouse;
 use crate::vxm::PlacedModel;
 
 /// Construit une `StaticScene` : les couches sont posées dans l'ordre (sol d'abord, puis les modèles).
@@ -16,6 +17,7 @@ pub struct StaticSceneBuilder {
     ground: Option<FlatSource>,
     models: Vec<Arc<PlacedModel>>,
     plans: Vec<Arc<PlacedPlan>>,
+    houses: Vec<Arc<PlacedHouse>>,
 }
 
 impl StaticSceneBuilder {
@@ -43,6 +45,12 @@ impl StaticSceneBuilder {
         self
     }
 
+    /// Pose une maison `.vxh` (L34), après les plans déjà posés.
+    pub fn place_house(mut self, house: PlacedHouse) -> Self {
+        self.houses.push(Arc::new(house));
+        self
+    }
+
     /// Termine ; refuse une scène sans aucune couche.
     pub fn build(self) -> Result<StaticScene, GenError> {
         let mut layers: Vec<CompositeLayer> = Vec::new();
@@ -55,11 +63,15 @@ impl StaticSceneBuilder {
         for p in &self.plans {
             layers.push(CompositeLayer::new(p.clone(), CompositeMode::Overlay));
         }
+        for h in &self.houses {
+            layers.push(CompositeLayer::new(h.clone(), CompositeMode::Overlay));
+        }
         let composite = CompositeSource::new(layers).map_err(|e| GenError::BadParams(e.to_string()))?;
         Ok(StaticScene {
             ground: self.ground,
             models: self.models,
             plans: self.plans,
+            houses: self.houses,
             composite,
         })
     }
@@ -70,6 +82,7 @@ pub struct StaticScene {
     ground: Option<FlatSource>,
     models: Vec<Arc<PlacedModel>>,
     plans: Vec<Arc<PlacedPlan>>,
+    houses: Vec<Arc<PlacedHouse>>,
     composite: CompositeSource,
 }
 
@@ -97,6 +110,11 @@ impl StaticScene {
     /// Plans de générateur posés, dans l'ordre de pose.
     pub fn plans(&self) -> impl Iterator<Item = &PlacedPlan> + '_ {
         self.plans.iter().map(Arc::as_ref)
+    }
+
+    /// Maisons posées, dans l'ordre de pose.
+    pub fn houses(&self) -> impl Iterator<Item = &PlacedHouse> + '_ {
+        self.houses.iter().map(Arc::as_ref)
     }
 
     /// Union des boîtes des modèles au niveau `lod`, `None` sans modèle.
@@ -128,6 +146,7 @@ impl VoxelSource for StaticScene {
     fn version_tag(&self) -> u64 {
         let mut h = hash_combine(0x5354_5343, self.composite.version_tag());
         h = hash_combine(h, self.models.len() as u64);
-        hash_combine(h, self.plans.len() as u64)
+        h = hash_combine(h, self.plans.len() as u64);
+        hash_combine(h, self.houses.len() as u64)
     }
 }

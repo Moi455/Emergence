@@ -7,20 +7,22 @@
 use crate::chemins::dossier_racine;
 use crate::ciel::ArgsCiel;
 use crate::maillage::{OptionsMaillage, RenduDemande, RenduMaillage};
+use crate::maison::MaisonColorer;
 use crate::scene::Scene;
 use crate::scene_statique::SceneStatique;
 use anyhow::{Context, bail};
 use clap::Args;
 use em_core::VOXEL_MM;
-use em_material::{MaterialTable, StyleSheet};
-use em_mesh::MaterialColorer;
+use em_material::{MaterialTable, StyleSheet, VegetationRamps};
+use em_mesh::{CreuxAoParams, MaterialColorer};
 use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
     AdapterReport, AmbientOcclusionParams, AmbientOcclusionPass, BloomPass, ClipmapConfig, ClipmapStreamer,
     CloudParams, DebugView, DepthMergePass, FoliageLightParams, FoliageThicknessPass, FrameContext,
-    FrameTarget, GpuContext, GpuMaterials, GpuProfiler, LightSettings, LightingPass, Partage, PostParams,
-    Projection, Regeneration, RenderGraph, ShadowCascades, ShadowControl, ShadowParams, SkyBackgroundPass,
-    SkyParams, SkyPass, SunModel, TonemapPass, VoxelCamera, VoxelGpuWorld, VoxelMaterialPass, VoxelTracePass,
+    FrameTarget, GpuContext, GpuMaterials, GpuProfiler, LightSettings, LightingPass, MeshStyle, Partage,
+    PostParams, Projection, Regeneration, ReliefParams, RenderGraph, ShadowCascades, ShadowControl,
+    ShadowParams, SkyBackgroundPass, SkyParams, SkyPass, SunModel, TonemapPass, VoxelCamera, VoxelGpuWorld,
+    VoxelMaterialPass, VoxelTracePass,
 };
 use serde::Deserialize;
 
@@ -81,6 +83,34 @@ pub struct ArgsArbre {
     /// Capture : deux rendus côte à côte, AVANT (granulométrie 1,0) à gauche et APRÈS (défaut renforcé) à droite.
     #[arg(long)]
     pub granulometrie_ab: bool,
+    /// Scène « maison » : graine de la maison cuite (`gravit` par défaut, aussi `a`, `ferme`, `hameau`) ; remplace celle du
+    /// fichier de scène.
+    #[arg(long)]
+    pub graine: Option<String>,
+    /// Éteint le relief froissé sous-voxel (la normale reste celle de la face) : comparaison A/B.
+    #[arg(long)]
+    pub sans_relief: bool,
+    /// Capture : deux rendus côte à côte, AVANT (sans relief) à gauche et APRÈS à droite.
+    #[arg(long)]
+    pub relief_ab: bool,
+    /// Force du relief froissé (0 à 4 ; défaut 1,5 ; 1 = la démo de Monsieur ; 0 l'éteint).
+    #[arg(long)]
+    pub relief_force: Option<f32>,
+    /// Fondu du relief avec la distance : `plein,nul` en mètres (défaut 3,12).
+    #[arg(long, value_delimiter = ',')]
+    pub relief_portee: Option<Vec<f32>>,
+    /// Occlusion creuse : force 0 à 2 (défaut 1 ; 0 = l'occlusion de L33 : table [.5 .72 .88 1], rien de plus).
+    #[arg(long)]
+    pub ao_creux: Option<f32>,
+    /// Portée de l'occlusion creuse en voxels (1 à 3 ; défaut 2).
+    #[arg(long)]
+    pub ao_creux_portee: Option<u8>,
+    /// Capture : deux rendus côte à côte, AVANT (sans occlusion creuse) à gauche et APRÈS à droite.
+    #[arg(long)]
+    pub creux_ab: bool,
+    /// Chaleur de l'ambiance (0 à 1 ; défaut 0) : tire l'ambiance froide du ciel vers le beige à l'ombre.
+    #[arg(long)]
+    pub ambiance_chaleur: Option<f32>,
     /// Désactive les ombres du soleil (comparaison A/B, mesure du coût de l'éclairage seul).
     #[arg(long)]
     pub sans_ombres: bool,
@@ -183,6 +213,33 @@ pub struct ArgsArbre {
 }
 
 impl ArgsArbre {
+    /// Occlusion creuse (L34) : défauts de `CreuxAoParams` modifiés par la ligne de commande, validés.
+    pub fn parametres_creux(&self) -> anyhow::Result<CreuxAoParams> {
+        let p = CreuxAoParams::new(self.ao_creux.unwrap_or(CreuxAoParams::default().strength()))?;
+        Ok(match self.ao_creux_portee {
+            Some(r) => p.with_reach(r)?,
+            None => p,
+        })
+    }
+
+    /// Style du maillage (L34) : relief, occlusion creuse, chaleur. Le relief est ACTIVÉ par défaut.
+    pub fn style_maillage(&self) -> anyhow::Result<MeshStyle> {
+        let mut relief = ReliefParams::new(self.relief_force.unwrap_or(ReliefParams::default().strength()))?;
+        if let Some(v) = &self.relief_portee {
+            let [plein, nul] = v[..] else {
+                bail!("--relief-portee attend deux nombres plein,nul (mètres)");
+            };
+            relief = relief.with_range(plein, nul)?;
+        }
+        if self.sans_relief {
+            relief = ReliefParams::off();
+        }
+        Ok(MeshStyle::new()
+            .with_relief(relief)
+            .with_creux(self.parametres_creux()?)
+            .with_warmth(self.ambiance_chaleur.unwrap_or(0.0))?)
+    }
+
     /// Occlusion ambiante : défauts de `AmbientOcclusionParams` modifiés par la ligne de commande, validés.
     pub fn parametres_ao(&self) -> anyhow::Result<AmbientOcclusionParams> {
         let d = AmbientOcclusionParams::default();
@@ -354,6 +411,10 @@ enum Rendu {
 impl ArbreScene {
     /// Nom de la scène en ligne de commande.
     pub const NOM: &'static str = "arbre";
+    /// Nom de la scène de la maison (L34) : même rendu, autre source.
+    pub const NOM_MAISON: &'static str = "maison";
+    /// Fichier de scène par défaut de la maison.
+    const FICHIER_MAISON: &'static str = "lab/scenes/maison.toml";
 
     /// Construit la scène : charge le modèle et les matières, monte la mémoire GPU et les passes.
     pub fn new(
@@ -362,9 +423,39 @@ impl ArbreScene {
         ciel: &ArgsCiel,
         a: &ArgsArbre,
     ) -> anyhow::Result<Self> {
+        Self::pour(Self::NOM, gpu, info, ciel, a)
+    }
+
+    /// Construit la scène « maison » : la maison cuite de graine `--graine` sur le sol de turf.
+    pub fn maison(
+        gpu: &GpuContext,
+        info: &AdapterReport,
+        ciel: &ArgsCiel,
+        a: &ArgsArbre,
+    ) -> anyhow::Result<Self> {
+        Self::pour(Self::NOM_MAISON, gpu, info, ciel, a)
+    }
+
+    fn pour(
+        nom: &'static str,
+        gpu: &GpuContext,
+        info: &AdapterReport,
+        ciel: &ArgsCiel,
+        a: &ArgsArbre,
+    ) -> anyhow::Result<Self> {
         let racine = dossier_racine();
-        let fichier = racine.join(&a.scene_fichier);
-        let source = SceneStatique::charger(&fichier, &racine)?;
+        let nom_fichier = if nom == Self::NOM_MAISON && a.scene_fichier == "lab/scenes/arbre.toml" {
+            Self::FICHIER_MAISON
+        } else {
+            a.scene_fichier.as_str()
+        };
+        let fichier = racine.join(nom_fichier);
+        let source = SceneStatique::charger_maisons(
+            &fichier,
+            &racine,
+            em_gen::BuildingClasses::standard(),
+            a.graine.as_deref(),
+        )?;
         let texte_toml =
             std::fs::read_to_string(&fichier).with_context(|| format!("lecture de {}", fichier.display()))?;
         let tirs: FichierTirs = toml::from_str(&texte_toml).context("prises de vue de la scène")?;
@@ -376,12 +467,11 @@ impl ArbreScene {
             &donnees.join("material_render.toml"),
         )
         .context("table des matières")?;
-        let modele = source
-            .scene()
-            .models()
-            .next()
-            .context("la scène n'a aucun modèle")?;
-        let veg = em_gen::vegetation_ramps(modele.model().meta(), modele.species_slot())?;
+        // rampes d'essence du premier modèle ; une scène sans arbre (la maison) n'a pas de rampes
+        let veg = match source.scene().models().next() {
+            Some(m) => em_gen::vegetation_ramps(m.model().meta(), m.species_slot())?,
+            None => VegetationRamps::new(),
+        };
         let rendu_demande = RenduDemande::lire(&a.rendu)?;
         if rendu_demande == RenduDemande::Comparaison {
             bail!("--rendu ab ne se capture qu'avec la commande `capture` (deux rendus côte à côte)");
@@ -474,7 +564,8 @@ impl ArbreScene {
         let params_ao = a.parametres_ao()?;
         let rendu = match (rendu_demande, materiaux.as_ref()) {
             (RenduDemande::Maillage, _) => {
-                let colorier = MaterialColorer::new(&table, &veg, StyleSheet::continuous());
+                let base = MaterialColorer::new(&table, &veg, StyleSheet::continuous());
+                let colorier = MaisonColorer::new(&base, source.scene());
                 let s = params_ciel.sun_direction();
                 let monde = RenduMaillage::construire(
                     gpu,
@@ -486,6 +577,7 @@ impl ArbreScene {
                         rayon_m: a.maillage_rayon,
                         glouton: !a.sans_fusion,
                         zone_feuillage: feuillage.zone_voxels(),
+                        creux: a.parametres_creux()?,
                     },
                 )?;
                 let ombres = monde.ajouter_passes(
@@ -493,6 +585,7 @@ impl ArbreScene {
                     partage_ciel.clone(),
                     lumiere.clone(),
                     (!a.sans_ombres).then_some(params_ombres),
+                    a.style_maillage()?,
                 )?;
                 let _ = ombres;
                 Rendu::Maillage {

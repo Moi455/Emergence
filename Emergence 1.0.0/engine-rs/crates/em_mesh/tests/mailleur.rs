@@ -19,6 +19,9 @@ impl VoxelColorer for Teinte {
             color: [v.tint(), v.material().get() as u8, 9],
             params: 0,
             foliage: false,
+            relief: 0,
+            interior: false,
+            emissive: false,
         }
     }
     fn is_foliage(&self, _v: VoxelValue) -> bool {
@@ -515,4 +518,144 @@ fn les_quads_du_mailleur_sont_valides_et_dans_le_chunk() {
     // un dallage par carrés de 8 x 8 de même teinte : un rectangle par carré, sans plus
     let dessus = mesh.quads().iter().filter(|q| q.face() == Face::PosY).count();
     assert_eq!(dessus, 36, "un rectangle par carré de teinte (6 x 6 carrés)");
+}
+
+// ---------------------------------------------------------------- occlusion creuse (L34)
+
+impl Monde {
+    fn mesh_creux(&self, key: ChunkKey, portee: Option<u8>) -> ChunkMesh {
+        self.mesh_creux_fusion(key, portee, true)
+    }
+
+    fn mesh_creux_fusion(&self, key: ChunkKey, portee: Option<u8>, fusion: bool) -> ChunkMesh {
+        let colorier = Teinte;
+        let m = ChunkMesher::new(&colorier, MesherConfig::new(fusion).with_creux_reach(portee));
+        let cherche = |k: ChunkKey| self.chunks.get(&k);
+        m.mesh(key, 0, &PaddedChunk::gather(key, &cherche))
+    }
+
+    /// Un sol de 24 x 24 en y = 8 et, si `coin`, deux murs de 12 de haut le long de x = 8 et de z = 8.
+    fn piece(&mut self, dx: i32, coin: bool) {
+        for x in 8..32 {
+            for z in 8..32 {
+                self.pose(dx + x, 8, z, pierre(3));
+            }
+        }
+        if coin {
+            for y in 9..21 {
+                for t in 8..32 {
+                    self.pose(dx + 8, y, t, pierre(3));
+                    self.pose(dx + t, y, 8, pierre(3));
+                }
+            }
+        }
+    }
+}
+
+/// Profondeur maximale du creux sur les quads de la face `f`.
+fn creux_max(mesh: &ChunkMesh, f: Face) -> u8 {
+    mesh.quads()
+        .iter()
+        .filter(|q| q.face() == f)
+        .flat_map(|q| q.creux())
+        .max()
+        .unwrap_or(0)
+}
+
+#[test]
+fn un_coin_creux_est_plus_sombre_qu_un_mur_plat() {
+    let mut plat = Monde::default();
+    plat.piece(0, false);
+    let mut coin = Monde::default();
+    coin.piece(0, true);
+    for portee in [1_u8, 2, 3] {
+        let m_plat = plat.mesh_creux(ORIGINE, Some(portee));
+        let m_coin = coin.mesh_creux_fusion(ORIGINE, Some(portee), false);
+        assert_eq!(
+            creux_max(&m_plat, Face::PosY),
+            0,
+            "un sol plat est dégagé (portée {portee})"
+        );
+        assert!(
+            creux_max(&m_coin, Face::PosY) >= 2,
+            "le pied d'un angle rentrant est encaissé (portée {portee})"
+        );
+        // le creux croît vers l'angle : le sommet d'angle est plus profond que celui à trois voxels
+        let au_coin = m_coin
+            .quads()
+            .iter()
+            .filter(|q| q.face() == Face::PosY && q.origin()[0] <= 10 && q.origin()[2] <= 10)
+            .flat_map(|q| q.creux())
+            .max()
+            .unwrap();
+        let loin = m_coin
+            .quads()
+            .iter()
+            .filter(|q| q.face() == Face::PosY && q.origin()[0] >= 20 && q.origin()[2] >= 20)
+            .flat_map(|q| q.creux())
+            .max()
+            .unwrap();
+        assert!(au_coin > loin, "angle {au_coin} contre milieu du sol {loin}");
+    }
+}
+
+#[test]
+fn creux_eteint_le_mailleur_est_celui_de_l_avant() {
+    let mut m = Monde::default();
+    m.piece(0, true);
+    let sans = m.mesh_creux(ORIGINE, None);
+    assert!(sans.quads().iter().all(|q| q.creux() == [0; 4]));
+    // le chemin sans creux est exactement MesherConfig::new : mêmes quads, même empreinte
+    assert_eq!(sans.fingerprint(), m.mesh(ORIGINE, true).fingerprint());
+    // avec le creux : mêmes faces visibles, mêmes positions couvertes, déterministe, et jamais moins de quads
+    let avec = m.mesh_creux(ORIGINE, Some(2));
+    assert_eq!(avec.face_count(), sans.face_count());
+    assert!(avec.quad_count() >= sans.quad_count());
+    assert_eq!(avec.fingerprint(), m.mesh_creux(ORIGINE, Some(2)).fingerprint());
+    let couvert = |mesh: &ChunkMesh| mesh.quads().iter().map(|q| q.face_count()).sum::<u32>();
+    assert_eq!(couvert(&avec), couvert(&sans));
+}
+
+#[test]
+fn le_creux_ne_depend_pas_de_la_frontiere_de_chunk() {
+    // la même pièce posée au milieu d'un chunk puis à cheval sur deux chunks : mêmes profondeurs de creux
+    let mut milieu = Monde::default();
+    milieu.piece(0, true);
+    let mut cheval = Monde::default();
+    cheval.piece(40, true); // x = 48..72 : traverse x = 64
+    let histo = |mondes: &Monde, cles: &[ChunkKey]| {
+        let mut h = [0_u32; 4];
+        for k in cles {
+            for q in mondes.mesh_creux(*k, Some(3)).quads() {
+                if q.face() == Face::PosY {
+                    for c in q.creux() {
+                        h[usize::from(c)] += q.face_count();
+                    }
+                }
+            }
+        }
+        h
+    };
+    let a = histo(&milieu, &[ORIGINE]);
+    let b = histo(&cheval, &[ORIGINE, ChunkKey::new(1, 0, 0)]);
+    assert_eq!(a, b, "histogrammes des profondeurs");
+}
+
+#[test]
+fn le_creux_creuse_le_coeur_d_un_amas_plein() {
+    // un cube plein de 10 voxels posé sur un sol : le dessous du surplomb n'existe pas, mais une cavité de 1 voxel
+    // dans un mur épais a le creux le plus profond
+    let mut m = Monde::default();
+    for x in 0..12 {
+        for y in 0..12 {
+            for z in 0..12 {
+                m.pose(20 + x, 20 + y, 20 + z, pierre(2));
+            }
+        }
+    }
+    for y in 0..12 {
+        m.pose(26, 20 + y, 20, VoxelValue::AIR); // un puits de 1 x 1 dans le mur z = 20
+    }
+    let mesh = m.mesh_creux(ORIGINE, Some(2));
+    assert!(creux_max(&mesh, Face::NegX) >= 3 || creux_max(&mesh, Face::PosX) >= 3);
 }

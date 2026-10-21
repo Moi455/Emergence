@@ -227,6 +227,9 @@ mod tests {
                 color: [1, 2, 3],
                 params: 0,
                 foliage: self.is_foliage(v),
+                relief: 0,
+                interior: false,
+                emissive: false,
             }
         }
         fn is_foliage(&self, v: VoxelValue) -> bool {

@@ -16,6 +16,7 @@
 #![forbid(unsafe_code)]
 
 mod appearance;
+mod creux;
 mod error;
 mod foliage;
 mod mesh;
@@ -25,10 +26,11 @@ mod quad;
 mod world;
 
 pub use appearance::{MaterialColorer, VoxelAppearance, VoxelColorer};
-pub use error::MeshError;
+pub use creux::{AO_FACTOR_CREUX, CREUX_FACTOR, CreuxAoParams, CreuxField, PORTEE_MAX};
+pub use error::{MeshError, ParamError};
 pub use foliage::{BLOCKED_CODE, FoliageBaker};
 pub use mesh::ChunkMesh;
 pub use mesher::{ChunkMesher, MesherConfig};
-pub use padded::{PADDED_EDGE, PaddedChunk};
-pub use quad::{AO_FACTOR, CHUNK_EDGE, Face, Quad, QuadSpec, Vertex};
+pub use padded::{PAD, PADDED_EDGE, PaddedChunk};
+pub use quad::{AO_FACTOR, CHUNK_EDGE, Face, Quad, QuadSpec, RenderByte, Vertex};
 pub use world::WorldMesher;

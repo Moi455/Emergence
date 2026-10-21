@@ -2,6 +2,7 @@
 //!
 //! - `generator` : les traits `Generator` et `GenPlan` (docs/19 § 2.5) ;
 //! - `vxm` : le chargeur du format d'échange `.vxm` v1 et le modèle posé sur la grille monde (L08) ;
+//! - `vxh` : le chargeur des maisons cuites `.vxh` (L34) et leur pose sur la grille monde ;
 //! - `bati` : les recettes du mur de pierre, de la poutre, du poteau et du toit (L23p), posées comme `VoxelSource` ;
 //! - `scene` : la scène statique minimale du labo (sol plat + modèles posés), qui donne ses chunks au rendu.
 
@@ -12,6 +13,7 @@ pub mod bati;
 pub mod error;
 pub mod generator;
 pub mod scene;
+pub mod vxh;
 pub mod vxm;
 
 pub use bati::{
@@ -19,9 +21,10 @@ pub use bati::{
     PlanGrid, PostConfig, PostGenerator, PostShape, RoofConfig, RoofGenerator, StoneWallConfig,
     StoneWallGenerator,
 };
-pub use error::{GenError, VxmError};
+pub use error::{GenError, VxhError, VxmError};
 pub use generator::{GenParams, GenPlan, Generator, GeneratorId};
 pub use scene::{StaticScene, StaticSceneBuilder};
+pub use vxh::{HouseClasses, PlacedHouse, VxhCell, VxhFlags, VxhMaterial, VxhModel};
 pub use vxm::{
     PlacedModel, QuarterTurns, VxmClasses, VxmKind, VxmMeta, VxmModel, VxmWarning, vegetation_ramps,
 };

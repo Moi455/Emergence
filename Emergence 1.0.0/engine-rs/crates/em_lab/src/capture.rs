@@ -80,6 +80,34 @@ pub fn executer(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
             ],
         );
     }
+    if a.arbre.relief_ab {
+        return capturer_ab(
+            gpu,
+            a,
+            "relief_ab",
+            [
+                ("AVANT : SANS RELIEF", |x: &mut ArgsArbre| x.sans_relief = true),
+                ("APRES : AVEC RELIEF", |x: &mut ArgsArbre| x.sans_relief = false),
+            ],
+        );
+    }
+    if a.arbre.creux_ab {
+        return capturer_ab(
+            gpu,
+            a,
+            "creux_ab",
+            [
+                ("AVANT : OCCLUSION DE L33", |x: &mut ArgsArbre| {
+                    x.ao_creux = Some(0.0)
+                }),
+                ("APRES : OCCLUSION CREUSE", |x: &mut ArgsArbre| {
+                    if x.ao_creux == Some(0.0) {
+                        x.ao_creux = None
+                    }
+                }),
+            ],
+        );
+    }
     if a.arbre.granulometrie_ab {
         return capturer_ab(
             gpu,

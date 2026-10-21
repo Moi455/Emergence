@@ -123,6 +123,82 @@ pub enum VxmError {
     OctetsEnTrop(usize),
 }
 
+/// Refus d'un fichier `.vxh` (maison cuite par `tools/maisons`) : même rigueur que `.vxm`, tout ce qui est douteux
+/// est rejeté (README_TECHNIQUE § 3 du générateur de maisons).
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+pub enum VxhError {
+    /// Fichier plus court que l'en-tête de 32 octets.
+    #[error("fichier trop court : {0} octet(s) (en-tête de 32 octets)")]
+    TropCourt(usize),
+    /// La signature `VXH1` manque.
+    #[error("signature « VXH1 » absente")]
+    Signature,
+    /// Une dimension nulle ou supérieure à la borne.
+    #[error("dimension {axe} = {valeur} hors de 1..={max}")]
+    Dimension {
+        /// Axe fautif (`x`, `y` ou `z`).
+        axe: char,
+        /// Valeur lue.
+        valeur: u32,
+        /// Borne.
+        max: u32,
+    },
+    /// Trop de cellules pour la borne mémoire.
+    #[error("{0} cellules : au-delà de la borne mémoire")]
+    TropDeCellules(u64),
+    /// Le voxel du fichier n'est pas celui de la grille du monde (5 cm).
+    #[error("voxel de {0:#010x} (bits f32) au lieu de 0,05 m")]
+    VoxelHorsGrille(u32),
+    /// Couches de sol plus nombreuses que la hauteur.
+    #[error("{couches} couche(s) de sol pour une hauteur de {ny}")]
+    SolHorsGrille {
+        /// Couches annoncées.
+        couches: u32,
+        /// Hauteur de la grille.
+        ny: u32,
+    },
+    /// Octets réservés non nuls.
+    #[error("octets réservés de l'en-tête non nuls")]
+    ReservesNonNuls,
+    /// Corps zlib invalide.
+    #[error("corps zlib invalide ({0})")]
+    CorpsZlib(String),
+    /// Taille du corps différente de celle que les dimensions imposent (4 octets par cellule).
+    #[error("corps de {lu} octet(s) au lieu de {attendu}")]
+    CorpsTaille {
+        /// Taille lue (au plus attendu + 1 : la lecture est bornée).
+        lu: u64,
+        /// Taille attendue.
+        attendu: u64,
+    },
+    /// Matériau hors de 0..=5.
+    #[error("cellule {index} : matériau {materiau} hors de 0..=5")]
+    MateriauInvalide {
+        /// Rang de la cellule.
+        index: usize,
+        /// Valeur lue.
+        materiau: u8,
+    },
+    /// L'invariant couleur non nulle <=> matériau non nul est violé.
+    #[error("cellule {index} : couleur {couleur:#06x} et matériau {materiau} incohérents")]
+    Invariant {
+        /// Rang de la cellule.
+        index: usize,
+        /// Couleur RGB565.
+        couleur: u16,
+        /// Matériau.
+        materiau: u8,
+    },
+    /// Drapeaux inconnus (au-delà des bits 0 à 3) ou posés sur une cellule vide qui n'est pas du verre.
+    #[error("cellule {index} : drapeaux {drapeaux:#04x} invalides")]
+    DrapeauxInvalides {
+        /// Rang de la cellule.
+        index: usize,
+        /// Drapeaux lus.
+        drapeaux: u8,
+    },
+}
+
 /// Échec d'un générateur ou du chargement d'un modèle.
 #[derive(Debug, Error)]
 pub enum GenError {
@@ -145,6 +221,17 @@ pub enum GenError {
     /// Octets `.vxm` refusés (sans fichier : mémoire).
     #[error("modèle .vxm refusé : {0}")]
     VxmMemoire(#[from] VxmError),
+    /// Fichier `.vxh` refusé.
+    #[error("{chemin} : {source}")]
+    Vxh {
+        /// Fichier refusé.
+        chemin: PathBuf,
+        /// Raison du refus.
+        source: VxhError,
+    },
+    /// Octets `.vxh` refusés (sans fichier : mémoire).
+    #[error("maison .vxh refusée : {0}")]
+    VxhMemoire(#[from] VxhError),
     /// Paramètres de générateur invalides.
     #[error("paramètres invalides : {0}")]
     BadParams(String),

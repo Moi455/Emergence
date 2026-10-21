@@ -4,9 +4,9 @@
 
 use anyhow::bail;
 use em_core::{ChunkKey, VOXEL_MM};
-use em_mesh::{FoliageBaker, MesherConfig, VoxelColorer, WorldMesher};
+use em_mesh::{CreuxAoParams, FoliageBaker, MesherConfig, VoxelColorer, WorldMesher};
 use em_render::{
-    LightSettings, MeshAmbientPass, MeshRenderer, MeshShadowPass, MeshWorld, Partage, RenderGraph,
+    LightSettings, MeshAmbientPass, MeshRenderer, MeshShadowPass, MeshStyle, MeshWorld, Partage, RenderGraph,
     ShadowControl, ShadowParams, SkyParams,
 };
 use em_voxel::VoxelSource;
@@ -45,6 +45,8 @@ pub struct OptionsMaillage {
     pub glouton: bool,
     /// Zone de comptage de l'épaisseur de feuillage, en voxels.
     pub zone_feuillage: u32,
+    /// Occlusion creuse (L34) : sa portée règle le mailleur, éteinte elle ne coûte rien.
+    pub creux: CreuxAoParams,
 }
 
 /// Mesures du maillage de la scène (JSON des captures et du banc).
@@ -112,7 +114,12 @@ impl RenduMaillage {
         opts: &OptionsMaillage,
     ) -> anyhow::Result<Self> {
         let cles = cles_autour(camera_mm, opts.rayon_m);
-        let wm = WorldMesher::new(source, colorier, 0, MesherConfig::new(opts.glouton));
+        let wm = WorldMesher::new(
+            source,
+            colorier,
+            0,
+            MesherConfig::new(opts.glouton).with_creux_reach(opts.creux.mesher_reach()),
+        );
         let t0 = Instant::now();
         let chunks = wm.charger(&cles);
         let remplissage_ms = t0.elapsed().as_secs_f64() * 1e3;
@@ -160,6 +167,7 @@ impl RenduMaillage {
         ciel: Partage<SkyParams>,
         lumiere: Partage<LightSettings>,
         ombres: Option<ShadowParams>,
+        style: MeshStyle,
     ) -> anyhow::Result<Option<ShadowControl>> {
         let controle = match ombres {
             Some(p) => {
@@ -171,7 +179,9 @@ impl RenduMaillage {
             None => None,
         };
         graphe.add(Box::new(MeshAmbientPass::new()))?;
-        graphe.add(Box::new(MeshRenderer::new(self.monde.clone(), lumiere)))?;
+        graphe.add(Box::new(
+            MeshRenderer::new(self.monde.clone(), lumiere).with_style(style),
+        ))?;
         Ok(controle)
     }
 }
