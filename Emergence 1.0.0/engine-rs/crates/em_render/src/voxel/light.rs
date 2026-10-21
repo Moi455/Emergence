@@ -40,6 +40,11 @@ pub enum DebugView {
 }
 
 impl DebugView {
+    /// Code de la vue transmis aux shaders (le rendu par maillage le lit aussi).
+    pub fn code_public(self) -> f32 {
+        self.code()
+    }
+
     fn code(self) -> f32 {
         match self {
             Self::Beauty => 0.0,

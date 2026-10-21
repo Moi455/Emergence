@@ -41,6 +41,12 @@ impl MaterialMode {
     }
 }
 
+/// Force de granulométrie par défaut (décision du 21 oct. 2026 : écarts plus tranchés entre voxels voisins, comme
+/// `bon pierre.png`). 1,0 redonne les réglages d'origine de L23p.
+pub const GRANULOMETRIE_DEFAUT: f64 = 1.6;
+/// Plus grande force de granulométrie acceptée.
+pub const GRANULOMETRIE_MAX: f64 = 3.0;
+
 /// Réglages du mode `VoxelPixel` d'une classe (fractions Q16 de 0 à 1). Configuration validée par `validate`.
 /// Chaque famille de teinte lit les champs qui la concernent et ignore les autres.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -88,6 +94,25 @@ impl PixelParams {
                 ring_contrast: Q16::ZERO,
                 run_contrast: Q16::ZERO,
             },
+        }
+    }
+
+    /// Réglages rendus plus FRANCS par une force de granulométrie (1 = inchangés) : les écarts entre pièces, entre
+    /// fibres, entre anneaux et entre tronçons sont multipliés par la force ; la gigue par voxel (le grain pixel,
+    /// ce qui sépare deux voxels voisins d'une même pièce) l'est davantage (`1 + 1,5 (force - 1)`), car c'est elle
+    /// que l'oeil lit d'abord de près. Le mortier et les nuds (tons posés) restent tels quels. Tout est borné à 1.
+    pub fn with_granulometry(self, force: Q16) -> Self {
+        let borne = |v: i64| Q16::from_raw(v.clamp(0, 65_536));
+        let f = force.raw();
+        let mul = |q: Q16, m: i64| borne(q.raw() * m / 65_536);
+        let jitter_m = 65_536 + 3 * (f - 65_536) / 2;
+        PixelParams {
+            block_spread: mul(self.block_spread, f),
+            hue_spread: mul(self.hue_spread, f),
+            voxel_jitter: mul(self.voxel_jitter, jitter_m),
+            joint_tone: self.joint_tone,
+            ring_contrast: mul(self.ring_contrast, f),
+            run_contrast: mul(self.run_contrast, f),
         }
     }
 
@@ -171,6 +196,10 @@ pub struct StyleConfig {
     /// Surcharges des réglages, par nom de classe.
     #[serde(default)]
     pub params: BTreeMap<String, PixelOverride>,
+    /// Force de granulométrie (0 à 3 ; défaut `GRANULOMETRIE_DEFAUT`) : amplitude de la variation de couleur entre
+    /// voxels voisins, appliquée aux réglages par défaut de chaque famille AVANT les surcharges de `params`.
+    #[serde(default)]
+    pub granulometrie_force: Option<f64>,
 }
 
 /// Mode et réglages de chacune des 512 classes. Construite validée, lue par l'évaluateur CPU et téléversée au GPU.
@@ -178,6 +207,7 @@ pub struct StyleConfig {
 pub struct StyleSheet {
     modes: Vec<MaterialMode>,
     params: Vec<PixelParams>,
+    granulometry: Q16,
 }
 
 impl StyleSheet {
@@ -186,6 +216,7 @@ impl StyleSheet {
         StyleSheet {
             modes: vec![MaterialMode::Continuous; CLASS_COUNT],
             params: vec![PixelParams::default_for(TintMode::Ramp128); CLASS_COUNT],
+            granulometry: Q16::ONE,
         }
     }
 
@@ -198,6 +229,18 @@ impl StyleSheet {
         choix: MaterialMode,
     ) -> Result<Self, MaterialError> {
         let mut feuille = Self::continuous();
+        let force = config.granulometrie_force.unwrap_or(GRANULOMETRIE_DEFAUT);
+        let force_q16 = if force.is_finite() && (0.0..=GRANULOMETRIE_MAX).contains(&force) {
+            decimal_vers_q16(force)
+        } else {
+            None
+        }
+        .ok_or_else(|| MaterialError::StyleValeur {
+            classe: "(style)".to_owned(),
+            champ: "granulometrie_force",
+            raison: format!("{force} hors de 0..={GRANULOMETRIE_MAX}"),
+        })?;
+        feuille.granulometry = force_q16;
         let mut vus = std::collections::BTreeSet::new();
         for nom in &config.pixel_classes {
             let id = table
@@ -213,7 +256,7 @@ impl StyleSheet {
                     raison: "la végétation est déjà variée voxel par voxel (rampes d'essence)".into(),
                 });
             }
-            let base = PixelParams::default_for(mode_teinte);
+            let base = PixelParams::default_for(mode_teinte).with_granulometry(force_q16);
             let params = match config.params.get(nom) {
                 Some(o) => o.appliquer(base, nom)?,
                 None => base,
@@ -243,6 +286,11 @@ impl StyleSheet {
     /// Réglages `VoxelPixel` d'une classe.
     pub fn params_of(&self, classe: MaterialId) -> &PixelParams {
         &self.params[usize::from(classe.get()).min(CLASS_COUNT - 1)]
+    }
+
+    /// Force de granulométrie appliquée aux réglages par défaut (1 pour une feuille toute continue).
+    pub fn granulometry_force(&self) -> Q16 {
+        self.granulometry
     }
 
     /// Nombre de classes en mode `VoxelPixel`.
@@ -297,6 +345,7 @@ mod tests {
         StyleConfig {
             pixel_classes: classes.iter().map(|s| (*s).to_owned()).collect(),
             params: BTreeMap::new(),
+            granulometrie_force: None,
         }
     }
 
@@ -347,6 +396,51 @@ mod tests {
             StyleSheet::from_config(&c, &t, MaterialMode::VoxelPixel),
             Err(MaterialError::StyleValeur { .. })
         ));
+    }
+
+    #[test]
+    fn la_granulometrie_renforcee_est_le_defaut_et_se_valide() {
+        let t = table();
+        let pierre = t.by_name("cut_stone").unwrap();
+        let defaut = StyleSheet::from_config(&config(&["cut_stone"]), &t, MaterialMode::VoxelPixel).unwrap();
+        let mut c1 = config(&["cut_stone"]);
+        c1.granulometrie_force = Some(1.0);
+        let origine = StyleSheet::from_config(&c1, &t, MaterialMode::VoxelPixel).unwrap();
+        let (d, o) = (defaut.params_of(pierre), origine.params_of(pierre));
+        assert_eq!(
+            o.block_spread,
+            Q16::from_ratio(28, 100),
+            "force 1 = réglages d'origine"
+        );
+        assert!(d.block_spread > o.block_spread && d.voxel_jitter > o.voxel_jitter);
+        assert!(
+            d.voxel_jitter.raw() * 10 > o.voxel_jitter.raw() * 15,
+            "la gigue gagne plus que les écarts"
+        );
+        assert_eq!(d.joint_tone, o.joint_tone, "le mortier ne bouge pas");
+        assert_eq!(defaut.granulometry_force(), Q16::from_raw(104_858)); // 1,6 arrondi
+        // les bornes : jamais au-delà de 1, force refusée hors de 0..=3 et non finie
+        let mut fort = config(&["cut_stone"]);
+        fort.granulometrie_force = Some(3.0);
+        let f = StyleSheet::from_config(&fort, &t, MaterialMode::VoxelPixel).unwrap();
+        assert!(f.params_of(pierre).block_spread.raw() <= 65_536);
+        for mauvais in [-0.1, 3.1, f64::NAN, f64::INFINITY] {
+            let mut c = config(&["cut_stone"]);
+            c.granulometrie_force = Some(mauvais);
+            assert!(matches!(
+                StyleSheet::from_config(&c, &t, MaterialMode::VoxelPixel),
+                Err(MaterialError::StyleValeur {
+                    champ: "granulometrie_force",
+                    ..
+                })
+            ));
+        }
+        // force nulle : plus aucun écart entre pièces ni entre voxels
+        let mut zero = config(&["cut_stone"]);
+        zero.granulometrie_force = Some(0.0);
+        let z = StyleSheet::from_config(&zero, &t, MaterialMode::VoxelPixel).unwrap();
+        assert_eq!(z.params_of(pierre).block_spread, Q16::ZERO);
+        assert_eq!(z.params_of(pierre).voxel_jitter, Q16::ZERO);
     }
 
     #[test]

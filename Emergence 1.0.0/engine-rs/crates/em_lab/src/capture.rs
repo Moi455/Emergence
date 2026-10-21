@@ -3,6 +3,7 @@
 use crate::arbre::ArgsArbre;
 use crate::chemins::dossier_captures;
 use crate::ciel::ArgsCiel;
+use crate::maillage::RenduDemande;
 use crate::materiaux::{self, MateriauxScene, ModeDemande};
 use crate::scene::{self, HelloScene};
 use anyhow::Context;
@@ -54,7 +55,45 @@ pub fn executer(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
         return Ok(());
     }
     if a.arbre.ao_ab {
-        return capturer_ao_ab(gpu, a);
+        return capturer_ab(
+            gpu,
+            a,
+            "ao_ab",
+            [
+                ("AVANT : SANS OCCLUSION", |x: &mut ArgsArbre| x.sans_ao = true),
+                ("APRES : AVEC OCCLUSION", |x: &mut ArgsArbre| x.sans_ao = false),
+            ],
+        );
+    }
+    if RenduDemande::lire(&a.arbre.rendu)? == RenduDemande::Comparaison {
+        return capturer_ab(
+            gpu,
+            a,
+            "rendu_ab",
+            [
+                ("AVANT : TRACE COMPUTE", |x: &mut ArgsArbre| {
+                    x.rendu = "trace".to_owned()
+                }),
+                ("APRES : MAILLAGE RASTER", |x: &mut ArgsArbre| {
+                    x.rendu = "maillage".to_owned()
+                }),
+            ],
+        );
+    }
+    if a.arbre.granulometrie_ab {
+        return capturer_ab(
+            gpu,
+            a,
+            "granulometrie_ab",
+            [
+                ("AVANT : GRANULOMETRIE 1.0", |x: &mut ArgsArbre| {
+                    x.granulometrie = Some(1.0)
+                }),
+                ("APRES : GRANULOMETRIE RENFORCEE", |x: &mut ArgsArbre| {
+                    x.granulometrie = None
+                }),
+            ],
+        );
     }
     let mut cible = OffscreenTarget::new(gpu, a.largeur, a.hauteur)?;
     let mut scene = scene::creer(&a.scene, &a.ciel, &a.arbre, gpu)?;
@@ -94,27 +133,27 @@ pub fn executer(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Comparaison AVANT/APRÈS de l'occlusion ambiante (L14) : la même scène, le même soleil, la même caméra, rendue sans
-/// puis avec l'occlusion. Écrit trois PNG déterministes : `<nom>.png` (AVANT à gauche, APRÈS à droite), `<nom>_AVANT.png`
-/// et `<nom>_APRES.png`, et le JSON des deux réglages à côté.
-fn capturer_ao_ab(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
+/// Une variante de comparaison : l'étiquette écrite sur l'image et la modification des arguments.
+type Variante<'a> = (&'a str, fn(&mut ArgsArbre));
+
+/// Comparaison AVANT/APRÈS : la même scène, le même soleil, la même caméra, rendue avec deux variantes de réglages
+/// (`modifs`, appliquées à une copie des arguments). Écrit trois PNG déterministes : `<nom>.png` (AVANT à gauche, APRÈS
+/// à droite), `<nom>_AVANT.png` et `<nom>_APRES.png`, et le JSON des deux réglages à côté.
+fn capturer_ab(gpu: &GpuContext, a: &ArgsCapture, defaut: &str, modifs: [Variante; 2]) -> anyhow::Result<()> {
     let sortie = a
         .out
         .clone()
-        .unwrap_or_else(|| dossier_captures().join(format!("{}_ao_ab.png", a.scene)));
+        .unwrap_or_else(|| dossier_captures().join(format!("{}_{defaut}.png", a.scene)));
     let mut images = Vec::new();
     let mut reglages = Vec::new();
-    for (sans_ao, etiquette) in [
-        (true, "AVANT : SANS OCCLUSION"),
-        (false, "APRES : AVEC OCCLUSION"),
-    ] {
+    for (etiquette, modif) in &modifs {
         let mut args = a.arbre.clone();
-        args.sans_ao = sans_ao;
+        modif(&mut args);
         let mut ciel = a.ciel.clone();
         ciel.overlay = true;
         let mut cible = OffscreenTarget::new(gpu, a.largeur, a.hauteur)?;
         let mut scene = scene::creer(&a.scene, &ciel, &args, gpu)?;
-        scene.set_lignes_supplementaires(&[etiquette.to_owned()]);
+        scene.set_lignes_supplementaires(&[(*etiquette).to_owned()]);
         let mut profil = GpuProfiler::new(gpu, 32);
         for i in 0..=u64::from(a.frames) {
             scene.dessiner(gpu, &mut cible, &mut profil, i, 0.0)?;
@@ -124,7 +163,7 @@ fn capturer_ao_ab(gpu: &GpuContext, a: &ArgsCapture) -> anyhow::Result<()> {
     }
     let stem = sortie
         .file_stem()
-        .map_or_else(|| "ao_ab".into(), |s| s.to_string_lossy().into_owned());
+        .map_or_else(|| defaut.into(), |s| s.to_string_lossy().into_owned());
     let dossier = sortie
         .parent()
         .map_or_else(dossier_captures, std::path::Path::to_path_buf);

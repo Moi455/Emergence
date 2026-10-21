@@ -16,6 +16,7 @@ pub mod eval;
 pub mod noise;
 pub mod pixel;
 pub mod style;
+pub mod surface;
 pub mod table;
 pub mod tint;
 pub mod vegetation;
@@ -30,7 +31,11 @@ pub use noise::{Frequency, ValueNoise, WorldPoint};
 pub use pixel::{
     DirectPixelRule, PixelInput, PixelRule, PixelTone, RUN_SHIFT, StonePixelRule, WoodPixelRule,
 };
-pub use style::{MaterialMode, PixelOverride, PixelParams, StyleConfig, StyleSheet};
+pub use style::{
+    GRANULOMETRIE_DEFAUT, GRANULOMETRIE_MAX, MaterialMode, PixelOverride, PixelParams, StyleConfig,
+    StyleSheet,
+};
+pub use surface::{SurfaceModel, SurfaceParams, SurfaceSample};
 pub use table::{CLASS_COUNT, MaterialDef, MaterialFlags, MaterialTable, RenderProps};
 pub use tint::{
     GrainAxis, RampSelect, Shade, ShadeInput, TintMode, TintRule, tint_stone, tint_vegetation, tint_wood,

@@ -6,12 +6,14 @@
 
 use crate::chemins::dossier_racine;
 use crate::ciel::ArgsCiel;
+use crate::maillage::{OptionsMaillage, RenduDemande, RenduMaillage};
 use crate::scene::Scene;
 use crate::scene_statique::SceneStatique;
 use anyhow::{Context, bail};
 use clap::Args;
 use em_core::VOXEL_MM;
-use em_material::MaterialTable;
+use em_material::{MaterialTable, StyleSheet};
+use em_mesh::MaterialColorer;
 use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
     AdapterReport, AmbientOcclusionParams, AmbientOcclusionPass, BloomPass, ClipmapConfig, ClipmapStreamer,
@@ -62,6 +64,23 @@ pub struct ArgsArbre {
     /// Scène « materiaux » : écrit « A » / « B » et le mode sur l'image (forcé par `--mode ab`).
     #[arg(long)]
     pub etiquette: bool,
+    /// Rendu de base : `maillage` (raster, occlusion baked : le rendu de L33), `trace` (compute de L09 à L14) ou, pour
+    /// la capture seulement, `ab` (AVANT tracé à gauche, APRÈS maillage à droite).
+    #[arg(long, default_value = "maillage")]
+    pub rendu: String,
+    /// Rendu par maillage : rayon de la région maillée autour de la caméra, en mètres.
+    #[arg(long, default_value_t = 25.0)]
+    pub maillage_rayon: f32,
+    /// Rendu par maillage : désactive la fusion gloutonne (un quad par face visible).
+    #[arg(long)]
+    pub sans_fusion: bool,
+    /// Force de granulométrie du mode voxel (0 à 3 ; défaut 1,6 : écarts plus tranchés entre voxels voisins ; 1 = les
+    /// réglages d'origine de L23p). Remplace `granulometrie_force` du `[style]` de la scène.
+    #[arg(long)]
+    pub granulometrie: Option<f64>,
+    /// Capture : deux rendus côte à côte, AVANT (granulométrie 1,0) à gauche et APRÈS (défaut renforcé) à droite.
+    #[arg(long)]
+    pub granulometrie_ab: bool,
     /// Désactive les ombres du soleil (comparaison A/B, mesure du coût de l'éclairage seul).
     #[arg(long)]
     pub sans_ombres: bool,
@@ -314,12 +333,22 @@ fn mm(m: f64) -> i64 {
 pub struct ArbreScene {
     graphe: RenderGraph,
     camera: VoxelCamera,
-    monde: VoxelGpuWorld,
-    streamer: ClipmapStreamer,
-    ombres: Option<ShadowControl>,
+    rendu: Rendu,
     source: SceneStatique,
     reglages: serde_json::Value,
     texte: Option<OverlayText>,
+}
+
+/// Ce que la scène garde du rendu choisi : le tracé compute (mémoire GPU de la grille et diffusion) ou le maillage.
+enum Rendu {
+    Trace {
+        monde: Box<VoxelGpuWorld>,
+        streamer: ClipmapStreamer,
+        ombres: Option<ShadowControl>,
+    },
+    Maillage {
+        monde: Box<RenduMaillage>,
+    },
 }
 
 impl ArbreScene {
@@ -353,7 +382,11 @@ impl ArbreScene {
             .next()
             .context("la scène n'a aucun modèle")?;
         let veg = em_gen::vegetation_ramps(modele.model().meta(), modele.species_slot())?;
-        let materiaux = GpuMaterials::new(gpu, &table, &veg);
+        let rendu_demande = RenduDemande::lire(&a.rendu)?;
+        if rendu_demande == RenduDemande::Comparaison {
+            bail!("--rendu ab ne se capture qu'avec la commande `capture` (deux rendus côte à côte)");
+        }
+        let materiaux = (rendu_demande == RenduDemande::Trace).then(|| GpuMaterials::new(gpu, &table, &veg));
 
         // Prise de vue : nommée, ou construite à la main.
         let tir = match &a.shot {
@@ -435,45 +468,86 @@ impl ArbreScene {
         let lumiere = Partage::new(LightSettings::new(vue, a.ambiance)?.with_foliage(feuillage));
 
         let params_ombres = a.parametres_ombres()?;
-        let monde = VoxelGpuWorld::new(gpu, ClipmapConfig::laboratoire())?;
         let mut graphe = RenderGraph::new();
         graphe.add(Box::new(SkyPass::new(partage_ciel.clone())))?;
         graphe.add(Box::new(SkyBackgroundPass::new()))?;
-        // Ombres du soleil : cascades remplies par la traversée de la grille voxel, avant le tracé primaire.
-        let ombres = if a.sans_ombres {
-            None
-        } else {
-            let pass = ShadowCascades::new(params_ombres, partage_ciel.clone(), monde.bindings());
-            let controle = pass.control();
-            graphe.add(Box::new(pass))?;
-            Some(controle)
-        };
-        graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
-        graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
-        graphe.add(Box::new(DepthMergePass::new()))?;
-        // Occlusion ambiante tracée : lue par l'éclairage (elle n'assombrit que l'ambiance).
         let params_ao = a.parametres_ao()?;
-        if !a.sans_ao {
-            graphe.add(Box::new(AmbientOcclusionPass::new(
-                Partage::new(params_ao),
-                monde.bindings(),
-            )))?;
-        }
-        if !a.sans_feuillage {
-            // Épaisseur du feuillage le long du soleil : lue par l'éclairage (translucidité, liseré).
-            graphe.add(Box::new(FoliageThicknessPass::new(
-                lumiere.clone(),
-                monde.bindings(),
-                materiaux.bindings(),
-            )))?;
-        }
-        graphe.add(Box::new(LightingPass::new(lumiere)))?;
+        let rendu = match (rendu_demande, materiaux.as_ref()) {
+            (RenduDemande::Maillage, _) => {
+                let colorier = MaterialColorer::new(&table, &veg, StyleSheet::continuous());
+                let s = params_ciel.sun_direction();
+                let monde = RenduMaillage::construire(
+                    gpu,
+                    source.scene(),
+                    &colorier,
+                    pos_mm,
+                    [s.x, s.y, s.z],
+                    &OptionsMaillage {
+                        rayon_m: a.maillage_rayon,
+                        glouton: !a.sans_fusion,
+                        zone_feuillage: feuillage.zone_voxels(),
+                    },
+                )?;
+                let ombres = monde.ajouter_passes(
+                    &mut graphe,
+                    partage_ciel.clone(),
+                    lumiere.clone(),
+                    (!a.sans_ombres).then_some(params_ombres),
+                )?;
+                let _ = ombres;
+                Rendu::Maillage {
+                    monde: Box::new(monde),
+                }
+            }
+            (_, Some(materiaux)) => {
+                let monde = VoxelGpuWorld::new(gpu, ClipmapConfig::laboratoire())?;
+                // Ombres du soleil : cascades remplies par la traversée de la grille voxel, avant le tracé primaire.
+                let ombres = if a.sans_ombres {
+                    None
+                } else {
+                    let pass = ShadowCascades::new(params_ombres, partage_ciel.clone(), monde.bindings());
+                    let controle = pass.control();
+                    graphe.add(Box::new(pass))?;
+                    Some(controle)
+                };
+                graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
+                graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
+                graphe.add(Box::new(DepthMergePass::new()))?;
+                // Occlusion ambiante tracée : lue par l'éclairage (elle n'assombrit que l'ambiance).
+                if !a.sans_ao {
+                    graphe.add(Box::new(AmbientOcclusionPass::new(
+                        Partage::new(params_ao),
+                        monde.bindings(),
+                    )))?;
+                }
+                if !a.sans_feuillage {
+                    // Épaisseur du feuillage le long du soleil : lue par l'éclairage (translucidité, liseré).
+                    graphe.add(Box::new(FoliageThicknessPass::new(
+                        lumiere.clone(),
+                        monde.bindings(),
+                        materiaux.bindings(),
+                    )))?;
+                }
+                graphe.add(Box::new(LightingPass::new(lumiere)))?;
+                Rendu::Trace {
+                    monde: Box::new(monde),
+                    streamer: ClipmapStreamer::new(1, ClipmapStreamer::BUDGET_PAR_DEFAUT),
+                    ombres,
+                }
+            }
+            (_, None) => unreachable!("le tracé a toujours son paquet de matières"),
+        };
         graphe.add(Box::new(BloomPass::new()))?;
         graphe.add(Box::new(TonemapPass::new(post)))?;
         let texte = if ciel.overlay {
             let t = OverlayText::new();
             t.set_lines(vec![
-                "EMERGENCE - ARBRE (L10)".to_owned(),
+                if rendu_demande == RenduDemande::Maillage {
+                    "EMERGENCE - ARBRE (L33 MAILLAGE)"
+                } else {
+                    "EMERGENCE - ARBRE (L10 TRACE)"
+                }
+                .to_owned(),
                 format!("GPU: {}", info.name),
                 format!("SOLEIL: {elevation:.1} / {azimut:.1} DEG ({heure:.1} H)"),
             ]);
@@ -532,14 +606,13 @@ impl ArbreScene {
             "ambient_occlusion": ao_json(a.sans_ao, &params_ao),
             "view": a.vue,
             "voxel_mm": VOXEL_MM,
-            "material_packet_fingerprint": format!("{:#018x}", materiaux.fingerprint()),
+            "material_packet_fingerprint": materiaux.as_ref().map(|m| format!("{:#018x}", m.fingerprint())),
+            "rendu": a.rendu,
         });
         Ok(Self {
             graphe,
             camera,
-            monde,
-            streamer: ClipmapStreamer::new(1, ClipmapStreamer::BUDGET_PAR_DEFAUT),
-            ombres,
+            rendu,
             source,
             reglages,
             texte,
@@ -570,16 +643,23 @@ fn noms(tirs: &[Tir]) -> String {
 
 impl Scene for ArbreScene {
     fn reglages_json(&self) -> serde_json::Value {
-        let s = self.monde.stats();
         let mut j = self.reglages.clone();
-        j["gpu_world"] = serde_json::json!({
-            "chunks_pool": s.chunks_pool,
-            "chunks_uniform": s.chunks_uniform,
-            "bricks": s.bricks,
-            "payload_words": s.payload_words,
-            "bytes_uploaded": s.bytes_uploaded,
-            "bytes_reserved": s.bytes_reserved,
-        });
+        match &self.rendu {
+            Rendu::Trace { monde, .. } => {
+                let s = monde.stats();
+                j["gpu_world"] = serde_json::json!({
+                    "chunks_pool": s.chunks_pool,
+                    "chunks_uniform": s.chunks_uniform,
+                    "bricks": s.bricks,
+                    "payload_words": s.payload_words,
+                    "bytes_uploaded": s.bytes_uploaded,
+                    "bytes_reserved": s.bytes_reserved,
+                });
+            }
+            Rendu::Maillage { monde } => {
+                j["mesh"] = serde_json::to_value(monde.resume()).unwrap_or_default();
+            }
+        }
         j
     }
 
@@ -625,14 +705,19 @@ impl Scene for ArbreScene {
     ) -> anyhow::Result<()> {
         // La clipmap suit la caméra : tout se charge avant la première image (capture reproductible), puis
         // seules les fenêtres qui glissent travaillent.
-        let flux =
-            self.streamer
-                .update_until_complete(&self.camera, self.source.scene(), &mut self.monde, gpu)?;
-        // Des chunks sont arrivés ou partis : leurs ombres ne sont pas dans les cascades, on les refait.
-        if let Some(o) = &self.ombres
-            && (flux.uploaded > 0 || flux.evicted > 0)
+        if let Rendu::Trace {
+            monde,
+            streamer,
+            ombres,
+        } = &mut self.rendu
         {
-            o.invalidate();
+            let flux = streamer.update_until_complete(&self.camera, self.source.scene(), monde, gpu)?;
+            // Des chunks sont arrivés ou partis : leurs ombres ne sont pas dans les cascades, on les refait.
+            if let Some(o) = ombres
+                && (flux.uploaded > 0 || flux.evicted > 0)
+            {
+                o.invalidate();
+            }
         }
         let (l, h) = cible.size();
         let image = FrameContext::new_voxel(index, temps_s, l, h, self.camera)?;

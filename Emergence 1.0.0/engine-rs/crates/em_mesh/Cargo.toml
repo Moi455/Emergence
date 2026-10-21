@@ -4,9 +4,15 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
-description = "Surface nets, jupes de couture, maillage glouton binaire."
+description = "Maillage de chunks en faces visibles : occlusion ambiante par sommet, fusion gloutonne, couleurs VoxelPixel."
 
 [dependencies]
 em_core.workspace = true
 em_voxel.workspace = true
+em_material.workspace = true
+bytemuck.workspace = true
+rayon.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+em_gen.workspace = true

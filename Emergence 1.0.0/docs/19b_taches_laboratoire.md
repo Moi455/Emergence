@@ -1,4 +1,4 @@
-# Annexe 19b : tâches du laboratoire de style (L01 à L32)
+# Annexe 19b : tâches du laboratoire de style (L01 à L33)
 
 Plan exécutable par des agents Sonnet, d'après `docs/19_laboratoire_architecture.md` (architecture) et `docs/19a_formats_et_interfaces.md` (formats). Ordonné pour montrer des **aperçus à Monsieur le plus tôt possible**.
 
@@ -54,6 +54,7 @@ Tailles : **S** ≤ 400 lignes, une demi-journée d'agent ; **M** 400 à 1 200 l
 | L30 | Port Rust de `voxel_tree` : squelette en Q16 | L | L01, L05 | dès la phase C | à faire | | |
 | L31 | Port Rust : épaisseurs, rastérisation, feuillage, couleurs | L | L30, L10 | L29 | à faire | | |
 | L32 | Port Rust : arbustes, topiaire, silhouettes lointaines | M | L31 | — | à faire | | |
+| L33 | Rendu par maillage raster, occlusion baked (remplace le tracé comme base) | L | L09, L10, L11, L23p | — | fait | | P71 |
 
 Chemin critique : L01 → L05 → L08 → L09 → L11 → L15 → L25 → L29 (L29 attend toutes les passes ; la porte budgétaire L26 attend L09 et L17).
 
@@ -544,3 +545,10 @@ Chemin critique : L01 → L05 → L08 → L09 → L11 → L15 → L25 → L29 (L
 - **Acceptation** : (1) parité statistique avec `voxel_bush.py` comme en L31 ; (2) silhouette contre arbre complet au niveau 3 : IoU d'occupation ≥ 0,7, coût ≤ 0,1 ms par arbre ; (3) la forêt du banc L26 se compose avec les silhouettes au-delà de 100 m sans saut visible au passage de niveau (capture).
 - **Capture pour Monsieur** : `25_haie_et_topiaires.png`, `26_foret_silhouettes.png`.
 - **Piège** : une silhouette qui ne tombe pas sous le vrai houppier (même graine, mêmes tirages de départ que le squelette).
+
+### L33 — Rendu par maillage raster avec occlusion précalculée (L)
+
+- **Pourquoi** : le tracé compute (L09 + matière + ombres L11 + épaisseur L10 + occlusion L14) dépassait son budget (~4,0 ms hors ciel au lieu de 2,5). Solution inspirée de `générateurs de voxels/nouvelle référence.html` (`meshify`).
+- **Livré** : (1) crate `em_mesh` : `ChunkMesher` (faces visibles, occlusion par sommet 4 niveaux [0,5 ; 0,72 ; 0,88 ; 1] règle des deux côtés + coin, diagonale choisie par l'occlusion, fusion gloutonne si couleur ET occlusion constantes, déterministe), `Quad` de 12 octets (position, face, couleur sRGB8 plate, octet de paramètres, 4 x 2 bits d'occlusion, épaisseur de feuillage), `WorldMesher` (chunks remplis une fois, voisins lus, rayon), `FoliageBaker`. (2) `em_render::mesh` : `MeshWorld`, `MeshRenderer`, `MeshAmbientPass`, `MeshShadowPass` ; sommet reconstruit dans le shader (bande de 4 sommets par instance, pas de tampon de sommets). (3) ombres : cascades RASTER, placement `ShadowPlanner`/`CascadePlacement` de L11 inchangé, PCF borné à 4 cm. (4) translucidité : épaisseur cuite par face (voxel), centre du voxel, direction du soleil à la cuisson. (5) `lab.sh capture|bench --scene arbre|materiaux --rendu maillage|trace|ab`, `--granulometrie-ab`. (6) `granulometrie_force` (défaut 1,6) et octet de surface (grain, porosité, réflexion) dans `em_material::surface`.
+- **Écarts à la demande** : un quad de 12 octets lu par le GPU au lieu de 4 sommets de 8 octets (3,5 fois moins de mémoire, pas de tampon d'indices ; `Quad::vertex` redonne les sommets) ; un `draw` par chunk visible (cône de vision), pas de draw indirect ; épaisseur par face et non par sommet (un voxel = un aplat) ; atténuation intérieure x0,45 de la référence non portée (pas d'intérieurs au labo).
+- **Acceptation** : IoU de silhouette 0,9999 ; ΔE moyen albédo 0,08 et image sans ombres ni occlusion 0,14 (`cargo test -p em_render --test maillage_gpu`) ; captures reproductibles octet pour octet ; essais du mailleur sans GPU (`cargo test -p em_mesh`).

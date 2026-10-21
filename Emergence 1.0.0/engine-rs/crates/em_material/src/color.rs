@@ -76,6 +76,36 @@ impl SrgbTable {
     pub fn channel(&self, v: u8) -> Q16 {
         self.lineaire[usize::from(v)]
     }
+    /// Un canal linéaire Q16 vers le sRGB 8 bits le plus proche (recherche dichotomique sur la table : l'inverse
+    /// EXACT de `channel` à l'arrondi près ; sert au maillage, qui range des couleurs sRGB8 dans ses sommets).
+    pub fn encode_channel(&self, lineaire: Q16) -> u8 {
+        let cible = lineaire.raw().clamp(0, 65_536);
+        // premier indice dont la valeur linéaire atteint la cible
+        let (mut bas, mut haut) = (0_usize, 255_usize);
+        while bas < haut {
+            let milieu = (bas + haut) / 2;
+            if self.lineaire[milieu].raw() >= cible {
+                haut = milieu;
+            } else {
+                bas = milieu + 1;
+            }
+        }
+        // le plus proche entre `bas - 1` et `bas` (égalité : le plus clair, déterministe)
+        if bas > 0 && cible - self.lineaire[bas - 1].raw() < self.lineaire[bas].raw() - cible {
+            (bas - 1) as u8
+        } else {
+            bas as u8
+        }
+    }
+    /// Une couleur linéaire vers le sRGB 8 bits.
+    pub fn encode(&self, c: LinearRgb) -> [u8; 3] {
+        let [r, g, b] = c.channels();
+        [
+            self.encode_channel(r),
+            self.encode_channel(g),
+            self.encode_channel(b),
+        ]
+    }
     /// Une couleur sRGB 8 bits en linéaire.
     pub fn convert(&self, srgb: [u8; 3]) -> LinearRgb {
         LinearRgb::new(
@@ -144,6 +174,17 @@ mod tests {
         // 128 sRGB ≈ 0,2158 linéaire
         let m = t.channel(128).raw();
         assert!((m - 14_144).abs() < 120, "{m}");
+    }
+
+    #[test]
+    fn l_encodage_srgb_inverse_la_table() {
+        let t = SrgbTable::new();
+        for v in 0..=255u8 {
+            assert_eq!(t.encode_channel(t.channel(v)), v, "aller-retour de {v}");
+        }
+        assert_eq!(t.encode_channel(Q16::ZERO), 0);
+        assert_eq!(t.encode_channel(Q16::ONE), 255);
+        assert_eq!(t.encode(t.convert([10, 128, 250])), [10, 128, 250]);
     }
 
     #[test]

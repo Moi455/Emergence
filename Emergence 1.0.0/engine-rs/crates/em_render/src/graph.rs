@@ -177,6 +177,40 @@ impl<'a> PassContext<'a> {
         })
     }
 
+    /// Ouvre une passe de rendu couleur + profondeur (Z inversé : profondeur effacée à 0, comparaison `Greater`),
+    /// MESURÉE sous le nom de la passe. La couleur est CHARGÉE (le fond de ciel y est déjà), la profondeur effacée.
+    pub fn render_pass_color_depth<'v>(
+        &'v mut self,
+        label: &str,
+        couleur: &'v wgpu::TextureView,
+        profondeur: &'v wgpu::TextureView,
+    ) -> wgpu::RenderPass<'v> {
+        let horodatages = self.profiler.render_scope(self.name.as_str());
+        self.encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            label: Some(label),
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                view: couleur,
+                depth_slice: None,
+                resolve_target: None,
+                ops: wgpu::Operations {
+                    load: wgpu::LoadOp::Load,
+                    store: wgpu::StoreOp::Store,
+                },
+            })],
+            depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                view: profondeur,
+                depth_ops: Some(wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(0.0),
+                    store: wgpu::StoreOp::Store,
+                }),
+                stencil_ops: None,
+            }),
+            timestamp_writes: horodatages,
+            occlusion_query_set: None,
+            multiview_mask: None,
+        })
+    }
+
     /// Ouvre une passe de rendu qui n'écrit QUE la profondeur (effacée à 0 : Z inversé), MESURÉE sous le nom de la passe.
     pub fn render_pass_depth<'v>(
         &'v mut self,

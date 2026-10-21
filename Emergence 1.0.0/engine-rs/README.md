@@ -22,7 +22,7 @@ scripts/gen_cpp_vectors.sh      # régénère les vecteurs de parité depuis le 
 | `em_voxel` | briques, chunks, sources, empreintes (L05) | oui |
 | `em_material` | table des matières, paquet GPU (fonctionnalité `gpu`) (L06) | non (module `table` : entiers) |
 | `em_ops` | opérations v1, bus, journal, paquet `EMPK` (L18) | oui |
-| `em_mesh` | surface nets, maillage glouton | non |
+| `em_mesh` | maillage de chunks : faces visibles, occlusion par sommet, fusion gloutonne, épaisseur de feuillage (L33) | non |
 | `em_gen` | générateurs, chargeur `.vxm`, port de `voxel_tree` | oui |
 | `em_terrain` | densité, terrain de base, peau | oui (hors module `skin`) |
 | `em_assembly` | recettes, entités | oui |
@@ -77,3 +77,10 @@ Le C++ de `qmul` déborde (comportement indéfini) hors de `|a·b| < 2^63` : les
 
 `lab/` : scènes, style, références d'images approuvées, modèles `.vxm` (régénérables), `captures/` (ignoré).
 `scripts/` : `gen_cpp_vectors.sh`, `cpp_vectors.cpp`, `lab.sh`, `serie_ciel.sh` (L03 : les 7 captures du ciel), `serie_arbre.sh` (L09 : l'arbre aux trois heures), `extract_web_ocean.py` (L03 : extrait le WGSL de `web-ocean`, `python3 -I`, dossier source en argument).
+
+## Le rendu par maillage (L33)
+
+Rendu de base : `scripts/lab.sh capture|bench --scene arbre|materiaux --rendu maillage` (défaut) ; `--rendu trace` pour le tracé
+compute ; `--rendu ab` (capture) AVANT tracé / APRÈS maillage ; `--granulometrie-ab` (matériaux, mode voxel) ; `--granulometrie F`.
+Essais : `cargo test -p em_mesh` (sans GPU), `cargo test -p em_render --test maillage_gpu` (contre le tracé),
+`cargo run --release -p em_mesh --example mesures` (temps de maillage).

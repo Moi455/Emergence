@@ -43,7 +43,7 @@ pub struct PixelTone {
 }
 
 /// Interprète la teinte d'une classe en mode VoxelPixel : une implémentation par famille.
-pub trait PixelRule {
+pub trait PixelRule: Send + Sync {
     /// Nuance du voxel (hors gigue par voxel, ajoutée par l'évaluateur).
     fn tone(&self, input: &PixelInput<'_>) -> PixelTone;
 }

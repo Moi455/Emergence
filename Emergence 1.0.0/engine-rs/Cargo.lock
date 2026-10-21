@@ -634,8 +634,12 @@ dependencies = [
 name = "em_mesh"
 version = "0.1.0"
 dependencies = [
+ "bytemuck",
  "em_core",
+ "em_gen",
+ "em_material",
  "em_voxel",
+ "rayon",
  "thiserror 2.0.21",
 ]
 

@@ -4,7 +4,7 @@
 //! valeurs voisines, quel que soit le voxel qui les contient (c'est la garantie « pas de mosaïque »).
 
 use em_core::hash::hash3;
-use em_core::q16::{Q16, qlerp, qsmoothstep};
+use em_core::q16::{Q16, qlerp};
 
 /// Position en mètres Q16 (x est, y haut, z nord).
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -37,6 +37,14 @@ impl Frequency {
     }
 }
 
+/// Lissage de Hermite de `t` dans [0, 65 535] : IDENTIQUE au bit près à `qsmoothstep(0, 65_536, t)`, sans la division
+/// 128 bits de la rampe (`qramp(0, 1, t) = t`). Le maillage évalue des millions de voxels : c'est le point chaud.
+fn lissage(t: i64) -> i64 {
+    let t = i128::from(t);
+    let t2 = (t * t) >> 16;
+    ((t2 * (3 * 65_536 - 2 * t)) >> 16) as i64
+}
+
 /// Bruit de valeur gradué par une graine ; renvoie des valeurs dans [0, 1) en Q16.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct ValueNoise {
@@ -61,7 +69,7 @@ impl ValueNoise {
         for i in 0..3 {
             let g = p.0[i].mul(f.0[i]).raw();
             base[i] = g >> 16;
-            lissee[i] = qsmoothstep(0, 65_536, g & 0xFFFF);
+            lissee[i] = lissage(g & 0xFFFF);
         }
         let n = |dx: i64, dy: i64, dz: i64| self.node(base[0] + dx, base[1] + dy, base[2] + dz);
         let bas = |dy: i64, dz: i64| qlerp(n(0, dy, dz), n(1, dy, dz), lissee[0]);
@@ -73,6 +81,13 @@ impl ValueNoise {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn le_lissage_rapide_egale_qsmoothstep() {
+        for t in 0..65_536_i64 {
+            assert_eq!(lissage(t), em_core::q16::qsmoothstep(0, 65_536, t));
+        }
+    }
 
     #[test]
     fn dans_0_1_et_deterministe() {

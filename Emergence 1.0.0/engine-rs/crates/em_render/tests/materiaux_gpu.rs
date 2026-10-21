@@ -247,6 +247,7 @@ fn style(table: &MaterialTable, mode: MaterialMode) -> StyleSheet {
             .map(|s| (*s).to_owned())
             .collect(),
         params: Default::default(),
+        granulometrie_force: Some(1.0), // réglages d'origine de L23p : les empreintes épinglées en dépendent
     };
     StyleSheet::from_config(&config, table, mode).expect("style valide")
 }

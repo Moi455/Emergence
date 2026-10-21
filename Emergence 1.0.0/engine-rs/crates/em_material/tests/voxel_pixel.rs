@@ -30,6 +30,7 @@ fn feuille(table: &MaterialTable, jitter_nulle: bool) -> StyleSheet {
     let config = StyleConfig {
         pixel_classes: CLASSES_PIXEL.iter().map(|s| (*s).to_owned()).collect(),
         params,
+        granulometrie_force: Some(1.0), // réglages d'origine de L23p : les empreintes épinglées en dépendent
     };
     StyleSheet::from_config(&config, table, MaterialMode::VoxelPixel).expect("style valide")
 }
@@ -247,6 +248,7 @@ fn les_classes_non_listees_et_le_mode_continu_sont_inchanges() {
             &StyleConfig {
                 pixel_classes: CLASSES_PIXEL.iter().map(|s| (*s).to_owned()).collect(),
                 params: BTreeMap::new(),
+                granulometrie_force: Some(1.0), // réglages d'origine de L23p : les empreintes épinglées en dépendent
             },
             &t,
             MaterialMode::Continuous,

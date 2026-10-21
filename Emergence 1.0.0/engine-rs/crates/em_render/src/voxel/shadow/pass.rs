@@ -51,7 +51,7 @@ impl ShadowControl {
         self.sale.store(true, Ordering::Release);
     }
 
-    fn prendre(&self) -> bool {
+    pub(crate) fn prendre(&self) -> bool {
         self.sale.swap(false, Ordering::AcqRel)
     }
 }

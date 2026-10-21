@@ -159,7 +159,7 @@ pub struct ShadeInput<'a> {
 }
 
 /// Interprète les 7 bits de teinte d'un mode. Une implémentation par mode ; le polymorphisme remplace tout `match` sur la classe.
-pub trait TintRule {
+pub trait TintRule: Send + Sync {
     /// Le mode que cette règle interprète.
     fn mode(&self) -> TintMode;
     /// Nuance du voxel.

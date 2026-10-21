@@ -14,12 +14,14 @@
 use crate::arbre::{ArgsArbre, Tir, ao_json, regarder};
 use crate::chemins::{dossier_captures, dossier_racine};
 use crate::ciel::ArgsCiel;
+use crate::maillage::{OptionsMaillage, RenduDemande, RenduMaillage};
 use crate::scene::Scene;
 use crate::scene_statique::SceneStatique;
 use anyhow::{Context, bail};
 use em_core::VOXEL_MM;
 use em_gen::BuildingClasses;
 use em_material::{MaterialMode, MaterialTable, StyleSheet, VegetationRamps};
+use em_mesh::MaterialColorer;
 use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
     AdapterReport, AmbientOcclusionPass, BloomPass, ClipmapConfig, ClipmapStreamer, CloudParams, DebugView,
@@ -70,12 +72,22 @@ fn mm(m: f64) -> i64 {
     (m * 1000.0).round() as i64
 }
 
+/// Ce que la scène garde du rendu choisi : le tracé compute (mémoire GPU de la grille et diffusion) ou le maillage.
+enum Rendu {
+    Trace {
+        monde: Box<VoxelGpuWorld>,
+        streamer: ClipmapStreamer,
+    },
+    Maillage {
+        monde: Box<RenduMaillage>,
+    },
+}
+
 /// La scène « materiaux ».
 pub struct MateriauxScene {
     graphe: RenderGraph,
     camera: VoxelCamera,
-    monde: VoxelGpuWorld,
-    streamer: ClipmapStreamer,
+    rendu: Rendu,
     source: SceneStatique,
     reglages: serde_json::Value,
     texte: Option<OverlayText>,
@@ -114,10 +126,24 @@ impl MateriauxScene {
         let texte_toml =
             std::fs::read_to_string(&fichier).with_context(|| format!("lecture de {}", fichier.display()))?;
         let tirs: FichierTirs = toml::from_str(&texte_toml).context("prises de vue de la scène")?;
-        let style = StyleSheet::from_config(source.style(), &table, mode).context("style de la scène")?;
+        let mut config_style = source.style().clone();
+        if let Some(g) = a.granulometrie {
+            config_style.granulometrie_force = Some(g);
+        }
+        let style = StyleSheet::from_config(&config_style, &table, mode).context("style de la scène")?;
         let empreinte_style = style.fingerprint();
         let nb_classes_voxel = style.pixel_class_count();
-        let materiaux = GpuMaterials::with_style(gpu, &table, &VegetationRamps::new(), style);
+        let force_granulo = style.granulometry_force();
+        let rendu_demande = RenduDemande::lire(&a.rendu)?;
+        if rendu_demande == RenduDemande::Comparaison {
+            bail!("--rendu ab ne se capture qu'avec la commande `capture` (deux rendus côte à côte)");
+        }
+        let veg = VegetationRamps::new();
+        // le colorieur du maillage prend la feuille de style (clonée : le paquet GPU du tracé la consomme)
+        let colorier = (rendu_demande == RenduDemande::Maillage)
+            .then(|| MaterialColorer::new(&table, &veg, style.clone()));
+        let materiaux = (rendu_demande == RenduDemande::Trace)
+            .then(|| GpuMaterials::with_style(gpu, &table, &veg, style));
 
         // prise de vue : nommée, ou construite à la main (mêmes options que la scène arbre)
         let tir = match &a.shot {
@@ -173,6 +199,10 @@ impl MateriauxScene {
             ciel.haze,
         )?
         .with_clouds(nuages);
+        let params_ciel_soleil = {
+            let d = params_ciel.sun_direction();
+            [d.x, d.y, d.z]
+        };
         let partage_ciel = Partage::new(params_ciel);
         let post = Partage::new(PostParams::new(ciel.exposure, ciel.bloom)?);
         let vue = DebugView::from_name(&a.vue).with_context(|| {
@@ -183,21 +213,54 @@ impl MateriauxScene {
         })?;
         let lumiere = Partage::new(LightSettings::new(vue, a.ambiance)?);
 
-        let monde = VoxelGpuWorld::new(gpu, ClipmapConfig::laboratoire())?;
         let mut graphe = RenderGraph::new();
-        graphe.add(Box::new(SkyPass::new(partage_ciel)))?;
+        graphe.add(Box::new(SkyPass::new(partage_ciel.clone())))?;
         graphe.add(Box::new(SkyBackgroundPass::new()))?;
-        graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
-        graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
-        graphe.add(Box::new(DepthMergePass::new()))?;
         let params_ao = a.parametres_ao()?;
-        if !a.sans_ao {
-            graphe.add(Box::new(AmbientOcclusionPass::new(
-                Partage::new(params_ao),
-                monde.bindings(),
-            )))?;
-        }
-        graphe.add(Box::new(LightingPass::new(lumiere)))?;
+        let rendu = match (&colorier, &materiaux) {
+            (Some(colorier), _) => {
+                let s = params_ciel_soleil;
+                let monde = RenduMaillage::construire(
+                    gpu,
+                    source.scene(),
+                    colorier,
+                    pos_mm,
+                    s,
+                    &OptionsMaillage {
+                        rayon_m: a.maillage_rayon,
+                        glouton: !a.sans_fusion,
+                        zone_feuillage: 48,
+                    },
+                )?;
+                monde.ajouter_passes(
+                    &mut graphe,
+                    partage_ciel.clone(),
+                    lumiere.clone(),
+                    (!a.sans_ombres).then_some(a.parametres_ombres()?),
+                )?;
+                Rendu::Maillage {
+                    monde: Box::new(monde),
+                }
+            }
+            (None, Some(materiaux)) => {
+                let monde = VoxelGpuWorld::new(gpu, ClipmapConfig::laboratoire())?;
+                graphe.add(Box::new(VoxelTracePass::new(monde.bindings())))?;
+                graphe.add(Box::new(VoxelMaterialPass::new(materiaux.bindings())))?;
+                graphe.add(Box::new(DepthMergePass::new()))?;
+                if !a.sans_ao {
+                    graphe.add(Box::new(AmbientOcclusionPass::new(
+                        Partage::new(params_ao),
+                        monde.bindings(),
+                    )))?;
+                }
+                graphe.add(Box::new(LightingPass::new(lumiere)))?;
+                Rendu::Trace {
+                    monde: Box::new(monde),
+                    streamer: ClipmapStreamer::new(1, ClipmapStreamer::BUDGET_PAR_DEFAUT),
+                }
+            }
+            (None, None) => unreachable!("un rendu est toujours choisi"),
+        };
         graphe.add(Box::new(BloomPass::new()))?;
         graphe.add(Box::new(TonemapPass::new(post)))?;
         let etiquette = match mode {
@@ -240,13 +303,14 @@ impl MateriauxScene {
             "ambient_occlusion": ao_json(a.sans_ao, &params_ao),
             "view": a.vue,
             "voxel_mm": VOXEL_MM,
-            "material_packet_fingerprint": format!("{:#018x}", materiaux.fingerprint()),
+            "material_packet_fingerprint": materiaux.as_ref().map(|m| format!("{:#018x}", m.fingerprint())),
+            "rendu": a.rendu,
+            "granulometrie_force": force_granulo.raw() as f64 / 65_536.0,
         });
         Ok(Self {
             graphe,
             camera,
-            monde,
-            streamer: ClipmapStreamer::new(1, ClipmapStreamer::BUDGET_PAR_DEFAUT),
+            rendu,
             source,
             reglages,
             texte,
@@ -264,7 +328,11 @@ fn noms(tirs: &[Tir]) -> String {
 
 impl Scene for MateriauxScene {
     fn reglages_json(&self) -> serde_json::Value {
-        self.reglages.clone()
+        let mut j = self.reglages.clone();
+        if let Rendu::Maillage { monde } = &self.rendu {
+            j["mesh"] = serde_json::to_value(monde.resume()).unwrap_or_default();
+        }
+        j
     }
 
     fn deplacer(&mut self, avant: f32, droite: f32, haut: f32) {
@@ -305,8 +373,9 @@ impl Scene for MateriauxScene {
         index: u64,
         temps_s: f32,
     ) -> anyhow::Result<()> {
-        self.streamer
-            .update_until_complete(&self.camera, self.source.scene(), &mut self.monde, gpu)?;
+        if let Rendu::Trace { monde, streamer } = &mut self.rendu {
+            streamer.update_until_complete(&self.camera, self.source.scene(), monde, gpu)?;
+        }
         let (l, h) = cible.size();
         let image = FrameContext::new_voxel(index, temps_s, l, h, self.camera)?;
         self.graphe.render(gpu, &image, cible, profileur)?;
