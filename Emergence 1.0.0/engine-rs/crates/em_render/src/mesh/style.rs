@@ -102,10 +102,11 @@ impl ReliefParams {
 }
 
 impl Default for ReliefParams {
-    /// Relief ACTIVÉ par défaut : force 1,5, plein jusqu'à 3 m, nul à 12 m.
+    /// Relief ÉTEINT par défaut (décision de Monsieur du 21 oct. : « on fait sans le relief ») ; réglage de labo : `--relief-force 1.5`
+    /// (plein jusqu'à 3 m, nul à 12 m).
     fn default() -> Self {
         Self {
-            strength: 1.5,
+            strength: 0.0,
             full_m: 3.0,
             zero_m: 12.0,
         }
@@ -125,7 +126,7 @@ impl MeshStyle {
     /// Facteur d'ambiance d'une face intérieure : celui de la référence de Monsieur.
     pub const INTERIEUR_DEFAUT: f32 = 0.45;
 
-    /// Style par défaut du labo : relief actif, occlusion creuse de force 1, chaleur 0, intérieur x0,45.
+    /// Style par défaut du labo : relief éteint, occlusion creuse de force 1, chaleur 0, intérieur x0,45.
     pub fn new() -> Self {
         Self {
             relief: ReliefParams::default(),
@@ -224,8 +225,9 @@ mod tests {
     }
 
     #[test]
-    fn par_defaut_le_relief_est_actif_et_le_style_l33_est_plat() {
-        assert!(MeshStyle::new().relief().enabled());
+    fn par_defaut_le_relief_est_eteint_et_le_style_l33_est_plat() {
+        assert!(!MeshStyle::new().relief().enabled());
+        assert!(ReliefParams::new(1.5).unwrap().enabled());
         assert!(!ReliefParams::off().enabled());
         let s = MeshStyle::l33();
         assert!(!s.relief().enabled() && !s.creux().enabled());
