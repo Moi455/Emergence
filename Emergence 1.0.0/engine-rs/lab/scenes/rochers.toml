@@ -1,0 +1,113 @@
+# Scène « rochers » (L37) : planche-catalogue des rochers et du relief ponctuel (recettes nommées de
+# engine/data/assets/rochers.toml), 4 rangées (x) de 4 (z) à 9 m d'intervalle. Positions en mètres relatives à origin_m.
+name = "rochers"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[style]
+pixel_classes = [
+  "clay",
+  "sand",
+  "gravel",
+  "limestone",
+  "sandstone",
+  "granite",
+  "slate",
+  "basalt",
+  "oak_raw",
+  "oak_planks",
+  "plaster",
+  "roof_tile",
+  "thatch",
+  "cut_stone",
+  "wood_trim",
+  "wood_trim_worn",
+  "brick",
+  "red_brick",
+  "rubble_masonry",
+  "iron",
+  "glass",
+  "cobblestone",
+  "cloth",
+  "moss",
+  "timber",
+  "stone_grey",
+  "stone_dark",
+  "paint_green",
+  "paint_blue",
+  "paint_red",
+  "fabric_a",
+  "fabric_b",
+  "flower_a",
+  "flower_b",
+  "glow",
+  "ember",
+  "brass",
+  "leather",
+  "ceramic",
+  "wax",
+  "plaster_ochre",
+  "hay",
+  "rock_grey",
+  "rock_warm",
+  "coal",
+]
+
+[[recipe]]
+asset = "roche_galets_1"
+at_m = [0.0, 0.0, -13.5]
+
+[[recipe]]
+asset = "roche_bloc_gris"
+at_m = [0.0, 0.0, -4.5]
+
+[[recipe]]
+asset = "roche_bloc_chaud"
+at_m = [0.0, 0.0, 4.5]
+
+[[recipe]]
+asset = "roche_bloc_grand"
+at_m = [0.0, 0.0, 13.5]
+
+[[recipe]]
+asset = "roche_dalles_1"
+at_m = [9.0, 0.0, -13.5]
+
+[[recipe]]
+asset = "roche_falaise_1"
+at_m = [9.0, 0.0, -4.5]
+
+[[recipe]]
+asset = "roche_falaise_chaude"
+at_m = [9.0, 0.0, 4.5]
+
+[[recipe]]
+asset = "roche_menhir_1"
+at_m = [9.0, 0.0, 13.5]
+
+[[recipe]]
+asset = "roche_cromlech_1"
+at_m = [18.0, 0.0, -13.5]
+
+[[recipe]]
+asset = "roche_ruine_mur_1"
+at_m = [18.0, 0.0, -4.5]
+
+[[recipe]]
+asset = "roche_colonne_brisee_1"
+at_m = [18.0, 0.0, 4.5]
+
+[[recipe]]
+asset = "roche_grotte_1"
+at_m = [18.0, 0.0, 13.5]
+
+[[recipe]]
+asset = "roche_arche_1"
+at_m = [27.0, 0.0, -13.5]
+
+[[shot]]
+name = "planche"
+pos_m = [-9.0, 7.0, 0.0]
+look_at_m = [12.0, 0.0, 0.0]
+fov_deg = 70.0
+hours = [10.0, 18.5]

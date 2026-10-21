@@ -13,7 +13,7 @@ use crate::scene_statique::SceneStatique;
 use anyhow::{Context, bail};
 use clap::Args;
 use em_core::VOXEL_MM;
-use em_material::{MaterialTable, StyleSheet, VegetationRamps};
+use em_material::{MaterialTable, StyleSheet};
 use em_mesh::{CreuxAoParams, MaterialColorer};
 use em_render::hello::{OverlayText, TextOverlayPass};
 use em_render::{
@@ -413,6 +413,8 @@ impl ArbreScene {
     pub const NOM: &'static str = "arbre";
     /// Nom de la scène de la maison (L34) : même rendu, autre source.
     pub const NOM_MAISON: &'static str = "maison";
+    /// Nom de la scène de la végétation (L30-L32) : planche-catalogue des essences.
+    pub const NOM_VEGETATION: &'static str = "vegetation";
     /// Fichier de scène par défaut de la maison.
     const FICHIER_MAISON: &'static str = "lab/scenes/maison.toml";
 
@@ -424,6 +426,31 @@ impl ArbreScene {
         a: &ArgsArbre,
     ) -> anyhow::Result<Self> {
         Self::pour(Self::NOM, gpu, info, ciel, a)
+    }
+
+    /// Construit une scène des familles bâtiments, props ou rochers (L35 à L37) : `lab/scenes/<nom>.toml`.
+    pub fn famille(
+        nom: &str,
+        gpu: &GpuContext,
+        info: &AdapterReport,
+        ciel: &ArgsCiel,
+        a: &ArgsArbre,
+    ) -> anyhow::Result<Self> {
+        let nom: &'static str = crate::famille::SCENES_FAMILLES
+            .into_iter()
+            .find(|n| *n == nom)
+            .context("scène de famille inconnue")?;
+        Self::pour(nom, gpu, info, ciel, a)
+    }
+
+    /// Construit la scène « vegetation » : `lab/scenes/vegetation.toml`.
+    pub fn vegetation(
+        gpu: &GpuContext,
+        info: &AdapterReport,
+        ciel: &ArgsCiel,
+        a: &ArgsArbre,
+    ) -> anyhow::Result<Self> {
+        Self::pour(Self::NOM_VEGETATION, gpu, info, ciel, a)
     }
 
     /// Construit la scène « maison » : la maison cuite de graine `--graine` sur le sol de turf.
@@ -444,8 +471,13 @@ impl ArbreScene {
         a: &ArgsArbre,
     ) -> anyhow::Result<Self> {
         let racine = dossier_racine();
+        let fichier_famille = format!("lab/scenes/{nom}.toml");
         let nom_fichier = if nom == Self::NOM_MAISON && a.scene_fichier == "lab/scenes/arbre.toml" {
             Self::FICHIER_MAISON
+        } else if nom == Self::NOM_VEGETATION && a.scene_fichier == "lab/scenes/arbre.toml" {
+            "lab/scenes/vegetation.toml"
+        } else if crate::famille::est_famille(nom) && a.scene_fichier == "lab/scenes/arbre.toml" {
+            fichier_famille.as_str()
         } else {
             a.scene_fichier.as_str()
         };
@@ -470,7 +502,7 @@ impl ArbreScene {
         // rampes d'essence du premier modèle ; une scène sans arbre (la maison) n'a pas de rampes
         let veg = match source.scene().models().next() {
             Some(m) => em_gen::vegetation_ramps(m.model().meta(), m.species_slot())?,
-            None => VegetationRamps::new(),
+            None => em_gen::vegetation::scene_ramps(&texte_toml),
         };
         let rendu_demande = RenduDemande::lire(&a.rendu)?;
         if rendu_demande == RenduDemande::Comparaison {
@@ -564,12 +596,20 @@ impl ArbreScene {
         let params_ao = a.parametres_ao()?;
         let rendu = match (rendu_demande, materiaux.as_ref()) {
             (RenduDemande::Maillage, _) => {
-                let base = MaterialColorer::new(&table, &veg, StyleSheet::continuous());
-                let colorier = MaisonColorer::new(&base, source.scene());
+                let style = if crate::famille::est_famille(nom) {
+                    StyleSheet::from_config(source.style(), &table, em_material::MaterialMode::VoxelPixel)
+                        .context("style de la scène")?
+                } else {
+                    StyleSheet::continuous()
+                };
+                let base = MaterialColorer::new(&table, &veg, style);
+                let emissif = crate::famille::EmissifColorer::new(&base, &table);
+                let colorier = MaisonColorer::new(&emissif, source.scene());
                 let s = params_ciel.sun_direction();
                 let monde = RenduMaillage::construire(
                     gpu,
                     source.scene(),
+                    source.petits(),
                     &colorier,
                     pos_mm,
                     [s.x, s.y, s.z],

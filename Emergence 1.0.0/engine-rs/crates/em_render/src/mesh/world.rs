@@ -16,6 +16,8 @@ use wgpu::util::DeviceExt;
 /// Un chunk sur le GPU.
 #[derive(Debug, Clone, Copy)]
 pub struct ChunkGpu {
+    /// Pose d'asset à grille propre (voxel de `voxel_mm`, origine en millimètres), `None` pour un chunk du monde.
+    pub placement: Option<em_mesh::Placement>,
     key: ChunkKey,
     lod: u8,
     first_quad: u32,
@@ -147,22 +149,37 @@ impl MeshWorldState {
         self.origines.clear();
         for (i, c) in self.chunks.iter().enumerate() {
             let o = c.key.origin();
-            let echelle = VOXEL_MM << c.lod;
+            let (echelle, origine_mm) = match c.placement {
+                // asset à grille propre : origine en millimètres monde, voxel de sa propre taille
+                Some(p) => (i64::from(p.voxel_mm), p.origin_mm),
+                None => {
+                    let e = VOXEL_MM << c.lod;
+                    (e, [i64::from(o.x) * e, i64::from(o.y) * e, i64::from(o.z) * e])
+                }
+            };
             let rel = [
-                (i64::from(o.x) * echelle - camera_mm[0]) as f64 * 0.001,
-                (i64::from(o.y) * echelle - camera_mm[1]) as f64 * 0.001,
-                (i64::from(o.z) * echelle - camera_mm[2]) as f64 * 0.001,
+                (origine_mm[0] - camera_mm[0]) as f64 * 0.001,
+                (origine_mm[1] - camera_mm[1]) as f64 * 0.001,
+                (origine_mm[2] - camera_mm[2]) as f64 * 0.001,
             ];
             let rel32 = [rel[0] as f32, rel[1] as f32, rel[2] as f32];
             self.origines.push(rel32);
             let u = [rel32[0], rel32[1], rel32[2], echelle as f32 * 0.001];
             // origine du chunk en voxels du niveau 0 (entiers exacts : le relief ancre son bruit au monde)
-            let vox: [i32; 4] = [
-                (i64::from(o.x) << c.lod) as i32,
-                (i64::from(o.y) << c.lod) as i32,
-                (i64::from(o.z) << c.lod) as i32,
-                0,
-            ];
+            let vox: [i32; 4] = match c.placement {
+                Some(p) => [
+                    p.origin_mm[0].div_euclid(VOXEL_MM) as i32,
+                    p.origin_mm[1].div_euclid(VOXEL_MM) as i32,
+                    p.origin_mm[2].div_euclid(VOXEL_MM) as i32,
+                    0,
+                ],
+                None => [
+                    (i64::from(o.x) << c.lod) as i32,
+                    (i64::from(o.y) << c.lod) as i32,
+                    (i64::from(o.z) << c.lod) as i32,
+                    0,
+                ],
+            };
             let debut = i * PAS_UNIFORME as usize;
             octets[debut..debut + 16].copy_from_slice(bytemuck::bytes_of(&u));
             octets[debut + 16..debut + 32].copy_from_slice(bytemuck::bytes_of(&vox));
@@ -283,14 +300,17 @@ impl MeshWorld {
     pub fn replace_with(&self, meshes: &[ChunkMesh], foliage_zone_voxels: Option<u32>) {
         let mut s = self.lock();
         let mut ordre: Vec<&ChunkMesh> = meshes.iter().filter(|m| !m.is_empty()).collect();
-        ordre.sort_by_key(|m| m.key());
+        ordre.sort_by_key(|m| (m.placement().map(|p| (p.origin_mm, p.voxel_mm)), m.key()));
         let mut octets: Vec<u8> = Vec::new();
         let mut chunks = Vec::with_capacity(ordre.len());
         let mut quads = 0_usize;
         for m in &ordre {
             let b = m.bounds();
-            let vox = 0.05 * f32::from(1_u16 << m.lod());
+            let vox = m
+                .placement()
+                .map_or(0.05 * f32::from(1_u16 << m.lod()), |p| p.voxel_mm as f32 * 0.001);
             chunks.push(ChunkGpu {
+                placement: m.placement(),
                 key: m.key(),
                 lod: m.lod(),
                 first_quad: quads as u32,

@@ -1,0 +1,209 @@
+# Scène « props » (L36) : planche-catalogue des props (recettes nommées de engine/data/assets/props.toml) en grille de
+# 5 colonnes (z) sur 5 rangées (x), puis une table portant les petits objets (posés à 5 cm en attendant le voxel de
+# 2 cm par asset : `voxel_mm = 50`). Positions en mètres relatives à origin_m.
+name = "props"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[style]
+pixel_classes = [
+  "clay",
+  "sand",
+  "gravel",
+  "limestone",
+  "sandstone",
+  "granite",
+  "slate",
+  "basalt",
+  "oak_raw",
+  "oak_planks",
+  "plaster",
+  "roof_tile",
+  "thatch",
+  "cut_stone",
+  "wood_trim",
+  "wood_trim_worn",
+  "brick",
+  "red_brick",
+  "rubble_masonry",
+  "iron",
+  "glass",
+  "cobblestone",
+  "cloth",
+  "moss",
+  "timber",
+  "stone_grey",
+  "stone_dark",
+  "paint_green",
+  "paint_blue",
+  "paint_red",
+  "fabric_a",
+  "fabric_b",
+  "flower_a",
+  "flower_b",
+  "glow",
+  "ember",
+  "brass",
+  "leather",
+  "ceramic",
+  "wax",
+  "plaster_ochre",
+  "hay",
+  "rock_grey",
+  "rock_warm",
+  "coal",
+]
+
+[[recipe]]
+asset = "prop_tonneau"
+at_m = [0.0, 0.0, -6.8]
+
+[[recipe]]
+asset = "prop_caisse"
+at_m = [0.0, 0.0, -3.4]
+
+[[recipe]]
+asset = "prop_sacs"
+at_m = [0.0, 0.0, 0.0]
+
+[[recipe]]
+asset = "prop_charrette"
+at_m = [0.0, 0.0, 3.4]
+
+[[recipe]]
+asset = "prop_etal"
+at_m = [0.0, 0.0, 6.8]
+
+[[recipe]]
+asset = "prop_banc"
+at_m = [3.2, 0.0, -6.8]
+
+[[recipe]]
+asset = "prop_table"
+at_m = [3.2, 0.0, -3.4]
+
+[[recipe]]
+asset = "prop_chaise"
+at_m = [3.2, 0.0, 0.0]
+
+[[recipe]]
+asset = "prop_cloture_bois"
+at_m = [3.2, 0.0, 3.4]
+
+[[recipe]]
+asset = "prop_cloture_pierre"
+at_m = [3.2, 0.0, 6.8]
+
+[[recipe]]
+asset = "prop_treillis"
+at_m = [6.4, 0.0, -6.8]
+
+[[recipe]]
+asset = "prop_portail"
+at_m = [6.4, 0.0, -3.4]
+
+[[recipe]]
+asset = "prop_enseigne"
+at_m = [6.4, 0.0, 0.0]
+
+[[recipe]]
+asset = "prop_lanterne"
+at_m = [6.4, 0.0, 3.4]
+
+[[recipe]]
+asset = "prop_foin"
+at_m = [6.4, 0.0, 6.8]
+
+[[recipe]]
+asset = "prop_tas_bois"
+at_m = [9.6, 0.0, -6.8]
+
+[[recipe]]
+asset = "prop_feu_camp"
+at_m = [9.6, 0.0, -3.4]
+
+[[recipe]]
+asset = "prop_tombe"
+at_m = [9.6, 0.0, 0.0]
+
+[[recipe]]
+asset = "prop_panneau"
+at_m = [9.6, 0.0, 3.4]
+
+[[recipe]]
+asset = "prop_puits_deco"
+at_m = [9.6, 0.0, 6.8]
+
+[[recipe]]
+asset = "prop_echelle"
+at_m = [12.8, 0.0, -6.8]
+
+[[recipe]]
+asset = "prop_ratelier"
+at_m = [12.8, 0.0, -3.4]
+
+[[recipe]]
+asset = "prop_table"
+at_m = [18.0, 0.0, -3.0]
+
+[[recipe]]
+asset = "prop_ruche"
+at_m = [17.55, 0.75, -3.20]
+[recipe.params]
+voxel_mm = 50
+
+[[recipe]]
+asset = "prop_bougie"
+at_m = [17.70, 0.75, -3.20]
+[recipe.params]
+voxel_mm = 50
+
+[[recipe]]
+asset = "prop_vaisselle"
+at_m = [17.85, 0.75, -3.20]
+[recipe.params]
+voxel_mm = 50
+
+[[recipe]]
+asset = "prop_pain"
+at_m = [18.00, 0.75, -3.20]
+[recipe.params]
+voxel_mm = 50
+
+[[recipe]]
+asset = "prop_fruits"
+at_m = [17.55, 0.75, -2.80]
+[recipe.params]
+voxel_mm = 50
+
+[[recipe]]
+asset = "prop_livre"
+at_m = [17.70, 0.75, -2.80]
+[recipe.params]
+voxel_mm = 50
+
+[[recipe]]
+asset = "prop_cle"
+at_m = [17.85, 0.75, -2.80]
+[recipe.params]
+voxel_mm = 50
+
+[[recipe]]
+asset = "prop_outils"
+at_m = [18.00, 0.75, -2.80]
+[recipe.params]
+voxel_mm = 50
+
+[[shot]]
+name = "planche"
+pos_m = [-6.5, 3.6, 0.0]
+look_at_m = [6.0, 0.4, 0.0]
+fov_deg = 66.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "petits"
+pos_m = [16.0, 1.6, -5.0]
+look_at_m = [18.0, 0.8, -3.0]
+fov_deg = 45.0
+hours = [10.0, 18.5]

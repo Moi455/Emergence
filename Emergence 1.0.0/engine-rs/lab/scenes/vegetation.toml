@@ -1,0 +1,147 @@
+# Scène « vegetation » (L30-L32) : planche-catalogue des essences, des arbustes, de la topiaire, des souches et troncs tombés.
+# Chaque asset est une recette nommée de engine/data/assets/vegetation.toml. Caméra du côté x négatif : --camera=-13,2,4 ; heures 10 h et 18 h 30 (--hour).
+name = "vegetation"
+season = "summer"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[[recipe]]
+asset = "chene_jeune"
+at_m = [4.0, 0.0, -9.0]
+
+[[recipe]]
+asset = "bouleau_jeune"
+at_m = [4.0, 0.0, -5.4]
+
+[[recipe]]
+asset = "erable_champetre"
+at_m = [4.0, 0.0, -1.8]
+
+[[recipe]]
+asset = "pommier_fleuri"
+at_m = [4.0, 0.0, 1.8]
+
+[[recipe]]
+asset = "epicea_haut"
+at_m = [4.0, 0.0, 5.4]
+
+[[recipe]]
+asset = "peuplier_alignement"
+at_m = [4.0, 0.0, 9.0]
+
+[[recipe]]
+asset = "buis_boule"
+at_m = [-1.0, 0.0, -10.5]
+
+[[recipe]]
+asset = "buis_cube"
+at_m = [-1.0, 0.0, -7.5]
+
+[[recipe]]
+asset = "buis_cone"
+at_m = [-1.0, 0.0, -4.5]
+
+[[recipe]]
+asset = "buis_dome"
+at_m = [-1.0, 0.0, -1.5]
+
+[[recipe]]
+asset = "rosier_fleuri"
+at_m = [-1.0, 0.0, 1.5]
+
+[[recipe]]
+asset = "lilas_printemps"
+at_m = [-1.0, 0.0, 4.5]
+
+[[recipe]]
+asset = "lavande_ete"
+at_m = [-1.0, 0.0, 7.5]
+
+[[recipe]]
+asset = "hortensia_ete"
+at_m = [-1.0, 0.0, 10.5]
+
+[[recipe]]
+asset = "houx_baies"
+at_m = [-4.5, 0.0, -9.0]
+
+[[recipe]]
+asset = "ronce_mures"
+at_m = [-4.5, 0.0, -5.4]
+
+[[recipe]]
+asset = "genevrier_baies"
+at_m = [-4.5, 0.0, -1.8]
+
+[[recipe]]
+asset = "forsythia_printemps"
+at_m = [-4.5, 0.0, 1.8]
+
+[[recipe]]
+asset = "souche_chene"
+at_m = [-4.5, 0.0, 5.4]
+
+[[recipe]]
+asset = "tronc_tombe_hetre"
+at_m = [-4.5, 0.0, 9.0]
+
+# Rangée du premier plan : le TRÈS PETIT, en voxels de 2 cm (grille propre, posée en millimètres).
+[[recipe]]
+asset = "cepes"
+at_m = [-7.0, 0.0, -6.0]
+
+[[recipe]]
+asset = "amanites"
+at_m = [-7.0, 0.0, -4.5]
+
+[[recipe]]
+asset = "fougeres"
+at_m = [-7.2, 0.0, -2.8]
+
+[[recipe]]
+generator = "crop"
+seed = 1
+at_m = [-7.5, 0.0, -0.5]
+[recipe.params]
+kind = "wheat"
+width_mm = 2500
+depth_mm = 2500
+
+[[recipe]]
+generator = "crop"
+seed = 2
+at_m = [-7.5, 0.0, 2.5]
+[recipe.params]
+kind = "cabbage"
+width_mm = 2500
+depth_mm = 2500
+
+[[recipe]]
+generator = "crop"
+seed = 3
+at_m = [-7.5, 0.0, 5.5]
+[recipe.params]
+kind = "vine"
+width_mm = 2500
+depth_mm = 2500
+
+[[shot]]
+name = "planche"
+pos_m = [-13.0, 2.0, 4.0]
+look_at_m = [0.0, 3.0, 0.0]
+fov_deg = 70.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "arbustes"
+pos_m = [-9.0, 1.6, 0.0]
+look_at_m = [-1.0, 0.8, 0.0]
+fov_deg = 70.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "haies"
+pos_m = [-6.0, 1.5, -1.0]
+look_at_m = [0.0, 0.8, 3.0]
+fov_deg = 65.0
+hours = [10.0, 18.5]

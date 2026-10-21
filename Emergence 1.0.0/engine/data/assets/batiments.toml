@@ -1,0 +1,171 @@
+# Recettes nommées des BÂTIMENTS (L35) : identifiant stable, générateur, graine, paramètres. On n'efface ni ne renumérote
+# jamais un identifiant ; une recette qui change de sortie monte la `version()` de son générateur.
+
+[[asset]]
+id = "maison_gravit"
+generator = "house"
+seed = 1
+note = "La maison de Monsieur : plain-pied, pierre grise, ardoise."
+[asset.params]
+seed_text = "gravit"
+
+[[asset]]
+id = "maison_a"
+generator = "house"
+seed = 2
+note = "Graine « a » : deux étages en L, pierre sombre, bardeaux."
+[asset.params]
+seed_text = "a"
+
+[[asset]]
+id = "maison_colombage"
+generator = "house"
+seed = 3
+note = "Colombage et plâtre, deux étages."
+[asset.params]
+seed_text = "s1"
+
+[[asset]]
+id = "taverne_1"
+generator = "building"
+seed = 101
+[asset.params]
+kind = "taverne"
+
+[[asset]]
+id = "boulangerie_1"
+generator = "building"
+seed = 102
+[asset.params]
+kind = "boulangerie"
+
+[[asset]]
+id = "mairie_1"
+generator = "building"
+seed = 103
+[asset.params]
+kind = "mairie"
+
+[[asset]]
+id = "grange_1"
+generator = "building"
+seed = 104
+[asset.params]
+kind = "grange"
+
+[[asset]]
+id = "grange_2"
+generator = "building"
+seed = 105
+[asset.params]
+kind = "grange"
+
+[[asset]]
+id = "etable_1"
+generator = "building"
+seed = 106
+[asset.params]
+kind = "etable"
+
+[[asset]]
+id = "forge_1"
+generator = "building"
+seed = 107
+[asset.params]
+kind = "forge"
+
+[[asset]]
+id = "moulin_vent_1"
+generator = "building"
+seed = 108
+[asset.params]
+kind = "moulin_vent"
+
+[[asset]]
+id = "moulin_eau_1"
+generator = "building"
+seed = 109
+[asset.params]
+kind = "moulin_eau"
+
+[[asset]]
+id = "eglise_1"
+generator = "building"
+seed = 110
+[asset.params]
+kind = "eglise"
+
+[[asset]]
+id = "chapelle_1"
+generator = "building"
+seed = 111
+[asset.params]
+kind = "chapelle"
+
+[[asset]]
+id = "halle_1"
+generator = "building"
+seed = 112
+[asset.params]
+kind = "halle"
+
+[[asset]]
+id = "cabane_bucheron_1"
+generator = "building"
+seed = 113
+[asset.params]
+kind = "cabane_bucheron"
+
+[[asset]]
+id = "tour_guet_1"
+generator = "building"
+seed = 114
+[asset.params]
+kind = "tour_guet"
+
+[[asset]]
+id = "rempart_porte_1"
+generator = "building"
+seed = 115
+[asset.params]
+kind = "rempart_porte"
+
+[[asset]]
+id = "puits_1"
+generator = "building"
+seed = 116
+[asset.params]
+kind = "puits"
+
+[[asset]]
+id = "pont_pierre_1"
+generator = "building"
+seed = 117
+[asset.params]
+kind = "pont_pierre"
+span = 120
+
+[[asset]]
+id = "pont_pierre_2"
+generator = "building"
+seed = 118
+[asset.params]
+kind = "pont_pierre"
+span = 200
+
+[[asset]]
+id = "pont_bois_1"
+generator = "building"
+seed = 119
+[asset.params]
+kind = "pont_bois"
+span = 100
+
+[[asset]]
+id = "pont_bois_2"
+generator = "building"
+seed = 120
+[asset.params]
+kind = "pont_bois"
+span = 160
+

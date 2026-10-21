@@ -29,7 +29,7 @@ pub use appearance::{MaterialColorer, VoxelAppearance, VoxelColorer};
 pub use creux::{AO_FACTOR_CREUX, CREUX_FACTOR, CreuxAoParams, CreuxField, PORTEE_MAX};
 pub use error::{MeshError, ParamError};
 pub use foliage::{BLOCKED_CODE, FoliageBaker};
-pub use mesh::ChunkMesh;
+pub use mesh::{ChunkMesh, Placement};
 pub use mesher::{ChunkMesher, MesherConfig};
 pub use padded::{PAD, PADDED_EDGE, PaddedChunk};
 pub use quad::{AO_FACTOR, CHUNK_EDGE, Face, Quad, QuadSpec, RenderByte, Vertex};

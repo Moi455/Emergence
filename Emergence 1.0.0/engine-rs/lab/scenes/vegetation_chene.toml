@@ -1,0 +1,28 @@
+# Le chêne Rust à côté du chêne Python (L31) : même essence, même hauteur (14 m). À GAUCHE (z négatif, vu de x
+# négatif en regardant vers +x : à droite de l'image, car z nord est à droite) : le .vxm exporté de voxel_tree.py ;
+# l'autre : le générateur Rust (graine 42). Les deux sont des tirages différents : on compare le STYLE, pas les bits.
+name = "vegetation_chene"
+season = "summer"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[[model]]
+path = "lab/models/chene_42.vxm"
+at_m = [0.0, 0.0, -7.0]
+quarter_turns = 0
+species_slot = 0
+
+[[recipe]]
+generator = "tree"
+seed = 42
+at_m = [0.0, 0.0, 7.0]
+[recipe.params]
+species = "chene"
+height_mm = 14000
+
+[[shot]]
+name = "cote_a_cote"
+pos_m = [-21.0, 2.0, 0.0]
+look_at_m = [0.0, 6.5, 0.0]
+fov_deg = 62.0
+hours = [10.0, 18.5]

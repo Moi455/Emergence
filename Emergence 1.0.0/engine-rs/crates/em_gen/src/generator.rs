@@ -25,6 +25,31 @@ impl GeneratorId {
     /// Recette du toit de bardeaux (L23p).
     pub const ROOF: GeneratorId = GeneratorId(5);
 
+    /// Arbres (L30-L31, famille végétation : identifiants 32 à 47).
+    pub const TREE: GeneratorId = GeneratorId(32);
+    /// Arbustes et topiaire (L32).
+    pub const BUSH: GeneratorId = GeneratorId(33);
+    /// Silhouette lointaine d'un arbre (L32).
+    pub const TREE_SILHOUETTE: GeneratorId = GeneratorId(34);
+    /// Haie (rangée d'arbustes, L32).
+    pub const HEDGE: GeneratorId = GeneratorId(35);
+    /// Souche (L32).
+    pub const STUMP: GeneratorId = GeneratorId(36);
+    /// Tronc tombé (L32).
+    pub const FALLEN_LOG: GeneratorId = GeneratorId(37);
+    /// Cultures de 2 cm : blé, choux, vigne, champ labouré (L32).
+    pub const CROP: GeneratorId = GeneratorId(38);
+    /// Touffes de champignons de 2 cm (L32).
+    pub const MUSHROOMS: GeneratorId = GeneratorId(39);
+    /// Fougères de 2 cm (L32).
+    pub const FERNS: GeneratorId = GeneratorId(40);
+
+    /// Identifiant d'une famille qui possède sa plage (bâtiments 48 à 79, props 80 à 111, rochers 112 à 127 :
+    /// `batiments::ids`). Les plages sont distinctes : un identifiant n'est jamais renuméroté.
+    pub const fn from_raw(raw: u16) -> GeneratorId {
+        GeneratorId(raw)
+    }
+
     /// Valeur brute (pour les paquets et les journaux).
     pub const fn raw(self) -> u16 {
         self.0
@@ -122,4 +147,11 @@ pub trait GenPlan: Send + Sync {
     fn bounds(&self, lod: Lod) -> VoxelBox;
     /// Écrit dans `sink` les voxels du niveau `lod` qui tombent dans `window` (repère local, voxels du niveau).
     fn rasterize(&self, lod: Lod, window: VoxelBox, sink: &mut dyn VoxelSink);
+    /// Côté d'un voxel du plan, en millimètres : 50 (la grille du monde) par défaut, 20 pour le très petit (blé,
+    /// champignons, fougères, baies). Un plan de 2 cm a sa propre grille, non alignée sur celle de 5 cm : le
+    /// moteur le pose en millimètres comme un objet à part ; `bounds` et `rasterize` parlent en voxels de 2 cm et
+    /// seul le niveau 0 existe (les niveaux lointains passent par l'instanciation et la silhouette).
+    fn voxel_mm(&self) -> u32 {
+        50
+    }
 }

@@ -1,0 +1,5842 @@
+{
+ "chene": {
+  "height": 15.0,
+  "seeds": [
+   {
+    "voxels": 757590,
+    "leaf": 707634,
+    "bark": 24107,
+    "twig": 25849,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.4,
+     9.85,
+     15.0
+    ],
+    "base_radius": 0.3307,
+    "height": 15.0,
+    "nodes": 7610,
+    "leafy": 3358,
+    "seed": 0
+   },
+   {
+    "voxels": 741586,
+    "leaf": 695247,
+    "bark": 22405,
+    "twig": 23934,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.7,
+     7.85,
+     15.0
+    ],
+    "base_radius": 0.3272,
+    "height": 15.0,
+    "nodes": 7396,
+    "leafy": 3196,
+    "seed": 1
+   },
+   {
+    "voxels": 558138,
+    "leaf": 523266,
+    "bark": 16292,
+    "twig": 18580,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.95,
+     10.25,
+     15.0
+    ],
+    "base_radius": 0.2798,
+    "height": 15.0,
+    "nodes": 6106,
+    "leafy": 2618,
+    "seed": 2
+   },
+   {
+    "voxels": 833365,
+    "leaf": 781681,
+    "bark": 25186,
+    "twig": 26498,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.15,
+     9.35,
+     15.0
+    ],
+    "base_radius": 0.3413,
+    "height": 15.0,
+    "nodes": 8351,
+    "leafy": 3668,
+    "seed": 3
+   },
+   {
+    "voxels": 1047620,
+    "leaf": 990194,
+    "bark": 23047,
+    "twig": 34379,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     13.2,
+     11.15,
+     15.0
+    ],
+    "base_radius": 0.3227,
+    "height": 15.0,
+    "nodes": 10508,
+    "leafy": 4495,
+    "seed": 4
+   },
+   {
+    "voxels": 1125865,
+    "leaf": 1065766,
+    "bark": 18291,
+    "twig": 41808,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     12.2,
+     12.55,
+     15.0
+    ],
+    "base_radius": 0.2907,
+    "height": 15.0,
+    "nodes": 13493,
+    "leafy": 5661,
+    "seed": 5
+   },
+   {
+    "voxels": 734316,
+    "leaf": 691011,
+    "bark": 17506,
+    "twig": 25799,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.65,
+     9.9,
+     15.0
+    ],
+    "base_radius": 0.2881,
+    "height": 15.0,
+    "nodes": 7829,
+    "leafy": 3369,
+    "seed": 6
+   },
+   {
+    "voxels": 861965,
+    "leaf": 805507,
+    "bark": 27305,
+    "twig": 29153,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.7,
+     9.15,
+     15.0
+    ],
+    "base_radius": 0.3475,
+    "height": 15.0,
+    "nodes": 9807,
+    "leafy": 4135,
+    "seed": 7
+   },
+   {
+    "voxels": 795479,
+    "leaf": 749225,
+    "bark": 18800,
+    "twig": 27454,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     11.15,
+     9.6,
+     15.0
+    ],
+    "base_radius": 0.2984,
+    "height": 15.0,
+    "nodes": 9181,
+    "leafy": 3888,
+    "seed": 8
+   },
+   {
+    "voxels": 694136,
+    "leaf": 656342,
+    "bark": 16085,
+    "twig": 21709,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.95,
+     9.8,
+     15.0
+    ],
+    "base_radius": 0.2806,
+    "height": 15.0,
+    "nodes": 6674,
+    "leafy": 2914,
+    "seed": 9
+   },
+   {
+    "voxels": 627484,
+    "leaf": 579419,
+    "bark": 28154,
+    "twig": 19911,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.4,
+     9.5,
+     15.0
+    ],
+    "base_radius": 0.3526,
+    "height": 15.0,
+    "nodes": 5879,
+    "leafy": 2575,
+    "seed": 10
+   },
+   {
+    "voxels": 926186,
+    "leaf": 872032,
+    "bark": 19941,
+    "twig": 34213,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.15,
+     8.9,
+     15.0
+    ],
+    "base_radius": 0.3009,
+    "height": 15.0,
+    "nodes": 10892,
+    "leafy": 4627,
+    "seed": 11
+   },
+   {
+    "voxels": 979952,
+    "leaf": 927237,
+    "bark": 20014,
+    "twig": 32701,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.35,
+     11.05,
+     15.0
+    ],
+    "base_radius": 0.3022,
+    "height": 15.0,
+    "nodes": 9874,
+    "leafy": 4252,
+    "seed": 12
+   },
+   {
+    "voxels": 1219615,
+    "leaf": 1152952,
+    "bark": 27179,
+    "twig": 39484,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     11.85,
+     12.65,
+     15.0
+    ],
+    "base_radius": 0.3585,
+    "height": 15.0,
+    "nodes": 12689,
+    "leafy": 5448,
+    "seed": 13
+   },
+   {
+    "voxels": 1144876,
+    "leaf": 1078202,
+    "bark": 24177,
+    "twig": 42497,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     11.05,
+     9.65,
+     15.0
+    ],
+    "base_radius": 0.3398,
+    "height": 15.0,
+    "nodes": 14511,
+    "leafy": 6060,
+    "seed": 14
+   },
+   {
+    "voxels": 819424,
+    "leaf": 778021,
+    "bark": 15480,
+    "twig": 25923,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.45,
+     7.75,
+     15.0
+    ],
+    "base_radius": 0.2774,
+    "height": 15.0,
+    "nodes": 8111,
+    "leafy": 3551,
+    "seed": 15
+   },
+   {
+    "voxels": 1054934,
+    "leaf": 996201,
+    "bark": 17410,
+    "twig": 41323,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     11.35,
+     10.25,
+     15.0
+    ],
+    "base_radius": 0.2905,
+    "height": 15.0,
+    "nodes": 14513,
+    "leafy": 6026,
+    "seed": 16
+   },
+   {
+    "voxels": 759725,
+    "leaf": 710687,
+    "bark": 24377,
+    "twig": 24661,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     11.5,
+     9.4,
+     15.0
+    ],
+    "base_radius": 0.3339,
+    "height": 15.0,
+    "nodes": 8057,
+    "leafy": 3434,
+    "seed": 17
+   },
+   {
+    "voxels": 994517,
+    "leaf": 932424,
+    "bark": 25899,
+    "twig": 36194,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.9,
+     9.3,
+     15.0
+    ],
+    "base_radius": 0.344,
+    "height": 15.0,
+    "nodes": 11794,
+    "leafy": 4964,
+    "seed": 18
+   },
+   {
+    "voxels": 825847,
+    "leaf": 782564,
+    "bark": 17480,
+    "twig": 25803,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.75,
+     10.3,
+     15.0
+    ],
+    "base_radius": 0.2871,
+    "height": 15.0,
+    "nodes": 8153,
+    "leafy": 3428,
+    "seed": 19
+   }
+  ]
+ },
+ "hetre": {
+  "height": 15.0,
+  "seeds": [
+   {
+    "voxels": 481052,
+    "leaf": 443718,
+    "bark": 19557,
+    "twig": 17777,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     7.85,
+     9.05,
+     15.0
+    ],
+    "base_radius": 0.2992,
+    "height": 15.0,
+    "nodes": 4998,
+    "leafy": 2253,
+    "seed": 0
+   },
+   {
+    "voxels": 455777,
+    "leaf": 422793,
+    "bark": 19209,
+    "twig": 13775,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.6,
+     8.65,
+     15.0
+    ],
+    "base_radius": 0.2961,
+    "height": 15.0,
+    "nodes": 4127,
+    "leafy": 1872,
+    "seed": 1
+   },
+   {
+    "voxels": 557948,
+    "leaf": 523437,
+    "bark": 13608,
+    "twig": 20903,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.95,
+     9.45,
+     15.0
+    ],
+    "base_radius": 0.2532,
+    "height": 15.0,
+    "nodes": 5945,
+    "leafy": 2678,
+    "seed": 2
+   },
+   {
+    "voxels": 728669,
+    "leaf": 679134,
+    "bark": 21318,
+    "twig": 28217,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.65,
+     9.2,
+     15.0
+    ],
+    "base_radius": 0.3088,
+    "height": 15.0,
+    "nodes": 8516,
+    "leafy": 3774,
+    "seed": 3
+   },
+   {
+    "voxels": 564844,
+    "leaf": 527433,
+    "bark": 18526,
+    "twig": 18885,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.2,
+     8.15,
+     15.0
+    ],
+    "base_radius": 0.292,
+    "height": 15.0,
+    "nodes": 5366,
+    "leafy": 2457,
+    "seed": 4
+   },
+   {
+    "voxels": 758474,
+    "leaf": 713046,
+    "bark": 15094,
+    "twig": 30334,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.1,
+     8.85,
+     15.0
+    ],
+    "base_radius": 0.263,
+    "height": 15.0,
+    "nodes": 9005,
+    "leafy": 3894,
+    "seed": 5
+   },
+   {
+    "voxels": 702159,
+    "leaf": 656795,
+    "bark": 15006,
+    "twig": 30358,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.55,
+     9.45,
+     15.0
+    ],
+    "base_radius": 0.2607,
+    "height": 15.0,
+    "nodes": 9103,
+    "leafy": 3955,
+    "seed": 6
+   },
+   {
+    "voxels": 559122,
+    "leaf": 517131,
+    "bark": 22160,
+    "twig": 19831,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     11.15,
+     8.65,
+     15.0
+    ],
+    "base_radius": 0.3144,
+    "height": 15.0,
+    "nodes": 6330,
+    "leafy": 2665,
+    "seed": 7
+   },
+   {
+    "voxels": 683806,
+    "leaf": 641075,
+    "bark": 15838,
+    "twig": 26893,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.45,
+     9.2,
+     15.0
+    ],
+    "base_radius": 0.27,
+    "height": 15.0,
+    "nodes": 8617,
+    "leafy": 3695,
+    "seed": 8
+   },
+   {
+    "voxels": 452653,
+    "leaf": 424043,
+    "bark": 13516,
+    "twig": 15094,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.25,
+     6.75,
+     15.0
+    ],
+    "base_radius": 0.2539,
+    "height": 15.0,
+    "nodes": 4673,
+    "leafy": 2043,
+    "seed": 9
+   },
+   {
+    "voxels": 735049,
+    "leaf": 682481,
+    "bark": 23677,
+    "twig": 28891,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.15,
+     8.8,
+     15.0
+    ],
+    "base_radius": 0.319,
+    "height": 15.0,
+    "nodes": 8798,
+    "leafy": 3835,
+    "seed": 10
+   },
+   {
+    "voxels": 429991,
+    "leaf": 397453,
+    "bark": 16464,
+    "twig": 16074,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     7.9,
+     8.5,
+     15.0
+    ],
+    "base_radius": 0.2723,
+    "height": 15.0,
+    "nodes": 4715,
+    "leafy": 2085,
+    "seed": 11
+   },
+   {
+    "voxels": 777522,
+    "leaf": 732614,
+    "bark": 16537,
+    "twig": 28371,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.85,
+     9.4,
+     15.0
+    ],
+    "base_radius": 0.2734,
+    "height": 15.0,
+    "nodes": 8405,
+    "leafy": 3678,
+    "seed": 12
+   },
+   {
+    "voxels": 778658,
+    "leaf": 729585,
+    "bark": 23628,
+    "twig": 25445,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.45,
+     10.05,
+     15.0
+    ],
+    "base_radius": 0.3244,
+    "height": 15.0,
+    "nodes": 7641,
+    "leafy": 3387,
+    "seed": 13
+   },
+   {
+    "voxels": 812260,
+    "leaf": 761525,
+    "bark": 20831,
+    "twig": 29904,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.7,
+     10.15,
+     15.0
+    ],
+    "base_radius": 0.3074,
+    "height": 15.0,
+    "nodes": 9829,
+    "leafy": 4221,
+    "seed": 14
+   },
+   {
+    "voxels": 842113,
+    "leaf": 795703,
+    "bark": 13046,
+    "twig": 33364,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.8,
+     8.5,
+     15.0
+    ],
+    "base_radius": 0.251,
+    "height": 15.0,
+    "nodes": 10068,
+    "leafy": 4395,
+    "seed": 15
+   },
+   {
+    "voxels": 915787,
+    "leaf": 862775,
+    "bark": 15486,
+    "twig": 37526,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.3,
+     10.9,
+     15.0
+    ],
+    "base_radius": 0.2628,
+    "height": 15.0,
+    "nodes": 12019,
+    "leafy": 5089,
+    "seed": 16
+   },
+   {
+    "voxels": 551958,
+    "leaf": 509258,
+    "bark": 19890,
+    "twig": 22810,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.4,
+     7.4,
+     15.0
+    ],
+    "base_radius": 0.3021,
+    "height": 15.0,
+    "nodes": 6994,
+    "leafy": 3104,
+    "seed": 17
+   },
+   {
+    "voxels": 731733,
+    "leaf": 678731,
+    "bark": 22271,
+    "twig": 30731,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.7,
+     9.2,
+     15.0
+    ],
+    "base_radius": 0.3112,
+    "height": 15.0,
+    "nodes": 9526,
+    "leafy": 4114,
+    "seed": 18
+   },
+   {
+    "voxels": 782214,
+    "leaf": 736458,
+    "bark": 15265,
+    "twig": 30491,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.2,
+     10.2,
+     15.0
+    ],
+    "base_radius": 0.2597,
+    "height": 15.0,
+    "nodes": 9512,
+    "leafy": 4000,
+    "seed": 19
+   }
+  ]
+ },
+ "bouleau": {
+  "height": 12.0,
+  "seeds": [
+   {
+    "voxels": 49691,
+    "leaf": 42326,
+    "bark": 5746,
+    "twig": 1619,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.85,
+     3.05,
+     12.0
+    ],
+    "base_radius": 0.1827,
+    "height": 12.0,
+    "nodes": 350,
+    "leafy": 122,
+    "seed": 0
+   },
+   {
+    "voxels": 79322,
+    "leaf": 70911,
+    "bark": 5723,
+    "twig": 2688,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.1,
+     4.2,
+     12.0
+    ],
+    "base_radius": 0.1808,
+    "height": 12.0,
+    "nodes": 629,
+    "leafy": 291,
+    "seed": 1
+   },
+   {
+    "voxels": 38516,
+    "leaf": 33126,
+    "bark": 3981,
+    "twig": 1409,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.6,
+     3.8,
+     12.0
+    ],
+    "base_radius": 0.1546,
+    "height": 12.0,
+    "nodes": 297,
+    "leafy": 118,
+    "seed": 2
+   },
+   {
+    "voxels": 78618,
+    "leaf": 69567,
+    "bark": 6382,
+    "twig": 2669,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.6,
+     5.9,
+     12.0
+    ],
+    "base_radius": 0.1885,
+    "height": 12.0,
+    "nodes": 601,
+    "leafy": 251,
+    "seed": 3
+   },
+   {
+    "voxels": 57265,
+    "leaf": 49664,
+    "bark": 5612,
+    "twig": 1989,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.25,
+     4.3,
+     12.0
+    ],
+    "base_radius": 0.1782,
+    "height": 12.0,
+    "nodes": 424,
+    "leafy": 180,
+    "seed": 4
+   },
+   {
+    "voxels": 47431,
+    "leaf": 41435,
+    "bark": 4341,
+    "twig": 1655,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.0,
+     3.55,
+     12.0
+    ],
+    "base_radius": 0.1606,
+    "height": 12.0,
+    "nodes": 371,
+    "leafy": 151,
+    "seed": 5
+   },
+   {
+    "voxels": 84461,
+    "leaf": 77441,
+    "bark": 4463,
+    "twig": 2557,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.35,
+     3.9,
+     12.0
+    ],
+    "base_radius": 0.1592,
+    "height": 12.0,
+    "nodes": 627,
+    "leafy": 316,
+    "seed": 6
+   },
+   {
+    "voxels": 106678,
+    "leaf": 96628,
+    "bark": 6748,
+    "twig": 3302,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.25,
+     5.05,
+     12.0
+    ],
+    "base_radius": 0.1919,
+    "height": 12.0,
+    "nodes": 827,
+    "leafy": 405,
+    "seed": 7
+   },
+   {
+    "voxels": 106412,
+    "leaf": 97469,
+    "bark": 4834,
+    "twig": 4109,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.5,
+     5.15,
+     12.0
+    ],
+    "base_radius": 0.1649,
+    "height": 12.0,
+    "nodes": 975,
+    "leafy": 500,
+    "seed": 8
+   },
+   {
+    "voxels": 71939,
+    "leaf": 65239,
+    "bark": 4126,
+    "twig": 2574,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.25,
+     4.0,
+     12.0
+    ],
+    "base_radius": 0.155,
+    "height": 12.0,
+    "nodes": 554,
+    "leafy": 243,
+    "seed": 9
+   },
+   {
+    "voxels": 46308,
+    "leaf": 38034,
+    "bark": 6924,
+    "twig": 1350,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.1,
+     3.6,
+     12.0
+    ],
+    "base_radius": 0.1947,
+    "height": 12.0,
+    "nodes": 334,
+    "leafy": 133,
+    "seed": 10
+   },
+   {
+    "voxels": 77037,
+    "leaf": 69158,
+    "bark": 4868,
+    "twig": 3011,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.25,
+     5.15,
+     12.0
+    ],
+    "base_radius": 0.1662,
+    "height": 12.0,
+    "nodes": 674,
+    "leafy": 329,
+    "seed": 11
+   },
+   {
+    "voxels": 58944,
+    "leaf": 52005,
+    "bark": 5004,
+    "twig": 1935,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.6,
+     4.55,
+     12.0
+    ],
+    "base_radius": 0.1669,
+    "height": 12.0,
+    "nodes": 416,
+    "leafy": 179,
+    "seed": 12
+   },
+   {
+    "voxels": 79481,
+    "leaf": 70310,
+    "bark": 6822,
+    "twig": 2349,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.45,
+     4.85,
+     12.0
+    ],
+    "base_radius": 0.1981,
+    "height": 12.0,
+    "nodes": 556,
+    "leafy": 245,
+    "seed": 13
+   },
+   {
+    "voxels": 55853,
+    "leaf": 47827,
+    "bark": 6270,
+    "twig": 1756,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.95,
+     4.1,
+     12.0
+    ],
+    "base_radius": 0.1877,
+    "height": 12.0,
+    "nodes": 422,
+    "leafy": 189,
+    "seed": 14
+   },
+   {
+    "voxels": 80049,
+    "leaf": 73634,
+    "bark": 3863,
+    "twig": 2552,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.25,
+     4.95,
+     12.0
+    ],
+    "base_radius": 0.1533,
+    "height": 12.0,
+    "nodes": 553,
+    "leafy": 235,
+    "seed": 15
+   },
+   {
+    "voxels": 55695,
+    "leaf": 48938,
+    "bark": 4842,
+    "twig": 1915,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.25,
+     4.6,
+     12.0
+    ],
+    "base_radius": 0.1605,
+    "height": 12.0,
+    "nodes": 442,
+    "leafy": 208,
+    "seed": 16
+   },
+   {
+    "voxels": 30021,
+    "leaf": 22946,
+    "bark": 6015,
+    "twig": 1060,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.6,
+     3.6,
+     12.0
+    ],
+    "base_radius": 0.1845,
+    "height": 12.0,
+    "nodes": 224,
+    "leafy": 82,
+    "seed": 17
+   },
+   {
+    "voxels": 43827,
+    "leaf": 35753,
+    "bark": 6425,
+    "twig": 1649,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.4,
+     3.75,
+     12.0
+    ],
+    "base_radius": 0.19,
+    "height": 12.0,
+    "nodes": 428,
+    "leafy": 188,
+    "seed": 18
+   },
+   {
+    "voxels": 108452,
+    "leaf": 100341,
+    "bark": 4565,
+    "twig": 3546,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.9,
+     6.15,
+     12.0
+    ],
+    "base_radius": 0.1586,
+    "height": 12.0,
+    "nodes": 868,
+    "leafy": 428,
+    "seed": 19
+   }
+  ]
+ },
+ "epicea": {
+  "height": 14.0,
+  "seeds": [
+   {
+    "voxels": 226243,
+    "leaf": 212721,
+    "bark": 3767,
+    "twig": 9755,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.2,
+     5.2,
+     14.0
+    ],
+    "base_radius": 0.1837,
+    "height": 14.0,
+    "nodes": 1645,
+    "leafy": 1537,
+    "seed": 0
+   },
+   {
+    "voxels": 307202,
+    "leaf": 288380,
+    "bark": 3704,
+    "twig": 15118,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.15,
+     5.85,
+     14.0
+    ],
+    "base_radius": 0.1818,
+    "height": 14.0,
+    "nodes": 2729,
+    "leafy": 2546,
+    "seed": 1
+   },
+   {
+    "voxels": 197111,
+    "leaf": 185652,
+    "bark": 2644,
+    "twig": 8815,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.25,
+     4.9,
+     14.0
+    ],
+    "base_radius": 0.1554,
+    "height": 14.0,
+    "nodes": 1480,
+    "leafy": 1380,
+    "seed": 2
+   },
+   {
+    "voxels": 302260,
+    "leaf": 283958,
+    "bark": 4182,
+    "twig": 14120,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.75,
+     6.25,
+     14.0
+    ],
+    "base_radius": 0.1896,
+    "height": 14.0,
+    "nodes": 2527,
+    "leafy": 2356,
+    "seed": 3
+   },
+   {
+    "voxels": 361449,
+    "leaf": 340731,
+    "bark": 3583,
+    "twig": 17135,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.35,
+     6.75,
+     14.0
+    ],
+    "base_radius": 0.1793,
+    "height": 14.0,
+    "nodes": 3102,
+    "leafy": 2919,
+    "seed": 4
+   },
+   {
+    "voxels": 253250,
+    "leaf": 240987,
+    "bark": 2847,
+    "twig": 9416,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.15,
+     5.3,
+     14.0
+    ],
+    "base_radius": 0.1615,
+    "height": 14.0,
+    "nodes": 1603,
+    "leafy": 1504,
+    "seed": 5
+   },
+   {
+    "voxels": 306144,
+    "leaf": 290821,
+    "bark": 2903,
+    "twig": 12420,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.65,
+     5.4,
+     14.0
+    ],
+    "base_radius": 0.1601,
+    "height": 14.0,
+    "nodes": 2191,
+    "leafy": 2040,
+    "seed": 6
+   },
+   {
+    "voxels": 196532,
+    "leaf": 183630,
+    "bark": 4393,
+    "twig": 8509,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.25,
+     5.0,
+     14.0
+    ],
+    "base_radius": 0.193,
+    "height": 14.0,
+    "nodes": 1411,
+    "leafy": 1309,
+    "seed": 7
+   },
+   {
+    "voxels": 239002,
+    "leaf": 224430,
+    "bark": 3182,
+    "twig": 11390,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.15,
+     5.65,
+     14.0
+    ],
+    "base_radius": 0.1658,
+    "height": 14.0,
+    "nodes": 1924,
+    "leafy": 1811,
+    "seed": 8
+   },
+   {
+    "voxels": 228889,
+    "leaf": 215852,
+    "bark": 2668,
+    "twig": 10369,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.1,
+     5.9,
+     14.0
+    ],
+    "base_radius": 0.1559,
+    "height": 14.0,
+    "nodes": 1797,
+    "leafy": 1681,
+    "seed": 9
+   },
+   {
+    "voxels": 272179,
+    "leaf": 257097,
+    "bark": 4694,
+    "twig": 10388,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.55,
+     5.45,
+     14.0
+    ],
+    "base_radius": 0.1959,
+    "height": 14.0,
+    "nodes": 1797,
+    "leafy": 1683,
+    "seed": 10
+   },
+   {
+    "voxels": 243205,
+    "leaf": 229043,
+    "bark": 3347,
+    "twig": 10815,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.5,
+     5.45,
+     14.0
+    ],
+    "base_radius": 0.1672,
+    "height": 14.0,
+    "nodes": 1826,
+    "leafy": 1721,
+    "seed": 11
+   },
+   {
+    "voxels": 253619,
+    "leaf": 239045,
+    "bark": 3195,
+    "twig": 11379,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.3,
+     5.4,
+     14.0
+    ],
+    "base_radius": 0.1679,
+    "height": 14.0,
+    "nodes": 1963,
+    "leafy": 1835,
+    "seed": 12
+   },
+   {
+    "voxels": 336160,
+    "leaf": 316338,
+    "bark": 4553,
+    "twig": 15269,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.3,
+     5.95,
+     14.0
+    ],
+    "base_radius": 0.1992,
+    "height": 14.0,
+    "nodes": 2731,
+    "leafy": 2575,
+    "seed": 13
+   },
+   {
+    "voxels": 336423,
+    "leaf": 317893,
+    "bark": 3906,
+    "twig": 14624,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.95,
+     6.35,
+     14.0
+    ],
+    "base_radius": 0.1888,
+    "height": 14.0,
+    "nodes": 2605,
+    "leafy": 2444,
+    "seed": 14
+   },
+   {
+    "voxels": 308674,
+    "leaf": 291350,
+    "bark": 2585,
+    "twig": 14739,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.95,
+     5.55,
+     14.0
+    ],
+    "base_radius": 0.1541,
+    "height": 14.0,
+    "nodes": 2600,
+    "leafy": 2445,
+    "seed": 15
+   },
+   {
+    "voxels": 325656,
+    "leaf": 305639,
+    "bark": 3223,
+    "twig": 16794,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.65,
+     5.75,
+     14.0
+    ],
+    "base_radius": 0.1614,
+    "height": 14.0,
+    "nodes": 2961,
+    "leafy": 2797,
+    "seed": 16
+   },
+   {
+    "voxels": 222955,
+    "leaf": 210319,
+    "bark": 3898,
+    "twig": 8738,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.1,
+     5.25,
+     14.0
+    ],
+    "base_radius": 0.1855,
+    "height": 14.0,
+    "nodes": 1463,
+    "leafy": 1370,
+    "seed": 17
+   },
+   {
+    "voxels": 226498,
+    "leaf": 210892,
+    "bark": 4299,
+    "twig": 11307,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.75,
+     5.7,
+     14.0
+    ],
+    "base_radius": 0.1911,
+    "height": 14.0,
+    "nodes": 1971,
+    "leafy": 1840,
+    "seed": 18
+   },
+   {
+    "voxels": 250762,
+    "leaf": 237548,
+    "bark": 2947,
+    "twig": 10267,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.35,
+     5.15,
+     14.0
+    ],
+    "base_radius": 0.1595,
+    "height": 14.0,
+    "nodes": 1751,
+    "leafy": 1625,
+    "seed": 19
+   }
+  ]
+ },
+ "pin": {
+  "height": 14.5,
+  "seeds": [
+   {
+    "voxels": 119610,
+    "leaf": 106291,
+    "bark": 11382,
+    "twig": 1937,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.55,
+     6.7,
+     14.5
+    ],
+    "base_radius": 0.2512,
+    "height": 14.5,
+    "nodes": 387,
+    "leafy": 206,
+    "seed": 0
+   },
+   {
+    "voxels": 215594,
+    "leaf": 200506,
+    "bark": 11361,
+    "twig": 3727,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.0,
+     6.7,
+     14.5
+    ],
+    "base_radius": 0.2485,
+    "height": 14.5,
+    "nodes": 761,
+    "leafy": 430,
+    "seed": 1
+   },
+   {
+    "voxels": 129747,
+    "leaf": 119728,
+    "bark": 8014,
+    "twig": 2005,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.85,
+     5.8,
+     14.5
+    ],
+    "base_radius": 0.2125,
+    "height": 14.5,
+    "nodes": 401,
+    "leafy": 213,
+    "seed": 2
+   },
+   {
+    "voxels": 141812,
+    "leaf": 127034,
+    "bark": 12511,
+    "twig": 2267,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     7.8,
+     6.9,
+     14.5
+    ],
+    "base_radius": 0.2592,
+    "height": 14.5,
+    "nodes": 441,
+    "leafy": 243,
+    "seed": 3
+   },
+   {
+    "voxels": 149319,
+    "leaf": 136213,
+    "bark": 10857,
+    "twig": 2249,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.05,
+     5.85,
+     14.5
+    ],
+    "base_radius": 0.2451,
+    "height": 14.5,
+    "nodes": 464,
+    "leafy": 259,
+    "seed": 4
+   },
+   {
+    "voxels": 171786,
+    "leaf": 159870,
+    "bark": 8867,
+    "twig": 3049,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.9,
+     5.85,
+     14.5
+    ],
+    "base_radius": 0.2208,
+    "height": 14.5,
+    "nodes": 633,
+    "leafy": 344,
+    "seed": 5
+   },
+   {
+    "voxels": 104176,
+    "leaf": 93716,
+    "bark": 8822,
+    "twig": 1638,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.1,
+     5.4,
+     14.5
+    ],
+    "base_radius": 0.2188,
+    "height": 14.5,
+    "nodes": 367,
+    "leafy": 194,
+    "seed": 6
+   },
+   {
+    "voxels": 129338,
+    "leaf": 114377,
+    "bark": 12984,
+    "twig": 1977,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.0,
+     5.4,
+     14.5
+    ],
+    "base_radius": 0.2639,
+    "height": 14.5,
+    "nodes": 454,
+    "leafy": 244,
+    "seed": 7
+   },
+   {
+    "voxels": 213895,
+    "leaf": 200509,
+    "bark": 9412,
+    "twig": 3974,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     7.05,
+     7.4,
+     14.5
+    ],
+    "base_radius": 0.2267,
+    "height": 14.5,
+    "nodes": 853,
+    "leafy": 483,
+    "seed": 8
+   },
+   {
+    "voxels": 170830,
+    "leaf": 159756,
+    "bark": 8156,
+    "twig": 2918,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     4.85,
+     5.15,
+     14.5
+    ],
+    "base_radius": 0.2131,
+    "height": 14.5,
+    "nodes": 576,
+    "leafy": 316,
+    "seed": 9
+   },
+   {
+    "voxels": 195839,
+    "leaf": 179006,
+    "bark": 13570,
+    "twig": 3263,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.15,
+     6.3,
+     14.5
+    ],
+    "base_radius": 0.2678,
+    "height": 14.5,
+    "nodes": 679,
+    "leafy": 378,
+    "seed": 10
+   },
+   {
+    "voxels": 82160,
+    "leaf": 71243,
+    "bark": 9780,
+    "twig": 1137,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.05,
+     5.5,
+     14.5
+    ],
+    "base_radius": 0.2285,
+    "height": 14.5,
+    "nodes": 246,
+    "leafy": 127,
+    "seed": 11
+   },
+   {
+    "voxels": 167562,
+    "leaf": 155192,
+    "bark": 9593,
+    "twig": 2777,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.6,
+     6.5,
+     14.5
+    ],
+    "base_radius": 0.2296,
+    "height": 14.5,
+    "nodes": 585,
+    "leafy": 321,
+    "seed": 12
+   },
+   {
+    "voxels": 191126,
+    "leaf": 174630,
+    "bark": 13628,
+    "twig": 2868,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.65,
+     6.15,
+     14.5
+    ],
+    "base_radius": 0.2723,
+    "height": 14.5,
+    "nodes": 584,
+    "leafy": 324,
+    "seed": 13
+   },
+   {
+    "voxels": 118426,
+    "leaf": 104304,
+    "bark": 12196,
+    "twig": 1926,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.05,
+     5.85,
+     14.5
+    ],
+    "base_radius": 0.2581,
+    "height": 14.5,
+    "nodes": 409,
+    "leafy": 228,
+    "seed": 14
+   },
+   {
+    "voxels": 152771,
+    "leaf": 142560,
+    "bark": 7638,
+    "twig": 2573,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.2,
+     5.3,
+     14.5
+    ],
+    "base_radius": 0.2107,
+    "height": 14.5,
+    "nodes": 476,
+    "leafy": 257,
+    "seed": 15
+   },
+   {
+    "voxels": 119787,
+    "leaf": 108300,
+    "bark": 9331,
+    "twig": 2156,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     5.65,
+     3.8,
+     14.5
+    ],
+    "base_radius": 0.2206,
+    "height": 14.5,
+    "nodes": 522,
+    "leafy": 294,
+    "seed": 16
+   },
+   {
+    "voxels": 114050,
+    "leaf": 100753,
+    "bark": 11588,
+    "twig": 1709,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.1,
+     5.7,
+     14.5
+    ],
+    "base_radius": 0.2536,
+    "height": 14.5,
+    "nodes": 377,
+    "leafy": 196,
+    "seed": 17
+   },
+   {
+    "voxels": 193297,
+    "leaf": 177200,
+    "bark": 12977,
+    "twig": 3120,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.95,
+     5.6,
+     14.5
+    ],
+    "base_radius": 0.2613,
+    "height": 14.5,
+    "nodes": 669,
+    "leafy": 372,
+    "seed": 18
+   },
+   {
+    "voxels": 80484,
+    "leaf": 70206,
+    "bark": 8936,
+    "twig": 1342,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     6.55,
+     4.35,
+     14.5
+    ],
+    "base_radius": 0.2181,
+    "height": 14.5,
+    "nodes": 282,
+    "leafy": 151,
+    "seed": 19
+   }
+  ]
+ },
+ "peuplier": {
+  "height": 15.0,
+  "seeds": [
+   {
+    "voxels": 105904,
+    "leaf": 92842,
+    "bark": 11489,
+    "twig": 1573,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.4,
+     2.75,
+     15.0
+    ],
+    "base_radius": 0.2598,
+    "height": 15.0,
+    "nodes": 283,
+    "leafy": 128,
+    "seed": 0
+   },
+   {
+    "voxels": 167591,
+    "leaf": 153972,
+    "bark": 11333,
+    "twig": 2286,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.15,
+     3.05,
+     15.0
+    ],
+    "base_radius": 0.2571,
+    "height": 15.0,
+    "nodes": 404,
+    "leafy": 226,
+    "seed": 1
+   },
+   {
+    "voxels": 97395,
+    "leaf": 87759,
+    "bark": 7912,
+    "twig": 1724,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.3,
+     2.4,
+     15.0
+    ],
+    "base_radius": 0.2198,
+    "height": 15.0,
+    "nodes": 272,
+    "leafy": 129,
+    "seed": 2
+   },
+   {
+    "voxels": 146629,
+    "leaf": 131694,
+    "bark": 12731,
+    "twig": 2204,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.35,
+     3.95,
+     15.0
+    ],
+    "base_radius": 0.2682,
+    "height": 15.0,
+    "nodes": 368,
+    "leafy": 193,
+    "seed": 3
+   },
+   {
+    "voxels": 163508,
+    "leaf": 150218,
+    "bark": 10940,
+    "twig": 2350,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.85,
+     3.0,
+     15.0
+    ],
+    "base_radius": 0.2535,
+    "height": 15.0,
+    "nodes": 405,
+    "leafy": 222,
+    "seed": 4
+   },
+   {
+    "voxels": 119103,
+    "leaf": 108730,
+    "bark": 8697,
+    "twig": 1676,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.15,
+     2.45,
+     15.0
+    ],
+    "base_radius": 0.2284,
+    "height": 15.0,
+    "nodes": 261,
+    "leafy": 118,
+    "seed": 5
+   },
+   {
+    "voxels": 138361,
+    "leaf": 127903,
+    "bark": 8532,
+    "twig": 1926,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.2,
+     2.5,
+     15.0
+    ],
+    "base_radius": 0.2264,
+    "height": 15.0,
+    "nodes": 311,
+    "leafy": 156,
+    "seed": 6
+   },
+   {
+    "voxels": 112487,
+    "leaf": 98053,
+    "bark": 12925,
+    "twig": 1509,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.4,
+     2.95,
+     15.0
+    ],
+    "base_radius": 0.273,
+    "height": 15.0,
+    "nodes": 266,
+    "leafy": 120,
+    "seed": 7
+   },
+   {
+    "voxels": 119706,
+    "leaf": 108508,
+    "bark": 9209,
+    "twig": 1989,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.75,
+     3.35,
+     15.0
+    ],
+    "base_radius": 0.2345,
+    "height": 15.0,
+    "nodes": 325,
+    "leafy": 167,
+    "seed": 8
+   },
+   {
+    "voxels": 126758,
+    "leaf": 116875,
+    "bark": 7959,
+    "twig": 1924,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.5,
+     2.65,
+     15.0
+    ],
+    "base_radius": 0.2205,
+    "height": 15.0,
+    "nodes": 302,
+    "leafy": 146,
+    "seed": 9
+   },
+   {
+    "voxels": 144412,
+    "leaf": 129048,
+    "bark": 13702,
+    "twig": 1662,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.45,
+     3.1,
+     15.0
+    ],
+    "base_radius": 0.277,
+    "height": 15.0,
+    "nodes": 312,
+    "leafy": 155,
+    "seed": 10
+   },
+   {
+    "voxels": 149032,
+    "leaf": 137102,
+    "bark": 9748,
+    "twig": 2182,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.7,
+     2.95,
+     15.0
+    ],
+    "base_radius": 0.2364,
+    "height": 15.0,
+    "nodes": 354,
+    "leafy": 190,
+    "seed": 11
+   },
+   {
+    "voxels": 126481,
+    "leaf": 114975,
+    "bark": 9631,
+    "twig": 1875,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.5,
+     2.55,
+     15.0
+    ],
+    "base_radius": 0.2375,
+    "height": 15.0,
+    "nodes": 313,
+    "leafy": 157,
+    "seed": 12
+   },
+   {
+    "voxels": 180999,
+    "leaf": 165231,
+    "bark": 13511,
+    "twig": 2257,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.35,
+     3.45,
+     15.0
+    ],
+    "base_radius": 0.2817,
+    "height": 15.0,
+    "nodes": 408,
+    "leafy": 227,
+    "seed": 13
+   },
+   {
+    "voxels": 149647,
+    "leaf": 135710,
+    "bark": 11907,
+    "twig": 2030,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.9,
+     2.35,
+     15.0
+    ],
+    "base_radius": 0.267,
+    "height": 15.0,
+    "nodes": 345,
+    "leafy": 179,
+    "seed": 14
+   },
+   {
+    "voxels": 151751,
+    "leaf": 141891,
+    "bark": 7674,
+    "twig": 2186,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.55,
+     3.2,
+     15.0
+    ],
+    "base_radius": 0.218,
+    "height": 15.0,
+    "nodes": 355,
+    "leafy": 188,
+    "seed": 15
+   },
+   {
+    "voxels": 155007,
+    "leaf": 142973,
+    "bark": 9429,
+    "twig": 2605,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.0,
+     3.15,
+     15.0
+    ],
+    "base_radius": 0.2282,
+    "height": 15.0,
+    "nodes": 423,
+    "leafy": 234,
+    "seed": 16
+   },
+   {
+    "voxels": 119376,
+    "leaf": 106177,
+    "bark": 11677,
+    "twig": 1522,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.65,
+     3.05,
+     15.0
+    ],
+    "base_radius": 0.2624,
+    "height": 15.0,
+    "nodes": 289,
+    "leafy": 133,
+    "seed": 17
+   },
+   {
+    "voxels": 127668,
+    "leaf": 113143,
+    "bark": 12839,
+    "twig": 1686,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.3,
+     4.1,
+     15.0
+    ],
+    "base_radius": 0.2703,
+    "height": 15.0,
+    "nodes": 316,
+    "leafy": 152,
+    "seed": 18
+   },
+   {
+    "voxels": 132230,
+    "leaf": 121622,
+    "bark": 8913,
+    "twig": 1695,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     3.3,
+     3.5,
+     15.0
+    ],
+    "base_radius": 0.2256,
+    "height": 15.0,
+    "nodes": 279,
+    "leafy": 133,
+    "seed": 19
+   }
+  ]
+ },
+ "erable": {
+  "height": 14.0,
+  "seeds": [
+   {
+    "voxels": 813046,
+    "leaf": 769609,
+    "bark": 15903,
+    "twig": 27534,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.2,
+     9.65,
+     14.0
+    ],
+    "base_radius": 0.2792,
+    "height": 14.0,
+    "nodes": 8400,
+    "leafy": 3759,
+    "seed": 0
+   },
+   {
+    "voxels": 679730,
+    "leaf": 641556,
+    "bark": 15708,
+    "twig": 22466,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.3,
+     9.2,
+     14.0
+    ],
+    "base_radius": 0.2763,
+    "height": 14.0,
+    "nodes": 6612,
+    "leafy": 2916,
+    "seed": 1
+   },
+   {
+    "voxels": 747794,
+    "leaf": 710644,
+    "bark": 10543,
+    "twig": 26607,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.05,
+     8.85,
+     14.0
+    ],
+    "base_radius": 0.2363,
+    "height": 14.0,
+    "nodes": 8615,
+    "leafy": 3876,
+    "seed": 2
+   },
+   {
+    "voxels": 575865,
+    "leaf": 541275,
+    "bark": 16826,
+    "twig": 17764,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.95,
+     8.8,
+     14.0
+    ],
+    "base_radius": 0.2882,
+    "height": 14.0,
+    "nodes": 5625,
+    "leafy": 2516,
+    "seed": 3
+   },
+   {
+    "voxels": 503231,
+    "leaf": 474427,
+    "bark": 14741,
+    "twig": 14063,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     7.95,
+     9.1,
+     14.0
+    ],
+    "base_radius": 0.2725,
+    "height": 14.0,
+    "nodes": 4074,
+    "leafy": 1869,
+    "seed": 4
+   },
+   {
+    "voxels": 861094,
+    "leaf": 819720,
+    "bark": 11732,
+    "twig": 29642,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     7.8,
+     11.15,
+     14.0
+    ],
+    "base_radius": 0.2455,
+    "height": 14.0,
+    "nodes": 9145,
+    "leafy": 4081,
+    "seed": 5
+   },
+   {
+    "voxels": 662528,
+    "leaf": 627445,
+    "bark": 12073,
+    "twig": 23010,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.65,
+     8.1,
+     14.0
+    ],
+    "base_radius": 0.2433,
+    "height": 14.0,
+    "nodes": 6638,
+    "leafy": 2971,
+    "seed": 6
+   },
+   {
+    "voxels": 583756,
+    "leaf": 548067,
+    "bark": 17599,
+    "twig": 18090,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     7.3,
+     9.95,
+     14.0
+    ],
+    "base_radius": 0.2934,
+    "height": 14.0,
+    "nodes": 6143,
+    "leafy": 2653,
+    "seed": 7
+   },
+   {
+    "voxels": 683310,
+    "leaf": 649382,
+    "bark": 13218,
+    "twig": 20710,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.25,
+     11.75,
+     14.0
+    ],
+    "base_radius": 0.252,
+    "height": 14.0,
+    "nodes": 6079,
+    "leafy": 2655,
+    "seed": 8
+   },
+   {
+    "voxels": 934530,
+    "leaf": 891963,
+    "bark": 11013,
+    "twig": 31554,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.55,
+     9.7,
+     14.0
+    ],
+    "base_radius": 0.237,
+    "height": 14.0,
+    "nodes": 9677,
+    "leafy": 4274,
+    "seed": 9
+   },
+   {
+    "voxels": 745540,
+    "leaf": 702296,
+    "bark": 19183,
+    "twig": 24061,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.1,
+     8.35,
+     14.0
+    ],
+    "base_radius": 0.2977,
+    "height": 14.0,
+    "nodes": 6984,
+    "leafy": 3213,
+    "seed": 10
+   },
+   {
+    "voxels": 899176,
+    "leaf": 854208,
+    "bark": 12753,
+    "twig": 32215,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.45,
+     10.1,
+     14.0
+    ],
+    "base_radius": 0.2541,
+    "height": 14.0,
+    "nodes": 10500,
+    "leafy": 4599,
+    "seed": 11
+   },
+   {
+    "voxels": 558357,
+    "leaf": 529129,
+    "bark": 12988,
+    "twig": 16240,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.7,
+     7.3,
+     14.0
+    ],
+    "base_radius": 0.2552,
+    "height": 14.0,
+    "nodes": 4721,
+    "leafy": 2148,
+    "seed": 12
+   },
+   {
+    "voxels": 1060053,
+    "leaf": 1006926,
+    "bark": 18746,
+    "twig": 34381,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.4,
+     9.85,
+     14.0
+    ],
+    "base_radius": 0.3028,
+    "height": 14.0,
+    "nodes": 10906,
+    "leafy": 4822,
+    "seed": 13
+   },
+   {
+    "voxels": 1005558,
+    "leaf": 955675,
+    "bark": 16819,
+    "twig": 33064,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.25,
+     10.0,
+     14.0
+    ],
+    "base_radius": 0.287,
+    "height": 14.0,
+    "nodes": 10668,
+    "leafy": 4627,
+    "seed": 14
+   },
+   {
+    "voxels": 646799,
+    "leaf": 618511,
+    "bark": 10600,
+    "twig": 17688,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     10.55,
+     8.95,
+     14.0
+    ],
+    "base_radius": 0.2343,
+    "height": 14.0,
+    "nodes": 5216,
+    "leafy": 2311,
+    "seed": 15
+   },
+   {
+    "voxels": 1049243,
+    "leaf": 1000012,
+    "bark": 12218,
+    "twig": 37013,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.7,
+     10.85,
+     14.0
+    ],
+    "base_radius": 0.2453,
+    "height": 14.0,
+    "nodes": 12448,
+    "leafy": 5406,
+    "seed": 16
+   },
+   {
+    "voxels": 680754,
+    "leaf": 641371,
+    "bark": 15871,
+    "twig": 23512,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.75,
+     9.1,
+     14.0
+    ],
+    "base_radius": 0.282,
+    "height": 14.0,
+    "nodes": 7554,
+    "leafy": 3347,
+    "seed": 17
+   },
+   {
+    "voxels": 725701,
+    "leaf": 682477,
+    "bark": 17621,
+    "twig": 25603,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     8.55,
+     7.75,
+     14.0
+    ],
+    "base_radius": 0.2905,
+    "height": 14.0,
+    "nodes": 8192,
+    "leafy": 3643,
+    "seed": 18
+   },
+   {
+    "voxels": 1108389,
+    "leaf": 1060259,
+    "bark": 11780,
+    "twig": 36350,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     9.85,
+     10.55,
+     14.0
+    ],
+    "base_radius": 0.2424,
+    "height": 14.0,
+    "nodes": 11826,
+    "leafy": 5088,
+    "seed": 19
+   }
+  ]
+ },
+ "buis": {
+  "height": 1.05,
+  "seeds": [
+   {
+    "voxels": 6077,
+    "leaf": 4318,
+    "bark": 0,
+    "twig": 1759,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.35,
+     1.05
+    ],
+    "base_radius": 0.049,
+    "height": 1.05,
+    "nodes": 2738,
+    "leafy": 1458,
+    "seed": 0
+   },
+   {
+    "voxels": 7831,
+    "leaf": 5263,
+    "bark": 0,
+    "twig": 2568,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.6,
+     1.05
+    ],
+    "base_radius": 0.0553,
+    "height": 1.05,
+    "nodes": 4787,
+    "leafy": 2448,
+    "seed": 1
+   },
+   {
+    "voxels": 5586,
+    "leaf": 3680,
+    "bark": 0,
+    "twig": 1906,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.35,
+     1.05
+    ],
+    "base_radius": 0.0455,
+    "height": 1.05,
+    "nodes": 3351,
+    "leafy": 1701,
+    "seed": 2
+   },
+   {
+    "voxels": 6681,
+    "leaf": 4446,
+    "bark": 0,
+    "twig": 2235,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.45,
+     1.05
+    ],
+    "base_radius": 0.056,
+    "height": 1.05,
+    "nodes": 4250,
+    "leafy": 2230,
+    "seed": 3
+   },
+   {
+    "voxels": 7757,
+    "leaf": 5154,
+    "bark": 0,
+    "twig": 2603,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.35,
+     1.05
+    ],
+    "base_radius": 0.0513,
+    "height": 1.05,
+    "nodes": 4815,
+    "leafy": 2699,
+    "seed": 4
+   },
+   {
+    "voxels": 6245,
+    "leaf": 4271,
+    "bark": 0,
+    "twig": 1974,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.35,
+     1.05
+    ],
+    "base_radius": 0.0506,
+    "height": 1.05,
+    "nodes": 3416,
+    "leafy": 1735,
+    "seed": 5
+   },
+   {
+    "voxels": 6378,
+    "leaf": 4191,
+    "bark": 0,
+    "twig": 2187,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.2,
+     1.05
+    ],
+    "base_radius": 0.0481,
+    "height": 1.05,
+    "nodes": 3748,
+    "leafy": 1911,
+    "seed": 6
+   },
+   {
+    "voxels": 5514,
+    "leaf": 3924,
+    "bark": 0,
+    "twig": 1590,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.4,
+     1.25,
+     1.05
+    ],
+    "base_radius": 0.0543,
+    "height": 1.05,
+    "nodes": 2613,
+    "leafy": 1323,
+    "seed": 7
+   },
+   {
+    "voxels": 7229,
+    "leaf": 4828,
+    "bark": 0,
+    "twig": 2401,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.5,
+     1.05
+    ],
+    "base_radius": 0.0512,
+    "height": 1.05,
+    "nodes": 4133,
+    "leafy": 2115,
+    "seed": 8
+   },
+   {
+    "voxels": 6919,
+    "leaf": 4889,
+    "bark": 0,
+    "twig": 2030,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.35,
+     1.05
+    ],
+    "base_radius": 0.0414,
+    "height": 1.05,
+    "nodes": 3113,
+    "leafy": 1711,
+    "seed": 9
+   },
+   {
+    "voxels": 7030,
+    "leaf": 4754,
+    "bark": 0,
+    "twig": 2276,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.45,
+     1.05
+    ],
+    "base_radius": 0.0565,
+    "height": 1.05,
+    "nodes": 3623,
+    "leafy": 1915,
+    "seed": 10
+   },
+   {
+    "voxels": 5727,
+    "leaf": 3417,
+    "bark": 0,
+    "twig": 2310,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.5,
+     1.05
+    ],
+    "base_radius": 0.0499,
+    "height": 1.05,
+    "nodes": 4021,
+    "leafy": 2061,
+    "seed": 11
+   },
+   {
+    "voxels": 5113,
+    "leaf": 3378,
+    "bark": 0,
+    "twig": 1735,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.25,
+     1.05
+    ],
+    "base_radius": 0.0444,
+    "height": 1.05,
+    "nodes": 2899,
+    "leafy": 1560,
+    "seed": 12
+   },
+   {
+    "voxels": 7202,
+    "leaf": 4842,
+    "bark": 0,
+    "twig": 2360,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.5,
+     1.05
+    ],
+    "base_radius": 0.0529,
+    "height": 1.05,
+    "nodes": 4201,
+    "leafy": 2274,
+    "seed": 13
+   },
+   {
+    "voxels": 6426,
+    "leaf": 4356,
+    "bark": 0,
+    "twig": 2070,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.2,
+     1.45,
+     1.05
+    ],
+    "base_radius": 0.0542,
+    "height": 1.05,
+    "nodes": 3874,
+    "leafy": 2040,
+    "seed": 14
+   },
+   {
+    "voxels": 7280,
+    "leaf": 4683,
+    "bark": 0,
+    "twig": 2597,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.5,
+     1.05
+    ],
+    "base_radius": 0.0457,
+    "height": 1.05,
+    "nodes": 4977,
+    "leafy": 2610,
+    "seed": 15
+   },
+   {
+    "voxels": 6957,
+    "leaf": 4562,
+    "bark": 0,
+    "twig": 2395,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.4,
+     1.6,
+     1.05
+    ],
+    "base_radius": 0.0453,
+    "height": 1.05,
+    "nodes": 4355,
+    "leafy": 2430,
+    "seed": 16
+   },
+   {
+    "voxels": 6088,
+    "leaf": 4194,
+    "bark": 0,
+    "twig": 1894,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.4,
+     1.45,
+     1.05
+    ],
+    "base_radius": 0.0534,
+    "height": 1.05,
+    "nodes": 2956,
+    "leafy": 1547,
+    "seed": 17
+   },
+   {
+    "voxels": 6476,
+    "leaf": 4422,
+    "bark": 0,
+    "twig": 2054,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.45,
+     1.05
+    ],
+    "base_radius": 0.055,
+    "height": 1.05,
+    "nodes": 3438,
+    "leafy": 1677,
+    "seed": 18
+   },
+   {
+    "voxels": 6558,
+    "leaf": 4446,
+    "bark": 0,
+    "twig": 2112,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.4,
+     1.45,
+     1.05
+    ],
+    "base_radius": 0.0506,
+    "height": 1.05,
+    "nodes": 3781,
+    "leafy": 1865,
+    "seed": 19
+   }
+  ]
+ },
+ "rosier": {
+  "height": 1.3,
+  "seeds": [
+   {
+    "voxels": 3721,
+    "leaf": 2724,
+    "bark": 0,
+    "twig": 638,
+    "flower": 359,
+    "fruit": 0,
+    "box": [
+     1.95,
+     1.85,
+     1.3
+    ],
+    "base_radius": 0.0284,
+    "height": 1.3,
+    "nodes": 420,
+    "leafy": 153,
+    "seed": 0
+   },
+   {
+    "voxels": 5724,
+    "leaf": 3744,
+    "bark": 0,
+    "twig": 1155,
+    "flower": 825,
+    "fruit": 0,
+    "box": [
+     1.7,
+     1.85,
+     1.3
+    ],
+    "base_radius": 0.0382,
+    "height": 1.3,
+    "nodes": 936,
+    "leafy": 372,
+    "seed": 1
+   },
+   {
+    "voxels": 3392,
+    "leaf": 2124,
+    "bark": 0,
+    "twig": 746,
+    "flower": 522,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.3,
+     1.3
+    ],
+    "base_radius": 0.0294,
+    "height": 1.3,
+    "nodes": 550,
+    "leafy": 189,
+    "seed": 2
+   },
+   {
+    "voxels": 4116,
+    "leaf": 2632,
+    "bark": 0,
+    "twig": 809,
+    "flower": 675,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.3,
+     1.3
+    ],
+    "base_radius": 0.0365,
+    "height": 1.3,
+    "nodes": 685,
+    "leafy": 270,
+    "seed": 3
+   },
+   {
+    "voxels": 4842,
+    "leaf": 3262,
+    "bark": 0,
+    "twig": 835,
+    "flower": 745,
+    "fruit": 0,
+    "box": [
+     1.65,
+     1.7,
+     1.3
+    ],
+    "base_radius": 0.0318,
+    "height": 1.3,
+    "nodes": 643,
+    "leafy": 267,
+    "seed": 4
+   },
+   {
+    "voxels": 4601,
+    "leaf": 3064,
+    "bark": 0,
+    "twig": 856,
+    "flower": 681,
+    "fruit": 0,
+    "box": [
+     1.65,
+     2.05,
+     1.3
+    ],
+    "base_radius": 0.0318,
+    "height": 1.3,
+    "nodes": 601,
+    "leafy": 214,
+    "seed": 5
+   },
+   {
+    "voxels": 5334,
+    "leaf": 3416,
+    "bark": 0,
+    "twig": 1046,
+    "flower": 872,
+    "fruit": 0,
+    "box": [
+     1.85,
+     1.5,
+     1.3
+    ],
+    "base_radius": 0.0334,
+    "height": 1.3,
+    "nodes": 777,
+    "leafy": 288,
+    "seed": 6
+   },
+   {
+    "voxels": 3059,
+    "leaf": 1938,
+    "bark": 0,
+    "twig": 630,
+    "flower": 491,
+    "fruit": 0,
+    "box": [
+     1.25,
+     1.3,
+     1.3
+    ],
+    "base_radius": 0.0359,
+    "height": 1.3,
+    "nodes": 484,
+    "leafy": 156,
+    "seed": 7
+   },
+   {
+    "voxels": 5758,
+    "leaf": 3807,
+    "bark": 0,
+    "twig": 1097,
+    "flower": 854,
+    "fruit": 0,
+    "box": [
+     1.85,
+     1.85,
+     1.3
+    ],
+    "base_radius": 0.0334,
+    "height": 1.3,
+    "nodes": 808,
+    "leafy": 297,
+    "seed": 8
+   },
+   {
+    "voxels": 3297,
+    "leaf": 2323,
+    "bark": 0,
+    "twig": 554,
+    "flower": 420,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.65,
+     1.3
+    ],
+    "base_radius": 0.0255,
+    "height": 1.3,
+    "nodes": 430,
+    "leafy": 155,
+    "seed": 9
+   },
+   {
+    "voxels": 4454,
+    "leaf": 2950,
+    "bark": 0,
+    "twig": 859,
+    "flower": 645,
+    "fruit": 0,
+    "box": [
+     1.65,
+     1.7,
+     1.3
+    ],
+    "base_radius": 0.036,
+    "height": 1.3,
+    "nodes": 652,
+    "leafy": 244,
+    "seed": 10
+   },
+   {
+    "voxels": 3101,
+    "leaf": 1177,
+    "bark": 0,
+    "twig": 1012,
+    "flower": 912,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.35,
+     1.3
+    ],
+    "base_radius": 0.0351,
+    "height": 1.3,
+    "nodes": 820,
+    "leafy": 321,
+    "seed": 11
+   },
+   {
+    "voxels": 2471,
+    "leaf": 1402,
+    "bark": 0,
+    "twig": 618,
+    "flower": 451,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.5,
+     1.3
+    ],
+    "base_radius": 0.0259,
+    "height": 1.3,
+    "nodes": 433,
+    "leafy": 165,
+    "seed": 12
+   },
+   {
+    "voxels": 4603,
+    "leaf": 3100,
+    "bark": 0,
+    "twig": 827,
+    "flower": 676,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.6,
+     1.3
+    ],
+    "base_radius": 0.0351,
+    "height": 1.3,
+    "nodes": 624,
+    "leafy": 255,
+    "seed": 13
+   },
+   {
+    "voxels": 4055,
+    "leaf": 2651,
+    "bark": 0,
+    "twig": 804,
+    "flower": 600,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.5,
+     1.3
+    ],
+    "base_radius": 0.0356,
+    "height": 1.3,
+    "nodes": 648,
+    "leafy": 250,
+    "seed": 14
+   },
+   {
+    "voxels": 5948,
+    "leaf": 3840,
+    "bark": 0,
+    "twig": 1125,
+    "flower": 983,
+    "fruit": 0,
+    "box": [
+     1.85,
+     2.05,
+     1.3
+    ],
+    "base_radius": 0.0291,
+    "height": 1.3,
+    "nodes": 894,
+    "leafy": 349,
+    "seed": 15
+   },
+   {
+    "voxels": 4365,
+    "leaf": 2944,
+    "bark": 0,
+    "twig": 798,
+    "flower": 623,
+    "fruit": 0,
+    "box": [
+     1.8,
+     1.7,
+     1.3
+    ],
+    "base_radius": 0.0287,
+    "height": 1.3,
+    "nodes": 619,
+    "leafy": 252,
+    "seed": 16
+   },
+   {
+    "voxels": 3749,
+    "leaf": 2644,
+    "bark": 0,
+    "twig": 661,
+    "flower": 444,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.85,
+     1.3
+    ],
+    "base_radius": 0.0321,
+    "height": 1.3,
+    "nodes": 473,
+    "leafy": 168,
+    "seed": 17
+   },
+   {
+    "voxels": 4863,
+    "leaf": 3261,
+    "bark": 0,
+    "twig": 936,
+    "flower": 666,
+    "fruit": 0,
+    "box": [
+     1.8,
+     1.7,
+     1.3
+    ],
+    "base_radius": 0.0362,
+    "height": 1.3,
+    "nodes": 672,
+    "leafy": 231,
+    "seed": 18
+   },
+   {
+    "voxels": 4094,
+    "leaf": 2553,
+    "bark": 0,
+    "twig": 900,
+    "flower": 641,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.3,
+     1.3
+    ],
+    "base_radius": 0.0324,
+    "height": 1.3,
+    "nodes": 725,
+    "leafy": 244,
+    "seed": 19
+   }
+  ]
+ },
+ "lavande": {
+  "height": 0.62,
+  "seeds": [
+   {
+    "voxels": 816,
+    "leaf": 255,
+    "bark": 0,
+    "twig": 495,
+    "flower": 66,
+    "fruit": 0,
+    "box": [
+     1.05,
+     1.05,
+     0.6
+    ],
+    "base_radius": 0.0153,
+    "height": 0.6,
+    "nodes": 599,
+    "leafy": 137,
+    "seed": 0
+   },
+   {
+    "voxels": 1032,
+    "leaf": 263,
+    "bark": 0,
+    "twig": 688,
+    "flower": 81,
+    "fruit": 0,
+    "box": [
+     1.0,
+     1.05,
+     0.6
+    ],
+    "base_radius": 0.0178,
+    "height": 0.6,
+    "nodes": 1104,
+    "leafy": 252,
+    "seed": 1
+   },
+   {
+    "voxels": 773,
+    "leaf": 97,
+    "bark": 0,
+    "twig": 608,
+    "flower": 68,
+    "fruit": 0,
+    "box": [
+     1.2,
+     1.1,
+     0.6
+    ],
+    "base_radius": 0.0147,
+    "height": 0.6,
+    "nodes": 808,
+    "leafy": 182,
+    "seed": 2
+   },
+   {
+    "voxels": 883,
+    "leaf": 232,
+    "bark": 0,
+    "twig": 581,
+    "flower": 70,
+    "fruit": 0,
+    "box": [
+     0.95,
+     1.05,
+     0.6
+    ],
+    "base_radius": 0.0182,
+    "height": 0.6,
+    "nodes": 882,
+    "leafy": 197,
+    "seed": 3
+   },
+   {
+    "voxels": 935,
+    "leaf": 266,
+    "bark": 0,
+    "twig": 605,
+    "flower": 64,
+    "fruit": 0,
+    "box": [
+     1.1,
+     1.15,
+     0.6
+    ],
+    "base_radius": 0.0157,
+    "height": 0.6,
+    "nodes": 848,
+    "leafy": 193,
+    "seed": 4
+   },
+   {
+    "voxels": 1021,
+    "leaf": 286,
+    "bark": 0,
+    "twig": 645,
+    "flower": 90,
+    "fruit": 0,
+    "box": [
+     1.05,
+     1.0,
+     0.6
+    ],
+    "base_radius": 0.0157,
+    "height": 0.6,
+    "nodes": 885,
+    "leafy": 207,
+    "seed": 5
+   },
+   {
+    "voxels": 1074,
+    "leaf": 250,
+    "bark": 0,
+    "twig": 738,
+    "flower": 86,
+    "fruit": 0,
+    "box": [
+     1.0,
+     1.1,
+     0.6
+    ],
+    "base_radius": 0.0158,
+    "height": 0.6,
+    "nodes": 953,
+    "leafy": 209,
+    "seed": 6
+   },
+   {
+    "voxels": 865,
+    "leaf": 232,
+    "bark": 0,
+    "twig": 569,
+    "flower": 64,
+    "fruit": 0,
+    "box": [
+     0.8,
+     1.15,
+     0.6
+    ],
+    "base_radius": 0.0161,
+    "height": 0.6,
+    "nodes": 679,
+    "leafy": 150,
+    "seed": 7
+   },
+   {
+    "voxels": 1078,
+    "leaf": 271,
+    "bark": 0,
+    "twig": 726,
+    "flower": 81,
+    "fruit": 0,
+    "box": [
+     1.15,
+     1.05,
+     0.6
+    ],
+    "base_radius": 0.017,
+    "height": 0.6,
+    "nodes": 1024,
+    "leafy": 232,
+    "seed": 8
+   },
+   {
+    "voxels": 787,
+    "leaf": 247,
+    "bark": 0,
+    "twig": 485,
+    "flower": 55,
+    "fruit": 0,
+    "box": [
+     1.05,
+     1.0,
+     0.6
+    ],
+    "base_radius": 0.013,
+    "height": 0.6,
+    "nodes": 623,
+    "leafy": 144,
+    "seed": 9
+   },
+   {
+    "voxels": 964,
+    "leaf": 268,
+    "bark": 0,
+    "twig": 634,
+    "flower": 62,
+    "fruit": 0,
+    "box": [
+     1.0,
+     0.95,
+     0.6
+    ],
+    "base_radius": 0.0178,
+    "height": 0.6,
+    "nodes": 825,
+    "leafy": 194,
+    "seed": 10
+   },
+   {
+    "voxels": 860,
+    "leaf": 89,
+    "bark": 0,
+    "twig": 708,
+    "flower": 63,
+    "fruit": 0,
+    "box": [
+     0.95,
+     1.0,
+     0.6
+    ],
+    "base_radius": 0.0161,
+    "height": 0.6,
+    "nodes": 1005,
+    "leafy": 228,
+    "seed": 11
+   },
+   {
+    "voxels": 643,
+    "leaf": 144,
+    "bark": 0,
+    "twig": 455,
+    "flower": 44,
+    "fruit": 0,
+    "box": [
+     1.05,
+     1.1,
+     0.6
+    ],
+    "base_radius": 0.0141,
+    "height": 0.6,
+    "nodes": 612,
+    "leafy": 145,
+    "seed": 12
+   },
+   {
+    "voxels": 995,
+    "leaf": 302,
+    "bark": 0,
+    "twig": 630,
+    "flower": 63,
+    "fruit": 0,
+    "box": [
+     1.2,
+     1.1,
+     0.6
+    ],
+    "base_radius": 0.018,
+    "height": 0.6,
+    "nodes": 749,
+    "leafy": 171,
+    "seed": 13
+   },
+   {
+    "voxels": 1041,
+    "leaf": 299,
+    "bark": 0,
+    "twig": 656,
+    "flower": 86,
+    "fruit": 0,
+    "box": [
+     1.1,
+     1.2,
+     0.6
+    ],
+    "base_radius": 0.0169,
+    "height": 0.6,
+    "nodes": 854,
+    "leafy": 188,
+    "seed": 14
+   },
+   {
+    "voxels": 991,
+    "leaf": 236,
+    "bark": 0,
+    "twig": 689,
+    "flower": 66,
+    "fruit": 0,
+    "box": [
+     1.05,
+     1.1,
+     0.6
+    ],
+    "base_radius": 0.015,
+    "height": 0.6,
+    "nodes": 1049,
+    "leafy": 231,
+    "seed": 15
+   },
+   {
+    "voxels": 801,
+    "leaf": 121,
+    "bark": 0,
+    "twig": 619,
+    "flower": 61,
+    "fruit": 0,
+    "box": [
+     1.0,
+     1.25,
+     0.6
+    ],
+    "base_radius": 0.0141,
+    "height": 0.6,
+    "nodes": 832,
+    "leafy": 194,
+    "seed": 16
+   },
+   {
+    "voxels": 848,
+    "leaf": 226,
+    "bark": 0,
+    "twig": 564,
+    "flower": 58,
+    "fruit": 0,
+    "box": [
+     0.9,
+     1.1,
+     0.6
+    ],
+    "base_radius": 0.0165,
+    "height": 0.6,
+    "nodes": 703,
+    "leafy": 154,
+    "seed": 17
+   },
+   {
+    "voxels": 960,
+    "leaf": 220,
+    "bark": 0,
+    "twig": 680,
+    "flower": 60,
+    "fruit": 0,
+    "box": [
+     1.15,
+     1.05,
+     0.6
+    ],
+    "base_radius": 0.0178,
+    "height": 0.6,
+    "nodes": 914,
+    "leafy": 207,
+    "seed": 18
+   },
+   {
+    "voxels": 1040,
+    "leaf": 261,
+    "bark": 0,
+    "twig": 703,
+    "flower": 76,
+    "fruit": 0,
+    "box": [
+     1.0,
+     1.15,
+     0.6
+    ],
+    "base_radius": 0.0162,
+    "height": 0.6,
+    "nodes": 962,
+    "leafy": 220,
+    "seed": 19
+   }
+  ]
+ },
+ "lilas": {
+  "height": 1.65,
+  "seeds": [
+   {
+    "voxels": 4788,
+    "leaf": 4033,
+    "bark": 0,
+    "twig": 755,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.3,
+     1.65
+    ],
+    "base_radius": 0.0546,
+    "height": 1.65,
+    "nodes": 546,
+    "leafy": 190,
+    "seed": 0
+   },
+   {
+    "voxels": 6717,
+    "leaf": 5334,
+    "bark": 0,
+    "twig": 1383,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.45,
+     1.65
+    ],
+    "base_radius": 0.0727,
+    "height": 1.65,
+    "nodes": 1258,
+    "leafy": 463,
+    "seed": 1
+   },
+   {
+    "voxels": 5231,
+    "leaf": 4166,
+    "bark": 0,
+    "twig": 1065,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.4,
+     1.65
+    ],
+    "base_radius": 0.0533,
+    "height": 1.65,
+    "nodes": 780,
+    "leafy": 258,
+    "seed": 2
+   },
+   {
+    "voxels": 5849,
+    "leaf": 4623,
+    "bark": 0,
+    "twig": 1226,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.6,
+     1.65
+    ],
+    "base_radius": 0.0686,
+    "height": 1.65,
+    "nodes": 980,
+    "leafy": 364,
+    "seed": 3
+   },
+   {
+    "voxels": 6858,
+    "leaf": 5639,
+    "bark": 0,
+    "twig": 1219,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.45,
+     1.65
+    ],
+    "base_radius": 0.0602,
+    "height": 1.65,
+    "nodes": 1056,
+    "leafy": 446,
+    "seed": 4
+   },
+   {
+    "voxels": 6302,
+    "leaf": 5088,
+    "bark": 0,
+    "twig": 1214,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.3,
+     1.25,
+     1.65
+    ],
+    "base_radius": 0.0631,
+    "height": 1.65,
+    "nodes": 904,
+    "leafy": 296,
+    "seed": 5
+   },
+   {
+    "voxels": 6399,
+    "leaf": 5134,
+    "bark": 0,
+    "twig": 1265,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.4,
+     1.35,
+     1.65
+    ],
+    "base_radius": 0.0627,
+    "height": 1.65,
+    "nodes": 1070,
+    "leafy": 387,
+    "seed": 6
+   },
+   {
+    "voxels": 4557,
+    "leaf": 3561,
+    "bark": 0,
+    "twig": 996,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.4,
+     1.2,
+     1.65
+    ],
+    "base_radius": 0.0675,
+    "height": 1.65,
+    "nodes": 733,
+    "leafy": 237,
+    "seed": 7
+   },
+   {
+    "voxels": 7402,
+    "leaf": 5996,
+    "bark": 0,
+    "twig": 1406,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.55,
+     1.65
+    ],
+    "base_radius": 0.0634,
+    "height": 1.65,
+    "nodes": 1044,
+    "leafy": 375,
+    "seed": 8
+   },
+   {
+    "voxels": 3546,
+    "leaf": 2805,
+    "bark": 0,
+    "twig": 741,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.25,
+     1.4,
+     1.65
+    ],
+    "base_radius": 0.0468,
+    "height": 1.65,
+    "nodes": 539,
+    "leafy": 180,
+    "seed": 9
+   },
+   {
+    "voxels": 6107,
+    "leaf": 4929,
+    "bark": 0,
+    "twig": 1178,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.25,
+     1.65
+    ],
+    "base_radius": 0.071,
+    "height": 1.65,
+    "nodes": 904,
+    "leafy": 323,
+    "seed": 10
+   },
+   {
+    "voxels": 4423,
+    "leaf": 2970,
+    "bark": 0,
+    "twig": 1453,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.2,
+     1.65
+    ],
+    "base_radius": 0.0664,
+    "height": 1.65,
+    "nodes": 1164,
+    "leafy": 414,
+    "seed": 11
+   },
+   {
+    "voxels": 3006,
+    "leaf": 2206,
+    "bark": 0,
+    "twig": 800,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.1,
+     1.25,
+     1.65
+    ],
+    "base_radius": 0.051,
+    "height": 1.65,
+    "nodes": 597,
+    "leafy": 211,
+    "seed": 12
+   },
+   {
+    "voxels": 6028,
+    "leaf": 4932,
+    "bark": 0,
+    "twig": 1096,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.4,
+     1.65
+    ],
+    "base_radius": 0.0683,
+    "height": 1.65,
+    "nodes": 938,
+    "leafy": 353,
+    "seed": 13
+   },
+   {
+    "voxels": 6125,
+    "leaf": 4941,
+    "bark": 0,
+    "twig": 1184,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.35,
+     1.65
+    ],
+    "base_radius": 0.0654,
+    "height": 1.65,
+    "nodes": 966,
+    "leafy": 365,
+    "seed": 14
+   },
+   {
+    "voxels": 6187,
+    "leaf": 4681,
+    "bark": 0,
+    "twig": 1506,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.3,
+     1.65
+    ],
+    "base_radius": 0.0586,
+    "height": 1.65,
+    "nodes": 1265,
+    "leafy": 479,
+    "seed": 15
+   },
+   {
+    "voxels": 6744,
+    "leaf": 5513,
+    "bark": 0,
+    "twig": 1231,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.3,
+     1.65
+    ],
+    "base_radius": 0.0555,
+    "height": 1.65,
+    "nodes": 991,
+    "leafy": 394,
+    "seed": 16
+   },
+   {
+    "voxels": 4886,
+    "leaf": 3924,
+    "bark": 0,
+    "twig": 962,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.15,
+     1.65
+    ],
+    "base_radius": 0.0633,
+    "height": 1.65,
+    "nodes": 715,
+    "leafy": 234,
+    "seed": 17
+   },
+   {
+    "voxels": 5951,
+    "leaf": 4724,
+    "bark": 0,
+    "twig": 1227,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.25,
+     1.4,
+     1.65
+    ],
+    "base_radius": 0.0742,
+    "height": 1.65,
+    "nodes": 1021,
+    "leafy": 341,
+    "seed": 18
+   },
+   {
+    "voxels": 6619,
+    "leaf": 5267,
+    "bark": 0,
+    "twig": 1352,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.5,
+     1.65
+    ],
+    "base_radius": 0.0619,
+    "height": 1.65,
+    "nodes": 1033,
+    "leafy": 341,
+    "seed": 19
+   }
+  ]
+ },
+ "hortensia": {
+  "height": 1.2,
+  "seeds": [
+   {
+    "voxels": 7474,
+    "leaf": 5009,
+    "bark": 0,
+    "twig": 601,
+    "flower": 1864,
+    "fruit": 0,
+    "box": [
+     1.85,
+     1.65,
+     1.2
+    ],
+    "base_radius": 0.0365,
+    "height": 1.2,
+    "nodes": 399,
+    "leafy": 211,
+    "seed": 0
+   },
+   {
+    "voxels": 9517,
+    "leaf": 5119,
+    "bark": 0,
+    "twig": 1187,
+    "flower": 3211,
+    "fruit": 0,
+    "box": [
+     1.75,
+     1.7,
+     1.2
+    ],
+    "base_radius": 0.0495,
+    "height": 1.2,
+    "nodes": 1026,
+    "leafy": 548,
+    "seed": 1
+   },
+   {
+    "voxels": 7296,
+    "leaf": 3729,
+    "bark": 0,
+    "twig": 853,
+    "flower": 2714,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.55,
+     1.2
+    ],
+    "base_radius": 0.0395,
+    "height": 1.2,
+    "nodes": 692,
+    "leafy": 358,
+    "seed": 2
+   },
+   {
+    "voxels": 8440,
+    "leaf": 4508,
+    "bark": 0,
+    "twig": 1026,
+    "flower": 2906,
+    "fruit": 0,
+    "box": [
+     1.7,
+     1.55,
+     1.2
+    ],
+    "base_radius": 0.0472,
+    "height": 1.2,
+    "nodes": 820,
+    "leafy": 439,
+    "seed": 3
+   },
+   {
+    "voxels": 8990,
+    "leaf": 4760,
+    "bark": 0,
+    "twig": 929,
+    "flower": 3301,
+    "fruit": 0,
+    "box": [
+     1.75,
+     1.6,
+     1.2
+    ],
+    "base_radius": 0.0403,
+    "height": 1.2,
+    "nodes": 700,
+    "leafy": 360,
+    "seed": 4
+   },
+   {
+    "voxels": 8410,
+    "leaf": 4569,
+    "bark": 0,
+    "twig": 909,
+    "flower": 2932,
+    "fruit": 0,
+    "box": [
+     1.75,
+     1.65,
+     1.2
+    ],
+    "base_radius": 0.042,
+    "height": 1.2,
+    "nodes": 740,
+    "leafy": 394,
+    "seed": 5
+   },
+   {
+    "voxels": 9657,
+    "leaf": 5148,
+    "bark": 0,
+    "twig": 1115,
+    "flower": 3394,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.7,
+     1.2
+    ],
+    "base_radius": 0.0437,
+    "height": 1.2,
+    "nodes": 901,
+    "leafy": 469,
+    "seed": 6
+   },
+   {
+    "voxels": 7020,
+    "leaf": 4070,
+    "bark": 0,
+    "twig": 765,
+    "flower": 2185,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.6,
+     1.2
+    ],
+    "base_radius": 0.0458,
+    "height": 1.2,
+    "nodes": 574,
+    "leafy": 300,
+    "seed": 7
+   },
+   {
+    "voxels": 10000,
+    "leaf": 5353,
+    "bark": 0,
+    "twig": 1142,
+    "flower": 3505,
+    "fruit": 0,
+    "box": [
+     2.1,
+     1.65,
+     1.2
+    ],
+    "base_radius": 0.0441,
+    "height": 1.2,
+    "nodes": 897,
+    "leafy": 485,
+    "seed": 8
+   },
+   {
+    "voxels": 7073,
+    "leaf": 4341,
+    "bark": 0,
+    "twig": 651,
+    "flower": 2081,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.5,
+     1.2
+    ],
+    "base_radius": 0.0326,
+    "height": 1.2,
+    "nodes": 469,
+    "leafy": 249,
+    "seed": 9
+   },
+   {
+    "voxels": 8179,
+    "leaf": 4590,
+    "bark": 0,
+    "twig": 909,
+    "flower": 2680,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.75,
+     1.2
+    ],
+    "base_radius": 0.0466,
+    "height": 1.2,
+    "nodes": 730,
+    "leafy": 386,
+    "seed": 10
+   },
+   {
+    "voxels": 6324,
+    "leaf": 2156,
+    "bark": 0,
+    "twig": 1028,
+    "flower": 3140,
+    "fruit": 0,
+    "box": [
+     1.45,
+     1.65,
+     1.2
+    ],
+    "base_radius": 0.0425,
+    "height": 1.2,
+    "nodes": 857,
+    "leafy": 452,
+    "seed": 11
+   },
+   {
+    "voxels": 5933,
+    "leaf": 3080,
+    "bark": 0,
+    "twig": 666,
+    "flower": 2187,
+    "fruit": 0,
+    "box": [
+     1.8,
+     1.45,
+     1.2
+    ],
+    "base_radius": 0.0364,
+    "height": 1.2,
+    "nodes": 486,
+    "leafy": 268,
+    "seed": 12
+   },
+   {
+    "voxels": 8438,
+    "leaf": 4646,
+    "bark": 0,
+    "twig": 846,
+    "flower": 2946,
+    "fruit": 0,
+    "box": [
+     1.75,
+     1.8,
+     1.2
+    ],
+    "base_radius": 0.0473,
+    "height": 1.2,
+    "nodes": 678,
+    "leafy": 354,
+    "seed": 13
+   },
+   {
+    "voxels": 7782,
+    "leaf": 4236,
+    "bark": 0,
+    "twig": 923,
+    "flower": 2623,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.55,
+     1.2
+    ],
+    "base_radius": 0.0475,
+    "height": 1.2,
+    "nodes": 718,
+    "leafy": 384,
+    "seed": 14
+   },
+   {
+    "voxels": 9029,
+    "leaf": 4318,
+    "bark": 0,
+    "twig": 1156,
+    "flower": 3555,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.7,
+     1.2
+    ],
+    "base_radius": 0.0427,
+    "height": 1.2,
+    "nodes": 1071,
+    "leafy": 576,
+    "seed": 15
+   },
+   {
+    "voxels": 7162,
+    "leaf": 3538,
+    "bark": 0,
+    "twig": 829,
+    "flower": 2795,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.7,
+     1.2
+    ],
+    "base_radius": 0.0378,
+    "height": 1.2,
+    "nodes": 687,
+    "leafy": 361,
+    "seed": 16
+   },
+   {
+    "voxels": 6950,
+    "leaf": 3929,
+    "bark": 0,
+    "twig": 788,
+    "flower": 2233,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.45,
+     1.2
+    ],
+    "base_radius": 0.0438,
+    "height": 1.2,
+    "nodes": 607,
+    "leafy": 321,
+    "seed": 17
+   },
+   {
+    "voxels": 9265,
+    "leaf": 4456,
+    "bark": 0,
+    "twig": 1117,
+    "flower": 3692,
+    "fruit": 0,
+    "box": [
+     1.8,
+     1.7,
+     1.2
+    ],
+    "base_radius": 0.0507,
+    "height": 1.2,
+    "nodes": 934,
+    "leafy": 491,
+    "seed": 18
+   },
+   {
+    "voxels": 9115,
+    "leaf": 4661,
+    "bark": 0,
+    "twig": 1099,
+    "flower": 3355,
+    "fruit": 0,
+    "box": [
+     1.65,
+     1.65,
+     1.2
+    ],
+    "base_radius": 0.0461,
+    "height": 1.2,
+    "nodes": 885,
+    "leafy": 480,
+    "seed": 19
+   }
+  ]
+ },
+ "forsythia": {
+  "height": 1.6,
+  "seeds": [
+   {
+    "voxels": 8584,
+    "leaf": 6491,
+    "bark": 0,
+    "twig": 2093,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.25,
+     1.9,
+     1.6
+    ],
+    "base_radius": 0.0497,
+    "height": 1.6,
+    "nodes": 2469,
+    "leafy": 1141,
+    "seed": 0
+   },
+   {
+    "voxels": 12475,
+    "leaf": 8765,
+    "bark": 0,
+    "twig": 3710,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.35,
+     2.05,
+     1.6
+    ],
+    "base_radius": 0.0625,
+    "height": 1.6,
+    "nodes": 5505,
+    "leafy": 2653,
+    "seed": 1
+   },
+   {
+    "voxels": 8128,
+    "leaf": 5617,
+    "bark": 0,
+    "twig": 2511,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.95,
+     1.8,
+     1.6
+    ],
+    "base_radius": 0.0489,
+    "height": 1.6,
+    "nodes": 3244,
+    "leafy": 1457,
+    "seed": 2
+   },
+   {
+    "voxels": 11173,
+    "leaf": 7948,
+    "bark": 0,
+    "twig": 3225,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.05,
+     1.85,
+     1.6
+    ],
+    "base_radius": 0.0591,
+    "height": 1.6,
+    "nodes": 4227,
+    "leafy": 2047,
+    "seed": 3
+   },
+   {
+    "voxels": 12855,
+    "leaf": 9478,
+    "bark": 0,
+    "twig": 3377,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.45,
+     2.05,
+     1.6
+    ],
+    "base_radius": 0.0522,
+    "height": 1.6,
+    "nodes": 4271,
+    "leafy": 2145,
+    "seed": 4
+   },
+   {
+    "voxels": 9317,
+    "leaf": 6795,
+    "bark": 0,
+    "twig": 2522,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.95,
+     1.65,
+     1.6
+    ],
+    "base_radius": 0.0516,
+    "height": 1.6,
+    "nodes": 3280,
+    "leafy": 1441,
+    "seed": 5
+   },
+   {
+    "voxels": 11272,
+    "leaf": 8002,
+    "bark": 0,
+    "twig": 3270,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.05,
+     1.95,
+     1.6
+    ],
+    "base_radius": 0.0545,
+    "height": 1.6,
+    "nodes": 4315,
+    "leafy": 2009,
+    "seed": 6
+   },
+   {
+    "voxels": 6661,
+    "leaf": 4818,
+    "bark": 0,
+    "twig": 1843,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.85,
+     1.6
+    ],
+    "base_radius": 0.0585,
+    "height": 1.6,
+    "nodes": 2612,
+    "leafy": 1152,
+    "seed": 7
+   },
+   {
+    "voxels": 11420,
+    "leaf": 8143,
+    "bark": 0,
+    "twig": 3277,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.1,
+     2.2,
+     1.6
+    ],
+    "base_radius": 0.0549,
+    "height": 1.6,
+    "nodes": 4494,
+    "leafy": 2092,
+    "seed": 8
+   },
+   {
+    "voxels": 7481,
+    "leaf": 5468,
+    "bark": 0,
+    "twig": 2013,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.6,
+     1.95,
+     1.6
+    ],
+    "base_radius": 0.042,
+    "height": 1.6,
+    "nodes": 2592,
+    "leafy": 1213,
+    "seed": 9
+   },
+   {
+    "voxels": 9127,
+    "leaf": 6664,
+    "bark": 0,
+    "twig": 2463,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.1,
+     1.9,
+     1.6
+    ],
+    "base_radius": 0.0606,
+    "height": 1.6,
+    "nodes": 3686,
+    "leafy": 1725,
+    "seed": 10
+   },
+   {
+    "voxels": 7225,
+    "leaf": 4089,
+    "bark": 0,
+    "twig": 3136,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.9,
+     1.95,
+     1.6
+    ],
+    "base_radius": 0.0544,
+    "height": 1.6,
+    "nodes": 4365,
+    "leafy": 2004,
+    "seed": 11
+   },
+   {
+    "voxels": 7450,
+    "leaf": 4989,
+    "bark": 0,
+    "twig": 2461,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.35,
+     1.8,
+     1.6
+    ],
+    "base_radius": 0.0446,
+    "height": 1.6,
+    "nodes": 2694,
+    "leafy": 1282,
+    "seed": 12
+   },
+   {
+    "voxels": 11781,
+    "leaf": 8669,
+    "bark": 0,
+    "twig": 3112,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.55,
+     1.95,
+     1.6
+    ],
+    "base_radius": 0.0572,
+    "height": 1.6,
+    "nodes": 3844,
+    "leafy": 1874,
+    "seed": 13
+   },
+   {
+    "voxels": 10654,
+    "leaf": 7660,
+    "bark": 0,
+    "twig": 2994,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.9,
+     2.1,
+     1.6
+    ],
+    "base_radius": 0.0575,
+    "height": 1.6,
+    "nodes": 4046,
+    "leafy": 1967,
+    "seed": 14
+   },
+   {
+    "voxels": 11194,
+    "leaf": 7556,
+    "bark": 0,
+    "twig": 3638,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.05,
+     2.05,
+     1.6
+    ],
+    "base_radius": 0.052,
+    "height": 1.6,
+    "nodes": 5308,
+    "leafy": 2555,
+    "seed": 15
+   },
+   {
+    "voxels": 11335,
+    "leaf": 8083,
+    "bark": 0,
+    "twig": 3252,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.85,
+     2.05,
+     1.6
+    ],
+    "base_radius": 0.0485,
+    "height": 1.6,
+    "nodes": 4090,
+    "leafy": 2046,
+    "seed": 16
+   },
+   {
+    "voxels": 9239,
+    "leaf": 6778,
+    "bark": 0,
+    "twig": 2461,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.95,
+     2.15,
+     1.6
+    ],
+    "base_radius": 0.0542,
+    "height": 1.6,
+    "nodes": 2840,
+    "leafy": 1292,
+    "seed": 17
+   },
+   {
+    "voxels": 9576,
+    "leaf": 6723,
+    "bark": 0,
+    "twig": 2853,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     2.1,
+     1.75,
+     1.6
+    ],
+    "base_radius": 0.0622,
+    "height": 1.6,
+    "nodes": 4089,
+    "leafy": 1859,
+    "seed": 18
+   },
+   {
+    "voxels": 9765,
+    "leaf": 6821,
+    "bark": 0,
+    "twig": 2944,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.8,
+     2.05,
+     1.6
+    ],
+    "base_radius": 0.054,
+    "height": 1.6,
+    "nodes": 4094,
+    "leafy": 1843,
+    "seed": 19
+   }
+  ]
+ },
+ "houx": {
+  "height": 1.6,
+  "seeds": [
+   {
+    "voxels": 2541,
+    "leaf": 2206,
+    "bark": 24,
+    "twig": 311,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.2,
+     0.8,
+     1.6
+    ],
+    "base_radius": 0.0447,
+    "height": 1.6,
+    "nodes": 224,
+    "leafy": 95,
+    "seed": 0
+   },
+   {
+    "voxels": 4929,
+    "leaf": 4142,
+    "bark": 20,
+    "twig": 767,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.1,
+     1.35,
+     1.6
+    ],
+    "base_radius": 0.0585,
+    "height": 1.6,
+    "nodes": 649,
+    "leafy": 309,
+    "seed": 1
+   },
+   {
+    "voxels": 3152,
+    "leaf": 2642,
+    "bark": 0,
+    "twig": 510,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.5,
+     1.2,
+     1.6
+    ],
+    "base_radius": 0.0434,
+    "height": 1.6,
+    "nodes": 372,
+    "leafy": 155,
+    "seed": 2
+   },
+   {
+    "voxels": 3755,
+    "leaf": 3128,
+    "bark": 33,
+    "twig": 594,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.25,
+     1.25,
+     1.6
+    ],
+    "base_radius": 0.0529,
+    "height": 1.6,
+    "nodes": 458,
+    "leafy": 208,
+    "seed": 3
+   },
+   {
+    "voxels": 3760,
+    "leaf": 3240,
+    "bark": 10,
+    "twig": 510,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.3,
+     1.2,
+     1.6
+    ],
+    "base_radius": 0.0433,
+    "height": 1.6,
+    "nodes": 363,
+    "leafy": 170,
+    "seed": 4
+   },
+   {
+    "voxels": 3983,
+    "leaf": 3349,
+    "bark": 0,
+    "twig": 634,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.3,
+     1.2,
+     1.6
+    ],
+    "base_radius": 0.0495,
+    "height": 1.6,
+    "nodes": 436,
+    "leafy": 182,
+    "seed": 5
+   },
+   {
+    "voxels": 4287,
+    "leaf": 3600,
+    "bark": 0,
+    "twig": 687,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.25,
+     1.6
+    ],
+    "base_radius": 0.0504,
+    "height": 1.6,
+    "nodes": 472,
+    "leafy": 206,
+    "seed": 6
+   },
+   {
+    "voxels": 2813,
+    "leaf": 2327,
+    "bark": 32,
+    "twig": 454,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.95,
+     1.2,
+     1.6
+    ],
+    "base_radius": 0.0539,
+    "height": 1.6,
+    "nodes": 307,
+    "leafy": 120,
+    "seed": 7
+   },
+   {
+    "voxels": 4851,
+    "leaf": 4084,
+    "bark": 0,
+    "twig": 767,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.25,
+     1.35,
+     1.6
+    ],
+    "base_radius": 0.0528,
+    "height": 1.6,
+    "nodes": 546,
+    "leafy": 237,
+    "seed": 8
+   },
+   {
+    "voxels": 2221,
+    "leaf": 1852,
+    "bark": 0,
+    "twig": 369,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.1,
+     1.15,
+     1.6
+    ],
+    "base_radius": 0.0378,
+    "height": 1.6,
+    "nodes": 252,
+    "leafy": 104,
+    "seed": 9
+   },
+   {
+    "voxels": 3518,
+    "leaf": 2982,
+    "bark": 36,
+    "twig": 500,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.15,
+     1.15,
+     1.6
+    ],
+    "base_radius": 0.0543,
+    "height": 1.6,
+    "nodes": 371,
+    "leafy": 160,
+    "seed": 10
+   },
+   {
+    "voxels": 2445,
+    "leaf": 1717,
+    "bark": 0,
+    "twig": 728,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.15,
+     1.4,
+     1.6
+    ],
+    "base_radius": 0.051,
+    "height": 1.6,
+    "nodes": 538,
+    "leafy": 240,
+    "seed": 11
+   },
+   {
+    "voxels": 1429,
+    "leaf": 1066,
+    "bark": 0,
+    "twig": 363,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.9,
+     1.1,
+     1.6
+    ],
+    "base_radius": 0.0402,
+    "height": 1.6,
+    "nodes": 259,
+    "leafy": 111,
+    "seed": 12
+   },
+   {
+    "voxels": 3497,
+    "leaf": 3013,
+    "bark": 26,
+    "twig": 458,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.05,
+     1.2,
+     1.6
+    ],
+    "base_radius": 0.0473,
+    "height": 1.6,
+    "nodes": 321,
+    "leafy": 138,
+    "seed": 13
+   },
+   {
+    "voxels": 4291,
+    "leaf": 3652,
+    "bark": 27,
+    "twig": 612,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.1,
+     1.35,
+     1.6
+    ],
+    "base_radius": 0.0533,
+    "height": 1.6,
+    "nodes": 465,
+    "leafy": 222,
+    "seed": 14
+   },
+   {
+    "voxels": 4653,
+    "leaf": 3844,
+    "bark": 0,
+    "twig": 809,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.25,
+     1.35,
+     1.6
+    ],
+    "base_radius": 0.0485,
+    "height": 1.6,
+    "nodes": 668,
+    "leafy": 312,
+    "seed": 15
+   },
+   {
+    "voxels": 3800,
+    "leaf": 3227,
+    "bark": 0,
+    "twig": 573,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.35,
+     1.0,
+     1.6
+    ],
+    "base_radius": 0.0458,
+    "height": 1.6,
+    "nodes": 466,
+    "leafy": 220,
+    "seed": 16
+   },
+   {
+    "voxels": 3290,
+    "leaf": 2754,
+    "bark": 34,
+    "twig": 502,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.25,
+     1.3,
+     1.6
+    ],
+    "base_radius": 0.0521,
+    "height": 1.6,
+    "nodes": 344,
+    "leafy": 146,
+    "seed": 17
+   },
+   {
+    "voxels": 4571,
+    "leaf": 3773,
+    "bark": 38,
+    "twig": 760,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.55,
+     1.15,
+     1.6
+    ],
+    "base_radius": 0.0605,
+    "height": 1.6,
+    "nodes": 547,
+    "leafy": 240,
+    "seed": 18
+   },
+   {
+    "voxels": 4455,
+    "leaf": 3771,
+    "bark": 0,
+    "twig": 684,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     1.1,
+     1.15,
+     1.6
+    ],
+    "base_radius": 0.0505,
+    "height": 1.6,
+    "nodes": 515,
+    "leafy": 232,
+    "seed": 19
+   }
+  ]
+ },
+ "genevrier": {
+  "height": 1.5,
+  "seeds": [
+   {
+    "voxels": 1584,
+    "leaf": 1391,
+    "bark": 0,
+    "twig": 193,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.6,
+     0.6,
+     1.5
+    ],
+    "base_radius": 0.032,
+    "height": 1.5,
+    "nodes": 144,
+    "leafy": 87,
+    "seed": 0
+   },
+   {
+    "voxels": 2517,
+    "leaf": 2126,
+    "bark": 0,
+    "twig": 391,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.75,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0435,
+    "height": 1.5,
+    "nodes": 370,
+    "leafy": 233,
+    "seed": 1
+   },
+   {
+    "voxels": 2228,
+    "leaf": 1911,
+    "bark": 0,
+    "twig": 317,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.8,
+     0.7,
+     1.5
+    ],
+    "base_radius": 0.0341,
+    "height": 1.5,
+    "nodes": 248,
+    "leafy": 152,
+    "seed": 2
+   },
+   {
+    "voxels": 2429,
+    "leaf": 2056,
+    "bark": 0,
+    "twig": 373,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.85,
+     0.65,
+     1.5
+    ],
+    "base_radius": 0.0425,
+    "height": 1.5,
+    "nodes": 313,
+    "leafy": 195,
+    "seed": 3
+   },
+   {
+    "voxels": 2489,
+    "leaf": 2157,
+    "bark": 0,
+    "twig": 332,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.65,
+     0.95,
+     1.5
+    ],
+    "base_radius": 0.0361,
+    "height": 1.5,
+    "nodes": 308,
+    "leafy": 194,
+    "seed": 4
+   },
+   {
+    "voxels": 2153,
+    "leaf": 1861,
+    "bark": 0,
+    "twig": 292,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.75,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0365,
+    "height": 1.5,
+    "nodes": 234,
+    "leafy": 149,
+    "seed": 5
+   },
+   {
+    "voxels": 2479,
+    "leaf": 2099,
+    "bark": 0,
+    "twig": 380,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.7,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0384,
+    "height": 1.5,
+    "nodes": 301,
+    "leafy": 180,
+    "seed": 6
+   },
+   {
+    "voxels": 2061,
+    "leaf": 1799,
+    "bark": 0,
+    "twig": 262,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.7,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0391,
+    "height": 1.5,
+    "nodes": 190,
+    "leafy": 115,
+    "seed": 7
+   },
+   {
+    "voxels": 3161,
+    "leaf": 2746,
+    "bark": 0,
+    "twig": 415,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.8,
+     0.85,
+     1.5
+    ],
+    "base_radius": 0.0413,
+    "height": 1.5,
+    "nodes": 331,
+    "leafy": 215,
+    "seed": 8
+   },
+   {
+    "voxels": 1723,
+    "leaf": 1506,
+    "bark": 0,
+    "twig": 217,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.6,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0285,
+    "height": 1.5,
+    "nodes": 151,
+    "leafy": 94,
+    "seed": 9
+   },
+   {
+    "voxels": 2319,
+    "leaf": 1994,
+    "bark": 0,
+    "twig": 325,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.7,
+     0.65,
+     1.5
+    ],
+    "base_radius": 0.0418,
+    "height": 1.5,
+    "nodes": 274,
+    "leafy": 164,
+    "seed": 10
+   },
+   {
+    "voxels": 1760,
+    "leaf": 1363,
+    "bark": 0,
+    "twig": 397,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.7,
+     0.7,
+     1.5
+    ],
+    "base_radius": 0.0395,
+    "height": 1.5,
+    "nodes": 349,
+    "leafy": 214,
+    "seed": 11
+   },
+   {
+    "voxels": 1185,
+    "leaf": 989,
+    "bark": 0,
+    "twig": 196,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.55,
+     0.65,
+     1.5
+    ],
+    "base_radius": 0.0286,
+    "height": 1.5,
+    "nodes": 168,
+    "leafy": 102,
+    "seed": 12
+   },
+   {
+    "voxels": 2421,
+    "leaf": 2107,
+    "bark": 0,
+    "twig": 314,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.75,
+     0.8,
+     1.5
+    ],
+    "base_radius": 0.0391,
+    "height": 1.5,
+    "nodes": 259,
+    "leafy": 154,
+    "seed": 13
+   },
+   {
+    "voxels": 2413,
+    "leaf": 2108,
+    "bark": 0,
+    "twig": 305,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.7,
+     0.9,
+     1.5
+    ],
+    "base_radius": 0.0381,
+    "height": 1.5,
+    "nodes": 241,
+    "leafy": 144,
+    "seed": 14
+   },
+   {
+    "voxels": 2411,
+    "leaf": 1987,
+    "bark": 0,
+    "twig": 424,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.8,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0363,
+    "height": 1.5,
+    "nodes": 403,
+    "leafy": 248,
+    "seed": 15
+   },
+   {
+    "voxels": 2209,
+    "leaf": 1882,
+    "bark": 0,
+    "twig": 327,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.75,
+     0.8,
+     1.5
+    ],
+    "base_radius": 0.033,
+    "height": 1.5,
+    "nodes": 273,
+    "leafy": 165,
+    "seed": 16
+   },
+   {
+    "voxels": 2356,
+    "leaf": 2064,
+    "bark": 0,
+    "twig": 292,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.85,
+     0.7,
+     1.5
+    ],
+    "base_radius": 0.0376,
+    "height": 1.5,
+    "nodes": 213,
+    "leafy": 126,
+    "seed": 17
+   },
+   {
+    "voxels": 2750,
+    "leaf": 2349,
+    "bark": 0,
+    "twig": 401,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.85,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0445,
+    "height": 1.5,
+    "nodes": 331,
+    "leafy": 206,
+    "seed": 18
+   },
+   {
+    "voxels": 3006,
+    "leaf": 2601,
+    "bark": 0,
+    "twig": 405,
+    "flower": 0,
+    "fruit": 0,
+    "box": [
+     0.8,
+     0.75,
+     1.5
+    ],
+    "base_radius": 0.0393,
+    "height": 1.5,
+    "nodes": 315,
+    "leafy": 195,
+    "seed": 19
+   }
+  ]
+ },
+ "ronce": {
+  "height": 1.4,
+  "seeds": [
+   {
+    "voxels": 2663,
+    "leaf": 1857,
+    "bark": 0,
+    "twig": 626,
+    "flower": 106,
+    "fruit": 74,
+    "box": [
+     2.65,
+     2.65,
+     1.4
+    ],
+    "base_radius": 0.0246,
+    "height": 1.4,
+    "nodes": 378,
+    "leafy": 133,
+    "seed": 0
+   },
+   {
+    "voxels": 6121,
+    "leaf": 4309,
+    "bark": 0,
+    "twig": 1231,
+    "flower": 379,
+    "fruit": 202,
+    "box": [
+     2.35,
+     2.25,
+     1.4
+    ],
+    "base_radius": 0.0334,
+    "height": 1.4,
+    "nodes": 1004,
+    "leafy": 411,
+    "seed": 1
+   },
+   {
+    "voxels": 3549,
+    "leaf": 2321,
+    "bark": 0,
+    "twig": 901,
+    "flower": 194,
+    "fruit": 133,
+    "box": [
+     2.5,
+     2.7,
+     1.4
+    ],
+    "base_radius": 0.0254,
+    "height": 1.4,
+    "nodes": 580,
+    "leafy": 207,
+    "seed": 2
+   },
+   {
+    "voxels": 4731,
+    "leaf": 3154,
+    "bark": 0,
+    "twig": 1094,
+    "flower": 330,
+    "fruit": 153,
+    "box": [
+     2.05,
+     2.95,
+     1.4
+    ],
+    "base_radius": 0.0311,
+    "height": 1.4,
+    "nodes": 738,
+    "leafy": 292,
+    "seed": 3
+   },
+   {
+    "voxels": 4034,
+    "leaf": 2805,
+    "bark": 0,
+    "twig": 848,
+    "flower": 248,
+    "fruit": 133,
+    "box": [
+     2.7,
+     1.95,
+     1.4
+    ],
+    "base_radius": 0.0253,
+    "height": 1.4,
+    "nodes": 628,
+    "leafy": 260,
+    "seed": 4
+   },
+   {
+    "voxels": 4373,
+    "leaf": 2996,
+    "bark": 0,
+    "twig": 1026,
+    "flower": 246,
+    "fruit": 105,
+    "box": [
+     2.5,
+     2.45,
+     1.4
+    ],
+    "base_radius": 0.0269,
+    "height": 1.4,
+    "nodes": 629,
+    "leafy": 221,
+    "seed": 5
+   },
+   {
+    "voxels": 5071,
+    "leaf": 3509,
+    "bark": 0,
+    "twig": 1063,
+    "flower": 355,
+    "fruit": 144,
+    "box": [
+     2.55,
+     2.0,
+     1.4
+    ],
+    "base_radius": 0.0281,
+    "height": 1.4,
+    "nodes": 843,
+    "leafy": 310,
+    "seed": 6
+   },
+   {
+    "voxels": 2832,
+    "leaf": 1868,
+    "bark": 0,
+    "twig": 732,
+    "flower": 153,
+    "fruit": 79,
+    "box": [
+     1.75,
+     1.85,
+     1.4
+    ],
+    "base_radius": 0.0311,
+    "height": 1.4,
+    "nodes": 455,
+    "leafy": 144,
+    "seed": 7
+   },
+   {
+    "voxels": 6566,
+    "leaf": 4458,
+    "bark": 0,
+    "twig": 1475,
+    "flower": 424,
+    "fruit": 209,
+    "box": [
+     3.3,
+     2.95,
+     1.4
+    ],
+    "base_radius": 0.0285,
+    "height": 1.4,
+    "nodes": 950,
+    "leafy": 371,
+    "seed": 8
+   },
+   {
+    "voxels": 2988,
+    "leaf": 2091,
+    "bark": 0,
+    "twig": 647,
+    "flower": 173,
+    "fruit": 77,
+    "box": [
+     2.3,
+     2.8,
+     1.4
+    ],
+    "base_radius": 0.0214,
+    "height": 1.4,
+    "nodes": 444,
+    "leafy": 174,
+    "seed": 9
+   },
+   {
+    "voxels": 3726,
+    "leaf": 2583,
+    "bark": 0,
+    "twig": 823,
+    "flower": 212,
+    "fruit": 108,
+    "box": [
+     2.1,
+     1.8,
+     1.4
+    ],
+    "base_radius": 0.029,
+    "height": 1.4,
+    "nodes": 623,
+    "leafy": 227,
+    "seed": 10
+   },
+   {
+    "voxels": 2861,
+    "leaf": 1296,
+    "bark": 0,
+    "twig": 1102,
+    "flower": 317,
+    "fruit": 146,
+    "box": [
+     2.2,
+     2.2,
+     1.4
+    ],
+    "base_radius": 0.0297,
+    "height": 1.4,
+    "nodes": 787,
+    "leafy": 295,
+    "seed": 11
+   },
+   {
+    "voxels": 2005,
+    "leaf": 1235,
+    "bark": 0,
+    "twig": 538,
+    "flower": 158,
+    "fruit": 74,
+    "box": [
+     1.85,
+     1.95,
+     1.4
+    ],
+    "base_radius": 0.0216,
+    "height": 1.4,
+    "nodes": 396,
+    "leafy": 141,
+    "seed": 12
+   },
+   {
+    "voxels": 4371,
+    "leaf": 3048,
+    "bark": 0,
+    "twig": 938,
+    "flower": 259,
+    "fruit": 126,
+    "box": [
+     2.55,
+     2.85,
+     1.4
+    ],
+    "base_radius": 0.0292,
+    "height": 1.4,
+    "nodes": 657,
+    "leafy": 260,
+    "seed": 13
+   },
+   {
+    "voxels": 4276,
+    "leaf": 2929,
+    "bark": 0,
+    "twig": 982,
+    "flower": 245,
+    "fruit": 120,
+    "box": [
+     2.1,
+     2.15,
+     1.4
+    ],
+    "base_radius": 0.0305,
+    "height": 1.4,
+    "nodes": 667,
+    "leafy": 248,
+    "seed": 14
+   },
+   {
+    "voxels": 6688,
+    "leaf": 4615,
+    "bark": 0,
+    "twig": 1451,
+    "flower": 418,
+    "fruit": 204,
+    "box": [
+     2.35,
+     3.15,
+     1.4
+    ],
+    "base_radius": 0.0258,
+    "height": 1.4,
+    "nodes": 1073,
+    "leafy": 431,
+    "seed": 15
+   },
+   {
+    "voxels": 4172,
+    "leaf": 2885,
+    "bark": 0,
+    "twig": 887,
+    "flower": 253,
+    "fruit": 147,
+    "box": [
+     2.25,
+     2.15,
+     1.4
+    ],
+    "base_radius": 0.0239,
+    "height": 1.4,
+    "nodes": 663,
+    "leafy": 279,
+    "seed": 16
+   },
+   {
+    "voxels": 3475,
+    "leaf": 2369,
+    "bark": 0,
+    "twig": 812,
+    "flower": 185,
+    "fruit": 109,
+    "box": [
+     3.05,
+     2.8,
+     1.4
+    ],
+    "base_radius": 0.0271,
+    "height": 1.4,
+    "nodes": 479,
+    "leafy": 176,
+    "seed": 17
+   },
+   {
+    "voxels": 4839,
+    "leaf": 3244,
+    "bark": 0,
+    "twig": 1186,
+    "flower": 290,
+    "fruit": 119,
+    "box": [
+     2.85,
+     2.8,
+     1.4
+    ],
+    "base_radius": 0.0321,
+    "height": 1.4,
+    "nodes": 746,
+    "leafy": 266,
+    "seed": 18
+   },
+   {
+    "voxels": 5082,
+    "leaf": 3489,
+    "bark": 0,
+    "twig": 1167,
+    "flower": 284,
+    "fruit": 142,
+    "box": [
+     2.95,
+     1.9,
+     1.4
+    ],
+    "base_radius": 0.026,
+    "height": 1.4,
+    "nodes": 772,
+    "leafy": 275,
+    "seed": 19
+   }
+  ]
+ }
+}

@@ -223,6 +223,7 @@ impl MateriauxScene {
                 let monde = RenduMaillage::construire(
                     gpu,
                     source.scene(),
+                    &[],
                     colorier,
                     pos_mm,
                     s,

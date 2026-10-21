@@ -8,8 +8,7 @@ use std::sync::Arc;
 use anyhow::{Context, bail};
 use em_core::{VOXEL_MM, VoxelCoord, hash_combine};
 use em_gen::{
-    BuildingClasses, GenParams, GeneratorRegistry, HouseClasses, PlacedHouse, PlacedModel, PlacedPlan,
-    StaticScene, VxmModel,
+    BuildingClasses, GenParams, HouseClasses, PlacedHouse, PlacedModel, PlacedPlan, StaticScene, VxmModel,
 };
 use em_material::StyleConfig;
 use serde::Deserialize;
@@ -33,11 +32,15 @@ pub struct ModelConfig {
 /// dans le registre, les paramètres sont ceux de sa configuration (`[recipe.params]`).
 #[derive(Debug, Deserialize)]
 pub struct RecipeConfig {
-    /// Nom du générateur (`stone_wall`, `beam`, `post`, `roof`).
-    pub generator: String,
-    /// Graine de la recette.
+    /// Nom du générateur (`stone_wall`, `beam`, `post`, `roof`, `house`...) ; vide si `asset` est donné.
     #[serde(default)]
-    pub seed: u64,
+    pub generator: String,
+    /// Recette nommée de `engine/data/assets/*.toml` (L35 à L37) : donne le générateur, la graine et les paramètres.
+    #[serde(default)]
+    pub asset: Option<String>,
+    /// Graine de la recette (celle de l'asset nommé si absente).
+    #[serde(default)]
+    pub seed: Option<u64>,
     /// Position de l'origine locale du plan par rapport à l'origine de la scène, en mètres (multiple de 5 cm).
     pub at_m: [f64; 3],
     /// Paramètres du générateur (champs de sa configuration ; absents = valeurs par défaut).
@@ -84,6 +87,7 @@ pub struct SceneStatique {
     scene: StaticScene,
     style: StyleConfig,
     recettes: Vec<String>,
+    petits: Vec<em_gen::vegetation::SmallAsset>,
 }
 
 impl SceneStatique {
@@ -138,23 +142,51 @@ impl SceneStatique {
             builder = builder.place(PlacedModel::new(modele, pivot, m.quarter_turns, m.species_slot)?);
         }
         // recettes : le générateur est choisi par son nom dans le registre ; le plan est posé comme une source
-        let registre = GeneratorRegistry::bati(classes);
+        let mut registre =
+            em_gen::batiments::registre_complet(classes, em_gen::batiments::Matieres::standard());
+        em_gen::vegetation::register_default(&mut registre);
+        let catalogue = em_gen::batiments::AssetCatalogue::load_dir(&racine.join("../engine/data/assets"))?;
         let mut recettes = Vec::new();
+        let mut petits: Vec<em_gen::vegetation::SmallAsset> = Vec::new();
         for r in &cfg.recipe {
-            let generateur = registre.get(&r.generator)?;
-            let octets = serde_json::to_vec(&serde_json::to_value(&r.params)?)?;
+            // un asset nommé fixe le générateur, la graine et les paramètres ; la scène peut surcharger la graine
+            let (nom_gen, graine, table) = match &r.asset {
+                Some(id) => {
+                    let a = catalogue.get(id)?;
+                    let mut t = a.params.clone();
+                    for (k, v) in &r.params {
+                        t.insert(k.clone(), v.clone());
+                    }
+                    (a.generator.clone(), r.seed.unwrap_or(a.seed), t)
+                }
+                None => (r.generator.clone(), r.seed.unwrap_or(0), r.params.clone()),
+            };
+            let generateur = registre.get(&nom_gen)?;
+            let octets = serde_json::to_vec(&serde_json::to_value(&table)?)?;
             let params = GenParams::new(generateur.id(), generateur.version(), octets.clone());
             let plan = generateur
-                .plan(&params, r.seed)
-                .with_context(|| format!("recette « {} » (graine {})", r.generator, r.seed))?;
+                .plan(&params, graine)
+                .with_context(|| format!("recette « {nom_gen} » (graine {graine})"))?;
+            if plan.voxel_mm() != 50 {
+                // asset à grille propre (2 cm) : posé en millimètres, hors des briques du monde
+                let mm = |m: f64| (m * 1000.0).round() as i64;
+                let origin_mm = [
+                    mm(cfg.origin_m[0]) + mm(r.at_m[0]),
+                    mm(cfg.origin_m[1]) + mm(r.at_m[1]),
+                    mm(cfg.origin_m[2]) + mm(r.at_m[2]),
+                ];
+                recettes.push(format!("{}#{}", r.asset.as_deref().unwrap_or(&nom_gen), graine));
+                petits.push(em_gen::vegetation::SmallAsset { plan, origin_mm });
+                continue;
+            }
             let at = voxels(r.at_m, "recipe.at_m")?;
             let pivot = VoxelCoord::new(origine.x + at.x, origine.y + at.y, origine.z + at.z);
             let mut tag = hash_combine(u64::from(generateur.id().raw()), u64::from(generateur.version()));
-            tag = hash_combine(tag, r.seed);
+            tag = hash_combine(tag, graine);
             for o in octets {
                 tag = hash_combine(tag, u64::from(o));
             }
-            recettes.push(format!("{}#{}", r.generator, r.seed));
+            recettes.push(format!("{}#{}", r.asset.as_deref().unwrap_or(&nom_gen), graine));
             builder = builder.place_plan(PlacedPlan::new(plan, pivot, tag));
         }
         // maisons : la grille du générateur est posée par son centre sur le sol, z inversé (voir `PlacedHouse`)
@@ -170,12 +202,18 @@ impl SceneStatique {
             scene: builder.build()?,
             style: cfg.style,
             recettes,
+            petits,
         })
     }
 
     /// Choix de style (classes pouvant passer en mode voxel) de la scène.
     pub fn style(&self) -> &StyleConfig {
         &self.style
+    }
+
+    /// Assets de 2 cm de la scène (cultures, champignons, fougères), posés en millimètres.
+    pub fn petits(&self) -> &[em_gen::vegetation::SmallAsset] {
+        &self.petits
     }
 
     /// Recettes posées, `nom#graine`, dans l'ordre de pose.

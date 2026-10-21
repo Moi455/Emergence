@@ -1,0 +1,76 @@
+# Variété : le même chêne de 6 m avec 8 graines différentes (L31). Chêne de référence à gauche pour la comparaison avec Python.
+name = "vegetation_variete"
+season = "summer"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[[recipe]]
+generator = "tree"
+seed = 1
+at_m = [3.0, 0.0, -11.2]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[recipe]]
+generator = "tree"
+seed = 2
+at_m = [3.0, 0.0, -8.0]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[recipe]]
+generator = "tree"
+seed = 3
+at_m = [3.0, 0.0, -4.8]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[recipe]]
+generator = "tree"
+seed = 4
+at_m = [3.0, 0.0, -1.6]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[recipe]]
+generator = "tree"
+seed = 5
+at_m = [3.0, 0.0, 1.6]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[recipe]]
+generator = "tree"
+seed = 6
+at_m = [3.0, 0.0, 4.8]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[recipe]]
+generator = "tree"
+seed = 7
+at_m = [3.0, 0.0, 8.0]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[recipe]]
+generator = "tree"
+seed = 8
+at_m = [3.0, 0.0, 11.2]
+[recipe.params]
+species = "chene"
+height_mm = 6500
+
+[[shot]]
+name = "variete"
+pos_m = [-12.0, 1.8, 0.0]
+look_at_m = [3.0, 3.0, 0.0]
+fov_deg = 70.0
+hours = [10.0, 18.5]

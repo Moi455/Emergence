@@ -1,0 +1,158 @@
+{
+  "adapter": "Quadro RTX 3000",
+  "driver": "NVIDIA 615.71.09",
+  "driver_info": "615.71.09",
+  "granted_limits": {
+    "buffer_bytes": 1073741824,
+    "storage_binding_bytes": 1073741824,
+    "storage_buffers_per_stage": 16,
+    "storage_textures_per_stage": 8,
+    "texture_dimension_2d": 8192,
+    "workgroup_storage_bytes": 32768
+  },
+  "profile": {
+    "passes": [
+      {
+        "median_ms": 4.48864,
+        "n": 1,
+        "name": "ciel_lut",
+        "p95_ms": 4.48864
+      },
+      {
+        "median_ms": 3.8627839999999996,
+        "n": 5,
+        "name": "ciel_fond",
+        "p95_ms": 3.8958399999999997
+      },
+      {
+        "median_ms": 0.0057599999999999995,
+        "n": 5,
+        "name": "maillage_ombres",
+        "p95_ms": 88.33008
+      },
+      {
+        "median_ms": 0.241504,
+        "n": 5,
+        "name": "maillage_ambiance",
+        "p95_ms": 0.253824
+      },
+      {
+        "median_ms": 22.073888,
+        "n": 5,
+        "name": "maillage_rendu",
+        "p95_ms": 54.773951999999994
+      },
+      {
+        "median_ms": 0.6072959999999998,
+        "n": 5,
+        "name": "bloom",
+        "p95_ms": 1.885408
+      },
+      {
+        "median_ms": 0.483296,
+        "n": 5,
+        "name": "tonemap",
+        "p95_ms": 1.4156799999999998
+      }
+    ],
+    "total_median_ms": 27.299168,
+    "total_p95_ms": 155.0434239999999
+  },
+  "resolution": [
+    1920,
+    1080
+  ],
+  "scene": "batiments",
+  "scene_settings": {
+    "ambient": 1.0,
+    "ambient_occlusion": {
+      "filter_px": 2,
+      "range_m": 1.0,
+      "rays": 4,
+      "resolution_divisor": 2,
+      "strength": 1.600000023841858
+    },
+    "bloom": 0.10000000149011612,
+    "camera_m": [
+      -22.0,
+      30.0,
+      0.0
+    ],
+    "camera_mm_monde": [
+      9978000,
+      30000,
+      10000000
+    ],
+    "exposure": 1.350000023841858,
+    "foliage": {
+      "absorption_m": 1.0,
+      "forward": 0.5,
+      "rim": 0.30000001192092896,
+      "rim_thickness_m": 0.20000000298023224,
+      "tint": [
+        0.699999988079071,
+        1.0,
+        0.20000000298023224
+      ],
+      "translucency": 1.100000023841858,
+      "zone_voxels": 48
+    },
+    "fov_y_deg": 66.0,
+    "grade": {
+      "contrast": 1.2000000476837158,
+      "exposure_gain": 0.800000011920929,
+      "leaf_saturation": 1.0499999523162842,
+      "saturation": 1.100000023841858,
+      "shadow_lift": 0.019999999552965164,
+      "shadow_tint": [
+        0.44999998807907104,
+        0.550000011920929,
+        1.0
+      ],
+      "warmth": 0.08225667476654053
+    },
+    "haze": 0.30000001192092896,
+    "hour": 18.5,
+    "material_packet_fingerprint": null,
+    "mesh": {
+      "chunks": 4224,
+      "faces": 19301862,
+      "feuillage_ms": 83.924071,
+      "fils": 16,
+      "glouton": true,
+      "maillage_ms": 6599.315457000001,
+      "octets": 187034220,
+      "quads": 15586185,
+      "remplissage_ms": 636.865921
+    },
+    "ortho_height_m": null,
+    "pitch_deg": -29.981639862060547,
+    "rendu": "maillage",
+    "scene": "batiments",
+    "shadows": {
+      "cascades": 4,
+      "continuous": false,
+      "depth_bias_m": 0.0010000000474974513,
+      "far_m": [
+        5.600000083446503,
+        11.200000166893005,
+        22.40000033378601,
+        44.80000066757202
+      ],
+      "first_texel_m": 0.012500000186264515,
+      "normal_offset_texels": 1.0,
+      "penumbra_max_m": 0.03999999910593033,
+      "penumbra_scale": 1.0,
+      "size": 1024,
+      "slope_bias": 1.0
+    },
+    "shot": "planche",
+    "sun_azimuth_deg": 291.7262878417969,
+    "sun_elevation_deg": 11.709742546081543,
+    "turbidity": 3.0,
+    "view": "image",
+    "voxel_mm": 50,
+    "yaw_deg": 90.0
+  },
+  "warmup_frames": 4
+}

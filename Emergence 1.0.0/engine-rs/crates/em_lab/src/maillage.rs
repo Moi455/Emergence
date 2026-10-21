@@ -4,12 +4,15 @@
 
 use anyhow::bail;
 use em_core::{ChunkKey, VOXEL_MM};
-use em_mesh::{CreuxAoParams, FoliageBaker, MesherConfig, VoxelColorer, WorldMesher};
+use em_mesh::{
+    ChunkMesh, ChunkMesher, CreuxAoParams, FoliageBaker, MesherConfig, PaddedChunk, Placement, VoxelColorer,
+    WorldMesher,
+};
 use em_render::{
     LightSettings, MeshAmbientPass, MeshRenderer, MeshShadowPass, MeshStyle, MeshWorld, Partage, RenderGraph,
     ShadowControl, ShadowParams, SkyParams,
 };
-use em_voxel::VoxelSource;
+use em_voxel::{Chunk, ChunkWriter, VoxelSource};
 use serde::Serialize;
 use std::time::Instant;
 
@@ -103,11 +106,64 @@ fn cles_autour(camera_mm: [i64; 3], rayon_m: f32) -> Vec<ChunkKey> {
     cles
 }
 
+/// Maille les assets à grille propre (voxels de 2 cm) : le plan de chacun est rastérisé en chunks de 64³ de SA grille,
+/// maillé comme un chunk du monde, puis posé en millimètres (`Placement`). Hors de la grille de 5 cm : aucun brique du
+/// monde n'est écrite.
+fn mailler_petits(
+    colorier: &dyn VoxelColorer,
+    petits: &[em_gen::vegetation::SmallAsset],
+    config: MesherConfig,
+) -> Vec<ChunkMesh> {
+    let mailleur = ChunkMesher::new(colorier, config);
+    let mut sortie = Vec::new();
+    for asset in petits {
+        let voxel_mm = i64::from(asset.plan.voxel_mm());
+        let b = asset.plan.bounds(0);
+        let (m, x) = (b.min(), b.max());
+        let case = |v: i32| v.div_euclid(64);
+        let mut chunks: std::collections::BTreeMap<ChunkKey, Chunk> = std::collections::BTreeMap::new();
+        for cy in case(m.y)..=case(x.y - 1) {
+            for cz in case(m.z)..=case(x.z - 1) {
+                for cx in case(m.x)..=case(x.x - 1) {
+                    let key = ChunkKey::new(cx, cy, cz);
+                    let o = key.origin();
+                    let fenetre =
+                        em_core::VoxelBox::new(o, em_core::VoxelCoord::new(o.x + 64, o.y + 64, o.z + 64));
+                    let Ok(fenetre) = fenetre else { continue };
+                    let mut chunk = Chunk::new_air();
+                    let mut w = ChunkWriter::new(&mut chunk, key);
+                    asset.plan.rasterize(0, fenetre, &mut w);
+                    w.finish();
+                    chunks.insert(key, chunk);
+                }
+            }
+        }
+        for &key in chunks.keys() {
+            let padded = PaddedChunk::gather(key, &|k| chunks.get(&k));
+            let o = key.origin();
+            let pose = Placement {
+                origin_mm: [
+                    asset.origin_mm[0] + i64::from(o.x) * voxel_mm,
+                    asset.origin_mm[1] + i64::from(o.y) * voxel_mm,
+                    asset.origin_mm[2] + i64::from(o.z) * voxel_mm,
+                ],
+                voxel_mm: voxel_mm as u32,
+            };
+            let mesh = mailleur.mesh(key, 0, &padded);
+            if !mesh.is_empty() {
+                sortie.push(mesh.with_placement(pose));
+            }
+        }
+    }
+    sortie
+}
+
 impl RenduMaillage {
-    /// Maille la région autour de la caméra et charge les quads sur le GPU.
+    /// Maille la région autour de la caméra (et les assets de 2 cm `petits`) et charge les quads sur le GPU.
     pub fn construire(
         gpu: &em_render::GpuContext,
         source: &dyn VoxelSource,
+        petits: &[em_gen::vegetation::SmallAsset],
         colorier: &dyn VoxelColorer,
         camera_mm: [i64; 3],
         soleil: [f32; 3],
@@ -129,6 +185,11 @@ impl RenduMaillage {
         let t2 = Instant::now();
         FoliageBaker::new(colorier, &chunks).bake(&mut meshes, soleil, opts.zone_feuillage);
         let feuillage_ms = t2.elapsed().as_secs_f64() * 1e3;
+        meshes.extend(mailler_petits(
+            colorier,
+            petits,
+            MesherConfig::new(opts.glouton).with_creux_reach(opts.creux.mesher_reach()),
+        ));
         let monde = MeshWorld::new(gpu);
         monde.replace_with(&meshes, Some(opts.zone_feuillage));
         let resume = ResumeMaillage {

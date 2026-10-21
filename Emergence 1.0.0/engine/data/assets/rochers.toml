@@ -1,0 +1,98 @@
+# Recettes nommées des ROCHERS et du relief ponctuel (L37). Identifiants stables.
+
+[[asset]]
+id = "roche_galets_1"
+generator = "rock"
+seed = 201
+[asset.params]
+kind = "galets"
+
+[[asset]]
+id = "roche_bloc_gris"
+generator = "rock"
+seed = 202
+[asset.params]
+kind = "bloc"
+rock = "grise"
+
+[[asset]]
+id = "roche_bloc_chaud"
+generator = "rock"
+seed = 203
+[asset.params]
+kind = "bloc"
+rock = "chaude"
+
+[[asset]]
+id = "roche_bloc_grand"
+generator = "rock"
+seed = 204
+[asset.params]
+kind = "bloc"
+rock = "grise"
+
+[[asset]]
+id = "roche_dalles_1"
+generator = "rock"
+seed = 205
+[asset.params]
+kind = "dalle"
+
+[[asset]]
+id = "roche_falaise_1"
+generator = "rock"
+seed = 206
+[asset.params]
+kind = "falaise"
+rock = "grise"
+
+[[asset]]
+id = "roche_falaise_chaude"
+generator = "rock"
+seed = 207
+[asset.params]
+kind = "falaise"
+rock = "chaude"
+
+[[asset]]
+id = "roche_menhir_1"
+generator = "rock"
+seed = 208
+[asset.params]
+kind = "menhir"
+
+[[asset]]
+id = "roche_cromlech_1"
+generator = "rock"
+seed = 209
+[asset.params]
+kind = "cromlech"
+
+[[asset]]
+id = "roche_ruine_mur_1"
+generator = "rock"
+seed = 210
+[asset.params]
+kind = "ruine_mur"
+
+[[asset]]
+id = "roche_colonne_brisee_1"
+generator = "rock"
+seed = 211
+[asset.params]
+kind = "colonne_brisee"
+
+[[asset]]
+id = "roche_grotte_1"
+generator = "rock"
+seed = 212
+[asset.params]
+kind = "grotte"
+
+[[asset]]
+id = "roche_arche_1"
+generator = "rock"
+seed = 213
+[asset.params]
+kind = "arche"
+

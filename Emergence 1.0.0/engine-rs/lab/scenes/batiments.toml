@@ -1,0 +1,180 @@
+# Scène « batiments » (L35) : planche-catalogue des bâtiments paramétriques du village (recettes nommées de
+# engine/data/assets/batiments.toml). Première planche : 16 bâtiments en 4 rangées (x) de 4 (z) ; deuxième planche, plus
+# à l'est (x >= 100 m) : puits, ponts, porte de ville. Le devant des bâtiments est au sud (z négatif). Positions en
+# mètres relatives à origin_m ; le pivot d'un bâtiment est le centre de son emprise au sol. Les captures demandent un
+# rayon de maillage large (`--maillage-rayon 110`).
+name = "batiments"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[style]
+pixel_classes = [
+  "clay",
+  "sand",
+  "gravel",
+  "limestone",
+  "sandstone",
+  "granite",
+  "slate",
+  "basalt",
+  "oak_raw",
+  "oak_planks",
+  "plaster",
+  "roof_tile",
+  "thatch",
+  "cut_stone",
+  "wood_trim",
+  "wood_trim_worn",
+  "brick",
+  "red_brick",
+  "rubble_masonry",
+  "iron",
+  "glass",
+  "cobblestone",
+  "cloth",
+  "moss",
+  "timber",
+  "stone_grey",
+  "stone_dark",
+  "paint_green",
+  "paint_blue",
+  "paint_red",
+  "fabric_a",
+  "fabric_b",
+  "flower_a",
+  "flower_b",
+  "glow",
+  "ember",
+  "brass",
+  "leather",
+  "ceramic",
+  "wax",
+  "plaster_ochre",
+  "hay",
+  "rock_grey",
+  "rock_warm",
+  "coal",
+]
+
+[[recipe]]
+asset = "maison_gravit"
+at_m = [0.0, 0.0, -27.0]
+
+[[recipe]]
+asset = "maison_a"
+at_m = [0.0, 0.0, -9.0]
+
+[[recipe]]
+asset = "maison_colombage"
+at_m = [0.0, 0.0, 9.0]
+
+[[recipe]]
+asset = "taverne_1"
+at_m = [0.0, 0.0, 27.0]
+
+[[recipe]]
+asset = "boulangerie_1"
+at_m = [20.0, 0.0, -27.0]
+
+[[recipe]]
+asset = "mairie_1"
+at_m = [20.0, 0.0, -9.0]
+
+[[recipe]]
+asset = "grange_1"
+at_m = [20.0, 0.0, 9.0]
+
+[[recipe]]
+asset = "etable_1"
+at_m = [20.0, 0.0, 27.0]
+
+[[recipe]]
+asset = "forge_1"
+at_m = [40.0, 0.0, -27.0]
+
+[[recipe]]
+asset = "moulin_vent_1"
+at_m = [40.0, 0.0, -9.0]
+
+[[recipe]]
+asset = "moulin_eau_1"
+at_m = [40.0, 0.0, 9.0]
+
+[[recipe]]
+asset = "eglise_1"
+at_m = [40.0, 0.0, 27.0]
+
+[[recipe]]
+asset = "chapelle_1"
+at_m = [60.0, 0.0, -27.0]
+
+[[recipe]]
+asset = "halle_1"
+at_m = [60.0, 0.0, -9.0]
+
+[[recipe]]
+asset = "cabane_bucheron_1"
+at_m = [60.0, 0.0, 9.0]
+
+[[recipe]]
+asset = "tour_guet_1"
+at_m = [60.0, 0.0, 27.0]
+
+[[recipe]]
+asset = "puits_1"
+at_m = [104.0, 0.0, -30.0]
+
+[[recipe]]
+asset = "pont_pierre_1"
+at_m = [104.0, 0.0, 0.0]
+
+[[recipe]]
+asset = "pont_bois_1"
+at_m = [104.0, 0.0, 30.0]
+
+[[recipe]]
+asset = "rempart_porte_1"
+at_m = [134.0, 0.0, 0.0]
+
+[[recipe]]
+asset = "grange_2"
+at_m = [134.0, 0.0, -30.0]
+
+[[recipe]]
+asset = "pont_pierre_2"
+at_m = [134.0, 0.0, 30.0]
+
+[[shot]]
+name = "planche"
+pos_m = [-22.0, 30.0, 0.0]
+look_at_m = [30.0, 0.0, 0.0]
+fov_deg = 66.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "planche_est"
+pos_m = [78.0, 14.0, -2.0]
+look_at_m = [116.0, 0.0, 0.0]
+fov_deg = 70.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "facade"
+pos_m = [-4.0, 1.7, -13.0]
+look_at_m = [0.0, 2.6, -27.0]
+fov_deg = 50.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "rangee1"
+pos_m = [-14.0, 11.0, 0.0]
+look_at_m = [12.0, 1.0, 0.0]
+fov_deg = 74.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "rangee2"
+pos_m = [26.0, 11.0, 0.0]
+look_at_m = [52.0, 1.0, 0.0]
+fov_deg = 74.0
+hours = [10.0, 18.5]

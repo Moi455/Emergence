@@ -3,6 +3,17 @@
 use crate::quad::Quad;
 use em_core::{ChunkKey, Fnv64, Lod};
 
+/// Pose d'un maillage d'ASSET à grille propre (voxels de `voxel_mm` millimètres, par exemple 20 pour le très petit) :
+/// l'origine du maillage est en millimètres monde, hors de la grille de 5 cm. Un maillage sans pose est un chunk du
+/// monde (voxel de 5 cm × 2^niveau, origine donnée par sa clé) : ses octets et son empreinte ne changent pas.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct Placement {
+    /// Coin d'origine du maillage, en millimètres monde.
+    pub origin_mm: [i64; 3],
+    /// Côté d'un voxel de l'asset, en millimètres.
+    pub voxel_mm: u32,
+}
+
 /// Maillage d'un chunk. Champs privés : les quads sortent du mailleur dans un ordre canonique (face, tranche,
 /// ligne, colonne), identique à chaque exécution.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -12,6 +23,7 @@ pub struct ChunkMesh {
     quads: Vec<Quad>,
     faces: u32,
     bounds: [[u8; 3]; 2],
+    placement: Option<Placement>,
 }
 
 impl ChunkMesh {
@@ -23,6 +35,7 @@ impl ChunkMesh {
             quads: Vec::new(),
             faces: 0,
             bounds: [[0; 3]; 2],
+            placement: None,
         }
     }
 
@@ -46,7 +59,20 @@ impl ChunkMesh {
             quads,
             faces,
             bounds,
+            placement: None,
         }
+    }
+
+    /// Pose ce maillage comme un asset à grille propre (voir [`Placement`]).
+    #[must_use]
+    pub fn with_placement(mut self, p: Placement) -> Self {
+        self.placement = Some(p);
+        self
+    }
+
+    /// Pose d'asset, si ce maillage n'est pas un chunk du monde.
+    pub fn placement(&self) -> Option<Placement> {
+        self.placement
     }
 
     /// Clé du chunk maillé.
@@ -112,6 +138,12 @@ impl ChunkMesh {
         }
         h.add(&[self.lod]);
         h.add(self.as_bytes());
+        if let Some(p) = self.placement {
+            for v in p.origin_mm {
+                h.add(&v.to_le_bytes());
+            }
+            h.add(&p.voxel_mm.to_le_bytes());
+        }
         h.value()
     }
 }

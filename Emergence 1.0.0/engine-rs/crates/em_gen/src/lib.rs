@@ -10,9 +10,13 @@
 #![deny(clippy::float_arithmetic)]
 
 pub mod bati;
+pub mod batiments;
 pub mod error;
 pub mod generator;
+pub mod props;
+pub mod rochers;
 pub mod scene;
+pub mod vegetation;
 pub mod vxh;
 pub mod vxm;
 

@@ -9,6 +9,7 @@ mod bench;
 mod capture;
 mod chemins;
 mod ciel;
+mod famille;
 mod fenetre;
 mod horloges;
 mod maillage;

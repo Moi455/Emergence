@@ -1,0 +1,303 @@
+# Recettes nommées des PROPS (L36). Identifiants stables ; les petits objets sont à 20 mm par défaut (`voxel_mm`).
+
+[[asset]]
+id = "prop_tonneau"
+generator = "prop"
+seed = 1
+[asset.params]
+kind = "tonneau"
+
+[[asset]]
+id = "prop_caisse"
+generator = "prop"
+seed = 2
+[asset.params]
+kind = "caisse"
+
+[[asset]]
+id = "prop_sacs"
+generator = "prop"
+seed = 3
+[asset.params]
+kind = "sacs"
+
+[[asset]]
+id = "prop_charrette"
+generator = "prop"
+seed = 4
+[asset.params]
+kind = "charrette"
+
+[[asset]]
+id = "prop_etal"
+generator = "prop"
+seed = 5
+[asset.params]
+kind = "etal"
+
+[[asset]]
+id = "prop_banc"
+generator = "prop"
+seed = 6
+[asset.params]
+kind = "banc"
+
+[[asset]]
+id = "prop_table"
+generator = "prop"
+seed = 7
+[asset.params]
+kind = "table"
+
+[[asset]]
+id = "prop_chaise"
+generator = "prop"
+seed = 8
+[asset.params]
+kind = "chaise"
+
+[[asset]]
+id = "prop_cloture_bois"
+generator = "prop"
+seed = 9
+[asset.params]
+kind = "cloture_bois"
+
+[[asset]]
+id = "prop_cloture_pierre"
+generator = "prop"
+seed = 10
+[asset.params]
+kind = "cloture_pierre"
+
+[[asset]]
+id = "prop_treillis"
+generator = "prop"
+seed = 11
+[asset.params]
+kind = "treillis"
+
+[[asset]]
+id = "prop_portail"
+generator = "prop"
+seed = 12
+[asset.params]
+kind = "portail"
+
+[[asset]]
+id = "prop_enseigne"
+generator = "prop"
+seed = 13
+[asset.params]
+kind = "enseigne"
+
+[[asset]]
+id = "prop_lanterne"
+generator = "prop"
+seed = 14
+[asset.params]
+kind = "lanterne"
+
+[[asset]]
+id = "prop_foin"
+generator = "prop"
+seed = 15
+[asset.params]
+kind = "foin"
+
+[[asset]]
+id = "prop_tas_bois"
+generator = "prop"
+seed = 16
+[asset.params]
+kind = "tas_bois"
+
+[[asset]]
+id = "prop_feu_camp"
+generator = "prop"
+seed = 17
+[asset.params]
+kind = "feu_camp"
+
+[[asset]]
+id = "prop_tombe"
+generator = "prop"
+seed = 18
+[asset.params]
+kind = "tombe"
+
+[[asset]]
+id = "prop_panneau"
+generator = "prop"
+seed = 19
+[asset.params]
+kind = "panneau"
+
+[[asset]]
+id = "prop_puits_deco"
+generator = "prop"
+seed = 20
+[asset.params]
+kind = "puits_deco"
+
+[[asset]]
+id = "prop_echelle"
+generator = "prop"
+seed = 21
+[asset.params]
+kind = "echelle"
+
+[[asset]]
+id = "prop_ratelier"
+generator = "prop"
+seed = 22
+[asset.params]
+kind = "ratelier"
+
+[[asset]]
+id = "prop_ruche"
+generator = "prop"
+seed = 23
+[asset.params]
+kind = "ruche"
+
+[[asset]]
+id = "prop_bougie"
+generator = "prop"
+seed = 24
+[asset.params]
+kind = "bougie"
+
+[[asset]]
+id = "prop_vaisselle"
+generator = "prop"
+seed = 25
+[asset.params]
+kind = "vaisselle"
+
+[[asset]]
+id = "prop_pain"
+generator = "prop"
+seed = 26
+[asset.params]
+kind = "pain"
+
+[[asset]]
+id = "prop_fruits"
+generator = "prop"
+seed = 27
+[asset.params]
+kind = "fruits"
+
+[[asset]]
+id = "prop_livre"
+generator = "prop"
+seed = 28
+[asset.params]
+kind = "livre"
+
+[[asset]]
+id = "prop_cle"
+generator = "prop"
+seed = 29
+[asset.params]
+kind = "cle"
+
+[[asset]]
+id = "prop_outils"
+generator = "prop"
+seed = 30
+[asset.params]
+kind = "outils"
+
+[[asset]]
+id = "prop_tonneau_s7"
+generator = "prop"
+seed = 7
+[asset.params]
+kind = "tonneau"
+
+[[asset]]
+id = "prop_tonneau_s11"
+generator = "prop"
+seed = 11
+[asset.params]
+kind = "tonneau"
+
+[[asset]]
+id = "prop_caisse_s5"
+generator = "prop"
+seed = 5
+[asset.params]
+kind = "caisse"
+
+[[asset]]
+id = "prop_etal_s3"
+generator = "prop"
+seed = 3
+[asset.params]
+kind = "etal"
+
+[[asset]]
+id = "prop_etal_s9"
+generator = "prop"
+seed = 9
+[asset.params]
+kind = "etal"
+
+[[asset]]
+id = "prop_cloture_bois_s4"
+generator = "prop"
+seed = 4
+[asset.params]
+kind = "cloture_bois"
+
+[[asset]]
+id = "prop_cloture_pierre_s6"
+generator = "prop"
+seed = 21
+[asset.params]
+kind = "cloture_pierre"
+
+[[asset]]
+id = "prop_enseigne_s2"
+generator = "prop"
+seed = 14
+[asset.params]
+kind = "enseigne"
+
+[[asset]]
+id = "prop_enseigne_s3"
+generator = "prop"
+seed = 6
+[asset.params]
+kind = "enseigne"
+
+[[asset]]
+id = "prop_enseigne_s5"
+generator = "prop"
+seed = 4
+[asset.params]
+kind = "enseigne"
+
+[[asset]]
+id = "prop_tombe_s8"
+generator = "prop"
+seed = 23
+[asset.params]
+kind = "tombe"
+
+[[asset]]
+id = "prop_charrette_s9"
+generator = "prop"
+seed = 9
+[asset.params]
+kind = "charrette"
+
+[[asset]]
+id = "prop_ruche_s4"
+generator = "prop"
+seed = 4
+[asset.params]
+kind = "ruche"
+

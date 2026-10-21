@@ -1,0 +1,75 @@
+# Cultures et petits motifs en voxels de 2 cm (L32) : blé, choux, vigne, labour, champignons, fougères. Chaque motif est un
+# asset à GRILLE PROPRE de 2 cm (non alignée sur celle de 5 cm), posé en millimètres. Parcelles réduites à 4 m pour la prise.
+name = "vegetation_cultures"
+season = "summer"
+origin_m = [10000.0, 0.0, 10000.0]
+landscape = "flat_turf"
+
+[[recipe]]
+generator = "crop"
+seed = 1
+at_m = [0.0, 0.0, -2.0]
+[recipe.params]
+kind = "wheat"
+width_mm = 4000
+depth_mm = 4000
+
+[[recipe]]
+generator = "crop"
+seed = 2
+at_m = [-5.0, 0.0, -2.0]
+[recipe.params]
+kind = "cabbage"
+width_mm = 3000
+depth_mm = 4000
+
+[[recipe]]
+generator = "crop"
+seed = 3
+at_m = [4.5, 0.0, -2.0]
+[recipe.params]
+kind = "vine"
+width_mm = 3000
+depth_mm = 4000
+
+[[recipe]]
+generator = "crop"
+seed = 4
+at_m = [-5.0, 0.0, 3.0]
+[recipe.params]
+kind = "plowed"
+width_mm = 3000
+depth_mm = 3000
+
+[[recipe]]
+asset = "cepes"
+at_m = [0.0, 0.0, 3.0]
+
+[[recipe]]
+asset = "amanites"
+at_m = [1.5, 0.0, 3.0]
+
+[[recipe]]
+asset = "fougeres"
+at_m = [3.5, 0.0, 3.0]
+
+[[shot]]
+name = "ble_pres"
+pos_m = [-1.6, 0.6, -2.4]
+look_at_m = [0.9, 0.4, -0.7]
+fov_deg = 60.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "ensemble"
+pos_m = [-9.0, 2.2, 1.0]
+look_at_m = [0.0, 0.3, 0.5]
+fov_deg = 65.0
+hours = [10.0, 18.5]
+
+[[shot]]
+name = "champignons"
+pos_m = [-0.4, 0.35, 2.2]
+look_at_m = [1.0, 0.12, 3.2]
+fov_deg = 60.0
+hours = [10.0, 18.5]

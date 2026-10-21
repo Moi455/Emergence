@@ -47,7 +47,7 @@ const NOMS_20_OCT: [&str; 34] = [
 #[test]
 fn trente_six_lignes_et_numeros_figes() {
     let t = table_reelle();
-    assert_eq!(t.len(), 37); // 36 + la mousse (classe 36, L23p)
+    assert_eq!(t.len(), 58); // 36 + la mousse (classe 36, L23p) + les 21 classes de L35 à L37 (37 à 57)
     for (i, nom) in NOMS_20_OCT.iter().enumerate() {
         let id = MaterialId::new(i as u16);
         assert_eq!(t.get(id).name(), *nom, "classe {i}");

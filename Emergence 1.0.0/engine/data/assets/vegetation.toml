@@ -1,0 +1,383 @@
+# Recettes nommées de la famille végétation (L30-L32) : identifiant stable, générateur du registre, graine, paramètres.
+# Une scène ou un test désigne une recette par son identifiant (`asset = "chene_ancien"`), jamais par une liste de nombres.
+# Les essences sont celles de engine/data/species.toml.
+
+[[asset]]
+id = "chene_ancien"
+generator = "tree"
+seed = 42
+note = "Chêne de 16 m (graine du chêne de référence 42)."
+[asset.params]
+species = "chene"
+height_mm = 16000
+season = "summer"
+
+[[asset]]
+id = "chene_jeune"
+generator = "tree"
+seed = 7
+note = "Jeune chêne de 7 m."
+[asset.params]
+species = "chene"
+height_mm = 7000
+season = "summer"
+
+[[asset]]
+id = "hetre_futaie"
+generator = "tree"
+seed = 11
+note = "Hêtre de futaie."
+[asset.params]
+species = "hetre"
+height_mm = 18000
+season = "summer"
+
+[[asset]]
+id = "bouleau_jeune"
+generator = "tree"
+seed = 3
+note = "Jeune bouleau de 6 m."
+[asset.params]
+species = "bouleau"
+height_mm = 6000
+season = "summer"
+
+[[asset]]
+id = "bouleau_automne"
+generator = "tree"
+seed = 5
+note = "Bouleau jaune d'automne."
+[asset.params]
+species = "bouleau"
+height_mm = 9000
+season = "autumn"
+
+[[asset]]
+id = "epicea_haut"
+generator = "tree"
+seed = 7
+note = "Épicéa de 14 m."
+[asset.params]
+species = "epicea"
+height_mm = 14000
+season = "summer"
+
+[[asset]]
+id = "pin_sylvestre"
+generator = "tree"
+seed = 9
+note = "Pin sylvestre."
+[asset.params]
+species = "pin"
+height_mm = 13000
+season = "summer"
+
+[[asset]]
+id = "peuplier_alignement"
+generator = "tree"
+seed = 5
+note = "Peuplier d'Italie d'alignement."
+[asset.params]
+species = "peuplier"
+height_mm = 15000
+season = "summer"
+
+[[asset]]
+id = "erable_champetre"
+generator = "tree"
+seed = 13
+note = "Érable."
+[asset.params]
+species = "erable"
+height_mm = 9000
+season = "summer"
+
+[[asset]]
+id = "erable_automne"
+generator = "tree"
+seed = 13
+note = "Même érable, rouge d'automne."
+[asset.params]
+species = "erable"
+height_mm = 9000
+season = "autumn"
+
+[[asset]]
+id = "pommier_fleuri"
+generator = "tree"
+seed = 21
+note = "Pommier en fleurs (printemps)."
+[asset.params]
+species = "pommier"
+height_mm = 5000
+season = "spring"
+
+[[asset]]
+id = "pommier_fruits"
+generator = "tree"
+seed = 21
+note = "Même pommier chargé de pommes (automne)."
+[asset.params]
+species = "pommier"
+height_mm = 5000
+season = "autumn"
+
+[[asset]]
+id = "chene_hiver"
+generator = "tree"
+seed = 42
+note = "Chêne nu de l'hiver."
+[asset.params]
+species = "chene"
+height_mm = 9000
+season = "winter"
+
+[[asset]]
+id = "buis_boule"
+generator = "bush"
+seed = 7
+note = "Boule de buis (topiaire sphère)."
+[asset.params]
+species = "buis"
+height_mm = 1200
+season = "summer"
+topiary = "sphere"
+
+[[asset]]
+id = "buis_cube"
+generator = "bush"
+seed = 8
+note = "Cube de buis."
+[asset.params]
+species = "buis"
+height_mm = 1000
+season = "summer"
+topiary = "cube"
+
+[[asset]]
+id = "buis_cone"
+generator = "bush"
+seed = 9
+note = "Cône de buis."
+[asset.params]
+species = "buis"
+height_mm = 1500
+season = "summer"
+topiary = "cone"
+
+[[asset]]
+id = "buis_dome"
+generator = "bush"
+seed = 10
+note = "Dôme de buis."
+[asset.params]
+species = "buis"
+height_mm = 800
+season = "summer"
+topiary = "dome"
+
+[[asset]]
+id = "rosier_fleuri"
+generator = "bush"
+seed = 4
+note = "Rosier en fleurs."
+[asset.params]
+species = "rosier"
+height_mm = 1300
+season = "summer"
+
+[[asset]]
+id = "rosier_cynorrhodons"
+generator = "bush"
+seed = 4
+note = "Rosier aux cynorrhodons."
+[asset.params]
+species = "rosier"
+height_mm = 1300
+season = "autumn"
+
+[[asset]]
+id = "lilas_printemps"
+generator = "bush"
+seed = 6
+note = "Lilas en fleurs."
+[asset.params]
+species = "lilas"
+height_mm = 1800
+season = "spring"
+
+[[asset]]
+id = "lavande_ete"
+generator = "bush"
+seed = 2
+note = "Touffe de lavande."
+[asset.params]
+species = "lavande"
+height_mm = 600
+season = "summer"
+
+[[asset]]
+id = "hortensia_ete"
+generator = "bush"
+seed = 3
+note = "Hortensia."
+[asset.params]
+species = "hortensia"
+height_mm = 1200
+season = "summer"
+
+[[asset]]
+id = "forsythia_printemps"
+generator = "bush"
+seed = 5
+note = "Forsythia jaune."
+[asset.params]
+species = "forsythia"
+height_mm = 1600
+season = "spring"
+
+[[asset]]
+id = "houx_baies"
+generator = "bush"
+seed = 2
+note = "Houx aux baies rouges."
+[asset.params]
+species = "houx"
+height_mm = 1700
+season = "winter"
+
+[[asset]]
+id = "ronce_mures"
+generator = "bush"
+seed = 1
+note = "Ronce aux mûres."
+[asset.params]
+species = "ronce"
+height_mm = 1400
+season = "summer"
+
+[[asset]]
+id = "genevrier_baies"
+generator = "bush"
+seed = 4
+note = "Genévrier."
+[asset.params]
+species = "genevrier"
+height_mm = 1500
+season = "summer"
+
+[[asset]]
+id = "haie_aubepine"
+generator = "hedge"
+seed = 3
+note = "Haie libre d'aubépine, 7 m."
+[asset.params]
+species = "aubepine"
+length_mm = 7000
+height_mm = 1800
+spacing_mm = 800
+season = "summer"
+
+[[asset]]
+id = "haie_buis_taillee"
+generator = "hedge"
+seed = 4
+note = "Haie de buis taillée au cordeau."
+[asset.params]
+species = "buis"
+length_mm = 6000
+height_mm = 1200
+spacing_mm = 700
+season = "summer"
+topiary = "cube"
+
+[[asset]]
+id = "souche_chene"
+generator = "stump"
+seed = 5
+note = "Souche de chêne de 60 cm."
+[asset.params]
+species = "chene"
+tree_height_mm = 14000
+cut_mm = 600
+
+[[asset]]
+id = "tronc_tombe_hetre"
+generator = "fallen_log"
+seed = 6
+note = "Tronc de hêtre tombé, 6 m."
+[asset.params]
+species = "hetre"
+length_mm = 6000
+radius_mm = 260
+
+[[asset]]
+id = "chene_lointain"
+generator = "tree_silhouette"
+seed = 42
+note = "Silhouette lointaine du chêne 14 m (niveaux 3 et plus)."
+[asset.params]
+species = "chene"
+height_mm = 14000
+season = "summer"
+
+[[asset]]
+id = "champ_ble"
+generator = "crop"
+seed = 1
+note = "Parcelle de blé de 20 m x 20 m, voxels de 2 cm."
+[asset.params]
+kind = "wheat"
+
+[[asset]]
+id = "champ_choux"
+generator = "crop"
+seed = 2
+note = "Parcelle de choux de 20 m x 20 m, voxels de 2 cm."
+[asset.params]
+kind = "cabbage"
+
+[[asset]]
+id = "vigne_echalas"
+generator = "crop"
+seed = 3
+note = "Parcelle de vigne sur échalas de 20 m x 20 m, voxels de 2 cm."
+[asset.params]
+kind = "vine"
+
+[[asset]]
+id = "champ_laboure"
+generator = "crop"
+seed = 4
+note = "Champ labouré de 20 m x 20 m, voxels de 2 cm."
+[asset.params]
+kind = "plowed"
+
+[[asset]]
+id = "cepes"
+generator = "mushrooms"
+seed = 5
+note = "Touffe de cèpes (voxels de 2 cm)."
+[asset.params]
+kind = "cepe"
+count = 8
+radius_mm = 300
+
+[[asset]]
+id = "amanites"
+generator = "mushrooms"
+seed = 6
+note = "Touffe d'amanites tue-mouches (voxels de 2 cm)."
+[asset.params]
+kind = "amanite"
+count = 6
+radius_mm = 260
+
+[[asset]]
+id = "fougeres"
+generator = "ferns"
+seed = 7
+note = "Touffe de fougères de 70 cm (voxels de 2 cm)."
+[asset.params]
+fronds = 10
+length_mm = 700

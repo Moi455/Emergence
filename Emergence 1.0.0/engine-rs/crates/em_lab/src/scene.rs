@@ -36,7 +36,7 @@ pub trait Scene {
 }
 
 /// Noms des scènes connues, pour les messages d'erreur.
-pub const SCENES: &str = "hello, ciel, arbre, maison, materiaux";
+pub const SCENES: &str = "hello, ciel, arbre, maison, materiaux, batiments, props, rochers, vegetation";
 
 /// Construit la scène nommée ; refuse un nom inconnu en listant les scènes disponibles.
 pub fn creer(
@@ -51,6 +51,8 @@ pub fn creer(
         CielScene::NOM => Ok(Box::new(CielScene::new(info, ciel)?)),
         ArbreScene::NOM => Ok(Box::new(ArbreScene::new(gpu, info, ciel, arbre)?)),
         ArbreScene::NOM_MAISON => Ok(Box::new(ArbreScene::maison(gpu, info, ciel, arbre)?)),
+        ArbreScene::NOM_VEGETATION => Ok(Box::new(ArbreScene::vegetation(gpu, info, ciel, arbre)?)),
+        n if crate::famille::est_famille(n) => Ok(Box::new(ArbreScene::famille(n, gpu, info, ciel, arbre)?)),
         MateriauxScene::NOM => match ModeDemande::lire(&arbre.mode)? {
             ModeDemande::Seul(mode) => Ok(Box::new(MateriauxScene::new(gpu, info, ciel, arbre, mode)?)),
             ModeDemande::Comparaison => {

@@ -36,6 +36,197 @@ hardness = 1
 flammability = 30
 color = "5e8a34"
 
+# Classes du bâti, des props et des rochers (L35 à L37) : le petit peuple des matières colorées. Chaque classe à rampe
+# de trois couleurs sert aussi de PALETTE de trois teintes franches (teinte 0, 63, 127 = sombre, moyen, clair).
+[[extra_class]]
+id = 37
+name = "timber"
+category = "wood"
+density_kg_m3 = 700
+hardness = 25
+flammability = 75
+color = "583c26"
+
+[[extra_class]]
+id = 38
+name = "stone_grey"
+category = "building"
+density_kg_m3 = 2500
+hardness = 60
+flammability = 0
+color = "9b998f"
+
+[[extra_class]]
+id = 39
+name = "stone_dark"
+category = "building"
+density_kg_m3 = 2600
+hardness = 60
+flammability = 0
+color = "6f6d69"
+
+[[extra_class]]
+id = 40
+name = "paint_green"
+category = "building"
+density_kg_m3 = 700
+hardness = 20
+flammability = 60
+color = "3e5c42"
+
+[[extra_class]]
+id = 41
+name = "paint_blue"
+category = "building"
+density_kg_m3 = 700
+hardness = 20
+flammability = 60
+color = "405c76"
+
+[[extra_class]]
+id = 42
+name = "paint_red"
+category = "building"
+density_kg_m3 = 700
+hardness = 20
+flammability = 60
+color = "86403a"
+
+[[extra_class]]
+id = 43
+name = "fabric_a"
+category = "textile"
+density_kg_m3 = 300
+hardness = 2
+flammability = 90
+color = "34548c"
+
+[[extra_class]]
+id = 44
+name = "fabric_b"
+category = "textile"
+density_kg_m3 = 300
+hardness = 2
+flammability = 90
+color = "6e3c78"
+
+[[extra_class]]
+id = 45
+name = "flower_a"
+category = "plant"
+density_kg_m3 = 60
+hardness = 1
+flammability = 80
+color = "eec648"
+
+[[extra_class]]
+id = 46
+name = "flower_b"
+category = "plant"
+density_kg_m3 = 60
+hardness = 1
+flammability = 80
+color = "c8402a"
+
+[[extra_class]]
+id = 47
+name = "glow"
+category = "building"
+density_kg_m3 = 100
+hardness = 1
+flammability = 0
+color = "ffc468"
+
+[[extra_class]]
+id = 48
+name = "ember"
+category = "mineral"
+density_kg_m3 = 100
+hardness = 1
+flammability = 0
+color = "ff9a3c"
+
+[[extra_class]]
+id = 49
+name = "brass"
+category = "metal"
+density_kg_m3 = 8500
+hardness = 60
+flammability = 0
+color = "b08a2c"
+
+[[extra_class]]
+id = 50
+name = "leather"
+category = "textile"
+density_kg_m3 = 900
+hardness = 5
+flammability = 60
+color = "6a4428"
+
+[[extra_class]]
+id = 51
+name = "ceramic"
+category = "building"
+density_kg_m3 = 2000
+hardness = 30
+flammability = 0
+color = "a8603e"
+
+[[extra_class]]
+id = 52
+name = "wax"
+category = "building"
+density_kg_m3 = 900
+hardness = 2
+flammability = 50
+color = "e8dcb0"
+
+[[extra_class]]
+id = 53
+name = "plaster_ochre"
+category = "building"
+density_kg_m3 = 1700
+hardness = 20
+flammability = 0
+color = "c8a460"
+
+[[extra_class]]
+id = 54
+name = "hay"
+category = "plant"
+density_kg_m3 = 100
+hardness = 1
+flammability = 95
+color = "d8b24c"
+
+[[extra_class]]
+id = 55
+name = "rock_grey"
+category = "rock"
+density_kg_m3 = 2600
+hardness = 70
+flammability = 0
+color = "8e8c85"
+
+[[extra_class]]
+id = 56
+name = "rock_warm"
+category = "rock"
+density_kg_m3 = 2400
+hardness = 55
+flammability = 0
+color = "a8967a"
+
+[[extra_class]]
+id = 57
+name = "coal"
+category = "mineral"
+density_kg_m3 = 1400
+hardness = 10
+flammability = 40
+color = "26262e"
+
 [default]
 albedo_var = 0.08
 hue_var = 0.02
@@ -256,3 +447,117 @@ tint_mode = "vegetation"
 veg_role = "fruits"
 roughness = 0.5
 voxel_jitter = 0.0
+
+# ---- Classes du bâti, des props et des rochers (L35 à L37) ----
+[material.timber]
+tint_mode = "wood_axis"
+detail = "wood_fine"
+relief = 1.0
+ramp = ["#2a1c12", "#583c26", "#80603c"]
+
+[material.stone_grey]
+tint_mode = "stone_piece"
+detail = "stone_fine"
+relief = 1.0
+ramp = ["#3f3b36", "#9b998f", "#c9c7bc"]
+
+[material.stone_dark]
+tint_mode = "stone_piece"
+detail = "stone_fine"
+relief = 1.0
+ramp = ["#34302c", "#6f6d69", "#969088"]
+
+[material.paint_green]
+relief = 0.3
+roughness = 0.85
+ramp = ["#2e4a36", "#3e5c42", "#5a8460"]
+
+[material.paint_blue]
+relief = 0.3
+roughness = 0.85
+ramp = ["#2e4660", "#405c76", "#5a7c98"]
+
+[material.paint_red]
+relief = 0.3
+roughness = 0.85
+ramp = ["#6a2e28", "#86403a", "#a85848"]
+
+[material.fabric_a]
+roughness = 0.95
+relief = 0.1
+ramp = ["#963430", "#34548c", "#3e7048"]
+
+[material.fabric_b]
+roughness = 0.95
+relief = 0.1
+ramp = ["#b08634", "#6e3c78", "#ccccc0"]
+
+[material.flower_a]
+roughness = 0.9
+relief = 0.0
+ramp = ["#eeeae0", "#eec648", "#da7aa4"]
+
+[material.flower_b]
+roughness = 0.9
+relief = 0.0
+ramp = ["#9270c4", "#c8402a", "#f0a050"]
+
+[material.glow]
+roughness = 0.4
+relief = 0.0
+emission = 3.0
+ramp = ["#ff9a38", "#ffc468", "#fff0b8"]
+
+[material.ember]
+roughness = 0.6
+relief = 0.0
+emission = 4.0
+ramp = ["#ff5a1c", "#ff9a3c", "#ffd868"]
+
+[material.brass]
+roughness = 0.4
+relief = 0.0
+ramp = ["#6a4a1c", "#b08a2c", "#e8c860"]
+
+[material.leather]
+roughness = 0.8
+relief = 0.2
+ramp = ["#3c2616", "#6a4428", "#8c6038"]
+
+[material.ceramic]
+roughness = 0.5
+relief = 0.1
+ramp = ["#6a3a28", "#a8603e", "#d89868"]
+
+[material.wax]
+roughness = 0.5
+relief = 0.0
+ramp = ["#c8b88c", "#e8dcb0", "#faf2d6"]
+
+[material.plaster_ochre]
+roughness = 0.9
+relief = 0.4
+ramp = ["#9c7e44", "#c8a460", "#e0c888"]
+
+[material.hay]
+roughness = 0.95
+relief = 0.5
+ramp = ["#a8842c", "#d8b24c", "#f0d878"]
+
+[material.rock_grey]
+tint_mode = "stone_piece"
+detail = "rock_fine"
+relief = 0.9
+ramp = ["#46443f", "#8e8c85", "#b8b6ac"]
+
+[material.rock_warm]
+tint_mode = "stone_piece"
+detail = "rock_fine"
+relief = 0.9
+ramp = ["#5a4a3a", "#a8967a", "#d0c0a0"]
+
+[material.coal]
+roughness = 0.7
+relief = 0.5
+ramp = ["#14141a", "#26262e", "#3a3a44"]
+
